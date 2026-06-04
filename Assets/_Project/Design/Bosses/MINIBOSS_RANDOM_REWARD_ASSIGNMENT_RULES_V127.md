@@ -54,26 +54,63 @@ drops health/ammo
 unlocks the route toward the final boss
 ```
 
-## Current mini-boss pool
-
-Planned pool size:
-
-```text
-4 mini-boss archetypes total
-```
-
-Currently designed:
+## Complete mini-boss pool
 
 ```text
 1. Square Jumper
 2. Roller
 3. Serpent
+4. Quad Gunners
 ```
 
-Still to design:
+All four archetypes are now designed.
+
+Exactly three are selected for each generated map.
+
+Exactly one archetype is absent from that run.
+
+## Permanent archetype identities
+
+### Square Jumper
 
 ```text
-4. Mini-boss archetype 4
+Large square body
+Jump slam
+Bullet-hell patterns
+Dual swords
+Summons sword, shooter, and patrol enemies
+```
+
+### Roller
+
+```text
+Large round body
+Roll charge
+Rotating spiral bullet-hell
+Summons jumping, bomb-placer, and sword enemies
+```
+
+### Serpent
+
+```text
+Large segmented snake
+Lunge bite
+Tail grab
+Tail whip
+Three-shot fan bursts
+Head-only weak point
+No regular summons
+```
+
+### Quad Gunners
+
+```text
+Four coordinated characters
+Four hard-coded colors
+Four hard-coded projectile profiles
+Four hard-coded summon mappings
+Coordinated sword flanking
+Survivors become progressively faster
 ```
 
 ## Selection examples
@@ -82,7 +119,7 @@ Still to design:
 
 ```text
 Selected: Square Jumper, Roller, Serpent
-Not selected: Mini-boss 4
+Not selected: Quad Gunners
 Square Jumper guards Game Boy
 Roller guards Game Cartridge
 Serpent appears before final boss
@@ -91,9 +128,9 @@ Serpent appears before final boss
 ### Run B
 
 ```text
-Selected: Roller, Serpent, Mini-boss 4
+Selected: Roller, Serpent, Quad Gunners
 Not selected: Square Jumper
-Mini-boss 4 guards Game Boy
+Quad Gunners guard Game Boy
 Roller guards Game Cartridge
 Serpent appears before final boss
 ```
@@ -101,11 +138,21 @@ Serpent appears before final boss
 ### Run C
 
 ```text
-Selected: Square Jumper, Serpent, Mini-boss 4
+Selected: Square Jumper, Serpent, Quad Gunners
 Not selected: Roller
 Serpent guards Game Boy
 Square Jumper guards Game Cartridge
-Mini-boss 4 appears before final boss
+Quad Gunners appear before final boss
+```
+
+### Run D
+
+```text
+Selected: Square Jumper, Roller, Quad Gunners
+Not selected: Serpent
+Roller guards Game Boy
+Quad Gunners guard Game Cartridge
+Square Jumper appears before final boss
 ```
 
 ## Placement patterns
@@ -159,6 +206,17 @@ After the pre-boss, there should still be a bit more map before the final boss.
 Do not place a mini-boss where the player is forced into instant damage.
 ```
 
+## Reward chest rule
+
+All secret collectible mini-boss rewards use a chest.
+
+```text
+The chest stays closed while the mini-boss is alive.
+After the mini-boss dies, the chest opens with an animation.
+The assigned Game Boy or Game Cartridge appears inside.
+The contents are not advertised before victory.
+```
+
 ## Secret rules
 
 Forbidden before pickup:
@@ -184,7 +242,7 @@ Badge only after pickup
 
 ## Implementation notes for later
 
-The future implementation should use deterministic seeded randomization so the same generated map can be reproduced for debugging.
+Use deterministic seeded randomization so the same generated map can be reproduced for debugging.
 
 Possible data model:
 
@@ -202,26 +260,31 @@ BranchSide
 Pseudo-flow:
 
 ```text
-1. Shuffle 4-mini-boss pool.
-2. Take first 3 as selected mini-bosses.
-3. Shuffle roles: Game Boy, Game Cartridge, Pre-boss.
-4. Assign one selected mini-boss to each role.
-5. Choose legal placement candidates for each assigned role.
-6. Validate distance/progression/secret rules.
-7. If validation fails, reroll placement or assignment within a bounded retry count.
+1. Create fixed pool: Square Jumper, Roller, Serpent, Quad Gunners.
+2. Shuffle the four-archetype pool using the map seed.
+3. Take the first three as selected mini-bosses.
+4. Mark the fourth as skipped for that run.
+5. Shuffle roles: Game Boy, Game Cartridge, Pre-boss.
+6. Assign one selected mini-boss to each role.
+7. Choose legal placement candidates for each assigned role.
+8. Validate distance, progression, parallel-layout, and secret rules.
+9. If validation fails, reroll placement or assignment within a bounded retry count.
 ```
 
 ## QA checklist later
 
 ```text
-Exactly 3 mini-bosses appear in a generated map.
-Exactly 1 mini-boss from the pool is absent.
+The source pool always contains exactly four archetypes.
+Exactly three mini-bosses appear in a generated map.
+Exactly one mini-boss from the pool is absent.
 Game Boy and Game Cartridge are assigned to different mini-bosses.
 Pre-boss mini-boss is different from both secret reward mini-bosses.
+Role assignment changes between generated maps.
 Order can change between generated maps.
 Parallel branch layout can happen sometimes.
-Bosses are not placed too close together.
+Mini-boss rooms are not too close together.
 Pre-boss is before final boss but not directly adjacent to it.
+All collectible rewards use a post-victory chest.
 Secret collectible UI rules are preserved.
 Final boss remains in the final room.
 Exit remains blocked until final boss is defeated.
