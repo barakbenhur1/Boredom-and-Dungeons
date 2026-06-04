@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace BoredomAndDungeons
@@ -7,25 +8,35 @@ namespace BoredomAndDungeons
     public sealed class BDCollectibleGuardianSpawner : MonoBehaviour
     {
         [Header("Trigger")]
-        [SerializeField] private float triggerRadius = 7.5f;
+        [SerializeField] private float triggerRadius = 8.25f;
         [SerializeField] private bool spawnOnlyOnce = true;
 
         [Header("Guardians")]
-        [SerializeField] private int swordGuardians = 2;
+        [SerializeField] private int swordGuardians = 3;
         [SerializeField] private int chargerGuardians = 1;
-        [SerializeField] private float spawnDistance = 5.8f;
-        [SerializeField] private float spawnArcDegrees = 140f;
-        [SerializeField] private float swordHealth = 170f;
-        [SerializeField] private float chargerHealth = 230f;
+        [SerializeField] private float spawnDistance = 6.6f;
+        [SerializeField] private float spawnArcDegrees = 150f;
+        [SerializeField] private float swordHealth = 190f;
+        [SerializeField] private float chargerHealth = 260f;
+
+        [Header("Guardian Fairness")]
+        [SerializeField] private float minimumDistanceFromPlayer = 6.25f;
+        [SerializeField] private float minimumDistanceFromCollectible = 3.75f;
+        [SerializeField] private float minimumGuardianSpacing = 1.85f;
+        [SerializeField] private float maxSpawnDistance = 9.25f;
+        [SerializeField] private float spawnDistanceStep = 0.75f;
+        [SerializeField] private float spawnAngleStep = 18f;
+        [SerializeField] private int spawnResolveAttempts = 14;
 
         [Header("Guardian Spawn VFX")]
         [SerializeField] private bool useSpawnVfx = true;
-        [SerializeField] private float spawnVfxDelay = 0.95f;
+        [SerializeField] private float spawnVfxDelay = 1.05f;
         [SerializeField] private float spawnVerticalOffset = 1.05f;
         [SerializeField] private float inactiveSinkDepth = 1.65f;
 
         [Header("Debug")]
         [SerializeField] private bool logSpawn = true;
+        [SerializeField] private bool logFallbackSpawnPositions = false;
 
         private bool spawned;
         private Transform player;
@@ -36,6 +47,7 @@ namespace BoredomAndDungeons
             swordGuardians = Mathf.Max(0, swords);
             chargerGuardians = Mathf.Max(0, chargers);
             spawnDistance = Mathf.Max(2.5f, distance);
+            maxSpawnDistance = Mathf.Max(spawnDistance, maxSpawnDistance);
         }
 
         private void Update()
@@ -77,23 +89,26 @@ namespace BoredomAndDungeons
 
             int total = swordGuardians + chargerGuardians;
             int index = 0;
+            List<Vector3> claimedPositions = new List<Vector3>(total);
 
             for (int i = 0; i < swordGuardians; i++)
             {
-                Vector3 position = ResolveSpawnPosition(awayFromPlayer, index, total);
+                Vector3 position = ResolveFairSpawnPosition(awayFromPlayer, index, total, playerTransform, claimedPositions);
+                claimedPositions.Add(position);
                 SpawnGuardianWithVfx(position, GuardianType.Sword);
                 index++;
             }
 
             for (int i = 0; i < chargerGuardians; i++)
             {
-                Vector3 position = ResolveSpawnPosition(awayFromPlayer, index, total);
+                Vector3 position = ResolveFairSpawnPosition(awayFromPlayer, index, total, playerTransform, claimedPositions);
+                claimedPositions.Add(position);
                 SpawnGuardianWithVfx(position, GuardianType.Charger);
                 index++;
             }
 
             if (logSpawn)
-                Debug.Log($"B&D Collectible guardian spawn sequence started near {name}: swords={swordGuardians}, chargers={chargerGuardians}");
+                Debug.Log($"B&D Collectible guardian spawn sequence started near {name}: swords={swordGuardians}, chargers={chargerGuardians}, fairPositions={claimedPositions.Count}");
         }
 
         private void SpawnGuardianWithVfx(Vector3 position, GuardianType type)
@@ -160,15 +175,121 @@ namespace BoredomAndDungeons
                 bootstrap.enabled = active;
         }
 
-        private Vector3 ResolveSpawnPosition(Vector3 baseDirection, int index, int total)
+        private Vector3 ResolveFairSpawnPosition(
+            Vector3 baseDirection,
+            int index,
+            int total,
+            Transform playerTransform,
+            List<Vector3> claimedPositions)
         {
             total = Mathf.Max(1, total);
-            float t = total == 1 ? 0.5f : index / Mathf.Max(1f, total - 1f);
-            float angle = Mathf.Lerp(-spawnArcDegrees * 0.5f, spawnArcDegrees * 0.5f, t);
+            int attempts = Mathf.Max(1, spawnResolveAttempts);
+            float baseT = total == 1 ? 0.5f : index / Mathf.Max(1f, total - 1f);
+            float baseAngle = Mathf.Lerp(-spawnArcDegrees * 0.5f, spawnArcDegrees * 0.5f, baseT);
+
+            Vector3 bestCandidate = ResolveCandidate(baseDirection, baseAngle, spawnDistance);
+            float bestScore = ScoreSpawnCandidate(bestCandidate, playerTransform, claimedPositions);
+
+            for (int attempt = 0; attempt < attempts; attempt++)
+            {
+                float angleOffset = ResolveAttemptAngleOffset(attempt);
+                float distanceOffset = ResolveAttemptDistanceOffset(attempt);
+                float distance = Mathf.Min(Mathf.Max(spawnDistance, maxSpawnDistance), spawnDistance + distanceOffset);
+                Vector3 candidate = ResolveCandidate(baseDirection, baseAngle + angleOffset, distance);
+                float score = ScoreSpawnCandidate(candidate, playerTransform, claimedPositions);
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestCandidate = candidate;
+                }
+
+                if (IsSpawnPositionFair(candidate, playerTransform, claimedPositions))
+                    return candidate;
+            }
+
+            if (logFallbackSpawnPositions)
+                Debug.LogWarning($"B&D guardian spawn used best fallback near {name}. score={bestScore:0.00}");
+
+            return bestCandidate;
+        }
+
+        private Vector3 ResolveCandidate(Vector3 baseDirection, float angle, float distance)
+        {
             Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
-            Vector3 position = transform.position + direction.normalized * spawnDistance;
+            Vector3 position = transform.position + direction.normalized * Mathf.Max(2.5f, distance);
             position.y = transform.position.y + Mathf.Max(0.1f, spawnVerticalOffset);
             return position;
+        }
+
+        private float ResolveAttemptAngleOffset(int attempt)
+        {
+            if (attempt <= 0)
+                return 0f;
+
+            int pair = (attempt + 1) / 2;
+            float sign = attempt % 2 == 0 ? -1f : 1f;
+            return sign * pair * Mathf.Max(1f, spawnAngleStep);
+        }
+
+        private float ResolveAttemptDistanceOffset(int attempt)
+        {
+            int distanceStep = Mathf.Max(0, attempt / 4);
+            return distanceStep * Mathf.Max(0f, spawnDistanceStep);
+        }
+
+        private bool IsSpawnPositionFair( Vector3 position, Transform playerTransform, List<Vector3> claimedPositions)
+        {
+            if (playerTransform != null)
+            {
+                Vector3 playerDelta = position - playerTransform.position;
+                playerDelta.y = 0f;
+
+                if (playerDelta.sqrMagnitude < minimumDistanceFromPlayer * minimumDistanceFromPlayer)
+                    return false;
+            }
+
+            Vector3 collectibleDelta = position - transform.position;
+            collectibleDelta.y = 0f;
+
+            if (collectibleDelta.sqrMagnitude < minimumDistanceFromCollectible * minimumDistanceFromCollectible)
+                return false;
+
+            for (int i = 0; i < claimedPositions.Count; i++)
+            {
+                Vector3 claimedDelta = position - claimedPositions[i];
+                claimedDelta.y = 0f;
+
+                if (claimedDelta.sqrMagnitude < minimumGuardianSpacing * minimumGuardianSpacing)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private float ScoreSpawnCandidate(Vector3 position, Transform playerTransform, List<Vector3> claimedPositions)
+        {
+            float score = 0f;
+
+            if (playerTransform != null)
+            {
+                Vector3 playerDelta = position - playerTransform.position;
+                playerDelta.y = 0f;
+                score += Mathf.Min(20f, playerDelta.magnitude);
+            }
+
+            Vector3 collectibleDelta = position - transform.position;
+            collectibleDelta.y = 0f;
+            score += Mathf.Min(12f, collectibleDelta.magnitude) * 0.35f;
+
+            for (int i = 0; i < claimedPositions.Count; i++)
+            {
+                Vector3 claimedDelta = position - claimedPositions[i];
+                claimedDelta.y = 0f;
+                score += Mathf.Min(6f, claimedDelta.magnitude) * 0.5f;
+            }
+
+            return score;
         }
 
         private enum GuardianType
