@@ -1,92 +1,83 @@
-# Boredom & Dungeons
+# Boredom & Dungeons / שיעמום ומבוכים — Unity Starter Code Package
 
-Unity prototype project for **Boredom & Dungeons**.
+גרסה: 0.1  
+מטרה: חבילת קוד התחלתית ל־Milestone 0 + Milestone 1.
 
-## Current latest package
+## מה יש כאן
 
-Latest clean core package prepared in this workflow:
+החבילה כוללת קבצי Unity C# ראשונים עבור:
 
-```text
-boredom_and_dungeons_clean_core_v124_secret_collectible_guard.zip
-```
+- Game Flow בסיסי
+- Input למחשב + מובייל
+- Player movement
+- Dash
+- Jump
+- Health
+- Light Sphere לבנה סביב השחקן
+- Camera 2.5D top-down angled
+- Editor helper שיוצר סצנת Prototype בסיסית
 
-## Current progress
+## איך להשתמש
 
-```text
-Stage: 9 / 36
-Completed if QA passes: 9 / 36
-Remaining: 27 / 36
-Progress: 25.0%
-```
-
-## Current major systems
-
-```text
-Mouse-pointed attacks
-Mounted shooting toward mouse without rotating horse
-Minimap visibility hard-fix
-Dodge i-frames
-Game Boy inventory
-Game Cartridge collectible type
-Secret collectible badge HUD
-Four procedural ending variants
-Secret collectible advertising validator
-```
-
-## Install from ZIP package
-
-1. Download the latest ZIP package.
-2. In Unity, delete:
+1. צור Unity project חדש.
+2. העתק את תיקיית `Assets/_Project` לתוך פרויקט Unity שלך.
+3. חכה ש־Unity יסיים compile.
+4. בתפריט העליון ב־Unity לחץ:
 
 ```text
-Assets/_Project
+Boredom And Dungeons/Create Prototype Scene
 ```
 
-3. Copy from the ZIP:
+5. Unity ייצור סצנת בדיקה עם:
+   - רצפה
+   - Player capsule
+   - Light Sphere חצי שקופה
+   - Point Light
+   - Camera בזווית 2.5D
+   - GameFlowController
+   - InputRouter
 
-```text
-Assets/_Project
-```
+6. לחץ Play.
 
-4. Wait for Unity compile.
-5. Run:
+## שליטה ראשונית
 
-```text
-Create Clean Maze Prototype Scene
-```
+### מחשב / Editor
 
-6. Enter Play Mode.
+- WASD / חצים — תנועה
+- Space — קפיצה
+- Left Shift — Dash
+- Left Mouse — Attack placeholder
+- Right Mouse — Heavy attack placeholder
+- E — Interact placeholder
+- R — Heal Horse placeholder
 
-## Secret collectible design rule
+### מובייל
 
-Secret collectibles are not advertised to the player.
+- גרירת אצבע על המסך — movement vector בסיסי
+- Tap — target/attack placeholder
 
-Allowed:
+## מה אמור לעבוד עכשיו
 
-```text
-GB / BAT / CART badges only after pickup
-Pickup effects
-Environmental hints
-Cinematic consequences
-```
+בגרסה הזאת אמור לעבוד:
 
-Forbidden:
+- שחקן זז
+- מצלמה עוקבת
+- Dash עובד
+- Jump עובד
+- Health component קיים
+- ספירת אור לבנה סביב השחקן
+- תאורה לבנה מאירה סביב השחקן
+- קוד נקי שאפשר להמשיך ממנו
 
-```text
-Objective markers
-Checklist
-Empty slots
-0/4 progress
-Missing item text
-Text telling the player to find or collect secrets
-```
+## מה עדיין לא כלול
 
-## Next planned stage
+השלב הזה עדיין לא כולל:
 
-```text
-Stage 10 / 36 — Guardian Spawn VFX
-```
+- אויבים
+- סוס
+- מבוך procedural
+- Minimap
+- עשב ורוח
+- Combat מלא
 
-## Repository note
-
-This repo was initialized after creation without the default README/.gitignore options. The README and Unity `.gitignore` were added manually.
+אלה יהיו ה־Milestones הבאים.
