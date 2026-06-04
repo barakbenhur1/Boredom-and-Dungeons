@@ -1,42 +1,18 @@
 # Boredom & Dungeons
 
-**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, combat, riding, hidden optional collectibles, and multiple ending variations.
+**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, combat, riding, hidden optional collectibles, protected encounters, mini-bosses, a final boss, and multiple ending variations.
 
-The current project is still a prototype/vertical-slice work in progress, but the goal is to grow it into a polished playable dungeon-style level with a professional code structure, clear combat feel, readable UI, hidden secrets, bosses, environmental identity, sound, visual effects, and a complete playable ending flow.
-
----
-
-## Project vision
-
-The game should feel like a real level/map, not just a maze generator.
-
-Core direction:
-
-- A top-down / angled 2.5D Unity action game.
-- Exploration through a complex but readable map.
-- Large rooms and natural areas rather than endless square corridors.
-- Horse riding as part of traversal and combat.
-- Melee and ranged combat with clear aiming and feedback.
-- Optional hidden collectibles that change the ending.
-- Stronger enemies, mini-bosses, and a final boss.
-- A cinematic ending room with different outcomes based on secrets found.
-
-The long-term goal is a playable vertical slice that feels like a small complete game level.
+The project is still a prototype / vertical-slice work in progress. The goal is to grow it into a polished playable dungeon-style level with professional code structure, clear combat feel, readable UI, hidden secrets, meaningful encounters, strong environmental identity, sound, visual effects, and a complete playable ending flow.
 
 ---
 
 ## Current status
 
 ```text
-Current development stage: 9 / 36
-Current latest clean core: V124
-Current next planned stage: Stage 10 — Guardian Spawn VFX
-```
-
-The current state includes code up to:
-
-```text
-Clean Core V124 — Secret Collectible Guard
+Current development stage: 10 / 36
+Current latest clean core: V125
+Current latest feature: Guardian Spawn VFX
+Current next planned stage: Stage 11 — Battery encounters hardening
 ```
 
 ---
@@ -49,10 +25,10 @@ Language: C#
 Game style: top-down / angled 2.5D action-adventure
 Input target: keyboard + mouse first
 Current platform target: desktop / Unity Editor prototype
-Architecture: Unity Runtime scripts + Unity Editor scene builder tools
+Architecture: Unity Runtime scripts + Unity Editor scene-builder tools
 ```
 
-Important project folders:
+Important folders:
 
 ```text
 Assets/_Project/Scripts/Runtime
@@ -64,7 +40,27 @@ Packages
 ProjectSettings
 ```
 
-Unity-generated folders such as `Library`, `Temp`, `Obj`, `Logs`, and local build folders should not be committed.
+Runtime scripts must not depend on `UnityEditor`. Editor-only tools must stay under `Assets/_Project/Scripts/Editor`.
+
+---
+
+## Project vision
+
+The game should feel like a real level/map, not just a maze generator.
+
+Core direction:
+
+- A readable top-down / angled 2.5D action game.
+- Exploration through a complex but understandable map.
+- Large rooms and natural areas rather than endless square corridors.
+- Natural rounded turns and less grid-like movement flow.
+- Horse riding as part of traversal and combat.
+- Melee and ranged combat with clear aiming and feedback.
+- Optional hidden collectibles that change the ending.
+- Stronger enemies, mini-bosses, and a final boss.
+- A cinematic ending room with different outcomes based on secrets found.
+
+The long-term goal is a playable vertical slice that feels like a small complete game level.
 
 ---
 
@@ -104,7 +100,6 @@ but the horse does not rotate because of shooting.
 - Mounted shooting is supported.
 - Mounted shooting does not force the horse to rotate.
 - Horse healing support exists.
-- Horse behavior and visuals still need further polish.
 
 Planned horse improvements:
 
@@ -115,13 +110,12 @@ Planned horse improvements:
 
 ---
 
-### Minimap
+### Minimap and HUD
 
 - Minimap exists.
 - Minimap discovers explored rooms.
 - Minimap uses player world-position fallback, not only trigger events.
 - Minimap displays explored room count.
-- Minimap is positioned bottom-right.
 
 Current intended HUD layout:
 
@@ -135,7 +129,7 @@ Secret collectible badges: top-left, only after pickup
 
 ### Secret collectibles
 
-The secret collectibles are optional and should not be advertised to the player.
+Secret collectibles are optional and should not be advertised to the player.
 
 Current secret collectible types:
 
@@ -181,6 +175,25 @@ CART
 
 ---
 
+### Guardian encounters
+
+Protected collectibles can spawn guardian enemies.
+
+Current V125 behavior:
+
+```text
+1. Player approaches a protected collectible.
+2. A teleport/smoke/ring VFX appears on the floor.
+3. Guardians are created hidden and inactive.
+4. A short anticipation delay runs.
+5. Guardians move into position and become active.
+6. A final flash appears.
+```
+
+This prevents enemies from popping into existence unfairly and makes secret collectible encounters feel intentional.
+
+---
+
 ### Game Boy ending logic
 
 The ending system has four procedural ending variants based on collected secrets.
@@ -222,48 +235,9 @@ The current ending cinematic is procedural and temporary. It still needs final a
 
 ---
 
-## Current architecture
-
-Runtime gameplay scripts live under:
-
-```text
-Assets/_Project/Scripts/Runtime
-```
-
-Editor-only tools live under:
-
-```text
-Assets/_Project/Scripts/Editor
-```
-
-Important rule:
-
-```text
-Runtime scripts must not depend on UnityEditor.
-Editor tools must stay under Scripts/Editor.
-```
-
-The scene builder is currently being prepared for gradual decomposition. The project should keep moving toward a professional structure with separated systems for:
-
-- Player
-- Combat
-- Horse
-- Enemies
-- Encounters
-- Collectibles
-- Cinematics
-- UI
-- Audio
-- Bosses
-- Mini-bosses
-- Environment / map generation
-- Editor-only scene building tools
-
----
-
 ## Current roadmap
 
-The full roadmap is 36 stages. The project is currently around Stage 9.
+The full roadmap is 36 stages. The project is currently around Stage 10.
 
 Completed or partially completed:
 
@@ -277,13 +251,13 @@ Completed or partially completed:
 7. Ending state controller
 8. Four procedural ending variants
 9. Secret collectible advertising guard
+10. Guardian Spawn VFX
 ```
 
 Next major stages:
 
 ```text
-10. Guardian Spawn VFX
-11. Harder battery guardian encounters
+11. Battery encounters hardening
 12. Mini-boss 1 design — guards the Game Boy
 13. Mini-boss 2 design — pre-boss encounter
 14. Mini-boss 3 design — random late mini-boss that drops Game Cartridge
@@ -313,23 +287,7 @@ Next major stages:
 
 ---
 
-## Planned gameplay direction
-
-### Map / level
-
-The map should eventually stop feeling like a simple maze.
-
-Planned map direction:
-
-- Large rooms.
-- Natural curved turns.
-- Less grid-like structure.
-- More readable level flow.
-- Side areas and hidden optional paths.
-- Main route toward final boss and exit.
-- Optional hard routes for secrets.
-
-### Boss placement rules
+## Boss placement rules
 
 Planned boss structure:
 
@@ -367,9 +325,7 @@ git clone https://github.com/barakbenhur1/Boredom-and-Dungeons.git
 ```
 
 2. Open the folder in Unity.
-
 3. Let Unity import and compile.
-
 4. Use the editor scene builder menu to create the current prototype scene.
 
 The exact editor menu may change as the scene builder evolves. Current work has been using the clean maze prototype scene builder flow.
@@ -402,7 +358,9 @@ Builds/
 Logs/
 UserSettings/
 *.zip
-README_CLEAN_CORE_V*.md
+README_V*.md
+README_CLEAN_CORE*.md
+package_manifest.json
 old generated version folders
 local exported packages
 IDE generated files
@@ -417,33 +375,15 @@ Unity .meta files are required for references to stay stable.
 
 ---
 
-## Current cleanup note
-
-If old version files such as these appear in the repository root:
-
-```text
-README_CLEAN_CORE_V1.md
-README_CLEAN_CORE_V102.md
-README_CLEAN_CORE_V124_SECRET_COLLECTIBLE_GUARD.md
-boredom_and_dungeons_clean_core_v*.zip
-old clean_core folders
-```
-
-They should be removed from Git tracking and kept out of the repository. The root README should be this file only.
-
----
-
 ## Current priority
 
-The next development priority is:
-
 ```text
-Stage 10 — Guardian Spawn VFX
+Stage 11 — Battery encounters hardening
 ```
 
 Goal:
 
-- Enemies should not simply pop into existence near collectibles.
-- They should spawn with smoke / teleport / anticipation delay.
-- Enemies should become active only after the spawn effect.
-- This should make battery guardian encounters feel intentional and polished.
+- Make each battery encounter harder but fair.
+- Ensure guardians spawn once.
+- Ensure enemies do not spawn unfairly on top of the player.
+- Use the V125 spawn VFX as the baseline for all protected collectible encounters.
