@@ -151,3 +151,26 @@ yarn-error.log*
 *.mkv
 *.wav.tmp
 *.mp3.tmp
+
+# -----------------------------------------------------------------------------
+# Generated version/package docs from iterative ChatGPT builds
+# Keep only the main README.md and curated docs such as NEXT_STEPS.md.
+# -----------------------------------------------------------------------------
+README_V*.md
+README_CLEAN_CORE*.md
+README_*_FIX*.md
+README_*_HOTFIX*.md
+README_*_PATCH*.md
+README_*_V[0-9]*.md
+README_*_V[0-9]*_*.md
+*_CLEAN_CORE*.md
+*_clean_core*.md
+package_manifest.json
+*_manifest.json
+
+# Generated extracted version package folders
+boredom_and_dungeons_clean_core*/
+clean_core*/
+bd_v*/
+bd_*_upload*/
+releases/
