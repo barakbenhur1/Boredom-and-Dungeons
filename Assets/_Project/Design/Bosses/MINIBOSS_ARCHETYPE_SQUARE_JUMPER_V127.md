@@ -102,6 +102,14 @@ Behavior:
 Boss occasionally spawns 2–3 regular enemies.
 ```
 
+Allowed summon pool for this archetype:
+
+```text
+Sword enemies
+Shooter enemies
+Patrol enemies
+```
+
 Limits:
 
 ```text
@@ -109,6 +117,7 @@ Do not spam endlessly.
 Do not spawn enemies directly on the player.
 Do not spawn during every jump.
 Summons should use spawn VFX / delay.
+Summons must be capped per phase/fight.
 ```
 
 ### 4. Dual sword side attack
@@ -149,7 +158,7 @@ Behavior:
 slow movement
 jump slam
 light bullet-hell burst after landing
-rare summon
+rare summon from sword/shooter/patrol pool
 rare dual sword attack
 ```
 
@@ -263,6 +272,7 @@ Dodge i-frames work through boss bullets.
 Boss bullets still hit walls.
 Summons use VFX and do not appear on top of the player.
 Summons are capped.
+Summons use only sword/shooter/patrol enemies for this archetype.
 Two swords are visible during side attack.
 Reward box opens only after boss death.
 Secret collectible appears only after box opens.
