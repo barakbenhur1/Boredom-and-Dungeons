@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Mini-bosses should be a reusable roster, not fixed one-to-one encounters.
+Mini-bosses are a reusable roster, not fixed one-to-one encounters.
 
 The player should not know in advance which mini-boss protects which secret collectible.
 
 ## Core roster rule
 
-The game should have a pool of four mini-boss archetypes.
+The game has a pool of four mini-boss archetypes.
 
 At map generation time:
 
@@ -67,12 +67,12 @@ Currently designed:
 ```text
 1. Square Jumper
 2. Roller
+3. Serpent
 ```
 
 Still to design:
 
 ```text
-3. Mini-boss archetype 3
 4. Mini-boss archetype 4
 ```
 
@@ -81,29 +81,29 @@ Still to design:
 ### Run A
 
 ```text
-Selected: Square Jumper, Roller, Mini-boss 3
+Selected: Square Jumper, Roller, Serpent
 Not selected: Mini-boss 4
 Square Jumper guards Game Boy
 Roller guards Game Cartridge
-Mini-boss 3 appears before final boss
+Serpent appears before final boss
 ```
 
 ### Run B
 
 ```text
-Selected: Roller, Mini-boss 3, Mini-boss 4
+Selected: Roller, Serpent, Mini-boss 4
 Not selected: Square Jumper
 Mini-boss 4 guards Game Boy
 Roller guards Game Cartridge
-Mini-boss 3 appears before final boss
+Serpent appears before final boss
 ```
 
 ### Run C
 
 ```text
-Selected: Square Jumper, Mini-boss 3, Mini-boss 4
+Selected: Square Jumper, Serpent, Mini-boss 4
 Not selected: Roller
-Mini-boss 3 guards Game Boy
+Serpent guards Game Boy
 Square Jumper guards Game Cartridge
 Mini-boss 4 appears before final boss
 ```
