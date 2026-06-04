@@ -242,6 +242,20 @@ The Game Boy powers on with colorful lights, showing that a game loaded.
 
 The current ending cinematic is procedural and temporary. It still needs final animation, camera cuts, audio, lighting, and polish.
 
+Planned ending speech bubble rule for the day ending scene:
+
+```text
+If the player does not have all secret collectibles:
+I'm bored
+```
+
+```text
+If the player has Game Boy + 2 Batteries + Game Cartridge:
+I'm having fun :)
+```
+
+This speech bubble rule should remain a final scene result only. It must not become a checklist, objective, missing-item hint, or pre-ending instruction.
+
 ---
 
 ## Current roadmap
@@ -287,7 +301,7 @@ Next major stages:
 29. Ammo / reload HUD polish
 30. General UI / HUD polish
 31. Audio foundation
-32. Cinematic polish
+32. Cinematic polish, including final speech bubble result
 33. Combat / difficulty balance
 34. Readability + performance pass
 35. Code cleanup + production asset pipeline + save/progression planning
