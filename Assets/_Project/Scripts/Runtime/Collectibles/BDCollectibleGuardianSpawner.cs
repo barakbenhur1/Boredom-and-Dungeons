@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace BoredomAndDungeons
@@ -16,6 +17,12 @@ namespace BoredomAndDungeons
         [SerializeField] private float spawnArcDegrees = 140f;
         [SerializeField] private float swordHealth = 170f;
         [SerializeField] private float chargerHealth = 230f;
+
+        [Header("Guardian Spawn VFX")]
+        [SerializeField] private bool useSpawnVfx = true;
+        [SerializeField] private float spawnVfxDelay = 0.95f;
+        [SerializeField] private float spawnVerticalOffset = 1.05f;
+        [SerializeField] private float inactiveSinkDepth = 1.65f;
 
         [Header("Debug")]
         [SerializeField] private bool logSpawn = true;
@@ -74,19 +81,83 @@ namespace BoredomAndDungeons
             for (int i = 0; i < swordGuardians; i++)
             {
                 Vector3 position = ResolveSpawnPosition(awayFromPlayer, index, total);
-                CreateGuardian(position, GuardianType.Sword);
+                SpawnGuardianWithVfx(position, GuardianType.Sword);
                 index++;
             }
 
             for (int i = 0; i < chargerGuardians; i++)
             {
                 Vector3 position = ResolveSpawnPosition(awayFromPlayer, index, total);
-                CreateGuardian(position, GuardianType.Charger);
+                SpawnGuardianWithVfx(position, GuardianType.Charger);
                 index++;
             }
 
             if (logSpawn)
-                Debug.Log($"B&D Collectible guardians spawned near {name}: swords={swordGuardians}, chargers={chargerGuardians}");
+                Debug.Log($"B&D Collectible guardian spawn sequence started near {name}: swords={swordGuardians}, chargers={chargerGuardians}");
+        }
+
+        private void SpawnGuardianWithVfx(Vector3 position, GuardianType type)
+        {
+            if (!useSpawnVfx || !Application.isPlaying)
+            {
+                CreateGuardian(position, type);
+                return;
+            }
+
+            StartCoroutine(SpawnGuardianAfterVfx(position, type));
+        }
+
+        private IEnumerator SpawnGuardianAfterVfx(Vector3 position, GuardianType type)
+        {
+            BDGuardianSpawnVfx.Create(new Vector3(position.x, transform.position.y + 0.08f, position.z), spawnVfxDelay);
+
+            Vector3 hiddenPosition = position + Vector3.down * Mathf.Max(0f, inactiveSinkDepth);
+            GameObject guardian = CreateGuardian(hiddenPosition, type);
+            SetGuardianActiveState(guardian, false);
+
+            float start = Time.time;
+            float delay = Mathf.Max(0.05f, spawnVfxDelay);
+
+            while (Time.time - start < delay)
+                yield return null;
+
+            if (guardian == null)
+                yield break;
+
+            guardian.transform.position = position;
+            SetGuardianActiveState(guardian, true);
+
+            BDGuardianSpawnVfx.Create(new Vector3(position.x, transform.position.y + 0.10f, position.z), 0.35f);
+        }
+
+        private static void SetGuardianActiveState(GameObject guardian, bool active)
+        {
+            if (guardian == null)
+                return;
+
+            CharacterController controller = guardian.GetComponent<CharacterController>();
+            if (controller != null)
+                controller.enabled = active;
+
+            BDSwordEnemy sword = guardian.GetComponent<BDSwordEnemy>();
+            if (sword != null)
+                sword.enabled = active;
+
+            BDChargerEnemy charger = guardian.GetComponent<BDChargerEnemy>();
+            if (charger != null)
+                charger.enabled = active;
+
+            BDEnemyGroundStick groundStick = guardian.GetComponent<BDEnemyGroundStick>();
+            if (groundStick != null)
+                groundStick.enabled = active;
+
+            BDEnemyCollisionDiscipline collisionDiscipline = guardian.GetComponent<BDEnemyCollisionDiscipline>();
+            if (collisionDiscipline != null)
+                collisionDiscipline.enabled = active;
+
+            BDEnemyBootstrap bootstrap = guardian.GetComponent<BDEnemyBootstrap>();
+            if (bootstrap != null)
+                bootstrap.enabled = active;
         }
 
         private Vector3 ResolveSpawnPosition(Vector3 baseDirection, int index, int total)
@@ -96,7 +167,7 @@ namespace BoredomAndDungeons
             float angle = Mathf.Lerp(-spawnArcDegrees * 0.5f, spawnArcDegrees * 0.5f, t);
             Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
             Vector3 position = transform.position + direction.normalized * spawnDistance;
-            position.y = transform.position.y + 1.05f;
+            position.y = transform.position.y + Mathf.Max(0.1f, spawnVerticalOffset);
             return position;
         }
 
