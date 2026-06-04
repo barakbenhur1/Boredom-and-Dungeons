@@ -70,23 +70,32 @@ Both halves use the full Stage-3 attack set.
 Summoning becomes enabled.
 ```
 
-Final linked-death rule:
+Final linked-defeat rule:
 
 ```text
-The two halves do not permanently die one at a time during Stage 3.
-The final death event is delayed until both separate final health bars reach zero.
+Both halves continue fighting until both final health bars have reached zero.
+The final death event is delayed until both separate final health bars are zero.
 ```
 
 If one half reaches zero first:
 
 ```text
-It remains visibly alive in a critical state.
-It does not perform its final collapse yet.
+Its health remains clamped at zero.
+It stays fully active and continues moving, attacking, firing, flanking, using bullet-hell patterns, and summoning.
+It does not become knocked out.
+It does not collapse.
 It cannot trigger victory or remove the exit barrier by itself.
-The encounter continues until the other half also reaches zero.
 ```
 
-The exact combat behavior of a zero-health critical half during this waiting period can be tuned later, but it must not complete its final death animation until both final health bars are empty.
+Damage-immunity rule for a zero-health half:
+
+```text
+Once a Stage-3 half has reached zero health,
+additional player attacks against that half do nothing.
+They cannot reduce health below zero.
+They cannot create additional damage, stagger, knockback, or repeated defeat reactions.
+The player must damage the other half until its final health also reaches zero.
+```
 
 The complete boss encounter ends only when:
 
@@ -95,6 +104,8 @@ Black final health == 0
 AND
 White final health == 0
 ```
+
+Only at that moment do both halves stop attacking and begin their separate final collapses.
 
 ## Summoning rule — Stage 3 only
 
@@ -113,6 +124,8 @@ Black half may summon 1 random regular enemy every 2 seconds.
 White half may summon 1 random regular enemy every 2 seconds.
 ```
 
+A half that has reached zero health first remains combat-active and may continue its Stage-3 summoning behavior until both final health bars are zero.
+
 Required safeguards:
 
 ```text
@@ -121,7 +134,7 @@ Do not accumulate unlimited enemies.
 Do not spawn enemies directly on the player.
 Use spawn VFX and activation delay.
 Summoned enemies cannot attack before the spawn VFX completes.
-Summon timers stop immediately when the encounter ends.
+Summon timers stop immediately when both final health bars reach zero and the encounter ends.
 ```
 
 ## Split-form laser rule
@@ -192,11 +205,14 @@ Coordinated bullet-hell patterns
 Random regular-enemy summoning every 2 seconds while below the shared cap
 ```
 
+A zero-health half keeps this complete attack set active until the other half also reaches zero.
+
 ## Final death animation
 
 When both Stage-3 final health bars reach zero:
 
 ```text
+Both halves stop attacking.
 The black half collapses separately.
 The white half collapses separately.
 They do not rejoin before dying.
@@ -241,9 +257,12 @@ Stage 2 ends only after both Stage-2 half health bars are depleted.
 No enemies are summoned during Stage 2.
 Both halves return alive for Stage 3.
 Stage 3 gives each half its own final health bar.
-A Stage-3 half reaching zero first does not perform its final collapse.
+A Stage-3 half reaching zero first remains fully combat-active.
+A zero-health Stage-3 half continues attacking and summoning until the other half reaches zero.
+Additional attacks against a zero-health Stage-3 half do no damage and cause no stagger or knockback.
 The final defeat waits until both Stage-3 health bars reach zero.
 Summon timers begin only after Stage 3 becomes active.
+Summon timers stop only when both final health bars reach zero.
 Each half can perform the sweeping laser attack.
 Each half can perform the fast direct laser attack.
 Each half can attack with its remaining leg.
