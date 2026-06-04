@@ -9,10 +9,10 @@ The project is still a prototype / vertical-slice work in progress. The goal is 
 ## Current status
 
 ```text
-Current development stage: 10 / 36
-Current latest clean core: V125
-Current latest feature: Guardian Spawn VFX
-Current next planned stage: Stage 11 — Battery encounters hardening
+Current development stage: 11 / 36
+Current latest clean core: V126
+Current latest feature: Battery encounters hardening
+Current next planned stage: Stage 12 — Mini-boss 1 design: Game Boy guardian
 ```
 
 ---
@@ -179,18 +179,27 @@ CART
 
 Protected collectibles can spawn guardian enemies.
 
-Current V125 behavior:
+Current V126 behavior:
 
 ```text
 1. Player approaches a protected collectible.
 2. A teleport/smoke/ring VFX appears on the floor.
 3. Guardians are created hidden and inactive.
 4. A short anticipation delay runs.
-5. Guardians move into position and become active.
+5. Guardians move into fair resolved positions and become active.
 6. A final flash appears.
 ```
 
-This prevents enemies from popping into existence unfairly and makes secret collectible encounters feel intentional.
+Battery guardian encounters are now harder and fairer:
+
+```text
+- Default encounter pressure is higher.
+- Guardians avoid spawning too close to the player.
+- Guardians avoid spawning too close to the collectible.
+- Guardians avoid overlapping each other.
+- If the first spawn point is bad, alternate angles/distances are tried.
+- If all candidates are imperfect, the best scored fallback is used.
+```
 
 ---
 
@@ -237,7 +246,7 @@ The current ending cinematic is procedural and temporary. It still needs final a
 
 ## Current roadmap
 
-The full roadmap is 36 stages. The project is currently around Stage 10.
+The full roadmap is 36 stages. The project is currently around Stage 11.
 
 Completed or partially completed:
 
@@ -252,12 +261,12 @@ Completed or partially completed:
 8. Four procedural ending variants
 9. Secret collectible advertising guard
 10. Guardian Spawn VFX
+11. Battery encounters hardening
 ```
 
 Next major stages:
 
 ```text
-11. Battery encounters hardening
 12. Mini-boss 1 design — guards the Game Boy
 13. Mini-boss 2 design — pre-boss encounter
 14. Mini-boss 3 design — random late mini-boss that drops Game Cartridge
@@ -378,12 +387,12 @@ Unity .meta files are required for references to stay stable.
 ## Current priority
 
 ```text
-Stage 11 — Battery encounters hardening
+Stage 12 — Mini-boss 1 design: Game Boy guardian
 ```
 
 Goal:
 
-- Make each battery encounter harder but fair.
-- Ensure guardians spawn once.
-- Ensure enemies do not spawn unfairly on top of the player.
-- Use the V125 spawn VFX as the baseline for all protected collectible encounters.
+- Define the first mini-boss that protects the Game Boy.
+- Keep its location decided later by explicit placement, not by assumption.
+- Create a readable design before implementation.
+- Preserve the secret collectible rule: no objective marker, no checklist, no advertising.
