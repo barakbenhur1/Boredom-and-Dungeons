@@ -39,17 +39,19 @@ The black half and white half become separate active enemies.
 Each half receives its own visible Stage-2 health bar.
 ```
 
-Stage-2 defeat rule:
+Stage-2 knockout rule:
 
 ```text
 If one half loses all of its Stage-2 health,
-that half dies / collapses for the remainder of Stage 2.
+that half becomes knocked out / unconscious for the remainder of Stage 2.
+It collapses temporarily and stops moving, attacking, firing, summoning, and dealing contact damage.
+It is not permanently dead.
 The surviving half continues fighting alone.
 ```
 
-Stage 2 ends only after both halves have lost all of their Stage-2 health.
+Stage 2 ends only after both halves have lost all of their Stage-2 health and both are knocked out.
 
-Then Stage 3 begins and both halves return for the final phase.
+Then Stage 3 begins and both halves return alive for the final phase.
 
 Important:
 
@@ -78,12 +80,13 @@ The final death event is delayed until both separate final health bars reach zer
 If one half reaches zero first:
 
 ```text
-It remains alive in a critical state.
+It remains visibly alive in a critical state.
 It does not perform its final collapse yet.
+It cannot trigger victory or remove the exit barrier by itself.
 The encounter continues until the other half also reaches zero.
 ```
 
-The exact behavior of a zero-health critical half during this waiting period can be tuned later, but it must remain visibly alive until both final health bars are empty.
+The exact combat behavior of a zero-health critical half during this waiting period can be tuned later, but it must not complete its final death animation until both final health bars are empty.
 
 The complete boss encounter ends only when:
 
@@ -201,6 +204,8 @@ They do not rejoin before dying.
 
 The two collapses should be visually coordinated as one final defeat moment, while remaining separate bodies.
 
+Neither half performs its final collapse before both final health bars have reached zero.
+
 ## Exit barrier rule
 
 The final-room exit is blocked by a visible magical barrier while the boss encounter is active.
@@ -211,13 +216,14 @@ Before full defeat:
 The magical barrier remains solid and cannot be crossed.
 It does not disappear when only one half reaches zero.
 It does not disappear during Stage 2.
+It does not disappear while either Stage-3 final health bar is above zero.
 ```
 
 After both halves have completed their separate final collapse:
 
 ```text
-The magical barrier dissolves / disappears with a dedicated animation.
-The effect should visibly weaken, break apart, fade, or disperse.
+The magical barrier disappears with a dedicated animation.
+The effect visibly weakens, cracks, breaks apart, fades, dissolves, or disperses.
 The player receives clear visual and audio confirmation.
 The exit becomes traversable only after the barrier animation completes.
 ```
@@ -229,7 +235,8 @@ Stage 1 uses one joined health bar.
 No enemies are summoned during Stage 1.
 The boss separates at 60% joined health.
 Stage 2 gives each half its own health bar.
-A half reaching zero in Stage 2 collapses for the remainder of that stage.
+A half reaching zero in Stage 2 becomes knocked out and stops fighting for the remainder of that stage.
+A knocked-out Stage-2 half is not treated as permanently dead.
 Stage 2 ends only after both Stage-2 half health bars are depleted.
 No enemies are summoned during Stage 2.
 Both halves return alive for Stage 3.
