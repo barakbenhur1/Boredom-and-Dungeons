@@ -29,6 +29,7 @@ namespace BoredomAndDungeons
         private BDHealth health;
         private BDKnockbackReceiver knockback;
         private BDEnemyTacticalCommand tacticalCommand;
+        private BDEnemySwordWeaponVisual weaponVisual;
 
         private State state = State.Idle;
         private float cooldown;
@@ -42,6 +43,11 @@ namespace BoredomAndDungeons
             health = GetComponent<BDHealth>();
             knockback = GetComponent<BDKnockbackReceiver>();
             tacticalCommand = GetComponent<BDEnemyTacticalCommand>();
+            weaponVisual = GetComponent<BDEnemySwordWeaponVisual>();
+
+            if (weaponVisual == null)
+                weaponVisual = gameObject.AddComponent<BDEnemySwordWeaponVisual>();
+
             health.Died += OnDied;
             circleSign = Random.value < 0.5f ? -1f : 1f;
         }
@@ -81,10 +87,10 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
-
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
-                return;TickCloseAttacker();
+                return;
+
+            TickCloseAttacker();
         }
 
         private void TickCloseAttacker()
@@ -142,9 +148,13 @@ namespace BoredomAndDungeons
             if (cooldown > 0f || distance > attackRange)
                 return;
 
+            ShowAttackTelegraphBeforeDamage(false);
+
+            if (weaponVisual != null)
+                weaponVisual.PlayDoubleSlash();
+
             BDHealth targetHealth = target.GetComponent<BDHealth>();
             if (targetHealth != null)
-                ShowAttackTelegraphBeforeDamage(false);
                 targetHealth.ApplyDamage(attackDamage);
 
             BDHorseDamageUtility.TryDamageHorseNear(
@@ -182,6 +192,7 @@ namespace BoredomAndDungeons
             if (health != null)
                 health.Died -= OnDied;
         }
+
         private void ShowAttackTelegraphBeforeDamage(bool ranged)
         {
             BDEnemyAttackTelegraph telegraph = GetComponent<BDEnemyAttackTelegraph>();
@@ -205,7 +216,6 @@ namespace BoredomAndDungeons
                 telegraph.ShowMelee(direction);
         }
 
-
         private Vector3 FilterMoveByHitStagger(Vector3 move)
         {
             if (hitStaggerReceiver == null)
@@ -213,7 +223,5 @@ namespace BoredomAndDungeons
 
             return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
         }
-
-
     }
 }
