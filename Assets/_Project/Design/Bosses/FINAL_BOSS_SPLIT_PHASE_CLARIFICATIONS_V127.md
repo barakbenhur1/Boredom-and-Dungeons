@@ -2,7 +2,7 @@
 
 ## Status
 
-This document is an authoritative clarification for:
+This document is the authoritative clarification for:
 
 ```text
 Assets/_Project/Design/Bosses/FINAL_BOSS_BLACK_WHITE_COLOSSUS_V127.md
@@ -10,12 +10,87 @@ Assets/_Project/Design/Bosses/FINAL_BOSS_BLACK_WHITE_COLOSSUS_V127.md
 
 These rules override any ambiguous wording in the earlier final-boss design document.
 
-## Phase structure
+## Final phase structure
 
 ```text
-Stage 1: joined form
-Stage 2: joined-to-split transition at 60% health
-Stage 3: fully separated black and white halves
+Stage 1: joined black/white form
+Stage 2: separation phase beginning at 60% joined health
+Stage 3: final fully separated phase
+```
+
+## Stage 1 — Joined form
+
+```text
+The boss is one joined body.
+It uses the joined-form attack set.
+There is one joined boss health bar.
+No regular enemies are summoned.
+```
+
+When the joined health reaches 60%, Stage 2 begins.
+
+## Stage 2 — Separation phase with independent phase health
+
+At the start of Stage 2:
+
+```text
+The boss performs the full split animation.
+The black half and white half become separate active enemies.
+Each half receives its own visible Stage-2 health bar.
+```
+
+Stage-2 defeat rule:
+
+```text
+If one half loses all of its Stage-2 health,
+that half dies / collapses for the remainder of Stage 2.
+The surviving half continues fighting alone.
+```
+
+Stage 2 ends only after both halves have lost all of their Stage-2 health.
+
+Then Stage 3 begins and both halves return for the final phase.
+
+Important:
+
+```text
+No regular enemies are summoned during Stage 2.
+```
+
+## Stage 3 — Final split phase with linked final defeat
+
+At the beginning of Stage 3:
+
+```text
+Both the black half and white half are alive again.
+Each half has its own separate final health bar.
+Both halves use the full Stage-3 attack set.
+Summoning becomes enabled.
+```
+
+Final linked-death rule:
+
+```text
+The two halves do not permanently die one at a time during Stage 3.
+The final death event is delayed until both separate final health bars reach zero.
+```
+
+If one half reaches zero first:
+
+```text
+It remains alive in a critical state.
+It does not perform its final collapse yet.
+The encounter continues until the other half also reaches zero.
+```
+
+The exact behavior of a zero-health critical half during this waiting period can be tuned later, but it must remain visibly alive until both final health bars are empty.
+
+The complete boss encounter ends only when:
+
+```text
+Black final health == 0
+AND
+White final health == 0
 ```
 
 ## Summoning rule — Stage 3 only
@@ -27,8 +102,6 @@ Stage 1: no regular-enemy summoning
 Stage 2: no regular-enemy summoning
 Stage 3: summoning enabled
 ```
-
-The separation transition in Stage 2 must finish before either half can begin its summon timer.
 
 In Stage 3:
 
@@ -45,7 +118,7 @@ Do not accumulate unlimited enemies.
 Do not spawn enemies directly on the player.
 Use spawn VFX and activation delay.
 Summoned enemies cannot attack before the spawn VFX completes.
-Summon timers stop immediately when the relevant half dies or the encounter ends.
+Summon timers stop immediately when the encounter ends.
 ```
 
 ## Split-form laser rule
@@ -116,11 +189,53 @@ Coordinated bullet-hell patterns
 Random regular-enemy summoning every 2 seconds while below the shared cap
 ```
 
+## Final death animation
+
+When both Stage-3 final health bars reach zero:
+
+```text
+The black half collapses separately.
+The white half collapses separately.
+They do not rejoin before dying.
+```
+
+The two collapses should be visually coordinated as one final defeat moment, while remaining separate bodies.
+
+## Exit barrier rule
+
+The final-room exit is blocked by a visible magical barrier while the boss encounter is active.
+
+Before full defeat:
+
+```text
+The magical barrier remains solid and cannot be crossed.
+It does not disappear when only one half reaches zero.
+It does not disappear during Stage 2.
+```
+
+After both halves have completed their separate final collapse:
+
+```text
+The magical barrier dissolves / disappears with a dedicated animation.
+The effect should visibly weaken, break apart, fade, or disperse.
+The player receives clear visual and audio confirmation.
+The exit becomes traversable only after the barrier animation completes.
+```
+
 ## QA checklist
 
 ```text
+Stage 1 uses one joined health bar.
 No enemies are summoned during Stage 1.
-No enemies are summoned during the Stage 2 separation transition.
+The boss separates at 60% joined health.
+Stage 2 gives each half its own health bar.
+A half reaching zero in Stage 2 collapses for the remainder of that stage.
+Stage 2 ends only after both Stage-2 half health bars are depleted.
+No enemies are summoned during Stage 2.
+Both halves return alive for Stage 3.
+Stage 3 gives each half its own final health bar.
+A Stage-3 half reaching zero first does not perform its final collapse.
+The final defeat waits until both Stage-3 health bars reach zero.
 Summon timers begin only after Stage 3 becomes active.
 Each half can perform the sweeping laser attack.
 Each half can perform the fast direct laser attack.
@@ -129,5 +244,8 @@ Each half can attack with its remaining hand.
 Each hand strike has a visible telegraph and matching hit volume.
 Crossing laser patterns always leave a readable survival route.
 The shared summon cap prevents unlimited enemy buildup.
-Summons stop when the encounter ends.
+Black and white halves collapse separately after both final bars reach zero.
+The magical exit barrier remains until both collapses complete.
+The magical barrier disappears with an animation.
+The exit cannot be crossed before the barrier animation finishes.
 ```
