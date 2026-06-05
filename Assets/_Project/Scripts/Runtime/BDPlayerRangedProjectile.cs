@@ -12,6 +12,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float hitStopDuration = 0.025f;
         [SerializeField] private float hitStopTimeScale = 0.45f;
         [SerializeField] private float rangedHitStaggerDuration = 0.055f;
+        [SerializeField] private float rangedKnockbackLockDuration = 0.08f;
 
         private static readonly RaycastHit[] CastHits = new RaycastHit[32];
         private static readonly Collider[] AreaHits = new Collider[32];
@@ -166,12 +167,50 @@ namespace BoredomAndDungeons
             RequestEnemyHitStagger(health, rangedHitStaggerDuration);
             RequestEnemyRangedHitFlash(health);
 
-            BDKnockbackReceiver receiver = health.GetComponent<BDKnockbackReceiver>();
-            if (receiver == null && health.GetComponent<CharacterController>() != null)
-                receiver = health.gameObject.AddComponent<BDKnockbackReceiver>();
+            // BD PROJECTILE KNOCKBACK POLICY:
+            // Damage always applies. Knockback applies only when the target profile allows it.
+            if (BDCombatantProfile.CanReceivePlayerProjectileKnockback(health))
+            {
+                Vector3 knockDirection = direction;
+                knockDirection.y = 0f;
 
-            if (receiver != null)
-                receiver.AddKnockback(health.transform.position - transform.position, knockback);
+                if (knockDirection.sqrMagnitude < 0.001f)
+                {
+                    knockDirection = health.transform.position - transform.position;
+                    knockDirection.y = 0f;
+                }
+
+                BDKnockbackReceiver receiver =
+                    health.GetComponent<BDKnockbackReceiver>();
+
+                if (receiver == null &&
+                    health.GetComponent<CharacterController>() != null)
+                {
+                    receiver =
+                        health.gameObject.AddComponent<BDKnockbackReceiver>();
+                }
+
+                if (receiver != null)
+                {
+                    receiver.AddKnockback(
+                        knockDirection,
+                        knockback,
+                        rangedKnockbackLockDuration
+                    );
+                }
+                else
+                {
+                    Rigidbody body = health.GetComponent<Rigidbody>();
+
+                    if (body != null && !body.isKinematic)
+                    {
+                        body.AddForce(
+                            knockDirection.normalized * knockback,
+                            ForceMode.VelocityChange
+                        );
+                    }
+                }
+            }
 
             BDGameFeelEvents.RequestCameraShake(hitCameraShakeStrength, hitCameraShakeDuration);
             BDHitStop.Request(hitStopDuration, hitStopTimeScale);

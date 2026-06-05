@@ -54,6 +54,9 @@ namespace BoredomAndDungeons
 
         private CharacterController characterController;
 
+        // BD BOOST API: movement multiplier
+        private float boostMoveSpeedMultiplier = 1f;
+
         private float verticalVelocity;
         private Vector3 dashVelocity;
         private Vector3 smoothedHorizontalVelocity;
@@ -106,6 +109,13 @@ namespace BoredomAndDungeons
             }
         }
         public bool IsDashing => dashTimer > 0f;
+        public float EffectiveMoveSpeed =>
+            Mathf.Max(0.1f, moveSpeed * boostMoveSpeedMultiplier);
+
+        public void SetBoostMoveSpeedMultiplier(float multiplier)
+        {
+            boostMoveSpeedMultiplier = Mathf.Max(0.1f, multiplier);
+        }
 
         private void Awake()
         {
@@ -711,7 +721,7 @@ namespace BoredomAndDungeons
             Vector3 desiredVelocity = Vector3.zero;
 
             if (wantsMove && desiredMoveDirection.sqrMagnitude > 0.001f)
-                desiredVelocity = desiredMoveDirection.normalized * moveSpeed;
+                desiredVelocity = desiredMoveDirection.normalized * EffectiveMoveSpeed;
 
             float rate = desiredVelocity.sqrMagnitude > smoothedHorizontalVelocity.sqrMagnitude
                 ? moveAcceleration

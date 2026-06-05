@@ -12,8 +12,16 @@ namespace BoredomAndDungeons
         [SerializeField] private float playerHealFractionOfMax = 0.40f;
         [SerializeField] private float spawnHeight = 0.45f;
 
+        [Header("BD BOOST DROPS")]
+        [Range(0f, 1f)]
+        [SerializeField] private float regularEnemyBoostDropChance = 0.02f;
+        [Range(0f, 1f)]
+        [SerializeField] private float miniBossBoostDropChance = 0.12f;
+        [SerializeField] private float boostSpawnHeight = 0.70f;
+
         private BDHealth health;
         private bool dropped;
+        private bool boostDropResolved;
 
         private void Awake()
         {
@@ -26,6 +34,7 @@ namespace BoredomAndDungeons
         private void OnDied(BDHealth deadHealth)
         {
             TryDropHeal();
+            TryDropBoost(deadHealth);
         }
 
         private void TryDropHeal()
@@ -42,6 +51,61 @@ namespace BoredomAndDungeons
             spawnPosition.y = spawnHeight;
 
             BDPlayerHealingPickup.Spawn(spawnPosition, playerHealFractionOfMax);
+        }
+
+
+        private void TryDropBoost(BDHealth deadHealth)
+        {
+            if (boostDropResolved)
+                return;
+
+            boostDropResolved = true;
+
+            BDCombatantRank rank =
+                BDCombatantProfile.ResolveRank(deadHealth);
+
+            if (rank == BDCombatantRank.Boss)
+                return;
+
+            float dropChance =
+                rank == BDCombatantRank.MiniBoss
+                    ? miniBossBoostDropChance
+                    : regularEnemyBoostDropChance;
+
+            if (Random.value > Mathf.Clamp01(dropChance))
+                return;
+
+            Transform player = BDTargetFinder.FindPlayer();
+
+            if (player == null)
+            {
+                BDPlayerMarker marker =
+                    FindFirstObjectByType<BDPlayerMarker>();
+
+                if (marker != null)
+                    player = marker.transform;
+            }
+
+            if (player == null)
+                return;
+
+            BDPlayerBoostState boostState =
+                player.GetComponent<BDPlayerBoostState>();
+
+            if (boostState == null)
+            {
+                boostState =
+                    player.gameObject.AddComponent<BDPlayerBoostState>();
+            }
+
+            if (!boostState.TryChooseRandomAvailable(
+                    out BDPlayerBoostType boostType))
+                return;
+
+            Vector3 spawnPosition = transform.position;
+            spawnPosition.y = boostSpawnHeight;
+
+            BDPlayerBoostPickup.Spawn(spawnPosition, boostType);
         }
 
 

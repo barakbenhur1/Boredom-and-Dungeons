@@ -67,12 +67,26 @@ namespace BoredomAndDungeons
         private string lastCombatAction = "none";
         private BDHorseController cachedMountedHorseCheck;
         private float nextMountedHorseResolveAt;
+
+        // BD BOOST API: runtime modifiers
+        private int boostAdditionalMagazineCapacity;
+        private float boostReloadDurationReduction;
+        private float boostWeaponDamageMultiplier = 1f;
+        private float boostMinimumReloadDuration = 1f;
         private static readonly Collider[] MeleeHitBuffer = new Collider[64];
         private static readonly BDHealth[] MeleeHealthBuffer = new BDHealth[32];
         private static readonly Collider[] MeleeAssistBuffer = new Collider[32];
 
         public int RangedAmmo => rangedAmmo;
-        public int RangedMagazineSize => Mathf.Max(1, rangedMagazineSize);
+        public int RangedMagazineSize =>
+            Mathf.Max(1, rangedMagazineSize + boostAdditionalMagazineCapacity);
+        public float EffectiveRangedReloadDuration =>
+            Mathf.Max(
+                boostMinimumReloadDuration,
+                rangedReloadDuration - boostReloadDurationReduction
+            );
+        public float WeaponDamageMultiplier =>
+            Mathf.Max(0.01f, boostWeaponDamageMultiplier);
         public bool IsReloading => reloading;
         public float RangedReloadRemaining => reloading ? Mathf.Max(0f, reloadEndsAt - Time.time) : 0f;
         public float RangedReloadProgress01
@@ -82,14 +96,14 @@ namespace BoredomAndDungeons
                 if (!reloading)
                     return 1f;
 
-                float duration = Mathf.Max(0.1f, rangedReloadDuration);
+                float duration = EffectiveRangedReloadDuration;
                 return Mathf.Clamp01(1f - ((reloadEndsAt - Time.time) / duration));
             }
         }
 
         private void Awake()
         {
-            rangedAmmo = Mathf.Max(1, rangedMagazineSize);
+            rangedAmmo = RangedMagazineSize;
         }
 
         private void Update()
@@ -142,7 +156,7 @@ namespace BoredomAndDungeons
             if (Time.time < reloadEndsAt)
                 return;
 
-            rangedAmmo = Mathf.Max(1, rangedMagazineSize);
+            rangedAmmo = RangedMagazineSize;
             reloading = false;
             lastCombatAction = "ranged reload complete";
         }
@@ -156,7 +170,7 @@ namespace BoredomAndDungeons
                 return;
 
             reloading = true;
-            reloadEndsAt = Time.time + Mathf.Max(0.1f, rangedReloadDuration);
+            reloadEndsAt = Time.time + EffectiveRangedReloadDuration;
             lastCombatAction = "ranged reload";
         }
 
@@ -193,6 +207,7 @@ namespace BoredomAndDungeons
 
             int hitCount = 0;
             int uniqueHealthCount = 0;
+            float effectiveDamage = damage * WeaponDamageMultiplier;
 
             for (int i = 0; i < overlapCount; i++)
             {
@@ -220,7 +235,7 @@ namespace BoredomAndDungeons
                     MeleeHealthBuffer[uniqueHealthCount++] = health;
 
                 bool heavyHit = label == "heavy";
-                health.ApplyDamage(damage);
+                health.ApplyDamage(effectiveDamage);
                 RequestEnemyHitStagger(health, heavyHit ? heavyHitStaggerDuration : lightHitStaggerDuration);
                 RequestEnemyHitFlash(health, heavyHit);
                 TriggerMeleeHitFeedback(health, hit, feedbackCenter, aim, heavyHit);
@@ -486,7 +501,7 @@ namespace BoredomAndDungeons
             projectileLogic.Configure(
                 direction,
                 rangedProjectileSpeed,
-                rangedDamage,
+                rangedDamage * WeaponDamageMultiplier,
                 rangedProjectileLifetime,
                 rangedProjectileHitRadius,
                 rangedProjectileKnockback,
@@ -711,6 +726,52 @@ namespace BoredomAndDungeons
             return material;
         }
 
+        public void ApplyBoostModifiers(
+            int additionalMagazineCapacity,
+            float reloadDurationReduction,
+            float weaponDamageMultiplier,
+            float minimumReloadDuration,
+            bool grantAddedAmmo)
+        {
+            int previousMagazineSize = RangedMagazineSize;
+
+            boostAdditionalMagazineCapacity =
+                Mathf.Max(0, additionalMagazineCapacity);
+            boostReloadDurationReduction =
+                Mathf.Max(0f, reloadDurationReduction);
+            boostWeaponDamageMultiplier =
+                Mathf.Max(0.01f, weaponDamageMultiplier);
+            boostMinimumReloadDuration =
+                Mathf.Max(0.1f, minimumReloadDuration);
+
+            int updatedMagazineSize = RangedMagazineSize;
+
+            if (grantAddedAmmo &&
+                updatedMagazineSize > previousMagazineSize)
+            {
+                int gainedCapacity =
+                    updatedMagazineSize - previousMagazineSize;
+
+                rangedAmmo = Mathf.Min(
+                    updatedMagazineSize,
+                    rangedAmmo + gainedCapacity
+                );
+            }
+            else
+            {
+                rangedAmmo =
+                    Mathf.Min(rangedAmmo, updatedMagazineSize);
+            }
+
+            if (reloading)
+            {
+                reloadEndsAt = Mathf.Min(
+                    reloadEndsAt,
+                    Time.time + EffectiveRangedReloadDuration
+                );
+            }
+        }
+
         private bool ReadLightAttackPressed()
         {
 #if ENABLE_INPUT_SYSTEM
@@ -774,7 +835,7 @@ namespace BoredomAndDungeons
 
             GUI.Box(new Rect(12, 210, 440, 118), "B&D Combat");
             GUI.Label(new Rect(24, 240, 410, 22), $"Last: {lastCombatAction}");
-            GUI.Label(new Rect(24, 262, 410, 22), $"Ranged ammo: {rangedAmmo} / {rangedMagazineSize}");
+            GUI.Label(new Rect(24, 262, 410, 22), $"Ranged ammo: {rangedAmmo} / {RangedMagazineSize}");
             GUI.Label(new Rect(24, 284, 410, 22), $"Reloading: {reloading}");
             GUI.Label(new Rect(24, 306, 410, 22), $"Aim: {GetCombatAimDirection().x:0.00}, {GetCombatAimDirection().z:0.00}");
         }
