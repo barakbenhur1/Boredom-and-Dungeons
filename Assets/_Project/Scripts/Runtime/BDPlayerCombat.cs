@@ -58,6 +58,8 @@ namespace BoredomAndDungeons
         [Header("Charged Ranged Shot")]
         // BD CHARGED SHOT SYSTEM
         [SerializeField] private bool enableChargedShot = true;
+        // BD TAP-VS-HOLD CHARGED SHOT FIX
+        [SerializeField] private float chargedShotHoldThreshold = 0.22f;
         [SerializeField] private float chargedShotBaseDuration = 0.90f;
         [SerializeField] private float chargedShotSecondsPerAdditionalAmmo = 0.45f;
         [SerializeField] private float chargedShotMaximumDuration = 3.20f;
@@ -93,6 +95,8 @@ namespace BoredomAndDungeons
         private float chargedShotRequiredDuration;
         private int chargedShotReservedAmmo;
         private BDChargedShotChargeVisual chargedShotChargeVisual;
+        private bool rangedPressPending;
+        private float rangedPressStartedAtUnscaled;
         private static readonly Collider[] MeleeHitBuffer = new Collider[64];
         private static readonly BDHealth[] MeleeHealthBuffer = new BDHealth[32];
         private static readonly Collider[] MeleeAssistBuffer = new Collider[32];
@@ -148,6 +152,7 @@ namespace BoredomAndDungeons
 
         private void OnDisable()
         {
+            ClearPendingRangedPress();
             CancelChargedShot();
         }
 
@@ -535,6 +540,12 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            if (rangedPressPending)
+            {
+                TickPendingRangedPress();
+                return;
+            }
+
             if (!ReadRangedAttackPressed())
                 return;
 
@@ -550,15 +561,61 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            // With one projectile left, charging has no purpose.
-            // The last projectile fires immediately.
             if (rangedAmmo == 1)
             {
                 TryRangedAttack();
                 return;
             }
 
+            BeginPendingRangedPress();
+        }
+
+
+        private void BeginPendingRangedPress()
+        {
+            rangedPressPending = true;
+            rangedPressStartedAtUnscaled = Time.unscaledTime;
+            lastCombatAction = "ranged press pending";
+        }
+
+        private void TickPendingRangedPress()
+        {
+            if (!rangedPressPending)
+                return;
+
+            if (reloading || rangedAmmo <= 0)
+            {
+                ClearPendingRangedPress();
+                BeginReloadIfNeeded();
+                return;
+            }
+
+            float heldDuration =
+                Time.unscaledTime -
+                rangedPressStartedAtUnscaled;
+
+            if (ReadRangedAttackReleased() ||
+                !ReadRangedAttackHeld())
+            {
+                ClearPendingRangedPress();
+                TryRangedAttack();
+                return;
+            }
+
+            if (heldDuration <
+                Mathf.Max(0.05f, chargedShotHoldThreshold))
+            {
+                return;
+            }
+
+            ClearPendingRangedPress();
             BeginChargedShot();
+        }
+
+        private void ClearPendingRangedPress()
+        {
+            rangedPressPending = false;
+            rangedPressStartedAtUnscaled = 0f;
         }
 
         private void BeginChargedShot()
@@ -641,12 +698,8 @@ namespace BoredomAndDungeons
 
         private void FireChargedShot(Vector3 direction)
         {
-            int ammoToConsume =
-                Mathf.Clamp(
-                    chargedShotReservedAmmo,
-                    1,
-                    rangedAmmo
-                );
+            // Consume every projectile currently left.
+            int ammoToConsume = Mathf.Max(0, rangedAmmo);
 
             if (ammoToConsume <= 0)
             {
@@ -802,8 +855,19 @@ namespace BoredomAndDungeons
                 $"charged shot x{ammoToConsume} " +
                 $"ammo={rangedAmmo}";
 
-            if (rangedAmmo <= 0)
-                BeginReloadIfNeeded();
+            StartReloadImmediatelyAfterChargedShot();
+        }
+
+
+        private void StartReloadImmediatelyAfterChargedShot()
+        {
+            rangedAmmo = 0;
+            reloading = true;
+            reloadEndsAt =
+                Time.time + EffectiveRangedReloadDuration;
+
+            lastCombatAction =
+                "charged shot fired; automatic reload";
         }
 
         private void CancelChargedShot()

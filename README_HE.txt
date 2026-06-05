@@ -1,147 +1,86 @@
-Boredom & Dungeons — Charged Shot + Forward Dodge Visual Fix
+Boredom & Dungeons — Tap/Hold, Reload, Minimap, Stage 17 Fix
 ================================================================
 
-1. Charged Shot
----------------
-כפתור הירי נשאר Q.
+מה תוקן
+-------
+
+1. לחיצה קצרה לעומת לחיצה ארוכה
+--------------------------------
+כאשר יש 2 כדורים או יותר:
+
+- שחרור לפני 0.22 שניות:
+  נורת ירייה רגילה אחת.
+
+- המשך החזקה אחרי 0.22 שניות:
+  מתחילה טעינת הירייה הגדולה.
+
+- שחרור לאחר שהטעינה התחילה אבל לפני הסיום:
+  הירייה מתבטלת ללא צריכת תחמושת.
+
+- השלמת הטעינה:
+  נורה הקליע הגדול ומשתמש בכל הכדורים שנותרו.
 
 כאשר נשאר כדור אחד:
-- לחיצה על Q יורה מיד.
-- אין טעינה.
+- הוא נורה מיד.
+- אין השהיה ואין טעינה.
 
-כאשר נשארים 2 כדורים או יותר:
-- לחיצה והחזקה מתחילה טעינה.
-- אם משחררים לפני סיום הטעינה, הירייה מתבטלת.
-- לא נצרכת תחמושת במקרה של ביטול.
-- בסיום הטעינה הירייה נורת אוטומטית.
-- היא צורכת את כל הכדורים שנשמרו בתחילת הטעינה.
-- הנזק הוא:
-  נזק כדור רגיל × מספר הכדורים שנצרכו.
-- Weapon Damage Boost מוחל לפני הכפלת מספר הכדורים.
+2. Reload אוטומטי
+-----------------
+אחרי הירייה הטעונה:
+- המחסנית מתרוקנת.
+- Reload מתחיל מיד.
+- אין צורך ללחוץ שוב על Q.
 
-זמני טעינה ברירת מחדל
---------------------
-2 כדורים: 0.90 שניות
-3 כדורים: 1.35 שניות
-4 כדורים: 1.80 שניות
-5 כדורים: 2.25 שניות
-6 כדורים: 2.70 שניות
+3. מיני-מפה
+------------
+נוסף BDMinimapPerspectiveAlignment:
 
-הזמן מוגבל ל-3.20 שניות כברירת מחדל.
+- מיישר את החלק העליון של המיני-מפה לחלק העליון של
+  נקודת המבט במצלמת המשחק.
+- עוקב אחרי השחקן ב-X/Z.
+- מתקן את הסיבוב ב-LateUpdate.
+- מזהה מצלמה בשם MinimapCamera, מצלמת RenderTexture,
+  או מצלמת Orthographic עם viewport קטן.
 
-חיווי ויזואלי
--------------
-בזמן הטעינה:
-- כדור אנרגיה גדל מול השחקן.
-- שתי טבעות חלקיקים מסתובבות.
-- מהירות הסיבוב והאור מתחזקים עם ההתקדמות.
-- צבע האפקט משתנה לפי מספר הכדורים.
+מומלץ לקרוא למצלמת המפה:
+MinimapCamera
 
-בזמן הירי:
-- הקליע גדול יותר ככל שהוא צורך יותר כדורים.
-- הילה כפולה מסתובבת סביב הקליע.
-- נוסף Trail חזק יותר.
-- Muzzle burst גדול יותר.
-- Impact burst גדול יותר.
-- Knockback, Hit Radius ו-Camera Shake מתחזקים בהדרגה.
+4. Stage 17
+-----------
+תוקן:
 
-ביטול:
-- אם Q משתחרר לפני סיום הטעינה, מופיע אפקט התכווצות קצר.
-- לא נורה קליע.
-- לא נצרכת תחמושת.
+Environment.TickCount
 
-2. Forward Dodge Ground Effect
-------------------------------
-אפקט ההתחמקות קדימה נוצר כעת 0.82 יחידות מאחורי הדמות.
-מרחק ההתחמקות, המהירות וה-i-frames אינם משתנים.
-ההזזה חלה רק על התחמקות קדימה.
+ל:
+
+System.Environment.TickCount
 
 התקנה
 -----
 מתוך תיקיית Boredom-and-Dungeons:
 
-unzip -o ~/Downloads/Boredom-and-Dungeons_Charged_Shot_And_Dodge_Visual.zip -d .
-python3 tools/apply_charged_shot_and_dodge_visual.py
+unzip -o ~/Downloads/Boredom-and-Dungeons_Tap_Charge_Reload_Minimap_Stage17_Fix.zip -d .
+python3 tools/apply_tap_charge_reload_minimap_stage17_fix.py
 
 לאחר מכן חזור ל-Unity והמתן לסיום הקומפילציה.
 
-קבצים חדשים
-------------
-Assets/_Project/Scripts/Runtime/Combat/BDChargedShotVisuals.cs
-Assets/_Project/Scripts/Runtime/Combat/BDChargedShotVisuals.cs.meta
+בדיקות
+------
+1. Tap מהיר עם 3 כדורים יורה ירייה רגילה אחת.
+2. החזקה מעבר ל-0.22 שניות מתחילה טעינה.
+3. שחרור באמצע הטעינה מבטל בלי לצרוך כדור.
+4. השלמת הטעינה צורכת את כל הכדורים.
+5. Reload מתחיל מיד בלי לחיצה נוספת.
+6. כדור אחרון נורה מיד.
+7. המיני-מפה מיושרת לנקודת המבט של המשחק.
+8. שגיאת TickCount נעלמה.
+9. אין Compiler Errors חדשים.
 
-קבצים שמתעדכנים
----------------
-Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs
-Assets/_Project/Scripts/Runtime/BDPlayerController.cs
-
-גיבוי
------
-הסקריפט שומר גיבוי של שני הקבצים המקוריים בתוך:
-
-/tmp/BoredomAndDungeons_charged_shot_backup_YYYYMMDD_HHMMSS
-
-בדיקות Unity
-------------
-1. מחסנית עם כדור אחד:
-   Q יורה מיד.
-
-2. מחסנית עם 2+:
-   החזק Q ושחרר מוקדם.
-   לא אמורה להיירות ירייה ולא אמורה להיצרך תחמושת.
-
-3. החזק Q עד סוף הטעינה:
-   נורה קליע אחד ונצרכת כל התחמושת שנשמרה.
-
-4. בדוק נזק:
-   3 כדורים צריכים לעשות נזק כולל של 3 כדורים רגילים.
-
-5. אסוף Extra Ammo Boost:
-   זמן הטעינה והחיווי צריכים לגדול בהתאם לכמות שנותרה.
-
-6. אסוף Weapon Damage Boost:
-   הנזק של כל כדור בחישוב המצטבר צריך לעלות.
-
-7. בדוק ירי בזמן רכיבה:
-   הירי עדיין מכוון לעכבר ולא מסובב את הסוס.
-
-8. בדוק פגיעה בקיר:
-   הקליע עדיין נעצר ומציג Impact.
-
-9. בדוק אויב קטן ומיני-בוס גדול:
-   מדיניות ה-Knockback הקיימת נשמרת.
-
-10. בצע התחמקות קדימה:
-    אפקט הקרקע צריך להופיע מאחורי הדמות ולהיות קריא יותר.
-
-11. בצע התחמקות לאחור ולצדדים:
-    המיקום הקיים שלהם לא אמור להשתנות.
-
-12. ודא שאין Compiler Errors או Console Errors חדשים.
-
-כוונון Inspector
-----------------
-BDPlayerCombat:
-- Charged Shot Base Duration
-- Charged Shot Seconds Per Additional Ammo
-- Charged Shot Maximum Duration
-- Charged Projectile Scale Per Extra Ammo
-- Charged Hit Radius Per Extra Ammo
-- Charged Knockback Per Extra Ammo
-- Charged Speed Per Extra Ammo
-
-BDPlayerController:
-- Forward Dodge Visual Rear Offset
-
-פקודות Git לאחר שהבדיקות עוברות
--------------------------------
+פקודות Git
+----------
 git status --short
 git diff --check
 git add -A
-git commit -m "Add charged magazine shot and improve forward dodge visual"
+git commit -m "Fix tap shooting reload minimap alignment and Stage 17 seed"
 git pull --rebase origin main
 git push origin main
-
-בדיקה:
-git status
-git log --oneline -5
