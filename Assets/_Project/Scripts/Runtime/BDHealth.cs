@@ -53,11 +53,6 @@ namespace BoredomAndDungeons
             gameObject.AddComponent<BDDamageFlashFeedback>();
         }
 
-
-
-
-
-
         private void EnsureEnemyHitFlashReceiver()
         {
             if (GetComponent<BDEnemyHitFlashReceiver>() != null)
@@ -181,6 +176,9 @@ namespace BoredomAndDungeons
             if (IsDead)
                 return;
 
+            if (TryCancelPlayerDamageWithParry())
+                return;
+
             if (ShouldIgnoreDamageDuringDodge())
                 return;
 
@@ -190,6 +188,7 @@ namespace BoredomAndDungeons
             if (logDamage)
                 Debug.Log($"{name} took {damage:0.0} damage. HP {currentHealth:0.0}/{maxHealth:0.0}");
 
+            RequestDamageCameraShake();
             HealthChanged?.Invoke(this, currentHealth, maxHealth);
 
             if (currentHealth <= 0f)
@@ -201,7 +200,14 @@ namespace BoredomAndDungeons
             }
         }
 
+        private bool TryCancelPlayerDamageWithParry()
+        {
+            if (GetComponent<BDPlayerMarker>() == null)
+                return false;
 
+            BDPlayerParryState parryState = GetComponent<BDPlayerParryState>();
+            return parryState != null && parryState.TryParryIncomingPhysicalDamage();
+        }
 
         private void RequestDamageCameraShake()
         {
