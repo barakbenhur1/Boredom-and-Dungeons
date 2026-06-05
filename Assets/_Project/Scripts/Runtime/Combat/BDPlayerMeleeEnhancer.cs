@@ -117,10 +117,19 @@ namespace BoredomAndDungeons
             if (!landing)
                 return;
 
+            // BD LANDING-ONLY ANIMATION FIX:
+            // The landing strike replaces the normal slash visual for this hit.
+            combat.SuppressNextStandardMeleeVisual();
             ApplyTemporaryLandingDamage(attack);
 
             if (spawnLandingAttackVisual)
-                BDLandingAttackVisual.Spawn(transform.position, ResolveAimDirection(), heavy);
+            {
+                BDLandingAttackVisual.Spawn(
+                    transform.position,
+                    ResolveAimDirection(),
+                    heavy
+                );
+            }
         }
 
         private void TryExecuteBufferedAttack()
@@ -159,8 +168,19 @@ namespace BoredomAndDungeons
 
             parryState.RecordMeleeAttack(heavy);
 
-            if (landing && spawnLandingAttackVisual)
-                BDLandingAttackVisual.Spawn(transform.position, ResolveAimDirection(), heavy);
+            if (landing)
+            {
+                combat.SuppressNextStandardMeleeVisual();
+
+                if (spawnLandingAttackVisual)
+                {
+                    BDLandingAttackVisual.Spawn(
+                        transform.position,
+                        ResolveAimDirection(),
+                        heavy
+                    );
+                }
+            }
 
             object[] arguments =
             {

@@ -66,6 +66,15 @@ namespace BoredomAndDungeons
         [SerializeField] private float interactionRange = 3.25f;
         [SerializeField] private float healPerSecond = 28f;
 
+        [Header("Start Beside Player")]
+        // BD HORSE START-BESIDE-PLAYER FIX
+        [SerializeField] private bool placeBesidePlayerOnStart = true;
+        [SerializeField] private Vector3 startLocalOffsetFromPlayer =
+            new Vector3(2.35f, 0f, 0.45f);
+        [SerializeField] private bool faceSameDirectionAsPlayerOnStart = true;
+        [SerializeField] private float nearbyIdleNoTrackingRadius = 4.25f;
+        private bool startPositionApplied;
+
         [Header("Horse Healing Curve")]
         [SerializeField] private float minHealSpeedMultiplier = 0.22f;
         [SerializeField] private float maxHealSpeedMultiplier = 1.85f;
@@ -213,7 +222,61 @@ namespace BoredomAndDungeons
                 rider = BDTargetFinder.FindPlayer();
 
             CachePlayerComponents();
+            PlaceHorseBesidePlayerAtStart();
             ResolveSafeSpotIfNeeded();
+        }
+
+        private void PlaceHorseBesidePlayerAtStart()
+        {
+            if (startPositionApplied ||
+                !placeBesidePlayerOnStart ||
+                rider == null ||
+                state == HorseState.Mounted)
+            {
+                return;
+            }
+
+            Vector3 horizontalOffset =
+                rider.right * startLocalOffsetFromPlayer.x +
+                rider.forward * startLocalOffsetFromPlayer.z;
+
+            Vector3 targetPosition =
+                rider.position +
+                horizontalOffset +
+                Vector3.up * startLocalOffsetFromPlayer.y;
+
+            bool controllerWasEnabled =
+                controller != null && controller.enabled;
+
+            if (controllerWasEnabled)
+                controller.enabled = false;
+
+            transform.position = targetPosition;
+
+            if (faceSameDirectionAsPlayerOnStart)
+            {
+                Vector3 playerForward = rider.forward;
+                playerForward.y = 0f;
+
+                if (playerForward.sqrMagnitude > 0.001f)
+                {
+                    transform.rotation =
+                        Quaternion.LookRotation(
+                            playerForward.normalized,
+                            Vector3.up
+                        );
+                }
+            }
+
+            if (controllerWasEnabled)
+                controller.enabled = true;
+
+            Physics.SyncTransforms();
+
+            state = HorseState.Idle;
+            lastCombatActiveAt = Time.time;
+            lastAction = "started beside player";
+            startPositionApplied = true;
         }
 
         private void Update()
@@ -340,9 +403,33 @@ namespace BoredomAndDungeons
             if (distance <= 0.001f)
                 return;
 
-            Vector3 directionToPlayer = toPlayer.normalized;
+            float comfortRadius =
+                Mathf.Max(
+                    returnTooCloseRadius + 0.25f,
+                    returnComfortRadius
+                );
 
-            float comfortRadius = Mathf.Max(returnTooCloseRadius + 0.25f, returnComfortRadius);
+            float noTrackingRadius =
+                Mathf.Max(
+                    interactionRange,
+                    nearbyIdleNoTrackingRadius,
+                    comfortRadius
+                );
+
+            // When the player is already near the horse, the horse must remain
+            // completely idle. It does not rotate to follow the player and it
+            // does not back away merely because the player walked around it.
+            if (distance <= noTrackingRadius)
+            {
+                if (state == HorseState.ReturningToPlayer)
+                    state = HorseState.Idle;
+
+                lastAction =
+                    $"player nearby - idle without tracking {distance:0.0}";
+                return;
+            }
+
+            Vector3 directionToPlayer = toPlayer.normalized;
             float resumeRadius = comfortRadius + Mathf.Max(0f, returnStopHysteresis);
 
             // Too close: do not stick to the player. Back away gently.

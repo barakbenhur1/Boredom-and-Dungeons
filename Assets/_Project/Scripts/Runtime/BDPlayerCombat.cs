@@ -68,6 +68,9 @@ namespace BoredomAndDungeons
         private BDHorseController cachedMountedHorseCheck;
         private float nextMountedHorseResolveAt;
 
+        // BD LANDING ATTACK VISUAL EXCLUSIVITY
+        private float suppressStandardMeleeVisualUntilUnscaled = -999f;
+
         // BD BOOST API: runtime modifiers
         private int boostAdditionalMagazineCapacity;
         private float boostReloadDurationReduction;
@@ -99,6 +102,14 @@ namespace BoredomAndDungeons
                 float duration = EffectiveRangedReloadDuration;
                 return Mathf.Clamp01(1f - ((reloadEndsAt - Time.time) / duration));
             }
+        }
+
+        public void SuppressNextStandardMeleeVisual(
+            float maximumWaitSeconds = 0.18f)
+        {
+            suppressStandardMeleeVisualUntilUnscaled =
+                Time.unscaledTime +
+                Mathf.Max(0.02f, maximumWaitSeconds);
         }
 
         private void Awake()
@@ -371,13 +382,33 @@ namespace BoredomAndDungeons
             return assisted.normalized;
         }
 
-        private void SpawnMeleeSlashArc(Vector3 aim, bool heavySwing)
+        private void SpawnMeleeSlashArc(
+            Vector3 aim,
+            bool heavySwing)
         {
+            if (Time.unscaledTime <=
+                suppressStandardMeleeVisualUntilUnscaled)
+            {
+                suppressStandardMeleeVisualUntilUnscaled = -999f;
+                return;
+            }
+
+            suppressStandardMeleeVisualUntilUnscaled = -999f;
+
             if (!spawnMeleeSlashArc)
                 return;
 
-            Vector3 origin = transform.position + aim.normalized * 0.25f;
-            BDMeleeSlashArcVisual.Spawn(origin, aim, attackRange, attackRadius, heavySwing);
+            Vector3 origin =
+                transform.position +
+                aim.normalized * 0.25f;
+
+            BDMeleeSlashArcVisual.Spawn(
+                origin,
+                aim,
+                attackRange,
+                attackRadius,
+                heavySwing
+            );
         }
 
 
