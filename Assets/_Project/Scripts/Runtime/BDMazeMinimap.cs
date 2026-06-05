@@ -19,6 +19,12 @@ namespace BoredomAndDungeons
         [SerializeField] private float markerSize = 8f;
         [SerializeField] private float nearestDiscoveryMaxDistance = 34f;
 
+        [Header("Dynamic Player-Up Rotation")]
+        // BD PLAYER-UP DYNAMIC MINIMAP FIX
+        [SerializeField] private bool rotateWithPlayerDirection = true;
+        [SerializeField] private float rotationSpeedDegreesPerSecond = 900f;
+        [SerializeField] private float rotationOffsetDegrees = 0f;
+
         [Header("Colors")]
         [SerializeField] private Color backgroundColor = new Color(0f, 0f, 0f, 0.78f);
         [SerializeField] private Color unknownColor = new Color(0f, 0f, 0f, 0.0f);
@@ -34,6 +40,10 @@ namespace BoredomAndDungeons
         private Transform player;
         private Transform horse;
         private GUIStyle labelStyle;
+        private BDPlayerController playerController;
+        private BDHorseController horseController;
+        private float currentMapRotationDegrees;
+        private bool mapRotationInitialized;
 
         private int minX;
         private int maxX;
@@ -54,17 +64,22 @@ namespace BoredomAndDungeons
 
         private void ResolvePlayerReference()
         {
-            if (player != null)
-                return;
-
-            BDPlayerMarker marker = FindFirstObjectByType<BDPlayerMarker>();
-            if (marker != null)
+            if (player == null)
             {
-                player = marker.transform;
-                return;
+                BDPlayerMarker marker =
+                    FindFirstObjectByType<BDPlayerMarker>();
+
+                if (marker != null)
+                    player = marker.transform;
+                else
+                    player = BDTargetFinder.FindPlayer();
             }
 
-            player = BDTargetFinder.FindPlayer();
+            if (player != null && playerController == null)
+            {
+                playerController =
+                    player.GetComponent<BDPlayerController>();
+            }
         }
 
         private void Update()
@@ -73,6 +88,7 @@ namespace BoredomAndDungeons
                 visible = !visible;
 
             ResolvePlayerReference();
+            TickDynamicPlayerUpRotation();
 
             if (horse == null)
             {
@@ -193,6 +209,115 @@ namespace BoredomAndDungeons
             return best;
         }
 
+
+        private void TickDynamicPlayerUpRotation()
+        {
+            if (!rotateWithPlayerDirection || player == null)
+                return;
+
+            Vector3 direction = ResolvePlayerViewDirection();
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude < 0.001f)
+                return;
+
+            direction.Normalize();
+
+            float playerYaw =
+                Mathf.Atan2(
+                    direction.x,
+                    direction.z
+                ) * Mathf.Rad2Deg;
+
+            float desiredRotation =
+                -playerYaw + rotationOffsetDegrees;
+
+            if (!mapRotationInitialized)
+            {
+                currentMapRotationDegrees = desiredRotation;
+                mapRotationInitialized = true;
+                return;
+            }
+
+            currentMapRotationDegrees =
+                Mathf.MoveTowardsAngle(
+                    currentMapRotationDegrees,
+                    desiredRotation,
+                    Mathf.Max(
+                        90f,
+                        rotationSpeedDegreesPerSecond
+                    ) * Time.unscaledDeltaTime
+                );
+        }
+
+        private Vector3 ResolvePlayerViewDirection()
+        {
+            if (player == null)
+                return Vector3.forward;
+
+            if (playerController == null)
+            {
+                playerController =
+                    player.GetComponent<BDPlayerController>();
+            }
+
+            if (playerController != null)
+            {
+                Vector3 lookDirection =
+                    playerController.LastLookDirection;
+
+                lookDirection.y = 0f;
+
+                if (lookDirection.sqrMagnitude > 0.001f)
+                    return lookDirection.normalized;
+            }
+
+            if (horseController == null)
+            {
+                horseController =
+                    FindFirstObjectByType<BDHorseController>();
+            }
+
+            if (horseController != null &&
+                horseController.IsMounted &&
+                horseController.Rider != null)
+            {
+                Transform rider = horseController.Rider;
+
+                bool sameRider =
+                    rider == player ||
+                    player.IsChildOf(rider) ||
+                    rider.IsChildOf(player);
+
+                if (sameRider)
+                {
+                    Vector3 mountedDirection =
+                        horseController.LastMountedAimDirection;
+
+                    mountedDirection.y = 0f;
+
+                    if (mountedDirection.sqrMagnitude > 0.001f)
+                        return mountedDirection.normalized;
+
+                    Vector3 horseForward =
+                        horseController.transform.forward;
+
+                    horseForward.y = 0f;
+
+                    if (horseForward.sqrMagnitude > 0.001f)
+                        return horseForward.normalized;
+                }
+            }
+
+            Vector3 playerForward = player.forward;
+            playerForward.y = 0f;
+
+            if (playerForward.sqrMagnitude < 0.001f)
+                return Vector3.forward;
+
+            return playerForward.normalized;
+        }
+
         private void OnGUI()
         {
             if (!visible)
@@ -229,10 +354,48 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            Rect mapRect = new Rect(rect.x + 12f, rect.y + 34f, rect.width - 24f, rect.height - 46f);
+            Rect mapRect = new Rect(
+                rect.x + 12f,
+                rect.y + 34f,
+                rect.width - 24f,
+                rect.height - 46f
+            );
+
+            Matrix4x4 originalGuiMatrix = GUI.matrix;
+            Vector2 rotationPivot = mapRect.center;
+
+            if (TryResolveMapPoint(
+                    mapRect,
+                    player,
+                    out Vector2 playerMapPoint))
+            {
+                rotationPivot = playerMapPoint;
+            }
+
+            if (rotateWithPlayerDirection)
+            {
+                GUIUtility.RotateAroundPivot(
+                    currentMapRotationDegrees,
+                    rotationPivot
+                );
+            }
+
             DrawRooms(mapRect);
-            DrawMarker(mapRect, player, playerColor, markerSize);
-            DrawMarker(mapRect, horse, horseColor, markerSize * 0.85f);
+            DrawMarker(
+                mapRect,
+                horse,
+                horseColor,
+                markerSize * 0.85f
+            );
+
+            GUI.matrix = originalGuiMatrix;
+
+            DrawMarker(
+                mapRect,
+                player,
+                playerColor,
+                markerSize
+            );
 
             GUI.Label(new Rect(rect.x + 8f, rect.y + rect.height - 24f, rect.width - 16f, 20f), $"Explored {CountDiscoveredRooms()}/{rooms.Count}  |  M: toggle", labelStyle);
         }
@@ -308,27 +471,72 @@ namespace BoredomAndDungeons
                 DrawRect(new Rect(roomRect.xMax - thickness, roomRect.y, thickness, roomRect.height), wallColor);
         }
 
-        private void DrawMarker(Rect mapRect, Transform target, Color color, float size)
+        private void DrawMarker(
+            Rect mapRect,
+            Transform target,
+            Color color,
+            float size)
         {
+            if (!TryResolveMapPoint(
+                    mapRect,
+                    target,
+                    out Vector2 position))
+            {
+                return;
+            }
+
+            DrawRect(
+                new Rect(
+                    position.x - size * 0.5f,
+                    position.y - size * 0.5f,
+                    size,
+                    size
+                ),
+                color
+            );
+        }
+
+        private bool TryResolveMapPoint(
+            Rect mapRect,
+            Transform target,
+            out Vector2 position)
+        {
+            position = mapRect.center;
+
             if (target == null)
-                return;
+                return false;
 
-            BDMinimapRoom nearest = FindNearestDiscoveredRoom(target.position);
+            BDMinimapRoom nearest =
+                FindNearestDiscoveredRoom(target.position);
+
             if (nearest == null)
-                return;
+                return false;
 
-            Vector2 normalized = WorldToCellLocal(nearest, target.position);
-            int widthCells = Mathf.Max(1, maxX - minX + 1);
-            int heightCells = Mathf.Max(1, maxY - minY + 1);
-            float cellSize = Mathf.Min(mapRect.width / widthCells, mapRect.height / heightCells);
+            Vector2 normalized =
+                WorldToCellLocal(nearest, target.position);
 
-            Rect roomRect = CellToRect(mapRect, nearest.Cell, cellSize);
-            Vector2 pos = new Vector2(
-                roomRect.x + normalized.x * roomRect.width,
-                roomRect.y + (1f - normalized.y) * roomRect.height
+            int widthCells =
+                Mathf.Max(1, maxX - minX + 1);
+
+            int heightCells =
+                Mathf.Max(1, maxY - minY + 1);
+
+            float cellSize = Mathf.Min(
+                mapRect.width / widthCells,
+                mapRect.height / heightCells
             );
 
-            DrawRect(new Rect(pos.x - size * 0.5f, pos.y - size * 0.5f, size, size), color);
+            Rect roomRect =
+                CellToRect(mapRect, nearest.Cell, cellSize);
+
+            position = new Vector2(
+                roomRect.x + normalized.x * roomRect.width,
+                roomRect.y +
+                    (1f - normalized.y) *
+                    roomRect.height
+            );
+
+            return true;
         }
 
         private BDMinimapRoom FindNearestDiscoveredRoom(Vector3 worldPosition)

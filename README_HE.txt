@@ -1,86 +1,91 @@
-Boredom & Dungeons — Tap/Hold, Reload, Minimap, Stage 17 Fix
-================================================================
+Boredom & Dungeons — Reliable Auto Reload + Dynamic Player-Up Minimap
+============================================================================
 
 מה תוקן
 -------
 
-1. לחיצה קצרה לעומת לחיצה ארוכה
---------------------------------
-כאשר יש 2 כדורים או יותר:
+1. טעינה אוטומטית אמינה
+------------------------
+נוסף watchdog שפועל בכל Update:
 
-- שחרור לפני 0.22 שניות:
-  נורת ירייה רגילה אחת.
+- אם המחסנית ריקה.
+- אם Reload עדיין לא התחיל.
+- ואם השחקן אינו באמצע Charged Shot.
 
-- המשך החזקה אחרי 0.22 שניות:
-  מתחילה טעינת הירייה הגדולה.
+אז Reload מתחיל אוטומטית.
 
-- שחרור לאחר שהטעינה התחילה אבל לפני הסיום:
-  הירייה מתבטלת ללא צריכת תחמושת.
-
-- השלמת הטעינה:
-  נורה הקליע הגדול ומשתמש בכל הכדורים שנותרו.
-
-כאשר נשאר כדור אחד:
-- הוא נורה מיד.
-- אין השהיה ואין טעינה.
-
-2. Reload אוטומטי
------------------
-אחרי הירייה הטעונה:
-- המחסנית מתרוקנת.
-- Reload מתחיל מיד.
+סיום Charged Shot מפעיל במפורש Reload חדש:
+- התחמושת נקבעת ל-0.
+- מצב Reload קודם מאופס אם נתקע.
+- טיימר Reload חדש מתחיל מיד.
 - אין צורך ללחוץ שוב על Q.
 
-3. מיני-מפה
-------------
-נוסף BDMinimapPerspectiveAlignment:
+2. מיני-מפה דינמית לפי כיוון השחקן
+-----------------------------------
+המיני-מפה האמיתית היא BDMazeMinimap.
+היא מצוירת באמצעות OnGUI ולא משתמשת במצלמת MinimapCamera.
 
-- מיישר את החלק העליון של המיני-מפה לחלק העליון של
-  נקודת המבט במצלמת המשחק.
-- עוקב אחרי השחקן ב-X/Z.
-- מתקן את הסיבוב ב-LateUpdate.
-- מזהה מצלמה בשם MinimapCamera, מצלמת RenderTexture,
-  או מצלמת Orthographic עם viewport קטן.
+התיקון החדש:
+- מציג תמיד את כיוון השחקן כלפי מעלה.
+- מסובב את המפה סביב נקודת השחקן.
+- משאיר את סמן השחקן יציב.
+- מעדכן את הסיבוב בכל פריים.
+- משתמש ב-LastLookDirection ברגל.
+- משתמש בכיוון הרכיבה/הכוונה בזמן רכיבה.
+- מסובב גם את הסוס והחדרים.
 
-מומלץ לקרוא למצלמת המפה:
-MinimapCamera
-
-4. Stage 17
------------
-תוקן:
-
-Environment.TickCount
-
-ל:
-
-System.Environment.TickCount
+3. ניקוי התיקון הקודם
+---------------------
+הסקריפט מסיר את:
+BDMinimapPerspectiveAlignment.cs
+BDMinimapPerspectiveAlignment.cs.meta
 
 התקנה
 -----
 מתוך תיקיית Boredom-and-Dungeons:
 
-unzip -o ~/Downloads/Boredom-and-Dungeons_Tap_Charge_Reload_Minimap_Stage17_Fix.zip -d .
-python3 tools/apply_tap_charge_reload_minimap_stage17_fix.py
+unzip -o ~/Downloads/Boredom-and-Dungeons_Reliable_Reload_Player_Up_Minimap_Fix.zip -d .
+python3 tools/apply_reliable_reload_player_up_minimap_fix.py
 
 לאחר מכן חזור ל-Unity והמתן לסיום הקומפילציה.
 
+קבצים שמתעדכנים
+---------------
+Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs
+Assets/_Project/Scripts/Runtime/BDMazeMinimap.cs
+
+גיבוי
+-----
+/tmp/BoredomAndDungeons_reload_player_up_minimap_backup_YYYYMMDD_HHMMSS
+
 בדיקות
 ------
-1. Tap מהיר עם 3 כדורים יורה ירייה רגילה אחת.
-2. החזקה מעבר ל-0.22 שניות מתחילה טעינה.
-3. שחרור באמצע הטעינה מבטל בלי לצרוך כדור.
-4. השלמת הטעינה צורכת את כל הכדורים.
-5. Reload מתחיל מיד בלי לחיצה נוספת.
-6. כדור אחרון נורה מיד.
-7. המיני-מפה מיושרת לנקודת המבט של המשחק.
-8. שגיאת TickCount נעלמה.
-9. אין Compiler Errors חדשים.
+1. בצע Charged Shot מלא.
+2. מיד אחריו ה-HUD צריך להציג RELOAD.
+3. אל תלחץ שוב על Q.
+4. המחסנית צריכה להתמלא בסיום הטיימר.
+5. רוקן גם את הכדור האחרון בירייה רגילה ובדוק Reload אוטומטי.
+6. הסתובב במקום: המפה צריכה להסתובב בכל פריים.
+7. הכיוון שאליו השחקן פונה צריך להיות תמיד למעלה.
+8. סמן השחקן צריך להישאר יציב.
+9. בדוק גם בזמן רכיבה.
+10. ודא שאין Compiler Errors חדשים.
+
+כוונון
+------
+BDMazeMinimap:
+Rotate With Player Direction = true
+Rotation Speed Degrees Per Second = 900
+Rotation Offset Degrees = 0
+
+אם הכיוון הפוך ב-180 מעלות:
+Rotation Offset Degrees = 180
 
 פקודות Git
 ----------
 git status --short
 git diff --check
 git add -A
-git commit -m "Fix tap shooting reload minimap alignment and Stage 17 seed"
+git commit -m "Fix automatic reload and rotate minimap with player direction"
 git pull --rebase origin main
 git push origin main

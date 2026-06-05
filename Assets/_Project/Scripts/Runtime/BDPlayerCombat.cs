@@ -179,6 +179,7 @@ namespace BoredomAndDungeons
             }
 
             TickChargedRangedAttack();
+            EnsureAutomaticReloadForEmptyMagazine();
         }
 
 
@@ -197,6 +198,34 @@ namespace BoredomAndDungeons
             return rider == transform || transform.IsChildOf(rider) || rider.IsChildOf(transform);
         }
 
+
+        // BD AUTO-RELOAD WATCHDOG FIX
+        private void EnsureAutomaticReloadForEmptyMagazine()
+        {
+            if (rangedAmmo > 0 || reloading)
+                return;
+
+            if (chargedShotCharging)
+                return;
+
+            StartReloadFromEmptyMagazine(
+                "empty magazine watchdog"
+            );
+        }
+
+        private void StartReloadFromEmptyMagazine(string reason)
+        {
+            if (rangedAmmo > 0)
+                return;
+
+            reloading = true;
+            reloadEndsAt =
+                Time.time + EffectiveRangedReloadDuration;
+
+            lastCombatAction =
+                $"ranged reload: {reason}";
+        }
+
         private void TickReload()
         {
             if (!reloading)
@@ -212,15 +241,12 @@ namespace BoredomAndDungeons
 
         private void BeginReloadIfNeeded()
         {
-            if (reloading)
+            if (rangedAmmo > 0 || reloading)
                 return;
 
-            if (rangedAmmo > 0)
-                return;
-
-            reloading = true;
-            reloadEndsAt = Time.time + EffectiveRangedReloadDuration;
-            lastCombatAction = "ranged reload";
+            StartReloadFromEmptyMagazine(
+                "requested automatically"
+            );
         }
 
         private void TryMeleeAttack(float damage, float cooldown, ref float nextAllowedAt, string label)
@@ -862,12 +888,11 @@ namespace BoredomAndDungeons
         private void StartReloadImmediatelyAfterChargedShot()
         {
             rangedAmmo = 0;
-            reloading = true;
-            reloadEndsAt =
-                Time.time + EffectiveRangedReloadDuration;
+            reloading = false;
 
-            lastCombatAction =
-                "charged shot fired; automatic reload";
+            StartReloadFromEmptyMagazine(
+                "charged shot emptied magazine"
+            );
         }
 
         private void CancelChargedShot()
