@@ -15,6 +15,13 @@ namespace BoredomAndDungeons
 
         public void ShowMelee(Vector3 direction, float duration = 0.18f)
         {
+            // Every direct physical attack reports through the same shared path.
+            // This includes swords, charges, jumps, bites, stomps, hands, tails,
+            // rolling body attacks and future physical boss attacks.
+            // The signal is intentionally reported even when the visual telegraph
+            // is still on cooldown, because the damage/parry event must never be lost.
+            ReportPhysicalImpact();
+
             if (Time.time < nextMeleeAllowedAt)
                 return;
 
@@ -26,6 +33,7 @@ namespace BoredomAndDungeons
 
         public void ShowRanged(Vector3 direction, float duration = 0.20f)
         {
+            // Ranged attacks are not parryable by the physical-parry system.
             if (Time.time < nextRangedAllowedAt)
                 return;
 
@@ -33,6 +41,11 @@ namespace BoredomAndDungeons
 
             Vector3 position = transform.position + ResolveFlatDirection(direction) * 0.70f;
             BDEnemyAttackTelegraphVisual.Spawn(position, direction, rangedRadius, duration, ranged: true);
+        }
+
+        public void ReportPhysicalImpact()
+        {
+            BDPhysicalAttackSignal.Report(transform);
         }
 
         private Vector3 ResolveFlatDirection(Vector3 direction)
