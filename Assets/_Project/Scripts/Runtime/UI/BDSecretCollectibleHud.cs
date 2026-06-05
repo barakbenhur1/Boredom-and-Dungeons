@@ -92,7 +92,6 @@ namespace BoredomAndDungeons
 
             float x = marginLeft;
             float y = marginTop;
-            float totalWidth = 0f;
             int count = CountVisibleBadges();
 
             if (count <= 0)
@@ -122,10 +121,8 @@ namespace BoredomAndDungeons
 
             if (inventory.HasGameBoy)
                 count++;
-
             if (inventory.BatteryCount > 0)
                 count++;
-
             if (inventory.HasGameCartridge)
                 count++;
 
@@ -138,10 +135,8 @@ namespace BoredomAndDungeons
 
             if (inventory.HasGameBoy)
                 width += 48f + badgeGap;
-
             if (inventory.BatteryCount > 0)
                 width += (inventory.BatteryCount > 1 ? 76f : 58f) + badgeGap;
-
             if (inventory.HasGameCartridge)
                 width += 72f + badgeGap;
 
