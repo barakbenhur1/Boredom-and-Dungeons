@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 #pragma warning disable 0414
@@ -24,12 +25,27 @@ namespace BoredomAndDungeons
         [SerializeField] private float attackDamage = 12f;
         [SerializeField] private float attackCooldown = 1.05f;
 
+        [Header("Sword visual")]
+        [SerializeField] private float swordWindupDuration = 0.12f;
+        [SerializeField] private float swordSlashDuration = 0.16f;
+        [SerializeField] private float swordRecoveryDuration = 0.22f;
+        [SerializeField] private float swordWindupAngle = 72f;
+        [SerializeField] private float swordSlashAngle = 28f;
+        [SerializeField] private float swordForwardReach = 0.22f;
+
         private CharacterController controller;
         private BDHitStaggerReceiver hitStaggerReceiver;
         private BDHealth health;
         private BDKnockbackReceiver knockback;
         private BDEnemyTacticalCommand tacticalCommand;
-        private BDEnemySwordWeaponVisual weaponVisual;
+
+        private Transform leftSwordPivot;
+        private Transform rightSwordPivot;
+        private Quaternion leftSwordRestRotation;
+        private Quaternion rightSwordRestRotation;
+        private Vector3 leftSwordRestPosition;
+        private Vector3 rightSwordRestPosition;
+        private Coroutine swordAttackRoutine;
 
         private State state = State.Idle;
         private float cooldown;
@@ -43,10 +59,9 @@ namespace BoredomAndDungeons
             health = GetComponent<BDHealth>();
             knockback = GetComponent<BDKnockbackReceiver>();
             tacticalCommand = GetComponent<BDEnemyTacticalCommand>();
-            weaponVisual = GetComponent<BDEnemySwordWeaponVisual>();
 
-            if (weaponVisual == null)
-                weaponVisual = gameObject.AddComponent<BDEnemySwordWeaponVisual>();
+            EnsureSwordVisuals();
+            CacheSwordRestPose();
 
             health.Died += OnDied;
             circleSign = Random.value < 0.5f ? -1f : 1f;
@@ -113,7 +128,6 @@ namespace BoredomAndDungeons
                 state = State.Attack;
                 TryAttack(distance);
 
-                // Do not stand exactly inside the player. Slide around them.
                 if (distance < tooCloseDistance)
                     Circle(direction, pushOut: true);
                 return;
@@ -149,9 +163,7 @@ namespace BoredomAndDungeons
                 return;
 
             ShowAttackTelegraphBeforeDamage(false);
-
-            if (weaponVisual != null)
-                weaponVisual.PlayDoubleSlash();
+            PlayDoubleSlashVisual();
 
             BDHealth targetHealth = target.GetComponent<BDHealth>();
             if (targetHealth != null)
@@ -165,6 +177,202 @@ namespace BoredomAndDungeons
             );
 
             cooldown = attackCooldown;
+        }
+
+        private void EnsureSwordVisuals()
+        {
+            leftSwordPivot = FindOrCreateSword(
+                "BD_Sword_Left_Pivot",
+                new Vector3(-0.48f, 0.30f, 0.05f),
+                -42f,
+                new Color(0.72f, 0.82f, 0.90f, 1f)
+            );
+
+            rightSwordPivot = FindOrCreateSword(
+                "BD_Sword_Right_Pivot",
+                new Vector3(0.48f, 0.30f, 0.05f),
+                42f,
+                new Color(0.72f, 0.82f, 0.90f, 1f)
+            );
+        }
+
+        private Transform FindOrCreateSword(
+            string pivotName,
+            Vector3 localPosition,
+            float yaw,
+            Color bladeColor)
+        {
+            Transform existing = transform.Find(pivotName);
+            if (existing != null)
+                return existing;
+
+            GameObject pivotObject = new GameObject(pivotName);
+            Transform pivot = pivotObject.transform;
+            pivot.SetParent(transform, false);
+            pivot.localPosition = localPosition;
+            pivot.localRotation = Quaternion.Euler(0f, yaw, 0f);
+
+            GameObject blade = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            blade.name = pivotName.Replace("Pivot", "Blade");
+            blade.transform.SetParent(pivot, false);
+            blade.transform.localPosition = new Vector3(0f, 0f, 0.59f);
+            blade.transform.localScale = new Vector3(0.10f, 0.065f, 1.18f);
+            SetVisualOnly(blade, bladeColor);
+
+            GameObject guard = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            guard.name = pivotName.Replace("Pivot", "Guard");
+            guard.transform.SetParent(pivot, false);
+            guard.transform.localPosition = new Vector3(0f, 0f, 0.08f);
+            guard.transform.localScale = new Vector3(0.38f, 0.10f, 0.10f);
+            SetVisualOnly(guard, new Color(0.38f, 0.20f, 0.05f, 1f));
+
+            GameObject handle = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            handle.name = pivotName.Replace("Pivot", "Handle");
+            handle.transform.SetParent(pivot, false);
+            handle.transform.localPosition = new Vector3(0f, 0f, -0.12f);
+            handle.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            handle.transform.localScale = new Vector3(0.07f, 0.20f, 0.07f);
+            SetVisualOnly(handle, new Color(0.08f, 0.06f, 0.05f, 1f));
+
+            return pivot;
+        }
+
+        private static void SetVisualOnly(GameObject visual, Color color)
+        {
+            Collider visualCollider = visual.GetComponent<Collider>();
+            if (visualCollider != null)
+                Destroy(visualCollider);
+
+            Renderer visualRenderer = visual.GetComponent<Renderer>();
+            if (visualRenderer == null)
+                return;
+
+            Material material = visualRenderer.material;
+            material.color = color;
+
+            if (material.HasProperty("_BaseColor"))
+                material.SetColor("_BaseColor", color);
+
+            if (material.HasProperty("_Color"))
+                material.SetColor("_Color", color);
+        }
+
+        private void CacheSwordRestPose()
+        {
+            if (leftSwordPivot != null)
+            {
+                leftSwordRestRotation = leftSwordPivot.localRotation;
+                leftSwordRestPosition = leftSwordPivot.localPosition;
+            }
+
+            if (rightSwordPivot != null)
+            {
+                rightSwordRestRotation = rightSwordPivot.localRotation;
+                rightSwordRestPosition = rightSwordPivot.localPosition;
+            }
+        }
+
+        private void RestoreSwordRestPose()
+        {
+            if (leftSwordPivot != null)
+            {
+                leftSwordPivot.localRotation = leftSwordRestRotation;
+                leftSwordPivot.localPosition = leftSwordRestPosition;
+            }
+
+            if (rightSwordPivot != null)
+            {
+                rightSwordPivot.localRotation = rightSwordRestRotation;
+                rightSwordPivot.localPosition = rightSwordRestPosition;
+            }
+        }
+
+        private void PlayDoubleSlashVisual()
+        {
+            if (leftSwordPivot == null || rightSwordPivot == null)
+                return;
+
+            if (swordAttackRoutine != null)
+                StopCoroutine(swordAttackRoutine);
+
+            RestoreSwordRestPose();
+            swordAttackRoutine = StartCoroutine(DoubleSlashRoutine());
+        }
+
+        private IEnumerator DoubleSlashRoutine()
+        {
+            Quaternion leftWindup = leftSwordRestRotation * Quaternion.Euler(0f, -swordWindupAngle, 0f);
+            Quaternion rightWindup = rightSwordRestRotation * Quaternion.Euler(0f, swordWindupAngle, 0f);
+
+            yield return AnimateSwordPose(
+                leftSwordRestRotation,
+                rightSwordRestRotation,
+                leftWindup,
+                rightWindup,
+                leftSwordRestPosition,
+                rightSwordRestPosition,
+                swordWindupDuration
+            );
+
+            Quaternion leftSlash = leftSwordRestRotation * Quaternion.Euler(0f, swordSlashAngle, 0f);
+            Quaternion rightSlash = rightSwordRestRotation * Quaternion.Euler(0f, -swordSlashAngle, 0f);
+
+            yield return AnimateSwordPose(
+                leftWindup,
+                rightWindup,
+                leftSlash,
+                rightSlash,
+                leftSwordRestPosition + Vector3.forward * swordForwardReach,
+                rightSwordRestPosition + Vector3.forward * swordForwardReach,
+                swordSlashDuration
+            );
+
+            yield return AnimateSwordPose(
+                leftSlash,
+                rightSlash,
+                leftSwordRestRotation,
+                rightSwordRestRotation,
+                leftSwordRestPosition,
+                rightSwordRestPosition,
+                swordRecoveryDuration
+            );
+
+            RestoreSwordRestPose();
+            swordAttackRoutine = null;
+        }
+
+        private IEnumerator AnimateSwordPose(
+            Quaternion leftFrom,
+            Quaternion rightFrom,
+            Quaternion leftTo,
+            Quaternion rightTo,
+            Vector3 leftTargetPosition,
+            Vector3 rightTargetPosition,
+            float duration)
+        {
+            Vector3 leftStartPosition = leftSwordPivot.localPosition;
+            Vector3 rightStartPosition = rightSwordPivot.localPosition;
+            float safeDuration = Mathf.Max(0.01f, duration);
+            float elapsed = 0f;
+
+            while (elapsed < safeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / safeDuration);
+                float eased = t * t * (3f - 2f * t);
+
+                leftSwordPivot.localRotation = Quaternion.Slerp(leftFrom, leftTo, eased);
+                rightSwordPivot.localRotation = Quaternion.Slerp(rightFrom, rightTo, eased);
+                leftSwordPivot.localPosition = Vector3.Lerp(leftStartPosition, leftTargetPosition, eased);
+                rightSwordPivot.localPosition = Vector3.Lerp(rightStartPosition, rightTargetPosition, eased);
+
+                yield return null;
+            }
+
+            leftSwordPivot.localRotation = leftTo;
+            rightSwordPivot.localRotation = rightTo;
+            leftSwordPivot.localPosition = leftTargetPosition;
+            rightSwordPivot.localPosition = rightTargetPosition;
         }
 
         private void RotateToward(Vector3 direction)
@@ -185,6 +393,17 @@ namespace BoredomAndDungeons
         private void OnDied(BDHealth dead)
         {
             Destroy(gameObject, 0.1f);
+        }
+
+        private void OnDisable()
+        {
+            if (swordAttackRoutine != null)
+            {
+                StopCoroutine(swordAttackRoutine);
+                swordAttackRoutine = null;
+            }
+
+            RestoreSwordRestPose();
         }
 
         private void OnDestroy()
