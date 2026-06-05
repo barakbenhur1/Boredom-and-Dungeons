@@ -10,14 +10,23 @@ namespace BoredomAndDungeons
         [Header("Timing")]
         [SerializeField] private float attackTimingEpsilon = 0.16f;
         [SerializeField] private float physicalSignalMaxAge = 0.20f;
-        [SerializeField] private float parryFreezeDuration = 1.0f;
+        [SerializeField] private float normalParryFreezeDuration = 1.0f;
+        [SerializeField] private float upgradedParryFreezeDuration = 2.0f;
 
         [Header("Range")]
         [SerializeField] private float maximumParryDistance = 3.2f;
 
+        [Header("Run Upgrade")]
+        [SerializeField] private bool extendedFreezeCollected;
+
         private float lastMeleeAttackAtUnscaled = -999f;
         private bool lastAttackWasHeavy;
         private bool attackWindowConsumed;
+
+        public bool HasExtendedFreeze => extendedFreezeCollected;
+        public float CurrentFreezeDuration => extendedFreezeCollected
+            ? Mathf.Max(0.10f, upgradedParryFreezeDuration)
+            : Mathf.Max(0.10f, normalParryFreezeDuration);
 
         public float ParryWindowRemaining => Mathf.Max(
             0f,
@@ -33,6 +42,15 @@ namespace BoredomAndDungeons
             lastMeleeAttackAtUnscaled = Time.unscaledTime;
             lastAttackWasHeavy = heavy;
             attackWindowConsumed = false;
+        }
+
+        public bool CollectExtendedFreezeUpgrade()
+        {
+            if (extendedFreezeCollected)
+                return false;
+
+            extendedFreezeCollected = true;
+            return true;
         }
 
         public bool TryParryIncomingPhysicalDamage()
@@ -51,7 +69,7 @@ namespace BoredomAndDungeons
             BDParrySystem.Trigger(
                 transform,
                 attacker,
-                Mathf.Max(0.10f, parryFreezeDuration),
+                CurrentFreezeDuration,
                 lastAttackWasHeavy
             );
             return true;
