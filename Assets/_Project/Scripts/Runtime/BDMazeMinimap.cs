@@ -27,6 +27,8 @@ namespace BoredomAndDungeons
         // BD MINIMAP 90-DEGREE MOVEMENT SNAP FIX
         [SerializeField] private bool snapToMovementCardinals = true;
         [SerializeField] private float movementSnapThreshold = 0.35f;
+        // BD MINIMAP NEAREST-CARDINAL SECTOR FIX
+        [SerializeField] private float diagonalBoundaryHoldEpsilon = 0.015f;
 
         [Header("Colors")]
         [SerializeField] private Color backgroundColor = new Color(0f, 0f, 0f, 0.78f);
@@ -218,53 +220,17 @@ namespace BoredomAndDungeons
             if (!rotateWithPlayerDirection || player == null)
                 return;
 
-            float desiredRotation;
-
-            if (snapToMovementCardinals &&
-                TryResolveMovementCardinalRotation(out desiredRotation))
-            {
-                desiredRotation += rotationOffsetDegrees;
-            }
-            else if (snapToMovementCardinals)
+            if (!TryResolveMovementCardinalRotation(
+                    out float desiredRotation))
             {
                 return;
             }
-            else
-            {
-                Vector3 direction = ResolvePlayerViewDirection();
-                direction.y = 0f;
 
-                if (direction.sqrMagnitude < 0.001f)
-                    return;
-
-                direction.Normalize();
-
-                float playerYaw =
-                    Mathf.Atan2(
-                        direction.x,
-                        direction.z
-                    ) * Mathf.Rad2Deg;
-
-                desiredRotation =
-                    -playerYaw + rotationOffsetDegrees;
-            }
-
-            if (!mapRotationInitialized)
-            {
-                currentMapRotationDegrees = desiredRotation;
-                mapRotationInitialized = true;
-                return;
-            }
-
+            // Immediate 90-degree snap keeps the map parallel to its frame.
             currentMapRotationDegrees =
-                Mathf.MoveTowardsAngle(
-                    currentMapRotationDegrees,
-                    desiredRotation,
-                    Mathf.Max(
-                        90f,
-                        rotationSpeedDegreesPerSecond
-                    ) * Time.unscaledDeltaTime
-                );
+                desiredRotation + rotationOffsetDegrees;
+
+            mapRotationInitialized = true;
         }
 
         private bool TryResolveMovementCardinalRotation(
@@ -272,10 +238,7 @@ namespace BoredomAndDungeons
         {
             rotationDegrees = currentMapRotationDegrees;
 
-            Vector2 moveInput =
-                playerController != null
-                    ? playerController.LastMoveInput
-                    : Vector2.zero;
+            Vector3 movement = Vector3.zero;
 
             if (horseController == null)
                 horseController = FindFirstObjectByType<BDHorseController>();
@@ -284,38 +247,47 @@ namespace BoredomAndDungeons
                 horseController.IsMounted &&
                 horseController.HasRideMoveInput)
             {
-                Vector3 mountedDirection =
+                movement =
                     horseController.LastMountedMovementDirection;
-
-                mountedDirection.y = 0f;
-
-                if (mountedDirection.sqrMagnitude >
-                    movementSnapThreshold * movementSnapThreshold)
-                {
-                    float yaw =
-                        Mathf.Atan2(
-                            mountedDirection.x,
-                            mountedDirection.z
-                        ) * Mathf.Rad2Deg;
-
-                    rotationDegrees = -Mathf.Round(yaw / 90f) * 90f;
-                    return true;
-                }
+            }
+            else if (playerController != null)
+            {
+                movement =
+                    playerController.LastMoveWorldDirection;
             }
 
-            if (moveInput.sqrMagnitude <
+            movement.y = 0f;
+
+            if (movement.sqrMagnitude <
                 movementSnapThreshold * movementSnapThreshold)
             {
                 return false;
             }
 
-            if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+            movement.Normalize();
+
+            float absoluteX = Mathf.Abs(movement.x);
+            float absoluteZ = Mathf.Abs(movement.z);
+
+            // The diagonals are the borders between the four sectors.
+            // Exactly on a border, hold the previous orientation.
+            if (Mathf.Abs(absoluteX - absoluteZ) <=
+                Mathf.Max(0.0001f, diagonalBoundaryHoldEpsilon))
             {
-                rotationDegrees = moveInput.x > 0f ? -90f : 90f;
+                return false;
+            }
+
+            if (absoluteX > absoluteZ)
+            {
+                rotationDegrees =
+                    movement.x > 0f ? -90f : 90f;
+
                 return true;
             }
 
-            rotationDegrees = moveInput.y > 0f ? 0f : 180f;
+            rotationDegrees =
+                movement.z > 0f ? 0f : 180f;
+
             return true;
         }
 

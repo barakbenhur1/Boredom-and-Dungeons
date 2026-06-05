@@ -88,7 +88,7 @@ namespace BoredomAndDungeons
             if (target == null)
                 return;
 
-            UpdateCameraForwardFromMovementOnly();
+            UpdateCameraForwardFromPlayerIntent();
 
             if (!lockedBehindTarget)
             {
@@ -152,78 +152,82 @@ namespace BoredomAndDungeons
             smoothedMoveForward = lastForward;
         }
 
-        private void UpdateCameraForwardFromMovementOnly()
+        // BD CAMERA FOLLOWS MOUSE INTENT, NOT MOVEMENT
+        private void UpdateCameraForwardFromPlayerIntent()
         {
-            Vector3 movementDirection = ResolveRealMovementDirection();
-            movementDirection.y = 0f;
+            Vector3 intent = ResolveCameraIntentDirection();
+            intent.y = 0f;
 
-            if (movementDirection.sqrMagnitude < minimumMovementDirectionMagnitude * minimumMovementDirectionMagnitude)
+            if (intent.sqrMagnitude < 0.001f)
             {
-                if (rotateOnlyWhenActuallyMoving)
-                {
-                    cameraState = playerController != null && playerController.ShouldLockCameraYawForDodge ? "stable during dodge" : "stable while aiming/combat idle";
-                    return;
-                }
-
-                movementDirection = lastForward;
+                cameraState = "stable: no new mouse intent";
+                return;
             }
 
-            movementDirection.Normalize();
+            intent.Normalize();
 
-            float blendT = 1f - Mathf.Exp(-movementDirectionBlend * Time.deltaTime);
-            smoothedMoveForward = Vector3.Slerp(smoothedMoveForward, movementDirection, blendT);
+            float blend =
+                1f - Mathf.Exp(-movementDirectionBlend * Time.deltaTime);
+
+            smoothedMoveForward = Vector3.Slerp(
+                smoothedMoveForward,
+                intent,
+                blend
+            );
+
             smoothedMoveForward.y = 0f;
 
             if (smoothedMoveForward.sqrMagnitude < 0.001f)
-                smoothedMoveForward = movementDirection;
+                smoothedMoveForward = intent;
 
             smoothedMoveForward.Normalize();
 
-            float maxRadians = Mathf.Deg2Rad * Mathf.Max(1f, cameraYawDegreesPerSecond) * Time.deltaTime;
-            lastForward = Vector3.RotateTowards(lastForward, smoothedMoveForward, maxRadians, 0f);
+            float maximumRadians =
+                Mathf.Deg2Rad *
+                Mathf.Max(1f, cameraYawDegreesPerSecond) *
+                Time.deltaTime;
+
+            lastForward = Vector3.RotateTowards(
+                lastForward,
+                smoothedMoveForward,
+                maximumRadians,
+                0f
+            );
+
             lastForward.y = 0f;
 
             if (lastForward.sqrMagnitude < 0.001f)
-                lastForward = movementDirection;
+                lastForward = intent;
 
             lastForward.Normalize();
-            cameraState = "locked behind real movement";
+            cameraState = "locked behind mouse/player aim intent";
         }
 
-        private Vector3 ResolveRealMovementDirection()
+        private Vector3 ResolveCameraIntentDirection()
         {
             if (horseController != null && horseController.IsMounted)
             {
-                if (horseController.HasRideMoveInput)
-                {
-                    Vector3 mountedMove = horseController.LastMountedMovementDirection;
-                    mountedMove.y = 0f;
+                Vector3 mountedAim =
+                    horseController.LastMountedAimDirection;
 
-                    if (mountedMove.sqrMagnitude > 0.001f)
-                        return mountedMove.normalized;
-                }
+                mountedAim.y = 0f;
 
+                return mountedAim.sqrMagnitude > 0.001f
+                    ? mountedAim.normalized
+                    : Vector3.zero;
+            }
+
+            if (playerController == null)
                 return Vector3.zero;
-            }
 
-            if (playerController != null)
-            {
-                // Dodge is an evasive burst, not a request to rotate the whole camera rig.
-                // Backward dodge especially should not make the camera orbit behind the reversed dash direction.
-                if (playerController.ShouldLockCameraYawForDodge)
-                    return Vector3.zero;
+            Vector3 lookDirection =
+                playerController.LastLookDirection;
 
-                if (playerController.HasMoveInput)
-                {
-                    Vector3 playerMove = playerController.LastMoveWorldDirection;
-                    playerMove.y = 0f;
+            lookDirection.y = 0f;
 
-                    if (playerMove.sqrMagnitude > 0.001f)
-                        return playerMove.normalized;
-                }
-            }
-
-            return Vector3.zero;
+            return lookDirection.sqrMagnitude > 0.001f
+                ? lookDirection.normalized
+                : Vector3.zero;
         }
 
         private void FollowLockedBehind(Vector3 forward)

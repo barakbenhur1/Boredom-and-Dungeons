@@ -345,8 +345,53 @@ namespace BoredomAndDungeons
                 Mathf.Max(0.1f, jumpCooldown) *
                 cooldownMultiplier;
 
+            // BD SQUARE JUMPER SAFE LANDING AND SPAWN FIX
             Vector3 targetPoint = target.position;
             targetPoint.y = transform.position.y;
+
+            float bodyRadius =
+                controller != null
+                    ? Mathf.Max(0.35f, controller.radius)
+                    : 1.25f;
+
+            float bodyHeight =
+                controller != null
+                    ? Mathf.Max(bodyRadius * 2f, controller.height)
+                    : 2.4f;
+
+            float playerClearance = bodyRadius + 1.15f;
+
+            if (BDSafeEnemyPlacement.TryFindSafeGroundPosition(
+                    targetPoint,
+                    transform,
+                    target,
+                    bodyRadius,
+                    bodyHeight,
+                    playerClearance,
+                    4.8f,
+                    out Vector3 safeLandingPoint))
+            {
+                targetPoint = safeLandingPoint;
+            }
+            else
+            {
+                Vector3 away =
+                    transform.position - target.position;
+
+                away.y = 0f;
+
+                if (away.sqrMagnitude < 0.001f)
+                    away = -target.forward;
+
+                if (away.sqrMagnitude < 0.001f)
+                    away = Vector3.forward;
+
+                targetPoint =
+                    target.position +
+                    away.normalized * playerClearance;
+
+                targetPoint.y = transform.position.y;
+            }
 
             BDSquareJumperVisuals.SpawnGroundTelegraph(
                 targetPoint,
@@ -899,6 +944,19 @@ namespace BoredomAndDungeons
                     out Vector3 position,
                     out Quaternion rotation
                 );
+
+                if (!BDSafeEnemyPlacement.TryFindSafeGroundPosition(
+                        position,
+                        owner: null,
+                        player: target,
+                        bodyRadius: 0.55f,
+                        bodyHeight: 1.8f,
+                        minimumPlayerDistance: 1.55f,
+                        maximumSearchRadius: 5.5f,
+                        out position))
+                {
+                    continue;
+                }
 
                 if (summonBudget != null)
                 {
