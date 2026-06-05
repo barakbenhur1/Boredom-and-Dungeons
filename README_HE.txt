@@ -1,91 +1,139 @@
-Boredom & Dungeons — Reliable Auto Reload + Dynamic Player-Up Minimap
-============================================================================
+Boredom & Dungeons — Stability Gate
+====================================
 
-מה תוקן
--------
+מטרת החבילה
+------------
+זהו שער הייצוב שחייב לעבור לפני שמסמנים את Stage 16 או Stage 17
+כמושלמים ולפני שמתחילים לממש את ארבעת המיני-בוסים.
 
-1. טעינה אוטומטית אמינה
-------------------------
-נוסף watchdog שפועל בכל Update:
+החבילה אינה משנה gameplay קיים.
+היא מוסיפה כלי בדיקה בלבד.
 
-- אם המחסנית ריקה.
-- אם Reload עדיין לא התחיל.
-- ואם השחקן אינו באמצע Charged Shot.
+שכבה 1 — Terminal Source Scan
+------------------------------
+פועלת גם כאשר Unity לא מצליח לקמפל.
 
-אז Reload מתחיל אוטומטית.
+בודקת:
+- UnityEditor imports בתוך Runtime.
+- GUID כפול בקבצי meta.
+- קבצים חשובים בלי meta.
+- הגדרות type כפולות שאינן partial.
+- RuntimeInitializeOnLoadMethod שדורשים בדיקת כפילות.
+- רכיב יישור המיני-מפה הישן לצד BDMazeMinimap האמיתי.
 
-סיום Charged Shot מפעיל במפורש Reload חדש:
-- התחמושת נקבעת ל-0.
-- מצב Reload קודם מאופס אם נתקע.
-- טיימר Reload חדש מתחיל מיד.
-- אין צורך ללחוץ שוב על Q.
+הרצה:
 
-2. מיני-מפה דינמית לפי כיוון השחקן
------------------------------------
-המיני-מפה האמיתית היא BDMazeMinimap.
-היא מצוירת באמצעות OnGUI ולא משתמשת במצלמת MinimapCamera.
+python3 tools/bd_stability_source_scan.py
 
-התיקון החדש:
-- מציג תמיד את כיוון השחקן כלפי מעלה.
-- מסובב את המפה סביב נקודת השחקן.
-- משאיר את סמן השחקן יציב.
-- מעדכן את הסיבוב בכל פריים.
-- משתמש ב-LastLookDirection ברגל.
-- משתמש בכיוון הרכיבה/הכוונה בזמן רכיבה.
-- מסובב גם את הסוס והחדרים.
+הפקודה מחזירה exit code 1 אם נמצאו Blockers.
 
-3. ניקוי התיקון הקודם
----------------------
-הסקריפט מסיר את:
-BDMinimapPerspectiveAlignment.cs
-BDMinimapPerspectiveAlignment.cs.meta
+הדוחות נשמרים ב:
+
+Library/BoredomAndDungeons/StabilityReports/
+
+שכבה 2 — Unity Editor Stability Gate
+-------------------------------------
+לאחר שהקומפילציה עוברת, ב-Unity:
+
+Boredom And Dungeons
+→ Validation
+→ Run Full Stability Gate
+
+בודקת את כל הסצנות וה-Prefabs תחת Assets/_Project:
+
+- Missing Scripts.
+- שני עותקים של אותו MonoBehaviour על אותו GameObject.
+- יותר ממערכת קריטית אחת:
+  Player, PlayerController, PlayerCombat, Horse, HUD, Minimap.
+- מערכות מתחרות לאותו תפקיד.
+- Runtime installers כפולים.
+- שחקן בלי PlayerController / PlayerCombat / Health.
+- סוס בלי HorseHealth.
+- אויב עם יותר מ-BDHealth אחד.
+- UnityEditor בקוד Runtime.
+- GUID כפולים.
+
+בנייה מחדש + בדיקה
+------------------
+אפשר להפעיל:
+
+Boredom And Dungeons
+→ Validation
+→ Rebuild Prototype And Run Gate
+
+הכלי מפעיל:
+
+Boredom And Dungeons
+→ Create Clean Maze Prototype Scene
+
+ולאחר מכן מריץ את שער הייצוב המלא.
+
+Play Mode Smoke Test
+--------------------
+פתח:
+
+Boredom And Dungeons
+→ Validation
+→ Open Play Mode Smoke Checklist
+
+הבדיקות:
+
+- Movement.
+- Jump / Landing.
+- Dodge + i-frames.
+- Light / Heavy / Attack Buffer.
+- Landing Attack.
+- Physical Parry.
+- Tap / Charged Shot.
+- Automatic Reload.
+- Horse.
+- Damage / Death / Reset.
+- Dynamic Minimap.
+- Console.
+
+PASS report ניתן לשמור רק לאחר שכל הבדיקות סומנו כעוברות.
+
+דוחות
+-----
+כל הדוחות נשמרים מחוץ ל-Assets כדי שלא ייכנסו ל-build או לגיט:
+
+Library/BoredomAndDungeons/StabilityReports/
 
 התקנה
 -----
 מתוך תיקיית Boredom-and-Dungeons:
 
-unzip -o ~/Downloads/Boredom-and-Dungeons_Reliable_Reload_Player_Up_Minimap_Fix.zip -d .
-python3 tools/apply_reliable_reload_player_up_minimap_fix.py
+unzip -o ~/Downloads/Boredom-and-Dungeons_Stability_Gate.zip -d .
 
-לאחר מכן חזור ל-Unity והמתן לסיום הקומפילציה.
+סריקה ראשונה:
 
-קבצים שמתעדכנים
----------------
-Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs
-Assets/_Project/Scripts/Runtime/BDMazeMinimap.cs
+python3 tools/bd_stability_source_scan.py
 
-גיבוי
------
-/tmp/BoredomAndDungeons_reload_player_up_minimap_backup_YYYYMMDD_HHMMSS
+לאחר שהסריקה אינה מציגה Blockers:
 
-בדיקות
-------
-1. בצע Charged Shot מלא.
-2. מיד אחריו ה-HUD צריך להציג RELOAD.
-3. אל תלחץ שוב על Q.
-4. המחסנית צריכה להתמלא בסיום הטיימר.
-5. רוקן גם את הכדור האחרון בירייה רגילה ובדוק Reload אוטומטי.
-6. הסתובב במקום: המפה צריכה להסתובב בכל פריים.
-7. הכיוון שאליו השחקן פונה צריך להיות תמיד למעלה.
-8. סמן השחקן צריך להישאר יציב.
-9. בדוק גם בזמן רכיבה.
-10. ודא שאין Compiler Errors חדשים.
+1. פתח Unity.
+2. המתן לסיום הקומפילציה.
+3. הרץ Rebuild Prototype And Run Gate.
+4. הרץ Play Mode Smoke Checklist.
+5. אל תסמן שלב כמושלם לפני שלושת ה-PASS reports.
 
-כוונון
-------
-BDMazeMinimap:
-Rotate With Player Direction = true
-Rotation Speed Degrees Per Second = 900
-Rotation Offset Degrees = 0
+קבצים חדשים
+------------
+Assets/_Project/Scripts/Editor/Validation/
+tools/bd_stability_source_scan.py
 
-אם הכיוון הפוך ב-180 מעלות:
-Rotation Offset Degrees = 180
+לא הוחלפו או נמחקו קבצי gameplay.
 
-פקודות Git
-----------
+פקודות Git לאחר שכל הבדיקות עוברות
+----------------------------------
 git status --short
 git diff --check
 git add -A
-git commit -m "Fix automatic reload and rotate minimap with player direction"
+git commit -m "Add project stability gate and smoke test tools"
 git pull --rebase origin main
 git push origin main
+
+בדיקת סיום:
+
+git status
+git log --oneline -5
