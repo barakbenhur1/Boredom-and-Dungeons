@@ -10,8 +10,9 @@ namespace BoredomAndDungeons
         [Header("Timing")]
         [SerializeField] private float attackTimingEpsilon = 0.16f;
         [SerializeField] private float physicalSignalMaxAge = 0.20f;
-        [SerializeField] private float normalParryFreezeDuration = 1.0f;
-        [SerializeField] private float upgradedParryFreezeDuration = 2.0f;
+        // BD PARRY DURATION TUNING FIX
+        [SerializeField] private float normalParryFreezeDuration = 1.5f;
+        [SerializeField] private float upgradedParryFreezeDuration = 2.5f;
 
         [Header("Range")]
         [SerializeField] private float maximumParryDistance = 3.2f;

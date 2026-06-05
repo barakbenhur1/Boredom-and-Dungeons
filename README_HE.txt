@@ -1,139 +1,54 @@
-Boredom & Dungeons — Stability Gate
-====================================
+Boredom & Dungeons — One-Click QA Self-Scan Fix V2
+===================================================
 
-מטרת החבילה
-------------
-זהו שער הייצוב שחייב לעבור לפני שמסמנים את Stage 16 או Stage 17
-כמושלמים ולפני שמתחילים לממש את ארבעת המיני-בוסים.
+למה V1 נכשל
+-----------
+הסקריפט הראשון חיפש בלוק קוד שלם עם רווחים ופורמט מדויקים.
+הקובץ המקומי כבר היה שונה מעט, ולכן התקבלה השגיאה:
 
-החבילה אינה משנה gameplay קיים.
-היא מוסיפה כלי בדיקה בלבד.
+Expected editor-source scan block was not found exactly once.
 
-שכבה 1 — Terminal Source Scan
-------------------------------
-פועלת גם כאשר Unity לא מצליח לקמפל.
+מה V2 עושה
+----------
+V2 אינו מחפש בלוק שלם.
 
-בודקת:
-- UnityEditor imports בתוך Runtime.
-- GUID כפול בקבצי meta.
-- קבצים חשובים בלי meta.
-- הגדרות type כפולות שאינן partial.
-- RuntimeInitializeOnLoadMethod שדורשים בדיקת כפילות.
-- רכיב יישור המיני-מפה הישן לצד BDMazeMinimap האמיתי.
+הוא מאתר לפי הסדר:
 
-הרצה:
+1. את אזור סריקת קובצי ה-Editor:
+   if (Directory.Exists(editorRoot))
 
-python3 tools/bd_stability_source_scan.py
+2. את השורה:
+   string relative = MakeRelative(file);
 
-הפקודה מחזירה exit code 1 אם נמצאו Blockers.
+3. מוסיף מיד אחריה החרגה רק עבור:
+   Assets/_Project/Scripts/Editor/Validation/BDOneClickQAWindow.cs
 
-הדוחות נשמרים ב:
-
-Library/BoredomAndDungeons/StabilityReports/
-
-שכבה 2 — Unity Editor Stability Gate
--------------------------------------
-לאחר שהקומפילציה עוברת, ב-Unity:
-
-Boredom And Dungeons
-→ Validation
-→ Run Full Stability Gate
-
-בודקת את כל הסצנות וה-Prefabs תחת Assets/_Project:
-
-- Missing Scripts.
-- שני עותקים של אותו MonoBehaviour על אותו GameObject.
-- יותר ממערכת קריטית אחת:
-  Player, PlayerController, PlayerCombat, Horse, HUD, Minimap.
-- מערכות מתחרות לאותו תפקיד.
-- Runtime installers כפולים.
-- שחקן בלי PlayerController / PlayerCombat / Health.
-- סוס בלי HorseHealth.
-- אויב עם יותר מ-BDHealth אחד.
-- UnityEditor בקוד Runtime.
-- GUID כפולים.
-
-בנייה מחדש + בדיקה
-------------------
-אפשר להפעיל:
-
-Boredom And Dungeons
-→ Validation
-→ Rebuild Prototype And Run Gate
-
-הכלי מפעיל:
-
-Boredom And Dungeons
-→ Create Clean Maze Prototype Scene
-
-ולאחר מכן מריץ את שער הייצוב המלא.
-
-Play Mode Smoke Test
---------------------
-פתח:
-
-Boredom And Dungeons
-→ Validation
-→ Open Play Mode Smoke Checklist
-
-הבדיקות:
-
-- Movement.
-- Jump / Landing.
-- Dodge + i-frames.
-- Light / Heavy / Attack Buffer.
-- Landing Attack.
-- Physical Parry.
-- Tap / Charged Shot.
-- Automatic Reload.
-- Horse.
-- Damage / Death / Reset.
-- Dynamic Minimap.
-- Console.
-
-PASS report ניתן לשמור רק לאחר שכל הבדיקות סומנו כעוברות.
-
-דוחות
------
-כל הדוחות נשמרים מחוץ ל-Assets כדי שלא ייכנסו ל-build או לגיט:
-
-Library/BoredomAndDungeons/StabilityReports/
+הבדיקה ממשיכה לסרוק את כל שאר קובצי ה-Editor.
 
 התקנה
 -----
 מתוך תיקיית Boredom-and-Dungeons:
 
-unzip -o ~/Downloads/Boredom-and-Dungeons_Stability_Gate.zip -d .
+unzip -o ~/Downloads/Boredom-and-Dungeons_One_Click_QA_Self_Scan_Fix_V2.zip -d .
+python3 tools/apply_one_click_qa_self_scan_fix_v2.py
 
-סריקה ראשונה:
+לאחר מכן:
 
-python3 tools/bd_stability_source_scan.py
-
-לאחר שהסריקה אינה מציגה Blockers:
-
-1. פתח Unity.
+1. חזור ל-Unity.
 2. המתן לסיום הקומפילציה.
-3. הרץ Rebuild Prototype And Run Gate.
-4. הרץ Play Mode Smoke Checklist.
-5. אל תסמן שלב כמושלם לפני שלושת ה-PASS reports.
+3. נקה את Console.
+4. הפעל:
 
-קבצים חדשים
-------------
-Assets/_Project/Scripts/Editor/Validation/
-tools/bd_stability_source_scan.py
+Boredom And Dungeons
+→ TEST EVERYTHING
 
-לא הוחלפו או נמחקו קבצי gameplay.
+התוצאה הצפויה
+-------------
+ה-Blocker הבא צריך להיעלם:
 
-פקודות Git לאחר שכל הבדיקות עוברות
-----------------------------------
-git status --short
-git diff --check
-git add -A
-git commit -m "Add project stability gate and smoke test tools"
-git pull --rebase origin main
-git push origin main
+EDITOR_RENDERER_MATERIAL_ACCESS
+Assets/_Project/Scripts/Editor/Validation/BDOneClickQAWindow.cs
 
-בדיקת סיום:
+אם אין בעיות נוספות, יופיע:
 
-git status
-git log --oneline -5
+AUTOMATED PASS

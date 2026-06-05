@@ -13,7 +13,9 @@ namespace BoredomAndDungeons
         [SerializeField] private bool lockedBehindTarget = true;
         [SerializeField] private float distanceBehind = 15.25f;
         [SerializeField] private float height = 17.75f;
-        [SerializeField] private float lookAhead = 6.75f;
+        [SerializeField] private float lookAhead = 8.25f;
+        // BD FORWARD SCREEN SPACE LOOKAHEAD FIX
+        [SerializeField] private float extraForwardCompositionLookAhead = 2.35f;
         [SerializeField] private float followSmooth = 9.5f;
         [SerializeField] private float rotationSmooth = 8.5f;
 
@@ -241,7 +243,10 @@ namespace BoredomAndDungeons
                 1f - Mathf.Exp(-followSmooth * Time.deltaTime)
             );
 
-            Vector3 lookPoint = targetPosition + forward.normalized * lookAhead;
+            Vector3 lookPoint =
+                targetPosition +
+                forward.normalized *
+                (lookAhead + Mathf.Max(0f, extraForwardCompositionLookAhead));
             Quaternion desiredRotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
 
             Vector3 euler = desiredRotation.eulerAngles;

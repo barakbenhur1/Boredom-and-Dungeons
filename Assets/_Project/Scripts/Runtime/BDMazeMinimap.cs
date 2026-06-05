@@ -24,6 +24,9 @@ namespace BoredomAndDungeons
         [SerializeField] private bool rotateWithPlayerDirection = true;
         [SerializeField] private float rotationSpeedDegreesPerSecond = 900f;
         [SerializeField] private float rotationOffsetDegrees = 0f;
+        // BD MINIMAP 90-DEGREE MOVEMENT SNAP FIX
+        [SerializeField] private bool snapToMovementCardinals = true;
+        [SerializeField] private float movementSnapThreshold = 0.35f;
 
         [Header("Colors")]
         [SerializeField] private Color backgroundColor = new Color(0f, 0f, 0f, 0.78f);
@@ -215,22 +218,36 @@ namespace BoredomAndDungeons
             if (!rotateWithPlayerDirection || player == null)
                 return;
 
-            Vector3 direction = ResolvePlayerViewDirection();
-            direction.y = 0f;
+            float desiredRotation;
 
-            if (direction.sqrMagnitude < 0.001f)
+            if (snapToMovementCardinals &&
+                TryResolveMovementCardinalRotation(out desiredRotation))
+            {
+                desiredRotation += rotationOffsetDegrees;
+            }
+            else if (snapToMovementCardinals)
+            {
                 return;
+            }
+            else
+            {
+                Vector3 direction = ResolvePlayerViewDirection();
+                direction.y = 0f;
 
-            direction.Normalize();
+                if (direction.sqrMagnitude < 0.001f)
+                    return;
 
-            float playerYaw =
-                Mathf.Atan2(
-                    direction.x,
-                    direction.z
-                ) * Mathf.Rad2Deg;
+                direction.Normalize();
 
-            float desiredRotation =
-                -playerYaw + rotationOffsetDegrees;
+                float playerYaw =
+                    Mathf.Atan2(
+                        direction.x,
+                        direction.z
+                    ) * Mathf.Rad2Deg;
+
+                desiredRotation =
+                    -playerYaw + rotationOffsetDegrees;
+            }
 
             if (!mapRotationInitialized)
             {
@@ -248,6 +265,58 @@ namespace BoredomAndDungeons
                         rotationSpeedDegreesPerSecond
                     ) * Time.unscaledDeltaTime
                 );
+        }
+
+        private bool TryResolveMovementCardinalRotation(
+            out float rotationDegrees)
+        {
+            rotationDegrees = currentMapRotationDegrees;
+
+            Vector2 moveInput =
+                playerController != null
+                    ? playerController.LastMoveInput
+                    : Vector2.zero;
+
+            if (horseController == null)
+                horseController = FindFirstObjectByType<BDHorseController>();
+
+            if (horseController != null &&
+                horseController.IsMounted &&
+                horseController.HasRideMoveInput)
+            {
+                Vector3 mountedDirection =
+                    horseController.LastMountedMovementDirection;
+
+                mountedDirection.y = 0f;
+
+                if (mountedDirection.sqrMagnitude >
+                    movementSnapThreshold * movementSnapThreshold)
+                {
+                    float yaw =
+                        Mathf.Atan2(
+                            mountedDirection.x,
+                            mountedDirection.z
+                        ) * Mathf.Rad2Deg;
+
+                    rotationDegrees = -Mathf.Round(yaw / 90f) * 90f;
+                    return true;
+                }
+            }
+
+            if (moveInput.sqrMagnitude <
+                movementSnapThreshold * movementSnapThreshold)
+            {
+                return false;
+            }
+
+            if (Mathf.Abs(moveInput.x) > Mathf.Abs(moveInput.y))
+            {
+                rotationDegrees = moveInput.x > 0f ? -90f : 90f;
+                return true;
+            }
+
+            rotationDegrees = moveInput.y > 0f ? 0f : 180f;
+            return true;
         }
 
         private Vector3 ResolvePlayerViewDirection()

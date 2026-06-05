@@ -59,7 +59,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
     public static class BDProjectStabilityGate
     {
         private const string MenuRoot =
-            "Boredom And Dungeons/Validation/";
+            "Boredom And Dungeons/Advanced QA/";
 
         private const string PrototypeBuilderMenu =
             "Boredom And Dungeons/Create Clean Maze Prototype Scene";

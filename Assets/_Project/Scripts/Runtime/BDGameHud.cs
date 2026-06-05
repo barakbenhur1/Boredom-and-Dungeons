@@ -101,8 +101,10 @@ namespace BoredomAndDungeons
             float reloadProgress = playerCombat.RangedReloadProgress01;
             float remaining = playerCombat.RangedReloadRemaining;
 
-            float panelWidth = 258f;
-            float panelHeight = 104f;
+            // BD EXPANDED AMMO UI FIX
+            int visibleAmmoCapacity = Mathf.Clamp(maxAmmo, 1, 6);
+            float panelWidth = Mathf.Max(258f, 212f + visibleAmmoCapacity * 28f);
+            float panelHeight = 112f;
             float panelMarginRight = 18f;
             float panelMarginTop = 18f;
             Rect panel = new Rect(Screen.width - panelWidth - panelMarginRight, panelMarginTop, panelWidth, panelHeight);
@@ -122,34 +124,121 @@ namespace BoredomAndDungeons
             Color fill = reloading ? new Color(1.0f, 0.72f, 0.16f, 1f) : new Color(0.35f, 0.95f, 1f, 1f);
             DrawBar(bar, readyRatio, fill, new Color(0.035f, 0.07f, 0.085f, 1f));
 
-            DrawAmmoPips(new Rect(panel.x + 96f, panel.y + 27f, 92f, 26f), ammo, maxAmmo, reloading);
+            DrawAmmoPips(
+                new Rect(
+                    panel.x + 96f,
+                    panel.y + 25f,
+                    panel.width - 158f,
+                    34f
+                ),
+                ammo,
+                maxAmmo,
+                reloading
+            );
             DrawReloadRing(new Vector2(panel.x + panel.width - 48f, panel.y + 42f), 24f, reloadProgress, reloading);
 
             string status = reloading ? $"RELOAD {remaining:0.0}s" : "READY";
             GUI.Label(new Rect(panel.x + 126f, panel.y + 55f, 104f, 18f), status, ammoSmallStyle);
         }
 
-        private void DrawAmmoPips(Rect rect, int ammo, int maxAmmo, bool reloading)
+        private void DrawAmmoPips(
+            Rect rect,
+            int ammo,
+            int maxAmmo,
+            bool reloading)
         {
-            maxAmmo = Mathf.Max(1, maxAmmo);
-            float gap = 7f;
-            float size = Mathf.Min(18f, (rect.width - gap * (maxAmmo - 1)) / maxAmmo);
+            maxAmmo = Mathf.Clamp(maxAmmo, 1, 6);
+            ammo = Mathf.Clamp(ammo, 0, maxAmmo);
+
+            float gap = 6f;
+            float size =
+                Mathf.Min(
+                    20f,
+                    (rect.width - gap * (maxAmmo - 1)) / maxAmmo
+                );
+
+            float totalWidth =
+                maxAmmo * size + (maxAmmo - 1) * gap;
+
+            float startX = rect.x + Mathf.Max(0f, (rect.width - totalWidth) * 0.5f);
+            float y = rect.y + (rect.height - size) * 0.5f;
 
             for (int i = 0; i < maxAmmo; i++)
             {
-                Rect pip = new Rect(rect.x + i * (size + gap), rect.y, size, rect.height);
+                Rect pip =
+                    new Rect(
+                        startX + i * (size + gap),
+                        y,
+                        size,
+                        size
+                    );
+
                 bool filled = i < ammo;
-                float pulse = reloading ? 0.65f + Mathf.Sin(Time.time * 8f + i * 0.8f) * 0.18f : 1f;
+
+                Color background =
+                    new Color(0.02f, 0.035f, 0.04f, 1f);
 
                 Color fill = filled
                     ? new Color(0.35f, 0.95f, 1f, 1f)
-                    : new Color(0.06f, 0.12f, 0.14f, 1f);
+                    : new Color(0.045f, 0.09f, 0.105f, 1f);
 
                 if (!filled && reloading)
-                    fill = new Color(0.85f, 0.55f, 0.12f, Mathf.Clamp01(pulse));
+                {
+                    float pulse =
+                        0.55f +
+                        Mathf.Sin(
+                            Time.time * 9f + i * 0.75f
+                        ) * 0.22f;
 
-                DrawBar(pip, 1f, fill, new Color(0.02f, 0.035f, 0.04f, 1f));
+                    fill =
+                        new Color(
+                            1f,
+                            0.68f,
+                            0.16f,
+                            Mathf.Clamp01(pulse)
+                        );
+                }
+
+                DrawBar(pip, 1f, background, background);
+                DrawAmmoBulletIcon(pip, fill, filled);
             }
+        }
+
+        private void DrawAmmoBulletIcon(
+            Rect rect,
+            Color color,
+            bool filled)
+        {
+            Color old = GUI.color;
+
+            float capHeight = rect.height * 0.32f;
+            Rect body =
+                new Rect(
+                    rect.x + rect.width * 0.22f,
+                    rect.y + capHeight * 0.65f,
+                    rect.width * 0.56f,
+                    rect.height - capHeight * 0.65f
+                );
+
+            Rect cap =
+                new Rect(
+                    rect.x + rect.width * 0.32f,
+                    rect.y,
+                    rect.width * 0.36f,
+                    capHeight
+                );
+
+            GUI.color = color;
+            GUI.DrawTexture(body, whiteTexture);
+            GUI.DrawTexture(cap, whiteTexture);
+
+            GUI.color = filled
+                ? new Color(1f, 1f, 1f, 0.55f)
+                : new Color(1f, 1f, 1f, 0.18f);
+
+            GUI.Box(body, GUIContent.none);
+            GUI.Box(cap, GUIContent.none);
+            GUI.color = old;
         }
 
         private void DrawReloadRing(Vector2 center, float radius, float progress, bool reloading)

@@ -30,6 +30,8 @@ namespace BoredomAndDungeons
         [SerializeField] private float mouseAimMovingTurnDegreesPerSecond = 275f;
         [SerializeField] private float mouseAimTargetSmoothing = 26f;
         [SerializeField] private float mousePointAimSmoothing = 60f;
+        // BD MOUSE-INTENT DEADZONE FIX
+        [SerializeField] private float mouseIntentDeadZonePixels = 9f;
 
         [Header("Jump")]
         [SerializeField] private float jumpHeight = 1.35f;
@@ -81,6 +83,8 @@ namespace BoredomAndDungeons
         private Vector3 movementReferenceForward = Vector3.forward;
         private string lastInputSource = "none";
         private string lastLookSource = "mouse-point";
+        private Vector2 lastMouseIntentPosition;
+        private bool hasMouseIntentPosition;
 
         public Vector2 LastMoveInput => lastMoveInput;
         public bool HasMoveInput => lastMoveInput.sqrMagnitude > 0.0001f;
@@ -144,9 +148,13 @@ namespace BoredomAndDungeons
 
             bool wantsMove = moveInput.sqrMagnitude > 0.0001f;
 
-            Vector3 aimTarget = ResolveMouseAimDirection();
-            if (aimTarget.sqrMagnitude > 0.001f)
-                targetLookDirection = SmoothAimTargetDirection(aimTarget.normalized);
+            if (ShouldAcceptMouseAimUpdate())
+            {
+                Vector3 aimTarget = ResolveMouseAimDirection();
+
+                if (aimTarget.sqrMagnitude > 0.001f)
+                    targetLookDirection = SmoothAimTargetDirection(aimTarget.normalized);
+            }
 
             float turnSpeed = wantsMove ? mouseAimMovingTurnDegreesPerSecond : mouseAimIdleTurnDegreesPerSecond;
             lastLookDirection = TurnAimGradually(lastLookDirection, targetLookDirection, turnSpeed);
@@ -167,6 +175,47 @@ namespace BoredomAndDungeons
 
             characterController.Move(velocity * Time.deltaTime);
             lastLookSource = wantsMove ? "mouse-clamped-60-front-cone-moving" : "mouse-clamped-60-front-cone-idle";
+        }
+
+        private bool ShouldAcceptMouseAimUpdate()
+        {
+            Vector2 mousePosition = ReadMouseScreenPosition();
+
+            if (!hasMouseIntentPosition)
+            {
+                lastMouseIntentPosition = mousePosition;
+                hasMouseIntentPosition = true;
+                return true;
+            }
+
+            float minPixels = Mathf.Max(0.5f, mouseIntentDeadZonePixels);
+            float sqrDelta =
+                (mousePosition - lastMouseIntentPosition).sqrMagnitude;
+
+            if (sqrDelta < minPixels * minPixels)
+                return false;
+
+            lastMouseIntentPosition = mousePosition;
+            return true;
+        }
+
+        private static Vector2 ReadMouseScreenPosition()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Mouse mouse = Mouse.current;
+
+            if (mouse != null)
+                return mouse.position.ReadValue();
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.mousePosition;
+#else
+            return new Vector2(
+                Screen.width * 0.5f,
+                Screen.height * 0.5f
+            );
+#endif
         }
 
         private Vector3 ResolveMouseAimDirection()

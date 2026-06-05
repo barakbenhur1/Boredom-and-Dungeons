@@ -89,7 +89,19 @@ namespace BoredomAndDungeons
             flashEndsAtUnscaled = freezeStartedAtUnscaled + 0.20f;
             active = true;
 
+            // BD PARRY RING VISUAL REDESIGN FIX
             SpawnParryBurst(player.position + Vector3.up * 0.95f, heavy);
+
+            BDPlayerParryState state =
+                player.GetComponent<BDPlayerParryState>();
+
+            BDParryTimeRingVisual.Spawn(
+                player,
+                freezeDuration,
+                heavy,
+                state != null && state.HasExtendedFreeze
+            );
+
             FreezeWorldExceptPlayer(player);
             BDGameFeelEvents.RequestCameraShake(heavy ? 0.38f : 0.26f, 0.18f);
         }
@@ -345,14 +357,8 @@ namespace BoredomAndDungeons
                 GUI.DrawTexture(new Rect(0f, 0f, border, Screen.height), whiteTexture);
                 GUI.DrawTexture(new Rect(Screen.width - border, 0f, border, Screen.height), whiteTexture);
 
-                float progressWidth = Mathf.Min(460f, Screen.width * 0.42f);
-                Rect progressBack = new Rect((Screen.width - progressWidth) * 0.5f, Screen.height * 0.20f, progressWidth, 10f);
-                GUI.color = new Color(0f, 0f, 0f, 0.72f);
-                GUI.DrawTexture(progressBack, whiteTexture);
-                Rect progressFill = progressBack;
-                progressFill.width *= 1f - Progress01;
-                GUI.color = new Color(0.28f, 0.90f, 1f, 1f);
-                GUI.DrawTexture(progressFill, whiteTexture);
+                // The old loading bar was intentionally removed.
+                // Remaining time is now shown by the in-world ring around the player.
 
                 GUI.color = Color.white;
                 GUI.Label(new Rect(0f, Screen.height * 0.12f, Screen.width, 48f), "PARRY", titleStyle);
