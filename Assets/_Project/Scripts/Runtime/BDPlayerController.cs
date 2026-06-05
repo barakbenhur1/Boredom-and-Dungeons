@@ -43,6 +43,8 @@ namespace BoredomAndDungeons
         [SerializeField] private float dodgeInvulnerabilityExtraTime = 0.14f;
         [SerializeField] private float dodgeAfterimageInterval = 0.035f;
         [SerializeField] private bool spawnDodgeAfterimages = true;
+        // BD FORWARD DODGE REAR VISUAL OFFSET
+        [SerializeField] private float forwardDodgeVisualRearOffset = 0.82f;
 
         [Header("Touch")]
         [SerializeField] private bool enableTouchDragAsFingerTrace = true;
@@ -669,9 +671,9 @@ namespace BoredomAndDungeons
             lastDodgeStartedAt = Time.time;
             dodgeInvulnerableUntil = Time.time + dashDuration + Mathf.Max(0f, dodgeInvulnerabilityExtraTime);
             nextDodgeAfterimageAt = 0f;
+            lastDodgeDirection = dodgeDirection;
             SpawnDodgeAfterimageIfNeeded();
             BDGameFeelAudio.PlayDodge();
-            lastDodgeDirection = dodgeDirection;
         }
 
         private void TickDash()
@@ -707,10 +709,37 @@ namespace BoredomAndDungeons
             Vector3 dashDirection = dashVelocity;
             dashDirection.y = 0f;
 
-            if (dashDirection.sqrMagnitude > 0.001f)
-                visualRotation = Quaternion.LookRotation(dashDirection.normalized, Vector3.up);
+            Vector3 visualPosition = transform.position;
 
-            BDPlayerDodgeAfterimage.Spawn(transform.position, visualRotation, radius, height);
+            if (dashDirection.sqrMagnitude > 0.001f)
+            {
+                Vector3 normalizedDashDirection =
+                    dashDirection.normalized;
+
+                visualRotation =
+                    Quaternion.LookRotation(
+                        normalizedDashDirection,
+                        Vector3.up
+                    );
+
+                if (lastDodgeDirection ==
+                    DodgeDirection.Forward)
+                {
+                    visualPosition -=
+                        normalizedDashDirection *
+                        Mathf.Max(
+                            0f,
+                            forwardDodgeVisualRearOffset
+                        );
+                }
+            }
+
+            BDPlayerDodgeAfterimage.Spawn(
+                visualPosition,
+                visualRotation,
+                radius,
+                height
+            );
         }
 
 

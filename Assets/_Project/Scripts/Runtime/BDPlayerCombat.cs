@@ -55,6 +55,17 @@ namespace BoredomAndDungeons
         [SerializeField] private int rangedMagazineSize = 3;
         [SerializeField] private float rangedReloadDuration = 6.0f;
 
+        [Header("Charged Ranged Shot")]
+        // BD CHARGED SHOT SYSTEM
+        [SerializeField] private bool enableChargedShot = true;
+        [SerializeField] private float chargedShotBaseDuration = 0.90f;
+        [SerializeField] private float chargedShotSecondsPerAdditionalAmmo = 0.45f;
+        [SerializeField] private float chargedShotMaximumDuration = 3.20f;
+        [SerializeField] private float chargedProjectileScalePerExtraAmmo = 0.22f;
+        [SerializeField] private float chargedHitRadiusPerExtraAmmo = 0.10f;
+        [SerializeField] private float chargedKnockbackPerExtraAmmo = 0.28f;
+        [SerializeField] private float chargedSpeedPerExtraAmmo = 0.035f;
+
         [Header("Debug")]
         [SerializeField] private bool showCombatDebug = false;
 
@@ -76,6 +87,12 @@ namespace BoredomAndDungeons
         private float boostReloadDurationReduction;
         private float boostWeaponDamageMultiplier = 1f;
         private float boostMinimumReloadDuration = 1f;
+
+        private bool chargedShotCharging;
+        private float chargedShotStartedAtUnscaled;
+        private float chargedShotRequiredDuration;
+        private int chargedShotReservedAmmo;
+        private BDChargedShotChargeVisual chargedShotChargeVisual;
         private static readonly Collider[] MeleeHitBuffer = new Collider[64];
         private static readonly BDHealth[] MeleeHealthBuffer = new BDHealth[32];
         private static readonly Collider[] MeleeAssistBuffer = new Collider[32];
@@ -90,6 +107,18 @@ namespace BoredomAndDungeons
             );
         public float WeaponDamageMultiplier =>
             Mathf.Max(0.01f, boostWeaponDamageMultiplier);
+        public bool IsChargingRangedShot => chargedShotCharging;
+        public int ChargedShotReservedAmmo => chargedShotReservedAmmo;
+        public float ChargedShotRequiredDuration =>
+            chargedShotRequiredDuration;
+        public float ChargedShotProgress01 =>
+            !chargedShotCharging
+                ? 0f
+                : Mathf.Clamp01(
+                    (Time.unscaledTime -
+                     chargedShotStartedAtUnscaled) /
+                    Mathf.Max(0.01f, chargedShotRequiredDuration)
+                );
         public bool IsReloading => reloading;
         public float RangedReloadRemaining => reloading ? Mathf.Max(0f, reloadEndsAt - Time.time) : 0f;
         public float RangedReloadProgress01
@@ -117,6 +146,11 @@ namespace BoredomAndDungeons
             rangedAmmo = RangedMagazineSize;
         }
 
+        private void OnDisable()
+        {
+            CancelChargedShot();
+        }
+
         private void Update()
         {
             TickReload();
@@ -139,8 +173,7 @@ namespace BoredomAndDungeons
                     lastCombatAction = "mounted melee disabled";
             }
 
-            if (ReadRangedAttackPressed())
-                TryRangedAttack();
+            TickChargedRangedAttack();
         }
 
 
@@ -484,6 +517,312 @@ namespace BoredomAndDungeons
                 BDGameFeelAudio.PlayHeavyHit();
             else
                 BDGameFeelAudio.PlayLightHit();
+        }
+
+        private void TickChargedRangedAttack()
+        {
+            if (!enableChargedShot)
+            {
+                if (ReadRangedAttackPressed())
+                    TryRangedAttack();
+
+                return;
+            }
+
+            if (chargedShotCharging)
+            {
+                TickActiveChargedShot();
+                return;
+            }
+
+            if (!ReadRangedAttackPressed())
+                return;
+
+            if (Time.time < nextRangedAllowedAt ||
+                reloading)
+            {
+                return;
+            }
+
+            if (rangedAmmo <= 0)
+            {
+                BeginReloadIfNeeded();
+                return;
+            }
+
+            // With one projectile left, charging has no purpose.
+            // The last projectile fires immediately.
+            if (rangedAmmo == 1)
+            {
+                TryRangedAttack();
+                return;
+            }
+
+            BeginChargedShot();
+        }
+
+        private void BeginChargedShot()
+        {
+            chargedShotCharging = true;
+            chargedShotStartedAtUnscaled = Time.unscaledTime;
+            chargedShotReservedAmmo = Mathf.Max(2, rangedAmmo);
+
+            int additionalAmmo =
+                Mathf.Max(0, chargedShotReservedAmmo - 2);
+
+            chargedShotRequiredDuration =
+                Mathf.Min(
+                    Mathf.Max(
+                        0.10f,
+                        chargedShotMaximumDuration
+                    ),
+                    Mathf.Max(
+                        0.10f,
+                        chargedShotBaseDuration
+                    ) +
+                    additionalAmmo *
+                    Mathf.Max(
+                        0f,
+                        chargedShotSecondsPerAdditionalAmmo
+                    )
+                );
+
+            Vector3 direction = GetCombatAimDirection();
+            ApplyCombatFacing(direction);
+
+            chargedShotChargeVisual =
+                BDChargedShotChargeVisual.Spawn(
+                    transform,
+                    direction,
+                    chargedShotReservedAmmo,
+                    chargedShotRequiredDuration
+                );
+
+            lastCombatAction =
+                $"charging {chargedShotReservedAmmo} ammo " +
+                $"{chargedShotRequiredDuration:0.00}s";
+        }
+
+        private void TickActiveChargedShot()
+        {
+            if (reloading || rangedAmmo <= 0)
+            {
+                CancelChargedShot();
+                return;
+            }
+
+            Vector3 direction = GetCombatAimDirection();
+            ApplyCombatFacing(direction);
+
+            float progress = ChargedShotProgress01;
+
+            if (chargedShotChargeVisual != null)
+            {
+                chargedShotChargeVisual.SetCharge(
+                    progress,
+                    direction
+                );
+            }
+
+            // Completion is checked before release, so releasing on the
+            // exact completion frame still fires the charged projectile.
+            if (progress >= 1f)
+            {
+                FireChargedShot(direction);
+                return;
+            }
+
+            if (ReadRangedAttackReleased() ||
+                !ReadRangedAttackHeld())
+            {
+                CancelChargedShot();
+            }
+        }
+
+        private void FireChargedShot(Vector3 direction)
+        {
+            int ammoToConsume =
+                Mathf.Clamp(
+                    chargedShotReservedAmmo,
+                    1,
+                    rangedAmmo
+                );
+
+            if (ammoToConsume <= 0)
+            {
+                CancelChargedShot();
+                BeginReloadIfNeeded();
+                return;
+            }
+
+            nextRangedAllowedAt =
+                Time.time + Mathf.Max(0.01f, rangedCooldown);
+
+            rangedAmmo -= ammoToConsume;
+
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude < 0.001f)
+                direction = GetCombatAimDirection();
+
+            if (direction.sqrMagnitude < 0.001f)
+                direction = transform.forward;
+
+            direction.Normalize();
+            ApplyCombatFacing(direction);
+
+            Vector3 spawnPosition =
+                transform.position +
+                direction * rangedSpawnForwardOffset;
+
+            spawnPosition.y = ResolveProjectileSpawnY();
+
+            float extraAmmo = Mathf.Max(0f, ammoToConsume - 1f);
+            float projectileScaleMultiplier =
+                1f +
+                extraAmmo *
+                Mathf.Max(
+                    0f,
+                    chargedProjectileScalePerExtraAmmo
+                );
+
+            float projectileSpeedMultiplier =
+                1f +
+                extraAmmo *
+                Mathf.Max(
+                    0f,
+                    chargedSpeedPerExtraAmmo
+                );
+
+            float projectileHitRadiusMultiplier =
+                1f +
+                extraAmmo *
+                Mathf.Max(
+                    0f,
+                    chargedHitRadiusPerExtraAmmo
+                );
+
+            float projectileKnockbackMultiplier =
+                1f +
+                extraAmmo *
+                Mathf.Max(
+                    0f,
+                    chargedKnockbackPerExtraAmmo
+                );
+
+            GameObject projectile =
+                GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
+            projectile.name =
+                $"BD_Player_Charged_Projectile_x{ammoToConsume}";
+
+            projectile.transform.position = spawnPosition;
+            projectile.transform.rotation =
+                Quaternion.LookRotation(direction, Vector3.up);
+            projectile.transform.localScale =
+                Vector3.one *
+                0.55f *
+                projectileScaleMultiplier;
+
+            Renderer renderer = projectile.GetComponent<Renderer>();
+
+            if (renderer != null)
+            {
+                Material projectileMaterial =
+                    CreateProjectileMaterial();
+
+                if (projectileMaterial != null)
+                    renderer.sharedMaterial = projectileMaterial;
+            }
+
+            Collider collider = projectile.GetComponent<Collider>();
+
+            if (collider != null)
+                Destroy(collider);
+
+            BDPlayerRangedProjectile projectileLogic =
+                projectile.AddComponent<BDPlayerRangedProjectile>();
+
+            projectileLogic.Configure(
+                direction,
+                rangedProjectileSpeed *
+                    projectileSpeedMultiplier,
+                rangedDamage *
+                    WeaponDamageMultiplier *
+                    ammoToConsume,
+                rangedProjectileLifetime,
+                rangedProjectileHitRadius *
+                    projectileHitRadiusMultiplier,
+                rangedProjectileKnockback *
+                    projectileKnockbackMultiplier,
+                transform
+            );
+
+            BDRangedAttackVisuals.AddProjectileTrail(
+                projectile,
+                playerProjectile: true
+            );
+
+            BDChargedProjectileVisual.Attach(
+                projectile,
+                ammoToConsume
+            );
+
+            BDRangedAttackVisuals.SpawnMuzzleFlash(
+                spawnPosition,
+                direction,
+                playerProjectile: true
+            );
+
+            BDChargedShotVisualUtility.SpawnChargedMuzzleBurst(
+                spawnPosition,
+                direction,
+                ammoToConsume
+            );
+
+            if (chargedShotChargeVisual != null)
+                chargedShotChargeVisual.ReleaseToProjectile();
+
+            chargedShotChargeVisual = null;
+            chargedShotCharging = false;
+            chargedShotRequiredDuration = 0f;
+            chargedShotReservedAmmo = 0;
+
+            BDGameFeelAudio.PlayRangedShot();
+            BDGameFeelEvents.RequestCameraShake(
+                Mathf.Clamp(
+                    0.10f + ammoToConsume * 0.045f,
+                    0.16f,
+                    0.42f
+                ),
+                0.14f
+            );
+
+            lastCombatAction =
+                $"charged shot x{ammoToConsume} " +
+                $"ammo={rangedAmmo}";
+
+            if (rangedAmmo <= 0)
+                BeginReloadIfNeeded();
+        }
+
+        private void CancelChargedShot()
+        {
+            if (!chargedShotCharging &&
+                chargedShotChargeVisual == null)
+            {
+                return;
+            }
+
+            if (chargedShotChargeVisual != null)
+                chargedShotChargeVisual.CancelCharge();
+
+            chargedShotChargeVisual = null;
+            chargedShotCharging = false;
+            chargedShotStartedAtUnscaled = 0f;
+            chargedShotRequiredDuration = 0f;
+            chargedShotReservedAmmo = 0;
+            lastCombatAction = "charged shot cancelled";
         }
 
         private void TryRangedAttack()
@@ -853,6 +1192,43 @@ namespace BoredomAndDungeons
 
 #if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetKeyDown(KeyCode.Q))
+                return true;
+#endif
+
+            return false;
+        }
+
+        private bool ReadRangedAttackHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+
+            if (keyboard != null && keyboard.qKey.isPressed)
+                return true;
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKey(KeyCode.Q))
+                return true;
+#endif
+
+            return false;
+        }
+
+        private bool ReadRangedAttackReleased()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+
+            if (keyboard != null &&
+                keyboard.qKey.wasReleasedThisFrame)
+            {
+                return true;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKeyUp(KeyCode.Q))
                 return true;
 #endif
 
