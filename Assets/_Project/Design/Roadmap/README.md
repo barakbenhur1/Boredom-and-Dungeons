@@ -1,16 +1,17 @@
 # Roadmap Documentation
 
-The authoritative current development order, status, blockers, QA truth, and change protocol are maintained in:
+Current authoritative status:
 
-```text
-/PROJECT_STATUS.md
-```
+`/PROJECT_STATUS_CURRENT.md`
 
-`MASTER_REMAINING_WORK_ROADMAP_V128.md` is retained only as a historical record of the earlier 36-stage plan.
+Detailed supporting documents:
 
-Rules:
+- `/PROJECT_STATUS.md`
+- `/Assets/_Project/Design/Map/MAP_ROUTES_AND_HAZARDS_DESIGN_V1.md`
+- `/Assets/_Project/Design/Bosses/MOTHER_BOSS_DESIGN_V1.md`
 
-- Do not use the V128 stage order as the current execution order.
-- Do not update a requirement only in the historical roadmap.
-- Every code, requirement, QA, priority, blocker, or category change must update `/PROJECT_STATUS.md`.
-- The legacy 36 stages are cross-referenced inside `/PROJECT_STATUS.md`; no legacy requirement was intentionally removed.
+`PROJECT_STATUS_CURRENT.md` wins when status snapshots differ.
+
+`MASTER_REMAINING_WORK_ROADMAP_V128.md` is historical only.
+
+Every code, requirement, QA, priority, blocker, or category change must update the current status package. No previous requirement is intentionally removed.
