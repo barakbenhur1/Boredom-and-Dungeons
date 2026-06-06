@@ -442,6 +442,41 @@ namespace BoredomAndDungeons
             return false;
         }
 
+        public static bool TryFindUnsafeVolume(
+            Vector3 worldPoint,
+            float horizontalClearance,
+            out BDHazardVolume hazard)
+        {
+            ActiveVolumes.RemoveWhere(item => item == null);
+
+            float clearance = Mathf.Max(
+                0f,
+                horizontalClearance
+            );
+
+            foreach (BDHazardVolume volume in ActiveVolumes)
+            {
+                if (volume == null ||
+                    !volume.isActiveAndEnabled)
+                {
+                    continue;
+                }
+
+                if (!volume.ContainsHorizontalPoint(
+                        worldPoint,
+                        clearance))
+                {
+                    continue;
+                }
+
+                hazard = volume;
+                return true;
+            }
+
+            hazard = null;
+            return false;
+        }
+
         public static bool IsRecoveryPointUnsafe(
             Vector3 worldPoint,
             float horizontalClearance)

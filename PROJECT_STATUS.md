@@ -6,14 +6,14 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous category: C03/C04 — Longer falling and proactive horse hazard safety
-Previous result: AUTOMATED PASS — 0 blockers, 0 warnings, 0 info; Unity compiler still emitted CS0414 for an obsolete field
-Current category: C01/C03 — Compiler cleanliness and hazard-source maintenance
-Current item: Remove obsolete emergencyHoleFallDepth and make TEST EVERYTHING detect its return
-Current status: IMPLEMENTED — awaiting Unity compilation and fresh TEST EVERYTHING
-Next category: C03/C04 — Play Mode verification of 2.25-second falling and horse jump rejection
-Next item: Verify exact fall timing, damage, safe respawn, and horse rejection around lava/hole/chasm edges
-Saved later resume point: C07.16 — Wire the shared boss framework into one playable encounter
+Previous category: C04 — Mounted horse environmental-hazard recovery
+Previous result: PARTIAL INSTALL — BDHazardVolume and BDPlayerHazardRecovery were updated; horse-safety patch stopped before writing because its public-property anchor did not exist
+Current category: C04 — Horse environmental-hazard recovery
+Current item: C04.29–C04.31 partial-install repair — horse recovery state, continuous polling, safe-point history, on-foot rider recovery, and AI lock
+Current status: IMPLEMENTED — awaiting Unity compilation, TEST EVERYTHING, and Play Mode verification
+Next category: C07 — Boss framework and first real playable encounter
+Next item after C04 acceptance: C07.16 — Wire the framework into one real playable test encounter
+Saved later item: exhausted-horse slow follow and Pet short/long-press interaction remain recorded
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -460,14 +460,14 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 
 ## Environmental hazard behavior — inserted earlier-category work
 
-- [ ] **C04.24 Add chasm/hole avoidance to horse navigation and flee pathing.**
-- [ ] C04.25 Add lava avoidance to horse navigation and flee pathing.
-- [ ] C04.26 Hazard avoidance must apply while following, fleeing, wandering, approaching the player, and being ridden where AI pathing is active.
-- [ ] C04.27 If the horse nevertheless falls into a hole/chasm, the horse loses no health and returns to the latest legal horse-safe position.
-- [ ] C04.28 If the horse nevertheless enters lava, the horse loses no health and returns to the latest legal non-lava horse-safe position.
-- [ ] C04.29 If player and horse fall together, recover them as one mounted pair when possible; otherwise place them safely beside each other without overlap.
-- [ ] C04.30 Prevent repeated hazard loops, separation across inaccessible geometry, and flee/follow systems overriding recovery.
-- [ ] C04.31 Add Play Mode tests for mounted/unmounted chasm and lava recovery, flee pathing near hazards, and safe fallback when no recent horse-safe point is valid.
+- [ ] **C04.24 Add chasm/hole avoidance to horse navigation and flee pathing. — IMPLEMENTED / VERIFY.**
+- [ ] C04.25 Add lava avoidance to horse navigation and flee pathing. — IMPLEMENTED / VERIFY.
+- [ ] C04.26 Hazard avoidance must apply while following, fleeing, wandering, approaching the player, and being ridden where AI pathing is active. — IMPLEMENTED / VERIFY.
+- [ ] C04.27 If the horse nevertheless falls into a hole/chasm, the horse loses no health and returns to the latest legal horse-safe position. — IMPLEMENTED / VERIFY.
+- [ ] C04.28 If the horse nevertheless enters lava, the horse loses no health and returns to the latest legal non-lava horse-safe position. — IMPLEMENTED / VERIFY.
+- [ ] C04.29 SUPERSEDED BY LATER USER DECISION: mounted hazard recovery always returns the player on foot; recover the horse without health loss; place both in one legal area without overlap when possible. — IMPLEMENTED / VERIFY.
+- [ ] C04.30 Prevent repeated hazard loops, separation across inaccessible geometry, and flee/follow systems overriding recovery. — IMPLEMENTED / VERIFY.
+- [ ] **C04.31 Add Play Mode tests for mounted/unmounted chasm and lava recovery, flee pathing near hazards, and safe fallback when no recent horse-safe point is valid. — CURRENT ACCEPTANCE GATE.**
 
 ## Zero-health exhausted follow and contextual Pet interaction
 
@@ -1619,3 +1619,20 @@ No legacy requirement is removed by this reorganization.
 - Current hazard behavior uses continuous `CheckActiveHazardContact` and `CheckGroundExit`, so the field has no runtime purpose.
 - Removed only the obsolete serialized field; hole timing, damage, respawn, lava behavior, and horse safety are unchanged.
 - `TEST EVERYTHING` now reports a warning if `emergencyHoleFallDepth` is reintroduced.
+
+## 2026-06-06 — C04 mounted-hazard partial-install repair V2
+
+- The first C04.29–C04.31 package stopped after updating only `BDHazardVolume.cs` and `BDPlayerHazardRecovery.cs`.
+- Root cause: it expected a nonexistent `LastSafePosition` public-property anchor.
+- Additional latent incompatibilities were corrected:
+  - the actual horse-controller field is `horse`, not `horseController`;
+  - the actual safe-point method is `TryRecordSafePoint`, not `RecordSafePosition`;
+  - the original horse-safety class had no `TryResolveRecoveryPosition` method, so V2 adds it explicitly.
+- V2 continues from the partial state without rolling back or duplicating the already-applied volume/player changes.
+- Mounted lava/hole/chasm recovery returns the rider on foot.
+- Horse health remains unchanged.
+- Player and horse recover into one legal area when possible without overlap.
+- Continuous horse hazard polling catches missed triggers and external displacement.
+- Latest and previous horse-safe points, rapid-loop fallback, post-recovery grace, and safe-point write locks prevent death/recovery loops.
+- Horse follow/flee/return/interaction updates pause while recovery or recovery grace is active.
+- `C04.31` remains the active Play Mode acceptance gate before returning to `C07.16`.

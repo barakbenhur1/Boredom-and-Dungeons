@@ -465,6 +465,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanCameraMinimapSceneRepairContracts(result);
             ScanRespawnLoopSafetyContracts(result);
             ScanLongFallAndHorseJumpSafetyContracts(result);
+            ScanMountedHorseHazardRecoveryContracts(result);
             ScanObsoleteHazardFieldContracts(result);
             ScanJumpTimestampDeclaration(result);
             ScanPrototypeHazardScene(result);
@@ -1258,6 +1259,90 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 relativePath,
                 "emergencyHoleFallDepth",
                 "The obsolete emergencyHoleFallDepth field causes CS0414 and must remain removed."
+            );
+        }
+
+        private static void ScanMountedHorseHazardRecoveryContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string volumeRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHazardVolume.cs";
+
+            string playerRecoveryRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+
+            string horseSafetyRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHorseHazardSafety.cs";
+
+            string horseControllerRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDHorseController.cs";
+
+            ValidateRequiredSourceTokens(
+                result,
+                volumeRelative,
+                File.ReadAllText(
+                    Path.Combine(root, volumeRelative)),
+                new[]
+                {
+                    "TryFindUnsafeVolume",
+                    "ContainsHorizontalPoint"
+                },
+                "HORSE_CONTINUOUS_HAZARD_QUERY_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                playerRecoveryRelative,
+                File.ReadAllText(
+                    Path.Combine(root, playerRecoveryRelative)),
+                new[]
+                {
+                    "PrepareMountedHazardRecovery",
+                    "TryResolveMountedRecoveryAnchor",
+                    "mountedRecoveryAnchor",
+                    "mountedRecoverySeparation",
+                    "TryHandleHazard"
+                },
+                "MOUNTED_PLAYER_RECOVERY_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                horseSafetyRelative,
+                File.ReadAllText(
+                    Path.Combine(root, horseSafetyRelative)),
+                new[]
+                {
+                    "public bool IsRecovering",
+                    "PollCurrentHazard",
+                    "recoveryGraceUntil",
+                    "safePointUpdatesBlockedUntil",
+                    "previousSafePosition",
+                    "TryResolveRecoveryPosition",
+                    "PrepareMountedHazardRecovery",
+                    "ForceDismountAfterHazardRecovery"
+                },
+                "HORSE_RECOVERY_LOOP_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                horseControllerRelative,
+                File.ReadAllText(
+                    Path.Combine(root, horseControllerRelative)),
+                new[]
+                {
+                    "hazardSafety.IsRecovering",
+                    "hazard recovery lock",
+                    "ForceDismountAfterHazardRecovery"
+                },
+                "HORSE_AI_RECOVERY_LOCK_MISSING"
             );
         }
 

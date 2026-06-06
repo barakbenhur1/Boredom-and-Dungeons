@@ -295,6 +295,13 @@ namespace BoredomAndDungeons
             CachePlayerComponents();
             ResolveSafeSpotIfNeeded();
 
+            if (hazardSafety != null &&
+                hazardSafety.IsRecovering)
+            {
+                lastAction = "hazard recovery lock";
+                return;
+            }
+
             playerInRange = rider != null && Vector3.Distance(transform.position, rider.position) <= interactionRange;
 
             if (ReadInteractPressed())

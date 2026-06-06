@@ -19,6 +19,11 @@ namespace BoredomAndDungeons
         [Header("Safe Recovery")]
         [SerializeField] private float sampleInterval = 0.18f;
         [SerializeField] private float protectionSeconds = 1.0f;
+        [SerializeField] private float recoveryGraceSeconds = 1.45f;
+        [SerializeField] private float safePointUpdateLockSeconds = 1.65f;
+        [SerializeField] private float rapidRecoveryLoopWindow = 3.25f;
+        [SerializeField] private float continuousHazardPollInterval = 0.05f;
+        [SerializeField] private float mountedPairSeparation = 1.65f;
         [SerializeField] private float verticalOffset = 0.08f;
 
         private static readonly float[] SteeringAngles =
@@ -40,16 +45,34 @@ namespace BoredomAndDungeons
         private float nextSampleAt;
         private float protectedUntil;
         private bool recovering;
+        private Vector3 previousSafePosition;
+        private Quaternion previousSafeRotation;
+        private bool hasPreviousSafePosition;
+        private float recoveryGraceUntil = -999f;
+        private float safePointUpdatesBlockedUntil = -999f;
+        private float lastRecoveryCompletedAt = -999f;
+        private float nextHazardPollAt;
 
+
+        public bool IsRecovering =>
+            recovering ||
+            Time.unscaledTime <
+                recoveryGraceUntil;
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
             horse = GetComponent<BDHorseController>();
+
             initialPosition = transform.position;
             initialRotation = transform.rotation;
+
             lastSafePosition = initialPosition;
             lastSafeRotation = initialRotation;
             hasSafePosition = true;
+
+            previousSafePosition = initialPosition;
+            previousSafeRotation = initialRotation;
+            hasPreviousSafePosition = true;
         }
 
         private void Start()
@@ -57,14 +80,45 @@ namespace BoredomAndDungeons
             rider = horse != null ? horse.Rider : null;
             TryRecordSafePoint(force: true);
         }
-
         private void LateUpdate()
         {
-            if (recovering || Time.unscaledTime < nextSampleAt)
+            if (!Application.isPlaying ||
+                recovering)
+            {
                 return;
+            }
+
+            float now = Time.unscaledTime;
+
+            if (now >= nextHazardPollAt)
+            {
+                nextHazardPollAt =
+                    now +
+                    Mathf.Max(
+                        0.02f,
+                        continuousHazardPollInterval
+                    );
+
+                PollCurrentHazard();
+
+                if (recovering)
+                    return;
+            }
+
+            if (now < protectedUntil ||
+                now < recoveryGraceUntil ||
+                now < safePointUpdatesBlockedUntil ||
+                now < nextSampleAt)
+            {
+                return;
+            }
 
             nextSampleAt =
-                Time.unscaledTime + Mathf.Max(0.05f, sampleInterval);
+                now +
+                Mathf.Max(
+                    0.05f,
+                    sampleInterval
+                );
 
             if (controller != null &&
                 controller.enabled &&
@@ -73,6 +127,30 @@ namespace BoredomAndDungeons
                 TryRecordSafePoint(force: false);
             }
         }
+        private void PollCurrentHazard()
+        {
+            Vector3 center = transform.position;
+
+            if (controller != null &&
+                controller.enabled)
+            {
+                center = controller.bounds.center;
+            }
+
+            if (!BDHazardVolume.TryFindUnsafeVolume(
+                    center,
+                    0.05f,
+                    out BDHazardVolume hazard))
+            {
+                return;
+            }
+
+            TryHandleHazard(
+                hazard,
+                forceActivation: true
+            );
+        }
+
 
         public Vector3 FilterMovement(Vector3 requestedMotion)
         {
@@ -179,17 +257,22 @@ namespace BoredomAndDungeons
 
             return true;
         }
-
-        public bool TryHandleHazard(BDHazardVolume volume)
+        public bool TryHandleHazard(
+            BDHazardVolume volume,
+            bool forceActivation = false)
         {
+            float now = Time.unscaledTime;
+
             if (volume == null ||
                 recovering ||
-                Time.unscaledTime < protectedUntil)
+                now < protectedUntil ||
+                now < recoveryGraceUntil)
             {
                 return false;
             }
 
-            if (volume.HazardType == BDHazardType.Lava &&
+            if (!forceActivation &&
+                volume.HazardType == BDHazardType.Lava &&
                 !volume.IsActorTouchingSurface(
                     controller,
                     0.08f))
@@ -197,37 +280,151 @@ namespace BoredomAndDungeons
                 return false;
             }
 
-            recovering = true;
-            protectedUntil =
-                Time.unscaledTime +
-                Mathf.Max(0.1f, protectionSeconds);
-
-            rider = horse != null ? horse.Rider : rider;
-            BDPlayerHazardRecovery playerRecovery =
-                rider != null
-                    ? rider.GetComponent<BDPlayerHazardRecovery>()
-                    : null;
-
             bool wasMounted =
                 horse != null &&
                 horse.IsMounted;
 
-            if (wasMounted)
-                horse.ForceDismountAfterHazardRecovery();
+            Transform mountedRider =
+                wasMounted &&
+                horse != null
+                    ? horse.Rider
+                    : null;
 
-            RecoverHorseWithoutDamage();
+            BDPlayerHazardRecovery riderRecovery =
+                mountedRider != null
+                    ? mountedRider.GetComponent<
+                        BDPlayerHazardRecovery>()
+                    : null;
 
-            if (wasMounted && playerRecovery != null)
+            recovering = true;
+
+            safePointUpdatesBlockedUntil =
+                now +
+                Mathf.Max(
+                    0.50f,
+                    safePointUpdateLockSeconds
+                );
+
+            if (!TryResolveRecoveryPosition(
+                    out Vector3 recoveryPosition,
+                    out Quaternion recoveryRotation))
             {
-                playerRecovery.TryHandleHazard(
+                recoveryPosition = initialPosition;
+                recoveryRotation = initialRotation;
+            }
+
+            if (wasMounted && horse != null)
+            {
+                horse.ForceDismountAfterHazardRecovery();
+            }
+
+            bool controllerWasEnabled =
+                controller != null &&
+                controller.enabled;
+
+            if (controllerWasEnabled)
+                controller.enabled = false;
+
+            transform.SetPositionAndRotation(
+                recoveryPosition,
+                recoveryRotation
+            );
+
+            Physics.SyncTransforms();
+
+            if (controllerWasEnabled)
+                controller.enabled = true;
+
+            lastSafePosition = recoveryPosition;
+            lastSafeRotation = recoveryRotation;
+            hasSafePosition = true;
+
+            protectedUntil =
+                now +
+                Mathf.Max(
+                    0.10f,
+                    protectionSeconds
+                );
+
+            recoveryGraceUntil =
+                now +
+                Mathf.Max(
+                    0.50f,
+                    recoveryGraceSeconds
+                );
+
+            lastRecoveryCompletedAt = now;
+            recovering = false;
+
+            if (wasMounted &&
+                riderRecovery != null)
+            {
+                riderRecovery.PrepareMountedHazardRecovery(
+                    recoveryPosition,
+                    mountedPairSeparation
+                );
+
+                riderRecovery.TryHandleHazard(
                     volume,
                     forceActivation: true
                 );
             }
 
-            recovering = false;
             return true;
         }
+        private bool TryResolveRecoveryPosition(
+            out Vector3 position,
+            out Quaternion rotation)
+        {
+            bool rapidLoop =
+                Time.unscaledTime -
+                lastRecoveryCompletedAt <=
+                Mathf.Max(
+                    0.50f,
+                    rapidRecoveryLoopWindow
+                );
+
+            if (rapidLoop &&
+                hasPreviousSafePosition &&
+                IsHorsePositionSafe(
+                    previousSafePosition))
+            {
+                position = previousSafePosition;
+                rotation = previousSafeRotation;
+                return true;
+            }
+
+            if (hasSafePosition &&
+                IsHorsePositionSafe(
+                    lastSafePosition))
+            {
+                position = lastSafePosition;
+                rotation = lastSafeRotation;
+                return true;
+            }
+
+            if (hasPreviousSafePosition &&
+                IsHorsePositionSafe(
+                    previousSafePosition))
+            {
+                position = previousSafePosition;
+                rotation = previousSafeRotation;
+                return true;
+            }
+
+            if (IsHorsePositionSafe(
+                    initialPosition))
+            {
+                position = initialPosition;
+                rotation = initialRotation;
+                return true;
+            }
+
+            position = initialPosition;
+            rotation = initialRotation;
+            return false;
+        }
+
 
         private void RecoverHorseWithoutDamage()
         {
@@ -251,9 +448,20 @@ namespace BoredomAndDungeons
             if (wasEnabled)
                 controller.enabled = true;
         }
-
-        private bool TryRecordSafePoint(bool force)
+        private bool TryRecordSafePoint(
+            bool force)
         {
+            float now = Time.unscaledTime;
+
+            if (!force &&
+                (recovering ||
+                 now < protectedUntil ||
+                 now < recoveryGraceUntil ||
+                 now < safePointUpdatesBlockedUntil))
+            {
+                return false;
+            }
+
             if (!TryResolveGround(
                     transform.position,
                     out Vector3 grounded))
@@ -261,23 +469,44 @@ namespace BoredomAndDungeons
                 return false;
             }
 
-            if (!IsHorsePositionSafe(grounded))
+            Vector3 candidate =
+                grounded +
+                Vector3.up *
+                Mathf.Max(
+                    0f,
+                    verticalOffset
+                );
+
+            if (!IsHorsePositionSafe(candidate))
                 return false;
 
             if (!force &&
                 hasSafePosition &&
-                (grounded - lastSafePosition).sqrMagnitude < 0.04f)
+                (candidate - lastSafePosition)
+                    .sqrMagnitude < 0.04f)
             {
                 return false;
             }
 
-            lastSafePosition =
-                grounded + Vector3.up * Mathf.Max(0f, verticalOffset);
+            if (hasSafePosition)
+            {
+                previousSafePosition =
+                    lastSafePosition;
+
+                previousSafeRotation =
+                    lastSafeRotation;
+
+                hasPreviousSafePosition = true;
+            }
+
+            lastSafePosition = candidate;
+
             lastSafeRotation = Quaternion.Euler(
                 0f,
                 transform.eulerAngles.y,
                 0f
             );
+
             hasSafePosition = true;
             return true;
         }

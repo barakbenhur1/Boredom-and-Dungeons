@@ -40,6 +40,10 @@ namespace BoredomAndDungeons
         [SerializeField] private float postRecoverySafePointLock = 1.65f;
         [SerializeField] private float rapidRecoveryLoopWindow = 3.25f;
         [SerializeField] private float recoveryVerticalOffset = 0.38f;
+        [Header("Mounted Hazard Recovery")]
+        [SerializeField] private float mountedRecoverySeparation = 1.65f;
+        [SerializeField] private float mountedRecoveryAnchorLifetime = 4.0f;
+
         [SerializeField] private float fallbackSearchRadiusStep = 0.85f;
         [SerializeField] private int fallbackSearchRings = 3;
 
@@ -66,6 +70,10 @@ namespace BoredomAndDungeons
         private bool hasPreviousSafePosition;
         private float safePointUpdatesBlockedUntil;
         private float lastRecoveryCompletedAt = -999f;
+
+        private Vector3 mountedRecoveryAnchor;
+        private float mountedRecoveryAnchorUntil = -999f;
+        private bool hasMountedRecoveryAnchor;
 
         private Vector3 previousTrackedPosition;
         private bool hasPreviousTrackedPosition;
@@ -168,6 +176,30 @@ namespace BoredomAndDungeons
                 Mathf.Max(0.05f, sampleInterval);
 
             TickSafePointTracking();
+        }
+
+        public void PrepareMountedHazardRecovery(
+            Vector3 recoveredHorsePosition,
+            float requestedSeparation)
+        {
+            mountedRecoveryAnchor =
+                recoveredHorsePosition;
+
+            mountedRecoverySeparation =
+                Mathf.Max(
+                    0.75f,
+                    requestedSeparation
+                );
+
+            mountedRecoveryAnchorUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    1.0f,
+                    mountedRecoveryAnchorLifetime
+                );
+
+            hasMountedRecoveryAnchor = true;
+            FreezeSafePointUpdates();
         }
 
         public bool TryHandleHazard(
@@ -761,7 +793,9 @@ namespace BoredomAndDungeons
             previousTrackedPosition =
                 transform.position;
             hasPreviousTrackedPosition = true;
-        }
+                    hasMountedRecoveryAnchor = false;
+            mountedRecoveryAnchorUntil = -999f;
+}
 
         private bool TryResolveLoopBreakerPoint(
             out Vector3 position,
@@ -794,10 +828,76 @@ namespace BoredomAndDungeons
             );
         }
 
+        private bool TryResolveMountedRecoveryAnchor(
+            out Vector3 position,
+            out Quaternion rotation)
+        {
+            position = default;
+            rotation = Quaternion.identity;
+
+            if (!hasMountedRecoveryAnchor ||
+                Time.unscaledTime >
+                    mountedRecoveryAnchorUntil)
+            {
+                hasMountedRecoveryAnchor = false;
+                return false;
+            }
+
+            float separation = Mathf.Max(
+                0.75f,
+                mountedRecoverySeparation
+            );
+
+            const int sampleCount = 12;
+
+            for (int index = 0;
+                 index < sampleCount;
+                 index++)
+            {
+                float angle =
+                    index *
+                    (360f / sampleCount) *
+                    Mathf.Deg2Rad;
+
+                Vector3 offset = new Vector3(
+                    Mathf.Cos(angle),
+                    0f,
+                    Mathf.Sin(angle)
+                ) * separation;
+
+                if (!TryResolveGroundedCandidate(
+                        mountedRecoveryAnchor + offset,
+                        out Vector3 candidate))
+                {
+                    continue;
+                }
+
+                if (!IsCandidateSafe(candidate))
+                    continue;
+
+                position = candidate;
+                rotation = hasSafePosition
+                    ? lastSafeRotation
+                    : initialSpawnRotation;
+
+                return true;
+            }
+
+            return false;
+        }
+
         private bool TryResolveRecoveryPoint(
             out Vector3 position,
             out Quaternion rotation)
         {
+            if (TryResolveMountedRecoveryAnchor(
+                    out position,
+                    out rotation))
+            {
+                return true;
+            }
+
+
             if (hasPreviousSafePosition &&
                 TryResolveGroundedCandidate(
                     previousSafePosition,
