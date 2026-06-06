@@ -11,6 +11,7 @@ namespace BoredomAndDungeons
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(BDPlayerMarker))]
+    [RequireComponent(typeof(BDPlayerHazardRecovery))]
     public sealed class BDPlayerController : MonoBehaviour
     {
         private enum DodgeDirection { None, Forward, Backward, Left, Right }
@@ -115,6 +116,10 @@ namespace BoredomAndDungeons
             }
         }
         public bool IsDashing => dashTimer > 0f;
+        public bool HasRecentIntentionalGapEntry =>
+            IsDashing ||
+            Time.time - lastDodgeStartedAt <= 0.40f ||
+            Time.time - lastJumpStartedAt <= 0.75f;
         public float EffectiveMoveSpeed =>
             Mathf.Max(0.1f, moveSpeed * boostMoveSpeedMultiplier);
 
@@ -122,10 +127,25 @@ namespace BoredomAndDungeons
         {
             boostMoveSpeedMultiplier = Mathf.Max(0.1f, multiplier);
         }
+        public void ResetMotionAfterExternalTeleport()
+        {
+            verticalVelocity = -2f;
+            dashVelocity = Vector3.zero;
+            smoothedHorizontalVelocity = Vector3.zero;
+            dashTimer = 0f;
+            dashCooldownTimer = 0f;
+            dodgeInvulnerableUntil = 0f;
+            lastMoveInput = Vector2.zero;
+            lastJumpStartedAt = -999f;
+        }
+
 
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
+
+            if (GetComponent<BDPlayerHazardRecovery>() == null)
+                gameObject.AddComponent<BDPlayerHazardRecovery>();
         }
 
         private void Start()
@@ -702,6 +722,7 @@ namespace BoredomAndDungeons
             if (!characterController.isGrounded)
                 return;
 
+            lastJumpStartedAt = Time.time;
             verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
 

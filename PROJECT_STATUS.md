@@ -8,10 +8,11 @@ Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
 Previous category: C01 — Project stability, QA, validation, and repository health
 Previous result: DONE — TEST EVERYTHING passed with 0 blockers / 0 warnings / 0 info
-Current category: C00 — Governance, documentation, and progress tracking repair
-Current item: Repair the single authoritative tracker and clean delivery leftovers
-Next category: C03 — Player movement, combat, damage, weapons, and hazards
-Next item: C03.46 — Implement the validated last-safe-position tracker
+Current category: C03 — Player movement, aiming, combat, damage, and weapons
+Current item: C03.46–C03.55 — player hazard rules, mounted dismount recovery, and Play Mode verification
+Current status: IMPLEMENTED — awaiting Unity compilation and TEST EVERYTHING
+Next category: C04 — Horse traversal, mounted combat, damage, healing, and flee behavior
+Next item: Verify proactive horse avoidance and exceptional no-damage recovery for holes, chasms, and lava
 Saved later resume point: C07.16 — Wire the shared boss framework into one playable encounter
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
@@ -411,7 +412,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C03.50 Touching lava removes exactly 10 health.
 - [ ] C03.51 After lava contact, immediately return/knock the player to the latest valid non-lava safe point.
 - [ ] C03.52 Add short recovery protection so a respawn cannot immediately retrigger the same hazard or duplicate damage.
-- [ ] C03.53 If the player was mounted when the player and horse fell, recover both together at a legal safe location and preserve the mount relationship when safe.
+- [ ] C03.53 If the player and horse enter a hazard while mounted, recover both to legal safe locations and always return the player on foot; never restore the mount relationship automatically.
 - [ ] C03.54 Ensure hazard recovery cannot place the player inside enemies, walls, props, lava, holes, chasms, or active boss barriers.
 - [ ] C03.55 Add Play Mode tests for repeated falls, low-health falls, mounted falls, lava-edge contact, moving hazards, death during hazard damage, and missing/invalid safe-point fallback.
 
@@ -1466,3 +1467,16 @@ No legacy requirement is removed by this reorganization.
 - Current: repaired the single authoritative progress tracker after a format-sensitive script failure.
 - Next: final QA confirmation and one clean commit, then begin `C03.46`.
 - Delivery rule: downloaded ZIP files are deleted only after successful extraction.
+
+## 2026-06-06 — Corrected player/horse hazard rules
+
+- Hole/chasm entry by ordinary grounded walking is rejected without damage.
+- A player receives the `15` hole/chasm damage only after entering through a jump, dodge, forced displacement, or mounted exceptional fall.
+- Lava may be entered by ordinary walking and applies exactly `10` unavoidable environmental damage.
+- When player and horse enter any hazard while mounted, both recover separately and the player returns on foot.
+- Hazard recovery never restores the mounted relationship automatically.
+- The horse proactively filters movement toward lava, holes, chasms, and unsupported ground.
+- Horse AI attempts safe steering alternatives before stopping.
+- A normal horse walk, follow, flee, return, or mounted movement must not cause a fall.
+- Exceptional or scripted horse hazard entry recovers the horse without health loss.
+- C03/C04 remain awaiting Unity compilation, `TEST EVERYTHING`, and Play Mode verification.

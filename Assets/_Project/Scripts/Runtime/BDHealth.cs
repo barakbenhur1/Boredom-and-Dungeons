@@ -199,6 +199,34 @@ namespace BoredomAndDungeons
                     Destroy(gameObject);
             }
         }
+        public void ApplyUnavoidableDamage(float amount)
+        {
+            if (IsDead)
+                return;
+
+            float damage = Mathf.Abs(amount);
+            currentHealth = Mathf.Max(0f, currentHealth - damage);
+
+            if (logDamage)
+            {
+                Debug.Log(
+                    $"{name} took {damage:0.0} unavoidable damage. " +
+                    $"HP {currentHealth:0.0}/{maxHealth:0.0}"
+                );
+            }
+
+            RequestDamageCameraShake();
+            HealthChanged?.Invoke(this, currentHealth, maxHealth);
+
+            if (currentHealth <= 0f)
+            {
+                Died?.Invoke(this);
+
+                if (destroyOnDeath)
+                    Destroy(gameObject);
+            }
+        }
+
 
         private bool TryCancelPlayerDamageWithParry()
         {

@@ -11,6 +11,7 @@ namespace BoredomAndDungeons
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(BDHorseHealth))]
+    [RequireComponent(typeof(BDHorseHazardSafety))]
     public sealed class BDHorseController : MonoBehaviour
     {
         private enum HorseState
@@ -160,6 +161,7 @@ namespace BoredomAndDungeons
         private BDPlayerController playerController;
         private CharacterController playerCharacterController;
         private BDPlayerDismountLeap playerDismountLeap;
+        private BDHorseHazardSafety hazardSafety;
 
         private HorseState state = HorseState.Idle;
         private bool playerInRange;
@@ -210,6 +212,10 @@ namespace BoredomAndDungeons
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
+            hazardSafety = GetComponent<BDHorseHazardSafety>();
+
+            if (hazardSafety == null)
+                hazardSafety = gameObject.AddComponent<BDHorseHazardSafety>();
             health = GetComponent<BDHorseHealth>();
             health.Fainted += OnFainted;
             health.Recovered += OnRecovered;
@@ -336,6 +342,41 @@ namespace BoredomAndDungeons
             else
                 SendToSafeSpot();
         }
+        public void ForceDismountAfterHazardRecovery()
+        {
+            if (state != HorseState.Mounted)
+                return;
+
+            CachePlayerComponents();
+
+            if (rider != null)
+            {
+                rider.localScale = riderOriginalScale;
+                rider.localRotation = riderOriginalLocalRotation;
+            }
+
+            if (playerCharacterController != null)
+                playerCharacterController.enabled = true;
+
+            if (playerController != null)
+            {
+                playerController.enabled = true;
+                playerController.ResetMotionAfterExternalTeleport();
+            }
+
+            smoothedMountedHorizontalVelocity = Vector3.zero;
+            lastRideInput = Vector2.zero;
+            verticalVelocity = groundedStickVelocity;
+            mountedYawInitialized = false;
+
+            state =
+                health != null && health.IsFainted
+                    ? HorseState.Fainted
+                    : HorseState.Idle;
+
+            lastAction = "hazard recovery forced dismount";
+        }
+
 
         public void SetSafeSpot(Transform newSafeSpot)
         {
@@ -438,7 +479,7 @@ namespace BoredomAndDungeons
                 Vector3 awayFromPlayer = -directionToPlayer;
 
                 if (controller != null)
-                    controller.Move(awayFromPlayer * returnBackAwaySpeed * Time.deltaTime);
+                    MoveHorse(awayFromPlayer * returnBackAwaySpeed * Time.deltaTime);
 
                 // Too-close correction faces away from the rider, never toward the rider.
                 RotateToward(awayFromPlayer);
@@ -476,7 +517,7 @@ namespace BoredomAndDungeons
             state = HorseState.ReturningToPlayer;
 
             if (controller != null)
-                controller.Move(directionToPlayer * returnMoveSpeed * Time.deltaTime);
+                MoveHorse(directionToPlayer * returnMoveSpeed * Time.deltaTime);
             // When the horse is actively coming to the player from far away, it should face the player.
             // When the player is the one approaching the horse, the earlier comfort/idle branches return before this point,
             // so the horse keeps its current pose.
@@ -1012,7 +1053,7 @@ namespace BoredomAndDungeons
             Vector3 horizontal = SmoothMountedHorizontalVelocity(move, wantsRideMove, injuryMultiplier);
             Vector3 velocity = horizontal + Vector3.up * verticalVelocity;
 
-            controller.Move(velocity * Time.deltaTime);
+            MoveHorse(velocity * Time.deltaTime);
 
             if (lastMountedAimDirection.sqrMagnitude > 0.001f)
             {
@@ -1080,7 +1121,7 @@ namespace BoredomAndDungeons
             float injuryMultiplier = Mathf.Lerp(1f, 0.45f, health.Injury01);
 
             Vector3 velocity = direction * baseMoveSpeed * injuryMultiplier + Vector3.up * verticalVelocity;
-            controller.Move(velocity * Time.deltaTime);
+            MoveHorse(velocity * Time.deltaTime);
 
             if (direction.sqrMagnitude > 0.001f)
                 RotateToward(direction);
@@ -1396,6 +1437,19 @@ namespace BoredomAndDungeons
 
             return false;
         }
+        private void MoveHorse(Vector3 motion)
+        {
+            if (controller == null)
+                return;
+
+            Vector3 filtered =
+                hazardSafety != null
+                    ? hazardSafety.FilterMovement(motion)
+                    : motion;
+
+            controller.Move(filtered);
+        }
+
 
         private void RotateToward(Vector3 direction)
         {

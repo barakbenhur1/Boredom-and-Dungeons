@@ -98,6 +98,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Square Jumper",
                 "Jump, hard landing, bullet hell, visible double swords, summons, enraged phase, death cleanup, and reward chest all work."),
             new ManualCheck(
+                "hazards",
+                "Player and horse environmental hazards",
+                "Walking into a hole/chasm is rejected without damage. Jumping or dodging into it causes 15 damage. Walking into lava causes 10 damage. Mounted recovery returns the player on foot, and the horse avoids hazards proactively."),
+            new ManualCheck(
                 "console",
                 "Console",
                 "No red errors and no edit-mode material or Destroy warnings appear while creating or testing Square Jumper.")
@@ -413,6 +417,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanSource(result);
             // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
             ScanCameraMinimapRegression(result);
+            ScanHazardRecoveryContracts(result);
             ScanArchitectureContracts(result);
             ScanRepositoryHygiene(result);
             ScanMetaGuids(result);
@@ -696,6 +701,105 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "MINIMAP_REGRESSION_ANCHOR_MISSING"
             );
         }
+        private static void ScanHazardRecoveryContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string[] relativePaths =
+            {
+                "Assets/_Project/Scripts/Runtime/Hazards/BDHazardType.cs",
+                "Assets/_Project/Scripts/Runtime/Hazards/BDHazardVolume.cs",
+                "Assets/_Project/Scripts/Runtime/Hazards/BDPlayerHazardRecovery.cs",
+                "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
+                "Assets/_Project/Scripts/Runtime/BDHealth.cs",
+                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
+                "Assets/_Project/Scripts/Runtime/BDHorseController.cs"
+            };
+
+            foreach (string relative in relativePaths)
+            {
+                if (File.Exists(Path.Combine(root, relative)))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HAZARD_RECOVERY_SOURCE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required hazard recovery source is missing."
+                );
+            }
+
+            string recoveryPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs"
+            );
+            string horseSafetyPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHorseHazardSafety.cs"
+            );
+            string horsePath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/BDHorseController.cs"
+            );
+
+            if (File.Exists(recoveryPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    MakeRelative(recoveryPath),
+                    File.ReadAllText(recoveryPath),
+                    new[]
+                    {
+                        "HasIntentionalGapEntry",
+                        "forceActivation",
+                        "ApplyUnavoidableDamage",
+                        "BDHazardType.HoleOrChasm"
+                    },
+                    "PLAYER_HAZARD_RULE_MISSING"
+                );
+            }
+
+            if (File.Exists(horseSafetyPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    MakeRelative(horseSafetyPath),
+                    File.ReadAllText(horseSafetyPath),
+                    new[]
+                    {
+                        "FilterMovement",
+                        "TryHandleHazard",
+                        "RecoverHorseWithoutDamage",
+                        "ForceDismountAfterHazardRecovery",
+                        "IsHorsePositionSafe"
+                    },
+                    "HORSE_HAZARD_RULE_MISSING"
+                );
+            }
+
+            if (File.Exists(horsePath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    MakeRelative(horsePath),
+                    File.ReadAllText(horsePath),
+                    new[]
+                    {
+                        "RequireComponent(typeof(BDHorseHazardSafety))",
+                        "ForceDismountAfterHazardRecovery",
+                        "MoveHorse",
+                        "hazardSafety.FilterMovement"
+                    },
+                    "HORSE_HAZARD_CONTROLLER_RULE_MISSING"
+                );
+            }
+        }
+
 
         private static void ValidateRequiredSourceTokens(
             BDOneClickQAResult result,
