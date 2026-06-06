@@ -10,6 +10,9 @@ namespace BoredomAndDungeons
         [SerializeField] private float maxHealth = 100f;
         [SerializeField] private float faintThreshold = 1f;
         [SerializeField] private bool logDamage = true;
+        [Header("Clean Game Start")]
+        [SerializeField] private float startupDamageProtectionSeconds = 2.50f;
+        private float startupDamageProtectionUntil = -999f;
 
         [Header("Hit Burst / Buck")]
         [SerializeField] private int hitsToTriggerBuck = 2;
@@ -36,10 +39,20 @@ namespace BoredomAndDungeons
         public int RecentHits => recentHits;
         public bool IsHealingProtected => Time.time < healingProtectionUntil;
         public bool HasHealingFloorLock => healingFloorLockActive;
+        public bool IsStartupProtected =>
+            Time.unscaledTime <
+            startupDamageProtectionUntil;
 
         private void Awake()
         {
             currentHealth = maxHealth;
+
+            startupDamageProtectionUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0f,
+                    startupDamageProtectionSeconds
+                );
             EnsureHealAvailabilityIndicator();
         }
 
@@ -67,6 +80,35 @@ namespace BoredomAndDungeons
         }
 
 
+        // BD HORSE CLEAN START V1
+        public void ResetForCleanGameStart(
+            float protectionSeconds)
+        {
+            currentHealth = maxHealth;
+            recentHits = 0;
+            burstWindowStartedAt = -999f;
+            lastBuckAt = -999f;
+            healingProtectionUntil = -999f;
+            healingFloorLockActive = false;
+            healingLockedFloor = 0f;
+
+            startupDamageProtectionUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0f,
+                    Mathf.Max(
+                        startupDamageProtectionSeconds,
+                        protectionSeconds
+                    )
+                );
+
+            HealthChanged?.Invoke(
+                this,
+                currentHealth,
+                maxHealth
+            );
+        }
+
         public void BeginHealingProtection(float duration)
         {
             healingProtectionUntil = Mathf.Max(healingProtectionUntil, Time.time + Mathf.Max(0f, duration));
@@ -87,6 +129,20 @@ namespace BoredomAndDungeons
 
         public void ApplyDamage(float amount)
         {
+            if (IsStartupProtected)
+            {
+                if (logDamage)
+                {
+                    Debug.Log(
+                        $"{name} horse startup damage ignored: " +
+                        $"{Mathf.Abs(amount):0.0}"
+                    );
+                }
+
+                return;
+            }
+
+
             if (IsHealingProtected)
             {
                 if (logDamage)

@@ -10,8 +10,8 @@ namespace BoredomAndDungeons
         private enum State { Idle, Approach, Windup, Charging, Recover }
 
         [SerializeField] private Transform target;
-        [SerializeField] private float aggroRange = 15f;
-        [SerializeField] private float windupRange = 6.4f;
+        [SerializeField] private float aggroRange = 18.5f;
+        [SerializeField] private float windupRange = 7.2f;
         [SerializeField] private float approachSpeed = 2.55f;
         [SerializeField] private float chargeSpeed = 9.4f;
         [SerializeField] private float rotationSpeed = 10f;
@@ -64,7 +64,7 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
+
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
                 return;Vector3 toTarget = target.position - transform.position;
@@ -190,7 +190,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
 
 

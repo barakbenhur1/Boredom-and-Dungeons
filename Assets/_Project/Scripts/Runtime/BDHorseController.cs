@@ -55,6 +55,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float mountedMoveAcceleration = 24f;
         [SerializeField] private float mountedMoveDeceleration = 30f;
         [SerializeField] private float rotationSpeed = 32f;
+        [SerializeField] private float mountedTravelTurnDegreesPerSecond = 112f;
         [SerializeField] private float safeSpotReachDistance = 0.5f;
 
         [Header("Horse Jump")]
@@ -74,6 +75,13 @@ namespace BoredomAndDungeons
             new Vector3(2.35f, 0f, 0.45f);
         [SerializeField] private bool faceSameDirectionAsPlayerOnStart = true;
         [SerializeField] private float nearbyIdleNoTrackingRadius = 4.25f;
+        [Header("Clean Game Start")]
+        [SerializeField] private float startupCalmSeconds = 2.50f;
+        [SerializeField] private float startupHazardClearance = 1.65f;
+        [SerializeField] private float startupGroundProbeHeight = 4.0f;
+        [SerializeField] private float startupGroundProbeDistance = 8.0f;
+        [SerializeField] private float combatAwarenessRadius = 12.0f;
+        private float startupCalmUntil = -999f;
         private bool startPositionApplied;
 
         [Header("Horse Healing Curve")]
@@ -146,6 +154,7 @@ namespace BoredomAndDungeons
         private Vector3 smoothedMountedHorizontalVelocity;
         private Vector3 targetMountedAimDirection = Vector3.forward;
         private Vector3 smoothedMountedTargetAimDirection = Vector3.forward;
+        private Vector3 smoothedMountedTravelDirection = Vector3.forward;
         private Vector3 mountedMovementReferenceForward = Vector3.forward;
 
         [Header("Touch / Mouse Drag")]
@@ -208,9 +217,26 @@ namespace BoredomAndDungeons
         public bool IsAvailable => !health.IsFainted && state != HorseState.Mounted;
         public bool HasSafeSpot => safeSpot != null;
         public bool IsGrounded => controller != null && controller.isGrounded;
+        private void ApplyNaturalHorseMovementProfile()
+        {
+            baseMoveSpeed = 5.6f;
+            mountedMoveSpeed = 9.6f;
+            mountedMoveAcceleration = 15f;
+            mountedMoveDeceleration = 19f;
+            rotationSpeed = 8.5f;
+            mountedMouseAimIdleTurnDegreesPerSecond = 110f;
+            mountedMouseAimMovingTurnDegreesPerSecond = 150f;
+            mountedMouseAimTargetSmoothing = 12f;
+            mountedMouseImmediateYaw = false;
+        }
+
 
         private void Awake()
         {
+            ApplyNaturalHorseMovementProfile();
+            smoothedMountedTravelDirection = transform.forward;
+            smoothedMountedTravelDirection.y = 0f;
+
             controller = GetComponent<CharacterController>();
             hazardSafety = GetComponent<BDHorseHazardSafety>();
 
@@ -228,10 +254,22 @@ namespace BoredomAndDungeons
                 rider = BDTargetFinder.FindPlayer();
 
             CachePlayerComponents();
+            startupCalmUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0f,
+                    startupCalmSeconds
+                );
+
+            if (health != null)
+            {
+                health.ResetForCleanGameStart(
+                    startupCalmSeconds
+                );
+            }
             PlaceHorseBesidePlayerAtStart();
             ResolveSafeSpotIfNeeded();
         }
-
         private void PlaceHorseBesidePlayerAtStart()
         {
             if (startPositionApplied ||
@@ -246,13 +284,22 @@ namespace BoredomAndDungeons
                 rider.right * startLocalOffsetFromPlayer.x +
                 rider.forward * startLocalOffsetFromPlayer.z;
 
-            Vector3 targetPosition =
+            Vector3 requestedPosition =
                 rider.position +
                 horizontalOffset +
                 Vector3.up * startLocalOffsetFromPlayer.y;
 
+            Vector3 targetPosition = requestedPosition;
+
+            bool foundSafeStart =
+                TryResolveSafeStartPosition(
+                    requestedPosition,
+                    out targetPosition
+                );
+
             bool controllerWasEnabled =
-                controller != null && controller.enabled;
+                controller != null &&
+                controller.enabled;
 
             if (controllerWasEnabled)
                 controller.enabled = false;
@@ -279,10 +326,340 @@ namespace BoredomAndDungeons
 
             Physics.SyncTransforms();
 
+            if (health != null)
+            {
+                health.ResetForCleanGameStart(
+                    startupCalmSeconds
+                );
+            }
+
             state = HorseState.Idle;
-            lastCombatActiveAt = Time.time;
-            lastAction = "started beside player";
+            lastCombatActiveAt = -999f;
+            lastAction = foundSafeStart
+                ? "clean start beside player"
+                : "clean start fallback - no safe candidate";
             startPositionApplied = true;
+        }
+
+        // BD HORSE CLEAN START V1
+        private bool TryResolveSafeStartPosition(
+            Vector3 requested,
+            out Vector3 resolved)
+        {
+            resolved = requested;
+
+            Vector3 fromPlayer =
+                requested - rider.position;
+
+            fromPlayer.y = 0f;
+
+            if (fromPlayer.sqrMagnitude < 0.001f)
+                fromPlayer = rider.right;
+
+            fromPlayer.Normalize();
+
+            float baseRadius = Mathf.Max(
+                1.75f,
+                new Vector2(
+                    requested.x - rider.position.x,
+                    requested.z - rider.position.z
+                ).magnitude
+            );
+
+            float[] angleOffsets =
+            {
+                0f, 45f, -45f, 90f,
+                -90f, 135f, -135f, 180f
+            };
+
+            float[] radiusOffsets =
+            {
+                0f, 0.85f, 1.70f
+            };
+
+            for (int radiusIndex = 0;
+                 radiusIndex < radiusOffsets.Length;
+                 radiusIndex++)
+            {
+                float radius =
+                    baseRadius +
+                    radiusOffsets[radiusIndex];
+
+                for (int angleIndex = 0;
+                     angleIndex < angleOffsets.Length;
+                     angleIndex++)
+                {
+                    Vector3 direction =
+                        Quaternion.AngleAxis(
+                            angleOffsets[angleIndex],
+                            Vector3.up
+                        ) *
+                        fromPlayer;
+
+                    Vector3 candidate =
+                        rider.position +
+                        direction.normalized *
+                        radius;
+
+                    if (!TryResolveHorseStartGround(
+                            candidate,
+                            out Vector3 grounded))
+                    {
+                        continue;
+                    }
+
+                    if (BDHazardVolume.IsRecoveryPointUnsafe(
+                            grounded,
+                            Mathf.Max(
+                                0.25f,
+                                startupHazardClearance
+                            )))
+                    {
+                        continue;
+                    }
+
+                    if (!HasHorseStartClearance(grounded))
+                        continue;
+
+                    resolved = grounded;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryResolveHorseStartGround(
+            Vector3 requested,
+            out Vector3 grounded)
+        {
+            Vector3 origin =
+                requested +
+                Vector3.up *
+                Mathf.Max(
+                    1f,
+                    startupGroundProbeHeight
+                );
+
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin,
+                Vector3.down,
+                Mathf.Max(
+                    2f,
+                    startupGroundProbeHeight +
+                    startupGroundProbeDistance
+                ),
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            System.Array.Sort(
+                hits,
+                (left, right) =>
+                    left.distance.CompareTo(
+                        right.distance)
+            );
+
+            for (int index = 0;
+                 index < hits.Length;
+                 index++)
+            {
+                RaycastHit hit = hits[index];
+
+                if (hit.collider == null ||
+                    hit.collider.isTrigger)
+                {
+                    continue;
+                }
+
+                Transform hitTransform =
+                    hit.collider.transform;
+
+                if (hitTransform == transform ||
+                    hitTransform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                if (hit.collider.GetComponentInParent<
+                        BDPlayerMarker>() != null)
+                {
+                    continue;
+                }
+
+                if (Vector3.Angle(
+                        hit.normal,
+                        Vector3.up) > 55f)
+                {
+                    continue;
+                }
+
+                grounded =
+                    hit.point +
+                    Vector3.up * 0.08f;
+
+                return true;
+            }
+
+            grounded = requested;
+            return false;
+        }
+
+        private bool HasHorseStartClearance(
+            Vector3 groundPosition)
+        {
+            float radius =
+                controller != null
+                    ? Mathf.Max(
+                        0.30f,
+                        controller.radius * 0.92f
+                    )
+                    : 0.55f;
+
+            float height =
+                controller != null
+                    ? Mathf.Max(
+                        radius * 2f,
+                        controller.height
+                    )
+                    : 2.0f;
+
+            Vector3 bottom =
+                groundPosition +
+                Vector3.up *
+                (radius + 0.12f);
+
+            Vector3 top =
+                groundPosition +
+                Vector3.up *
+                Mathf.Max(
+                    radius + 0.12f,
+                    height - radius
+                );
+
+            Collider[] overlaps = Physics.OverlapCapsule(
+                bottom,
+                top,
+                radius,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            for (int index = 0;
+                 index < overlaps.Length;
+                 index++)
+            {
+                Collider overlap = overlaps[index];
+
+                if (overlap == null ||
+                    overlap.isTrigger)
+                {
+                    continue;
+                }
+
+                Transform overlapTransform =
+                    overlap.transform;
+
+                if (overlapTransform == transform ||
+                    overlapTransform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                if (overlap.bounds.max.y <=
+                    groundPosition.y + 0.20f)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool HasLivingEnemyNearHorseOrPlayer(
+            float radius)
+        {
+            float safeRadius = Mathf.Max(1f, radius);
+            float radiusSquared =
+                safeRadius * safeRadius;
+
+            BDHealth[] candidates =
+                FindObjectsByType<BDHealth>(
+                    FindObjectsInactive.Exclude,
+                    FindObjectsSortMode.None
+                );
+
+            for (int index = 0;
+                 index < candidates.Length;
+                 index++)
+            {
+                BDHealth candidate = candidates[index];
+
+                if (candidate == null ||
+                    candidate.IsDead ||
+                    !candidate.gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                if (candidate.GetComponentInParent<
+                        BDPlayerMarker>() != null ||
+                    candidate.GetComponentInParent<
+                        BDHorseHealth>() != null)
+                {
+                    continue;
+                }
+
+                bool looksLikeCombatant =
+                    candidate.GetComponent<
+                        CharacterController>() != null ||
+                    candidate.GetComponent<
+                        BDBossHealthChannel>() != null;
+
+                if (!looksLikeCombatant)
+                    continue;
+
+                BDBossEncounterController bossEncounter =
+                    candidate.GetComponentInParent<
+                        BDBossEncounterController>();
+
+                if (bossEncounter != null &&
+                    !bossEncounter.IsCombatActive)
+                {
+                    continue;
+                }
+
+                Vector3 horseDelta =
+                    candidate.transform.position -
+                    transform.position;
+
+                horseDelta.y = 0f;
+
+                if (horseDelta.sqrMagnitude <=
+                    radiusSquared)
+                {
+                    return true;
+                }
+
+                if (rider == null)
+                    continue;
+
+                Vector3 playerDelta =
+                    candidate.transform.position -
+                    rider.position;
+
+                playerDelta.y = 0f;
+
+                if (playerDelta.sqrMagnitude <=
+                    radiusSquared)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void Update()
@@ -306,6 +683,17 @@ namespace BoredomAndDungeons
 
             if (ReadInteractPressed())
                 HandleInteract();
+
+            if (Time.unscaledTime <
+                    startupCalmUntil &&
+                state != HorseState.Mounted &&
+                state != HorseState.Fainted)
+            {
+                state = HorseState.Idle;
+                lastAction =
+                    "startup calm - healthy idle";
+                return;
+            }
 
             if (state == HorseState.Mounted)
                 TickMounted();
@@ -341,14 +729,41 @@ namespace BoredomAndDungeons
             state = HorseState.MovingToSafeSpot;
             lastAction = "sent to safe spot";
         }
-
         public void ForceDismountForCombat()
         {
+            if (Time.unscaledTime < startupCalmUntil)
+            {
+                if (state != HorseState.Mounted &&
+                    state != HorseState.Fainted)
+                {
+                    state = HorseState.Idle;
+                }
+
+                lastAction =
+                    "startup calm - ignored combat";
+                return;
+            }
+
+            if (!HasLivingEnemyNearHorseOrPlayer(
+                    combatAwarenessRadius))
+            {
+                if (state != HorseState.Mounted &&
+                    state != HorseState.Fainted)
+                {
+                    state = HorseState.Idle;
+                }
+
+                lastAction =
+                    "ignored remote combat";
+                return;
+            }
+
             if (state == HorseState.Mounted)
                 Dismount(sendToSafeSpotAfterDismount: true);
             else
                 SendToSafeSpot();
         }
+
         public void ForceDismountAfterHazardRecovery()
         {
             if (state != HorseState.Mounted)
@@ -546,32 +961,14 @@ namespace BoredomAndDungeons
 
             return IsCombatActiveForHorse();
         }
-
         private bool IsCombatActiveForHorse()
         {
-            BDCombatRoom[] combatRooms = FindObjectsByType<BDCombatRoom>(FindObjectsSortMode.None);
+            if (Time.unscaledTime < startupCalmUntil)
+                return false;
 
-            foreach (BDCombatRoom room in combatRooms)
-            {
-                if (room == null)
-                    continue;
-
-                if (room.CombatActivated && room.LiveEnemies > 0)
-                    return true;
-            }
-
-            // Fallback for the single-room prototype/legacy encounter path.
-            BDRoomEncounter[] encounters = FindObjectsByType<BDRoomEncounter>(FindObjectsSortMode.None);
-            foreach (BDRoomEncounter encounter in encounters)
-            {
-                if (encounter == null)
-                    continue;
-
-                if (!encounter.IsComplete && encounter.LiveEnemies > 0)
-                    return true;
-            }
-
-            return false;
+            return HasLivingEnemyNearHorseOrPlayer(
+                combatAwarenessRadius
+            );
         }
 
         private void Mount()
@@ -583,6 +980,8 @@ namespace BoredomAndDungeons
 
             state = HorseState.Mounted;
             smoothedMountedHorizontalVelocity = Vector3.zero;
+            smoothedMountedTravelDirection = transform.forward;
+            smoothedMountedTravelDirection.y = 0f;
             mountedYawInitialized = false;
             InitializeMountedYawFromTransform();
             lastAction = "mounted";
@@ -1020,6 +1419,57 @@ namespace BoredomAndDungeons
             Vector3 fallback = new Vector3(input.x, 0f, input.y);
             return fallback.sqrMagnitude > 1f ? fallback.normalized : fallback;
         }
+        private Vector3 SmoothMountedTravelDirection(
+            Vector3 desiredDirection,
+            bool wantsMove)
+        {
+            desiredDirection.y = 0f;
+
+            if (!wantsMove ||
+                desiredDirection.sqrMagnitude < 0.001f)
+            {
+                return Vector3.zero;
+            }
+
+            desiredDirection.Normalize();
+
+            if (smoothedMountedTravelDirection.sqrMagnitude < 0.001f)
+            {
+                smoothedMountedTravelDirection =
+                    transform.forward;
+
+                smoothedMountedTravelDirection.y = 0f;
+            }
+
+            if (smoothedMountedTravelDirection.sqrMagnitude < 0.001f)
+            {
+                smoothedMountedTravelDirection =
+                    desiredDirection;
+            }
+
+            float maxRadians =
+                Mathf.Deg2Rad *
+                Mathf.Max(
+                    35f,
+                    mountedTravelTurnDegreesPerSecond
+                ) *
+                Time.deltaTime;
+
+            smoothedMountedTravelDirection =
+                Vector3.RotateTowards(
+                    smoothedMountedTravelDirection.normalized,
+                    desiredDirection,
+                    maxRadians,
+                    0f
+                );
+
+            smoothedMountedTravelDirection.y = 0f;
+
+            return smoothedMountedTravelDirection.sqrMagnitude > 0.001f
+                ? smoothedMountedTravelDirection.normalized
+                : desiredDirection;
+        }
+
 
         private void TickMounted()
         {
@@ -1042,7 +1492,16 @@ namespace BoredomAndDungeons
             float turnSpeed = wantsRideMove ? mountedMouseAimMovingTurnDegreesPerSecond : mountedMouseAimIdleTurnDegreesPerSecond;
             lastMountedAimDirection = TurnMountedAimGradually(lastMountedAimDirection, targetMountedAimDirection, turnSpeed);
 
-            Vector3 move = wantsRideMove ? ToMountedPlayerRelativeMove(input) : Vector3.zero;
+            Vector3 desiredMove =
+                wantsRideMove
+                    ? ToMountedPlayerRelativeMove(input)
+                    : Vector3.zero;
+
+            Vector3 move =
+                SmoothMountedTravelDirection(
+                    desiredMove,
+                    wantsRideMove
+                );
 
             if (controller.isGrounded && verticalVelocity < 0f)
                 verticalVelocity = groundedStickVelocity;
@@ -1081,10 +1540,19 @@ namespace BoredomAndDungeons
 
             MoveHorse(velocity * Time.deltaTime);
 
-            if (lastMountedAimDirection.sqrMagnitude > 0.001f)
+            Vector3 mountedFacingDirection =
+                wantsRideMove &&
+                move.sqrMagnitude > 0.001f
+                    ? move
+                    : lastMountedAimDirection;
+
+            if (mountedFacingDirection.sqrMagnitude > 0.001f)
             {
-                RotateToward(lastMountedAimDirection);
-                lastRideInputSource = wantsRideMove ? "move-relative-to-mounted-facing-aim + " + lastRideInputSource : "idle-turning-to-mounted-target-aim";
+                RotateToward(mountedFacingDirection);
+
+                lastRideInputSource = wantsRideMove
+                    ? "natural-wide-horse-turn + " + lastRideInputSource
+                    : "idle-turning-to-mounted-target-aim";
             }
 
             PlaceRiderOnMountPoint();

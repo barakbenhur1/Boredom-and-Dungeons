@@ -15,13 +15,13 @@ namespace BoredomAndDungeons
         [SerializeField] private Transform target;
 
         [Header("Role: close attacker")]
-        [SerializeField] private float aggroRange = 15f;
+        [SerializeField] private float aggroRange = 18.5f;
         [SerializeField] private float moveSpeed = 3.35f;
         [SerializeField] private float circleSpeed = 1.75f;
         [SerializeField] private float rotationSpeed = 14f;
         [SerializeField] private float desiredDistance = 1.65f;
         [SerializeField] private float tooCloseDistance = 1.15f;
-        [SerializeField] private float attackRange = 1.72f;
+        [SerializeField] private float attackRange = 2.10f;
         [SerializeField] private float attackDamage = 12f;
         [SerializeField] private float attackCooldown = 1.05f;
 
@@ -440,7 +440,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
     }
 }

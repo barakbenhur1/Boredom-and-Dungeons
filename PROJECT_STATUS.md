@@ -6,14 +6,13 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous category: C04 — Mounted horse environmental-hazard recovery
-Previous result: PARTIAL INSTALL — BDHazardVolume and BDPlayerHazardRecovery were updated; horse-safety patch stopped before writing because its public-property anchor did not exist
-Current category: C04 — Horse environmental-hazard recovery
-Current item: C04.29–C04.31 partial-install repair — horse recovery state, continuous polling, safe-point history, on-foot rider recovery, and AI lock
-Current status: IMPLEMENTED — awaiting Unity compilation, TEST EVERYTHING, and Play Mode verification
-Next category: C07 — Boss framework and first real playable encounter
-Next item after C04 acceptance: C07.16 — Wire the framework into one real playable test encounter
-Saved later item: exhausted-horse slow follow and Pet short/long-press interaction remain recorded
+Previous category: C03/C04/C05/C12 — natural movement, horse traversal, enemy awareness, and temporary facing readability
+Previous item: package natural player/horse/enemy motion, faster wide-turn horse, proactive hazard refusal, enemy awareness repair, temporary front/back markers, and START GAME highlight
+Previous result: package prepared but not yet installed or verified in Unity
+Current category: C06 — player melee combat expansion
+Current item: long-press left attack triggers a fast spinning AOE with independent cooldown, lower per-target damage, outward knockback, dedicated animation, and weapon-damage boost integration
+Current status: IMPLEMENTED IN CUMULATIVE V2 PACKAGE — requires clean Unity compilation, TEST EVERYTHING, and Play Mode verification before PASS
+Next item: verify quick click vs hold, cooldown fallback to normal light attack, multi-enemy AOE hits, knockback, boost scaling, and visual exclusivity
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -528,8 +527,8 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [x] C05.19 Best-scored fallback when no perfect point exists.
 - [x] C05.20 General enemy placement safety foundation.
 - [x] C05.21 Future Square Jumper landing/summon safety support.
-- [ ] C05.22 Verify all enemies avoid walls, obstacles, player overlap, and illegal terrain.
-- [ ] C05.23 Skip a summon safely when no valid position exists.
+- [ ] C05.22 Verify all enemies avoid walls, obstacles, player overlap, and illegal terrain. — COLLECTIBLE GUARDIAN SAME-ROOM SAFETY IMPLEMENTED / VERIFY.
+- [ ] C05.23 Skip a summon safely when no valid position exists. — SAME-ROOM HARD SAFETY IMPLEMENTED / VERIFY FOR COLLECTIBLE GUARDIANS.
 - [ ] C05.24 Add spawn/summon limits per encounter.
 - [ ] C05.25 Verify sword weapon/double-slash visuals in Play Mode.
 
@@ -565,8 +564,8 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C06.11B Approaching a Battery activates its guardian encounter once per run.
 - [ ] C06.11C Show a short spawn anticipation effect before guardians become active.
 - [ ] C06.11D Spawn guardians around the player and Battery, but outside fair minimum safety radii and never directly adjacent to the player.
-- [ ] C06.11E Spawn points must avoid other guardians, walls, props, lava, holes, chasms, inaccessible terrain, and active barriers while preserving at least one reachable movement/escape direction.
-- [ ] C06.11F Use alternate candidate positions and a scored legal fallback; delay/cancel an individual guardian spawn when no legal point exists instead of forcing an invalid spawn.
+- [ ] C06.11E Spawn points must avoid other guardians, walls, props, lava, holes, chasms, inaccessible terrain, and active barriers while preserving at least one reachable movement/escape direction. — SAME-ROOM/WALL CONTRACT IMPLEMENTED / VERIFY.
+- [ ] C06.11F Use alternate candidate positions and a scored legal fallback; delay/cancel an individual guardian spawn when no legal point exists instead of forcing an invalid spawn. — SAME-ROOM FALLBACK IMPLEMENTED / VERIFY; FULL CANCEL CONTRACT REMAINS.
 - [ ] C06.11G Battery A is the first serious protected-collectible group encounter; Battery B is harder through roles, pressure, angles, or validated count—not unfair spawn proximity.
 - [ ] C06.11H Re-entry cannot duplicate or infinitely restart the encounter; after victory the Battery remains at its original map position and becomes safely collectible.
 
@@ -639,8 +638,8 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 
 ## Current ordered work
 
-- [ ] **C07.16 Wire the framework into one real playable test encounter.**
-- [ ] C07.17 Connect real damage sources to health channels and life states.
+- [ ] **C07.16 Wire the framework into one real playable test encounter. — IMPLEMENTED / VERIFY.**
+- [ ] **C07.17 Connect real damage sources to health channels and life states. — NEXT AFTER C07.16 ACCEPTANCE.**
 - [ ] C07.18 Connect boss HUD to authoritative scene/prefab flow.
 - [ ] C07.19 Implement arena activation, entrance lock, intro lockout, victory unlock, and cleanup.
 - [ ] C07.20 Prove one-bar, multi-bar, knockout, zero-health-active, critical, and linked-death states.
@@ -1636,3 +1635,287 @@ No legacy requirement is removed by this reorganization.
 - Latest and previous horse-safe points, rapid-loop fallback, post-recovery grace, and safe-point write locks prevent death/recovery loops.
 - Horse follow/flee/return/interaction updates pause while recovery or recovery grace is active.
 - `C04.31` remains the active Play Mode acceptance gate before returning to `C07.16`.
+
+## 2026-06-06 — C07.16 playable shared-framework encounter
+
+- The user approved the mandatory transition from C04 to C07 by replying `הבא` after the clean C04 QA result.
+- Added one real playable framework encounter to the authoritative prototype-scene generation flow.
+- The encounter is deliberately a neutral `Framework Test Boss`, not one of the four C08 archetypes; individual archetype implementation remains blocked until the C07 category gate.
+- The installer selects a large non-start room, strongly preferring a distant room without resident combatants, then clears remaining non-player/non-horse combatants from that test room.
+- The generated encounter includes:
+  - `BDBossEncounterController`;
+  - one `BDBossHealthChannel` inside a `BDBossHealthGroup`;
+  - `BDBossHealthDamageBridge` connected to a real `BDHealth` target that existing player attacks can hit;
+  - `BDBossHealthHud`;
+  - `BDBossEncounterRuntimeBindings`;
+  - `BDBossArenaTrigger`;
+  - a playable boss that moves only while the encounter is `Active`;
+  - a readable expanding attack telegraph, avoidable range check, player damage, player-death failure routing, and victory through the shared health group.
+- `BDPrototypeHazardSceneInstaller` invokes the C07 installer automatically, preserving the single `TEST EVERYTHING` workflow.
+- The C07 installer saves the authoritative scene itself, preventing the generated encounter from existing only in memory.
+- `TEST EVERYTHING` validates the source contracts and generated scene hierarchy.
+- C07.16 does not claim C07.17 complete: the existing bridge is used for this one encounter; generalized damage-source and life-state routing remains next.
+
+## 2026-06-06 — Guardian same-room spawn safety and corrected C07.16 installer
+
+- The first C07.16 package stopped in preflight before changing project files because the Stage 16 bridge path was checked without the `Stage16/` folder.
+- Corrected all Stage 16 prerequisite paths and the `BDPrototypeHazardSceneInstaller.TryEnsureInstalled` integration point.
+- Collectible guardian encounters now require the player to be in the collectible's own `BDMinimapRoom`; trigger radius can no longer activate through a wall from an adjacent room.
+- Every generated candidate is clamped to an inset inside that room and rejected as a preferred candidate when a solid wall blocks the path from the collectible.
+- The fallback is also constrained to the same room, so a guardian can never be forced into the room on the other side of the wall.
+- Added source-contract checks to `TEST EVERYTHING`.
+- C07.16 remains `IMPLEMENTED / VERIFY` until Unity compilation and Play Mode pass.
+
+## 2026-06-06 — Deterministic healthy horse start and C07 QA repair
+
+- The horse health component already filled health during `Awake`, so a visibly reduced bar at the start meant damage was being applied immediately afterward rather than being serialized as a partial starting value.
+- Added a short startup damage-protection window and an explicit clean-start reset that clears recent-hit/buck state and starts at maximum health.
+- The horse now resolves its beside-player start position against walkable ground, lava, holes, chasms, walls, and solid overlap.
+- Added a startup calm window. During it, combat notifications cannot send the horse to its safe spot.
+- Combat awareness is now local to a living enemy near the horse or player.
+- Dormant boss encounters do not count as danger.
+- `ForceDismountForCombat` ignores remote combat when no nearby living enemy exists.
+- Corrected the stale C07.16 QA token from `ApplyUnavoidableDamage` to the actual `ApplyDamage` call.
+- Added clean-start regression contracts to `TEST EVERYTHING`.
+
+## 2026-06-06 — Global gameplay-model shadow policy
+
+- Added an explicit global shadow policy before continuing C07.
+- Player, horse, enemies, mini-bosses, bosses, batteries, Game Boy, cartridge/tape, collectibles, pickups, quest items, and central interactables always cast and receive basic shadows.
+- Required gameplay shadows are never disabled by the optional performance budget.
+- Secondary non-decoration gameplay models use distance- and count-budgeted shadows.
+- Floors, walls, ceilings, terrain, backgrounds, UI, minimap, VFX, particles, labels, telegraphs, lava, holes, chasms, hazards, and general decoration are not automatically promoted to shadow casters.
+- Default optional budget: 22 world units, 28 renderers, 0.35-second refresh, 2.5-second dynamic discovery.
+- Dynamically spawned gameplay models are periodically discovered.
+- The policy changes only Renderer shadow settings and preserves all models, materials, effects, lights, animation, colliders, and gameplay content.
+- Added `GAMEPLAY_SHADOW_POLICY_V1.md` as the permanent design contract.
+- Integrated installation and validation into the existing one-button `TEST EVERYTHING` workflow.
+
+## 2026-06-06 — Main menu, settings, pause, and result routing
+
+- Added a main screen before gameplay with:
+  - `START GAME` / `START NEW GAME`;
+  - `SETTINGS`;
+  - desktop `QUIT`.
+- Added a settings overlay with persistent:
+  - graphics quality;
+  - fullscreen/windowed mode;
+  - VSync;
+  - 30/60/120/unlimited target FPS;
+  - master, music, and SFX volume;
+  - mouse sensitivity;
+  - camera-shake intensity;
+  - reset defaults.
+- Added Escape pause flow with Resume, Settings, and Main Menu.
+- Player death is intercepted by `BDGameFlowSignals` before legacy `Died` listeners can automatically reload the scene.
+- Defeat and victory show the main screen immediately and pause the current run.
+- The scene reload occurs only after the player explicitly selects `START NEW GAME`; the new scene auto-starts after loading.
+- Added explicit victory APIs and `BDGameCompletionMarker` for the future final Mother-boss ending.
+- Final Mother-boss integration rule:
+  - loss cutscene finishes with the player saying `I'm bored`, then calls `ShowDefeat`;
+  - victory colored-light ending finishes, then calls `ShowVictory`.
+- Connected mouse sensitivity to `BDPlayerController`.
+- Connected camera-shake intensity to `BDGameFeelEvents`.
+- Connected SFX volume to `BDGameFeelAudio`.
+- Added runtime routing for ordinary music/SFX `AudioSource` components.
+- Corrected the stale hazard QA rule: player lava/hole damage intentionally uses `ApplyUnavoidableDamage`, not `ApplyDamage`.
+- Installer scans legacy result methods and replaces automatic result-scene loads with menu routing when safely identifiable.
+- Added `MAIN_MENU_SETTINGS_RESULT_FLOW_V1.md` as the permanent product contract.
+- Integrated installation and validation into the existing one-button `TEST EVERYTHING` workflow.
+
+## 2026-06-06 — C09 correction: cinematic-first endings and non-verbal completion relic
+
+- Removed all result wording from the main menu:
+  - no `DEFEAT`;
+  - no `VICTORY`;
+  - no `I'M BORED`;
+  - no `START NEW GAME`.
+- The main-menu title, subtitle, and `START GAME` button remain unchanged after every run.
+- Ordinary player death returns directly to the unchanged main menu without an automatic scene reload.
+- Endings with cinematics now use an explicit sequence ownership contract:
+  - call `BeginResultSequence` before the ending starts;
+  - player death during that sequence is consumed without opening the menu or invoking legacy reload listeners;
+  - call `ReturnToMainMenuAfterSequence` only after the ending-door-without-items sequence or Mother-loss cutscene finishes;
+  - call `CompleteMotherVictorySequence` only after all Mother-victory cinematics and the final colored-light ending finish.
+- Added Timeline/Animation-event compatible methods to `BDGameCompletionMarker`.
+- Mother victory stores a permanent progression flag.
+- The only permanent main-menu change is non-verbal:
+  - a small Game Boy appears;
+  - its cartridge is inserted;
+  - its screen emits a softly animated version of the colored ending light;
+  - a few colored pixels drift around it;
+  - no completion words, badge text, trophy text, percentage, or explicit statement is shown.
+- The relic remains visible across future launches.
+- Loading still occurs only after the player explicitly presses the unchanged `START GAME` button.
+- Added `MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md` as the corrected permanent contract.
+
+## 2026-06-06 — BBH operating-system boot intro and installer stability repair V2
+
+- Added a black boot-intro screen shown once per application launch before the main menu.
+- `BBH` is centered on X and positioned at 60% of screen height from the top.
+- Letters animate strictly one after another. A later letter cannot begin until the previous letter finishes.
+- Each letter uses a polished depth entrance:
+  - very small distant start;
+  - opacity and brightness ramp;
+  - seven-layer perspective trail;
+  - slight rotation from depth;
+  - controlled overshoot and settle;
+  - edge highlight, restrained glow, and final light sweep.
+- The completed mark holds briefly and fades into the unchanged main menu.
+- Scene reloads caused by `START GAME` do not replay the intro during the same application session.
+- Added `BBH_BOOT_INTRO_V1.md` as the permanent visual/behaviour contract.
+- Repaired the `B&D Main Menu And Settings` root:
+  - removes stale missing MonoBehaviour references recursively;
+  - restores `BDMainMenuFlow`;
+  - restores `BDSettingsAudioRouter`;
+  - installs `BDBBHBootIntro`.
+- Corrected nested scene-save ownership:
+  - `BDC07PlayableBossEncounterInstaller` no longer calls `EditorSceneManager.SaveScene`;
+  - it marks the scene dirty and lets the top-level `TEST EVERYTHING` flow save once.
+- Added regression checks for the intro, missing-script repair, exact placement, sequential animation contract, and forbidden nested scene save.
+
+## 2026-06-06 — BBH intro validation wording fix V4
+
+- The V3 installer completed successfully and installed the BBH intro.
+- Its external validator then failed only because the design sentence
+  `60% of the screen height` was wrapped across two Markdown lines.
+- Normalized that sentence to one physical line.
+- No gameplay, animation, scene, prefab, material, or renderer behaviour
+  changed in this repair.
+- Future package validation normalizes whitespace before checking the
+  placement contract, so ordinary Markdown line wrapping cannot cause the
+  same false failure again.
+
+## 2026-06-06 — Scene YAML parser repair and truthful QA
+
+- Unity reported `Expected closing '}'` near line 54904 in
+  `02_CleanCore_MazePrototype.unity`.
+- The existing automated suite still reported PASS because it validated source
+  contracts but did not lexically validate the serialized scene file.
+- Added a safe local repair that closes one uniquely identifiable malformed
+  inline Unity YAML mapping near the reported parser line.
+- The repair refuses to write when the candidate is ambiguous.
+- Added `ScanSceneYamlIntegrityContracts` to `TEST EVERYTHING`.
+- `TEST EVERYTHING` now blocks on:
+  - unbalanced inline `{...}` mappings in the scene;
+  - unresolved Git conflict markers in the scene;
+  - a missing prototype scene file.
+- The QA report showing `0 blockers / 0 warnings / 0 info` describes the old
+  automated checks only and does not override Unity's parser failure.
+
+## 2026-06-06 — BBH intro visual vertical placement fix V1
+
+- User feedback after Play Mode visual QA: the BBH intro appears too high,
+  reading closer to ~40% of screen height than the requested ~60%.
+- Kept the public placement contract at `0.60f`.
+- Added a visual compensation offset so the visible BBH glyph block sits lower
+  on screen while preserving the existing sequential animation and fade logic.
+- This is a presentation-only adjustment. No scene-flow, gameplay, or
+  main-menu logic changed.
+
+## 2026-06-06 — BBH intro upper-screen position fix V2
+
+- Visual QA with screenshot clarified that the requested placement is in the
+  upper part of the screen, not the lower part.
+- Reinterpreted the requirement as: the visible BBH glyph block should read
+  around 40% from the top, which is equivalently about 60% from the bottom.
+- Updated the runtime default vertical position from `0.60f` to `0.40f`.
+- Removed the downward visual compensation introduced in V1 by resetting the
+  compensation multiplier to `0.00f` and allowing symmetric offset range.
+- Updated the BBH design note and recorded the correction in PROJECT_STATUS.md.
+- No sequencing, fade, or main-menu flow changed.
+
+## 2026-06-06 — BBH upper-position QA and font-reference repair V3
+
+- The upper-position runtime fix correctly changed
+  `verticalScreenPosition` from `0.60f` to `0.40f`.
+- `TEST EVERYTHING` still expected the obsolete `0.60f` source token and
+  therefore produced a false blocker.
+- Updated the BBH runtime regression contract to require `0.40f`.
+- Removed explicit destruction of the dynamically created OS font from
+  `BDBBHBootIntro.OnDestroy`, preventing Unity's
+  `Deleting invalid font reference` script-reload warning.
+- The intro animation, sequential timing, upper-screen placement, fade, and
+  main-menu flow remain unchanged.
+
+## 2026-06-06 — BBH pseudo-3D cube text and growing shadow polish V1
+
+- Updated the BBH intro lettering so the text itself reads as pseudo-3D,
+  with layered cube-like extrusion rather than only a depth trail.
+- Added a dedicated growing shadow behind each letter. The shadow scales and
+  pulls away with the letter during the entrance animation.
+- Kept the sequential one-letter-at-a-time timing, upper-screen placement,
+  fade-out, and main-menu handoff unchanged.
+- This is a visual polish pass only.
+
+## 2026-06-06 — BBH exact 45%-from-top placement and warning cleanup V1
+
+- Fixed the BBH intro position to an exact visual anchor:
+  the center of the text is now `45%` from the top and `55%` from the bottom.
+- Removed the serialized vertical-position and compensation fields so stale
+  Inspector values saved in the scene can no longer keep the logo too low.
+- The runtime now uses the non-serialized constant
+  `VerticalScreenPositionFromTop = 0.45f`.
+- Removed the obsolete `depthTrailCopies` field, eliminating CS0414.
+- Updated TEST EVERYTHING to require the exact `0.45f` contract.
+- Pseudo-3D extrusion, growing shadow, sequential timing, fade, and menu flow
+  remain unchanged.
+
+## 2026-06-06 — Dreamy childhood-adventure main menu V2
+
+- Added a procedural midnight-indigo storybook background with moon glow,
+  twinkling stars, lavender cloud haze, layered silhouettes, and a winding
+  golden path.
+- Replaced the default grey Unity menu appearance with a translucent
+  midnight-blue panel.
+- Restyled the title in warm ivory and the buttons in deep blue with gold-toned
+  text and brighter hover/active states.
+- Added quiet decorative dividers to strengthen the storybook composition.
+- Preserved START GAME, SETTINGS, desktop QUIT, pause/settings flow, and the
+  permanent Game Boy relic after Mother victory.
+- Removed the BBH temporary OS-font lifecycle and switched the intro to
+  `GUI.skin.label.font`, addressing `Deleting invalid font reference`.
+- Added permanent design documentation and TEST EVERYTHING contracts.
+
+## 2026-06-06 — Main menu button vertical-position polish V1
+
+- Raised the main menu action buttons slightly upward.
+- Reduced the empty vertical gap between the title section and the buttons.
+- Preserved the dreamy background, panel, title, button styling, and menu behaviour.
+- Kept START GAME, SETTINGS, and QUIT unchanged functionally.
+
+## 2026-06-06 — Main menu button vertical-position polish V2
+
+- Raised the main menu action buttons further upward.
+- Moved the button group closer to the visual middle of the panel.
+- Further reduced the empty vertical gap between the title section and the buttons.
+- Preserved the dreamy background, panel, title, button styling, and menu behaviour.
+- Kept START GAME, SETTINGS, and QUIT unchanged functionally.
+
+## 2026-06-06 — Natural movement, awareness, hazard refusal, and temporary facing V1
+
+- Recorded the failed START GAME highlight preflight as no-op; no rollback required.
+- Added a non-serialized tasteful highlight for START GAME using a scoped GUI tint.
+- Player movement now applies softer acceleration/deceleration and body rotation at runtime.
+- Horse movement is faster than the player, accelerates/brakes more softly, and follows wider travel turns.
+- Horse hazard safety now looks ahead, swerves before lava/holes/chasms/missing ground, then refuses movement for about one second.
+- Enemy movement changes direction more smoothly while preserving committed high-speed attacks.
+- Enemy target awareness refreshes frequently and rebinds after mount/dismount or scene state changes.
+- Enemy awareness and attack/start ranges were increased moderately.
+- Added temporary front/rear visual markers for player, horse, and enemies until real models are integrated.
+- Added permanent removal instructions for the temporary markers.
+- Added TEST EVERYTHING contracts for every part of this package.
+- Status remains VERIFY until Unity compilation, TEST EVERYTHING, and Play Mode checks pass.
+
+## 2026-06-06 — Long-press light spinning AOE attack V1
+
+- Added a dedicated long-press path for the normal light-attack input.
+- Quick click remains the regular light attack.
+- Holding for 0.24 seconds triggers a fast spinning AOE when its own cooldown is ready.
+- If the spinning AOE is cooling down, the press immediately falls back to a normal light attack without waiting.
+- The AOE uses an independent 0.85 second cooldown and does not apply that cooldown to the regular light attack.
+- The AOE damages every unique living enemy inside its radius for 82% of regular light damage per target.
+- Existing `WeaponDamageMultiplier` is applied, so weapon-damage pickups improve the AOE.
+- Every hit receives outward knockback, stagger, flash, and impact feedback.
+- Added `BDSpinAttackVisual` for a short rotating three-arc animation; the standard melee slash visual is not spawned.
+- Added design documentation and TEST EVERYTHING contracts.

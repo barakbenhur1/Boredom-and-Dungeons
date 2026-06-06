@@ -63,7 +63,12 @@ namespace BoredomAndDungeons
             EnsureClips();
 
             if (runner != null)
-                runner.Play(clip, volume, pitch);
+                runner.Play(
+                    clip,
+                    volume *
+                    BDGameSettings.SfxVolume,
+                    pitch
+                );
         }
 
         private static void EnsureRunner()

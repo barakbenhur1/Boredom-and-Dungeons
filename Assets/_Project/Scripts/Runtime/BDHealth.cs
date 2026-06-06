@@ -193,7 +193,8 @@ namespace BoredomAndDungeons
 
             if (currentHealth <= 0f)
             {
-                Died?.Invoke(this);
+                if (!BDGameFlowSignals.TryHandleDeath(this))
+                    Died?.Invoke(this);
 
                 if (destroyOnDeath)
                     Destroy(gameObject);
@@ -220,7 +221,8 @@ namespace BoredomAndDungeons
 
             if (currentHealth <= 0f)
             {
-                Died?.Invoke(this);
+                if (!BDGameFlowSignals.TryHandleDeath(this))
+                    Died?.Invoke(this);
 
                 if (destroyOnDeath)
                     Destroy(gameObject);

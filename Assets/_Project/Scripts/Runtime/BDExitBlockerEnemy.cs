@@ -14,7 +14,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float blockExitSpeed = 5f;
         [SerializeField] private float rotationSpeed = 14f;
         [SerializeField] private float stopDistance = 1.4f;
-        [SerializeField] private float attackRange = 1.65f;
+        [SerializeField] private float attackRange = 2.0f;
         [SerializeField] private float attackDamage = 11f;
         [SerializeField] private float attackCooldown = 0.95f;
         [SerializeField] private float holdExitRadius = 0.75f;
@@ -62,7 +62,7 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
+
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
                 return;if (currentExit != null)
@@ -176,7 +176,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
 
 

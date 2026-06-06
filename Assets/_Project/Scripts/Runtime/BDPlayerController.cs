@@ -152,10 +152,21 @@ namespace BoredomAndDungeons
             lastJumpStartedAt = -999f;            forcedGapEntryUntil = -999f;
 
         }
+        private void ApplyNaturalMovementProfile()
+        {
+            moveSpeed = 6.1f;
+            moveAcceleration = 22f;
+            moveDeceleration = 28f;
+            bodyRotationSmoothing = 18f;
+            mouseAimMovingTurnDegreesPerSecond = 245f;
+            mouseAimTargetSmoothing = 18f;
+        }
+
 
 
         private void Awake()
         {
+            ApplyNaturalMovementProfile();
             characterController = GetComponent<CharacterController>();
 
             if (GetComponent<BDPlayerHazardRecovery>() == null)
@@ -191,7 +202,9 @@ namespace BoredomAndDungeons
             }
 
             float turnSpeed = wantsMove ? mouseAimMovingTurnDegreesPerSecond : mouseAimIdleTurnDegreesPerSecond;
-            turnSpeed *= mouseSensitivityMultiplier;
+            turnSpeed *=
+                mouseSensitivityMultiplier *
+                BDGameSettings.MouseSensitivityMultiplier;
             lastLookDirection = TurnAimGradually(lastLookDirection, targetLookDirection, turnSpeed);
 
             RotateToward(lastLookDirection);

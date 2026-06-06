@@ -12,10 +12,10 @@ namespace BoredomAndDungeons
         [SerializeField] private Transform target;
 
         [Header("Role: distance then leap")]
-        [SerializeField] private float aggroRange = 17f;
+        [SerializeField] private float aggroRange = 20f;
         [SerializeField] private float preferredJumpDistance = 7.0f;
         [SerializeField] private float minJumpDistance = 5.0f;
-        [SerializeField] private float maxJumpDistance = 9.6f;
+        [SerializeField] private float maxJumpDistance = 10.5f;
         [SerializeField] private float tooCloseDistance = 3.35f;
         [SerializeField] private float approachSpeed = 2.7f;
         [SerializeField] private float retreatSpeed = 4.0f;
@@ -105,7 +105,7 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
+
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
                 return;TickJumper();
@@ -452,7 +452,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
 
 

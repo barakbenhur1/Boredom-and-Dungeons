@@ -27,6 +27,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float spawnDistanceStep = 0.75f;
         [SerializeField] private float spawnAngleStep = 18f;
         [SerializeField] private int spawnResolveAttempts = 14;
+        [SerializeField] private float roomEdgeInset = 1.75f;
 
         [Header("Guardian Spawn VFX")]
         [SerializeField] private bool useSpawnVfx = true;
@@ -40,6 +41,8 @@ namespace BoredomAndDungeons
 
         private bool spawned;
         private Transform player;
+        private BDMinimapRoom spawnRoom;
+        private bool missingSpawnRoomLogged;
 
         public void Configure(float radius, int swords, int chargers, float distance)
         {
@@ -59,6 +62,26 @@ namespace BoredomAndDungeons
                 player = BDTargetFinder.FindPlayer();
 
             if (player == null)
+                return;
+
+            // BD SAME-ROOM GUARDIAN SPAWN SAFETY V1
+            if (!TryResolveSpawnRoom(out spawnRoom))
+            {
+                if (!missingSpawnRoomLogged)
+                {
+                    missingSpawnRoomLogged = true;
+                    Debug.LogWarning(
+                        $"B&D guardian encounter at {name} has no containing BDMinimapRoom; spawn is blocked."
+                    );
+                }
+
+                return;
+            }
+
+            missingSpawnRoomLogged = false;
+
+            // A player in the adjacent room cannot trigger this encounter through a wall.
+            if (!spawnRoom.ContainsWorldPosition(player.position, 0f))
                 return;
 
             Vector3 delta = player.position - transform.position;
@@ -174,7 +197,6 @@ namespace BoredomAndDungeons
             if (bootstrap != null)
                 bootstrap.enabled = active;
         }
-
         private Vector3 ResolveFairSpawnPosition(
             Vector3 baseDirection,
             int index,
@@ -184,40 +206,105 @@ namespace BoredomAndDungeons
         {
             total = Mathf.Max(1, total);
             int attempts = Mathf.Max(1, spawnResolveAttempts);
-            float baseT = total == 1 ? 0.5f : index / Mathf.Max(1f, total - 1f);
-            float baseAngle = Mathf.Lerp(-spawnArcDegrees * 0.5f, spawnArcDegrees * 0.5f, baseT);
+            float baseT = total == 1
+                ? 0.5f
+                : index / Mathf.Max(1f, total - 1f);
+            float baseAngle = Mathf.Lerp(
+                -spawnArcDegrees * 0.5f,
+                spawnArcDegrees * 0.5f,
+                baseT
+            );
 
-            Vector3 bestCandidate = ResolveCandidate(baseDirection, baseAngle, spawnDistance);
-            float bestScore = ScoreSpawnCandidate(bestCandidate, playerTransform, claimedPositions);
+            bool hasHardSafeCandidate = false;
+            Vector3 bestCandidate = default;
+            float bestScore = float.NegativeInfinity;
 
             for (int attempt = 0; attempt < attempts; attempt++)
             {
-                float angleOffset = ResolveAttemptAngleOffset(attempt);
-                float distanceOffset = ResolveAttemptDistanceOffset(attempt);
-                float distance = Mathf.Min(Mathf.Max(spawnDistance, maxSpawnDistance), spawnDistance + distanceOffset);
-                Vector3 candidate = ResolveCandidate(baseDirection, baseAngle + angleOffset, distance);
-                float score = ScoreSpawnCandidate(candidate, playerTransform, claimedPositions);
+                float angleOffset =
+                    ResolveAttemptAngleOffset(attempt);
+                float distanceOffset =
+                    ResolveAttemptDistanceOffset(attempt);
+                float distance = Mathf.Min(
+                    Mathf.Max(spawnDistance, maxSpawnDistance),
+                    spawnDistance + distanceOffset
+                );
 
-                if (score > bestScore)
+                Vector3 candidate = ResolveCandidate(
+                    baseDirection,
+                    baseAngle + angleOffset,
+                    distance
+                );
+
+                if (spawnRoom == null ||
+                    !IsInsideRoomInterior(candidate, spawnRoom) ||
+                    !HasClearPathFromCollectible(candidate))
                 {
+                    continue;
+                }
+
+                float score = ScoreSpawnCandidate(
+                    candidate,
+                    playerTransform,
+                    claimedPositions
+                );
+
+                if (!hasHardSafeCandidate || score > bestScore)
+                {
+                    hasHardSafeCandidate = true;
                     bestScore = score;
                     bestCandidate = candidate;
                 }
 
-                if (IsSpawnPositionFair(candidate, playerTransform, claimedPositions))
+                if (IsSpawnPositionFair(
+                        candidate,
+                        playerTransform,
+                        claimedPositions))
+                {
                     return candidate;
+                }
+            }
+
+            if (hasHardSafeCandidate)
+            {
+                if (logFallbackSpawnPositions)
+                {
+                    Debug.LogWarning(
+                        $"B&D guardian spawn used a same-room fallback near {name}. " +
+                        $"score={bestScore:0.00}"
+                    );
+                }
+
+                return bestCandidate;
             }
 
             if (logFallbackSpawnPositions)
-                Debug.LogWarning($"B&D guardian spawn used best fallback near {name}. score={bestScore:0.00}");
+            {
+                Debug.LogWarning(
+                    $"B&D guardian spawn had no clear candidate near {name}; " +
+                    "using the room interior center rather than crossing a wall."
+                );
+            }
 
-            return bestCandidate;
+            Vector3 fallback = spawnRoom != null
+                ? spawnRoom.WorldCenter
+                : transform.position;
+            fallback.y =
+                transform.position.y +
+                Mathf.Max(0.1f, spawnVerticalOffset);
+            return spawnRoom != null
+                ? ClampToRoomInterior(fallback, spawnRoom)
+                : fallback;
         }
 
         private Vector3 ResolveCandidate(Vector3 baseDirection, float angle, float distance)
         {
             Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * baseDirection;
             Vector3 position = transform.position + direction.normalized * Mathf.Max(2.5f, distance);
+
+            if (spawnRoom != null)
+                position = ClampToRoomInterior(position, spawnRoom);
+
             position.y = transform.position.y + Mathf.Max(0.1f, spawnVerticalOffset);
             return position;
         }
@@ -240,6 +327,13 @@ namespace BoredomAndDungeons
 
         private bool IsSpawnPositionFair( Vector3 position, Transform playerTransform, List<Vector3> claimedPositions)
         {
+            if (spawnRoom == null ||
+                !IsInsideRoomInterior(position, spawnRoom) ||
+                !HasClearPathFromCollectible(position))
+            {
+                return false;
+            }
+
             if (playerTransform != null)
             {
                 Vector3 playerDelta = position - playerTransform.position;
@@ -290,6 +384,153 @@ namespace BoredomAndDungeons
             }
 
             return score;
+        }
+
+        private bool TryResolveSpawnRoom(
+            out BDMinimapRoom resolvedRoom)
+        {
+            if (spawnRoom != null &&
+                spawnRoom.ContainsWorldPosition(
+                    transform.position,
+                    0.05f))
+            {
+                resolvedRoom = spawnRoom;
+                return true;
+            }
+
+            BDMinimapRoom[] rooms =
+                FindObjectsByType<BDMinimapRoom>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+
+            resolvedRoom = null;
+            float nearestDistance = float.PositiveInfinity;
+
+            for (int i = 0; i < rooms.Length; i++)
+            {
+                BDMinimapRoom room = rooms[i];
+
+                if (room == null ||
+                    !room.ContainsWorldPosition(
+                        transform.position,
+                        0.05f))
+                {
+                    continue;
+                }
+
+                float distance =
+                    room.SqrDistanceToCenter(
+                        transform.position);
+
+                if (distance >= nearestDistance)
+                    continue;
+
+                nearestDistance = distance;
+                resolvedRoom = room;
+            }
+
+            spawnRoom = resolvedRoom;
+            return resolvedRoom != null;
+        }
+
+        private Vector3 ClampToRoomInterior(
+            Vector3 position,
+            BDMinimapRoom room)
+        {
+            float halfSize = Mathf.Max(
+                0.5f,
+                room.RoomSize * 0.5f -
+                Mathf.Max(0.25f, roomEdgeInset)
+            );
+
+            Vector3 center = room.WorldCenter;
+            position.x = Mathf.Clamp(
+                position.x,
+                center.x - halfSize,
+                center.x + halfSize
+            );
+            position.z = Mathf.Clamp(
+                position.z,
+                center.z - halfSize,
+                center.z + halfSize
+            );
+            return position;
+        }
+
+        private bool IsInsideRoomInterior(
+            Vector3 position,
+            BDMinimapRoom room)
+        {
+            if (room == null)
+                return false;
+
+            float halfSize = Mathf.Max(
+                0.5f,
+                room.RoomSize * 0.5f -
+                Mathf.Max(0.25f, roomEdgeInset)
+            );
+
+            Vector3 delta = position - room.WorldCenter;
+            return Mathf.Abs(delta.x) <= halfSize &&
+                   Mathf.Abs(delta.z) <= halfSize;
+        }
+
+        private bool HasClearPathFromCollectible(
+            Vector3 position)
+        {
+            Vector3 origin =
+                transform.position + Vector3.up * 0.85f;
+            Vector3 destination = position;
+            destination.y = origin.y;
+
+            Vector3 delta = destination - origin;
+            float distance = delta.magnitude;
+
+            if (distance <= 0.50f)
+                return true;
+
+            Vector3 direction = delta / distance;
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin + direction * 0.30f,
+                direction,
+                Mathf.Max(0f, distance - 0.45f),
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            System.Array.Sort(
+                hits,
+                (left, right) =>
+                    left.distance.CompareTo(right.distance)
+            );
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                Collider hit = hits[i].collider;
+
+                if (hit == null || hit.isTrigger)
+                    continue;
+
+                if (hit.transform == transform ||
+                    hit.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                if (hit.GetComponentInParent<BDPlayerMarker>() != null ||
+                    hit.GetComponentInParent<BDHorseController>() != null)
+                {
+                    continue;
+                }
+
+                if (hit.bounds.max.y <= origin.y - 0.40f)
+                    continue;
+
+                return false;
+            }
+
+            return true;
         }
 
         private enum GuardianType

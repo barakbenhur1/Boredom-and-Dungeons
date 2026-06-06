@@ -14,8 +14,8 @@ namespace BoredomAndDungeons
         [SerializeField] private Transform target;
 
         [Header("Role: disrupt movement space")]
-        [SerializeField] private float guardRadius = 14f;
-        [SerializeField] private float chaseGiveUpRadius = 20f;
+        [SerializeField] private float guardRadius = 17f;
+        [SerializeField] private float chaseGiveUpRadius = 24f;
         [SerializeField] private float patrolSpeed = 2f;
         [SerializeField] private float disruptSpeed = 2.8f;
         [SerializeField] private float rotationSpeed = 12f;
@@ -30,7 +30,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float holdRadius = 0.65f;
 
         [Header("Attack")]
-        [SerializeField] private float attackRange = 1.55f;
+        [SerializeField] private float attackRange = 1.95f;
         [SerializeField] private float attackDamage = 10f;
         [SerializeField] private float attackCooldown = 1.35f;
 
@@ -103,7 +103,7 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
+
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
                 return;if ((exitInterference != null && exitInterference.HasActiveCommand) ||
@@ -272,7 +272,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
 
 

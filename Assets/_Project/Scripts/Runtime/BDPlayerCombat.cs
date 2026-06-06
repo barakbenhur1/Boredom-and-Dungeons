@@ -38,6 +38,21 @@ namespace BoredomAndDungeons
         [SerializeField] private float lightHitStopTimeScale = 0.55f;
         [SerializeField] private float heavyHitStopTimeScale = 0.12f;
 
+        [Header("Spinning AOE Attack")]
+        [SerializeField] private bool enableSpinningAttack = true;
+        [SerializeField] private float spinningAttackHoldThreshold = 0.24f;
+        [SerializeField] private float spinningAttackCooldown = 0.85f;
+        [SerializeField, Range(0.10f, 1f)] private float spinningAttackDamageMultiplier = 0.82f;
+        [SerializeField] private float spinningAttackRadius = 2.45f;
+        [SerializeField] private float spinningAttackKnockbackStrength = 8.5f;
+        [SerializeField] private float spinningAttackKnockLockDuration = 0.10f;
+        [SerializeField] private float spinningAttackHitStaggerDuration = 0.085f;
+        [SerializeField] private float spinningAttackAnimationDuration = 0.30f;
+        [SerializeField] private float spinningAttackCameraShakeStrength = 0.16f;
+        [SerializeField] private float spinningAttackCameraShakeDuration = 0.10f;
+        [SerializeField] private float spinningAttackHitStopDuration = 0.035f;
+        [SerializeField] private float spinningAttackHitStopTimeScale = 0.42f;
+
         [Header("Combat Mouse Aim")]
         [SerializeField] private bool attacksFollowMousePoint = true;
         [SerializeField] private float combatMouseAimMinDistance = 0.35f;
@@ -73,6 +88,9 @@ namespace BoredomAndDungeons
 
         private float nextLightAllowedAt;
         private float nextHeavyAllowedAt;
+        private float nextSpinningAttackAllowedAt;
+        private bool lightPressPending;
+        private float lightPressStartedAtUnscaled;
         private float nextRangedAllowedAt;
         private int rangedAmmo;
         private float reloadEndsAt;
@@ -111,6 +129,19 @@ namespace BoredomAndDungeons
             );
         public float WeaponDamageMultiplier =>
             Mathf.Max(0.01f, boostWeaponDamageMultiplier);
+        public bool IsSpinningAttackReady =>
+            Time.time >= nextSpinningAttackAllowedAt;
+        public bool IsLightAttackHoldPending => lightPressPending;
+        public float SpinningAttackCooldownRemaining =>
+            Mathf.Max(0f, nextSpinningAttackAllowedAt - Time.time);
+        public float SpinningAttackCooldownProgress01 =>
+            spinningAttackCooldown <= 0f
+                ? 1f
+                : Mathf.Clamp01(
+                    1f -
+                    SpinningAttackCooldownRemaining /
+                    Mathf.Max(0.01f, spinningAttackCooldown)
+                );
         public bool IsChargingRangedShot => chargedShotCharging;
         public int ChargedShotReservedAmmo => chargedShotReservedAmmo;
         public float ChargedShotRequiredDuration =>
@@ -149,39 +180,321 @@ namespace BoredomAndDungeons
         {
             rangedAmmo = RangedMagazineSize;
         }
-
         private void OnDisable()
         {
+            ClearPendingLightPress();
             ClearPendingRangedPress();
             CancelChargedShot();
         }
-
         private void Update()
         {
             TickReload();
 
             bool mounted = IsMountedOnHorse();
-
-            if (!mounted)
-            {
-                if (ReadLightAttackPressed())
-                    TryMeleeAttack(lightDamage, lightCooldown, ref nextLightAllowedAt, "light");
-
-                if (ReadHeavyAttackPressed())
-                    TryMeleeAttack(heavyDamage, heavyCooldown, ref nextHeavyAllowedAt, "heavy");
-            }
-            else
-            {
-                // While mounted, sword attacks are intentionally disabled.
-                // Mounted combat is ranged-only.
-                if (ReadLightAttackPressed() || ReadHeavyAttackPressed())
-                    lastCombatAction = "mounted melee disabled";
-            }
+            TickMeleeInput(mounted);
 
             TickChargedRangedAttack();
             EnsureAutomaticReloadForEmptyMagazine();
         }
 
+        private void TickMeleeInput(bool mounted)
+        {
+            if (mounted)
+            {
+                ClearPendingLightPress();
+
+                if (ReadLightAttackPressed() ||
+                    ReadHeavyAttackPressed())
+                {
+                    lastCombatAction = "mounted melee disabled";
+                }
+
+                return;
+            }
+
+            if (ReadHeavyAttackPressed())
+            {
+                TryMeleeAttack(
+                    heavyDamage,
+                    heavyCooldown,
+                    ref nextHeavyAllowedAt,
+                    "heavy"
+                );
+            }
+
+            if (!enableSpinningAttack)
+            {
+                ClearPendingLightPress();
+
+                if (ReadLightAttackPressed())
+                {
+                    TryMeleeAttack(
+                        lightDamage,
+                        lightCooldown,
+                        ref nextLightAllowedAt,
+                        "light"
+                    );
+                }
+
+                return;
+            }
+
+            if (lightPressPending)
+            {
+                TickPendingLightPress();
+                return;
+            }
+
+            if (ReadLightAttackPressed())
+                BeginPendingLightPress();
+        }
+
+        private void BeginPendingLightPress()
+        {
+            if (Time.time < nextSpinningAttackAllowedAt)
+            {
+                TryMeleeAttack(
+                    lightDamage,
+                    lightCooldown,
+                    ref nextLightAllowedAt,
+                    "light"
+                );
+                return;
+            }
+
+            lightPressPending = true;
+            lightPressStartedAtUnscaled = Time.unscaledTime;
+            lastCombatAction = "light press pending spin";
+        }
+
+        private void TickPendingLightPress()
+        {
+            if (!lightPressPending)
+                return;
+
+            if (Time.time < nextSpinningAttackAllowedAt)
+            {
+                ClearPendingLightPress();
+                TryMeleeAttack(
+                    lightDamage,
+                    lightCooldown,
+                    ref nextLightAllowedAt,
+                    "light"
+                );
+                return;
+            }
+
+            float heldDuration =
+                Time.unscaledTime - lightPressStartedAtUnscaled;
+
+            if (ReadLightAttackReleased() || !ReadLightAttackHeld())
+            {
+                ClearPendingLightPress();
+                TryMeleeAttack(
+                    lightDamage,
+                    lightCooldown,
+                    ref nextLightAllowedAt,
+                    "light"
+                );
+                return;
+            }
+
+            if (heldDuration < Mathf.Max(0.05f, spinningAttackHoldThreshold))
+                return;
+
+            ClearPendingLightPress();
+            TrySpinningAoeAttack();
+        }
+
+        private void ClearPendingLightPress()
+        {
+            lightPressPending = false;
+            lightPressStartedAtUnscaled = 0f;
+        }
+
+        private void TrySpinningAoeAttack()
+        {
+            if (Time.time < nextSpinningAttackAllowedAt)
+            {
+                TryMeleeAttack(
+                    lightDamage,
+                    lightCooldown,
+                    ref nextLightAllowedAt,
+                    "light"
+                );
+                return;
+            }
+
+            nextSpinningAttackAllowedAt =
+                Time.time + Mathf.Max(0.01f, spinningAttackCooldown);
+
+            Vector3 aim = GetCombatAimDirection();
+            ApplyCombatFacing(aim);
+
+            float radius = Mathf.Max(0.35f, spinningAttackRadius);
+
+            BDSpinAttackVisual.Spawn(
+                transform,
+                radius,
+                spinningAttackAnimationDuration
+            );
+
+            int overlapCount = Physics.OverlapSphereNonAlloc(
+                transform.position + Vector3.up * 1f,
+                radius,
+                MeleeHitBuffer,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            int hitCount = 0;
+            int uniqueHealthCount = 0;
+            float effectiveDamage =
+                lightDamage *
+                Mathf.Clamp(spinningAttackDamageMultiplier, 0.10f, 1f) *
+                WeaponDamageMultiplier;
+
+            for (int index = 0; index < overlapCount; index++)
+            {
+                Collider hit = MeleeHitBuffer[index];
+                if (hit == null)
+                    continue;
+
+                if (hit.transform == transform ||
+                    hit.transform.IsChildOf(transform))
+                    continue;
+
+                if (hit.GetComponentInParent<BDPlayerMarker>() != null)
+                    continue;
+
+                if (hit.GetComponentInParent<BDHorseHealth>() != null)
+                    continue;
+
+                BDHealth health = hit.GetComponentInParent<BDHealth>();
+                if (health == null || health.IsDead)
+                    continue;
+
+                if (AlreadyHitThisSwing(health, uniqueHealthCount))
+                    continue;
+
+                if (uniqueHealthCount < MeleeHealthBuffer.Length)
+                    MeleeHealthBuffer[uniqueHealthCount++] = health;
+
+                health.ApplyDamage(effectiveDamage);
+                RequestEnemyHitStagger(
+                    health,
+                    spinningAttackHitStaggerDuration
+                );
+                RequestEnemyHitFlash(health, heavyHit: false);
+
+                Vector3 knockDirection =
+                    health.transform.position - transform.position;
+                knockDirection.y = 0f;
+
+                if (knockDirection.sqrMagnitude < 0.001f)
+                    knockDirection = aim;
+
+                knockDirection.Normalize();
+
+                BDKnockbackReceiver receiver =
+                    health.GetComponent<BDKnockbackReceiver>();
+
+                if (receiver == null &&
+                    health.GetComponent<CharacterController>() != null)
+                {
+                    receiver =
+                        health.gameObject.AddComponent<BDKnockbackReceiver>();
+                }
+
+                if (receiver != null)
+                {
+                    receiver.AddKnockback(
+                        knockDirection,
+                        spinningAttackKnockbackStrength,
+                        spinningAttackKnockLockDuration
+                    );
+                }
+
+                TriggerSpinningAttackTargetFeedback(
+                    health,
+                    hit,
+                    knockDirection
+                );
+
+                hitCount++;
+            }
+
+            for (int index = 0; index < uniqueHealthCount; index++)
+                MeleeHealthBuffer[index] = null;
+
+            TriggerSpinningAttackGlobalFeedback(hitCount);
+
+            lastCombatAction =
+                $"spinning aoe hits={hitCount} " +
+                $"cooldown={spinningAttackCooldown:0.00}s";
+        }
+
+        private void TriggerSpinningAttackTargetFeedback(
+            BDHealth targetHealth,
+            Collider hitCollider,
+            Vector3 outwardDirection)
+        {
+            if (targetHealth == null)
+                return;
+
+            BDDamageFlashFeedback flash =
+                targetHealth.GetComponent<BDDamageFlashFeedback>();
+
+            if (flash == null &&
+                targetHealth.GetComponentInChildren<Renderer>() != null)
+            {
+                flash =
+                    targetHealth.gameObject.AddComponent<BDDamageFlashFeedback>();
+            }
+
+            if (flash != null)
+                flash.TriggerImpactFlash(false);
+
+            if (!spawnMeleeImpactFeedback)
+                return;
+
+            Vector3 impactPosition =
+                targetHealth.transform.position + Vector3.up * 1.0f;
+
+            if (hitCollider != null)
+            {
+                Vector3 closest = hitCollider.ClosestPoint(
+                    transform.position + Vector3.up
+                );
+
+                if (closest.sqrMagnitude > 0.001f)
+                    impactPosition = closest + Vector3.up * 0.05f;
+            }
+
+            BDMeleeImpactBurst.Spawn(
+                impactPosition,
+                outwardDirection,
+                false
+            );
+        }
+
+        private void TriggerSpinningAttackGlobalFeedback(int hitCount)
+        {
+            if (hitCount <= 0)
+                return;
+
+            BDGameFeelEvents.RequestCameraShake(
+                spinningAttackCameraShakeStrength,
+                spinningAttackCameraShakeDuration
+            );
+
+            BDHitStop.Request(
+                spinningAttackHitStopDuration,
+                spinningAttackHitStopTimeScale
+            );
+
+            BDGameFeelAudio.PlayLightHit();
+        }
 
         private bool IsMountedOnHorse()
         {
@@ -1245,6 +1558,46 @@ namespace BoredomAndDungeons
 
 #if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.J))
+                return true;
+#endif
+
+            return false;
+        }
+
+        private bool ReadLightAttackHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.isPressed)
+                return true;
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.jKey.isPressed)
+                return true;
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.J))
+                return true;
+#endif
+
+            return false;
+        }
+
+        private bool ReadLightAttackReleased()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.leftButton.wasReleasedThisFrame)
+                return true;
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.jKey.wasReleasedThisFrame)
+                return true;
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetMouseButtonUp(0) || Input.GetKeyUp(KeyCode.J))
                 return true;
 #endif
 

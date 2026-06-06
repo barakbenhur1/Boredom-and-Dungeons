@@ -15,6 +15,10 @@ namespace BoredomAndDungeons
         [SerializeField] private float groundProbeHeight = 1.4f;
         [SerializeField] private float groundProbeDistance = 4.0f;
         [SerializeField] private float maximumGroundAngle = 55f;
+        [SerializeField] private float hazardLookAheadDistance = 2.45f;
+        [SerializeField] private float hazardRefusalStopSeconds = 1.0f;
+        [SerializeField] private float hazardSwerveScale = 0.72f;
+        [SerializeField, Range(3, 8)] private int hazardPathSamples = 5;
 
         [Header("Safe Recovery")]
         [SerializeField] private float sampleInterval = 0.18f;
@@ -52,12 +56,15 @@ namespace BoredomAndDungeons
         private float safePointUpdatesBlockedUntil = -999f;
         private float lastRecoveryCompletedAt = -999f;
         private float nextHazardPollAt;
+        private float hazardRefusalUntil = -999f;
 
 
         public bool IsRecovering =>
             recovering ||
             Time.unscaledTime <
                 recoveryGraceUntil;
+        public bool IsRefusingHazard =>
+            Time.unscaledTime < hazardRefusalUntil;
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
@@ -150,41 +157,121 @@ namespace BoredomAndDungeons
                 forceActivation: true
             );
         }
-
-
-        public Vector3 FilterMovement(Vector3 requestedMotion)
+        public Vector3 FilterMovement(
+            Vector3 requestedMotion)
         {
-            if (recovering || requestedMotion.sqrMagnitude < 0.000001f)
+            if (recovering)
+            {
+                return Vector3.up * requestedMotion.y;
+            }
+
+            if (Time.unscaledTime < hazardRefusalUntil)
+            {
+                return Vector3.up * requestedMotion.y;
+            }
+
+            if (requestedMotion.sqrMagnitude < 0.000001f)
                 return requestedMotion;
 
             Vector3 horizontal =
-                new Vector3(requestedMotion.x, 0f, requestedMotion.z);
+                new Vector3(
+                    requestedMotion.x,
+                    0f,
+                    requestedMotion.z
+                );
 
             if (horizontal.sqrMagnitude < 0.000001f)
                 return requestedMotion;
 
-            Vector3 predicted = transform.position + horizontal;
-
-            if (IsHorsePositionSafe(predicted))
+            if (IsHorsePathSafe(horizontal))
                 return requestedMotion;
 
-            foreach (float angle in SteeringAngles)
+            for (int index = 0;
+                 index < SteeringAngles.Length;
+                 index++)
             {
                 Vector3 alternative =
-                    Quaternion.AngleAxis(angle, Vector3.up) * horizontal;
+                    Quaternion.AngleAxis(
+                        SteeringAngles[index],
+                        Vector3.up
+                    ) *
+                    horizontal;
 
-                if (!IsHorsePositionSafe(
-                        transform.position + alternative))
-                {
+                if (!IsHorsePathSafe(alternative))
                     continue;
-                }
 
-                return alternative +
+                hazardRefusalUntil =
+                    Time.unscaledTime +
+                    Mathf.Max(
+                        0.25f,
+                        hazardRefusalStopSeconds
+                    );
+
+                Vector3 swerve =
+                    alternative *
+                    Mathf.Clamp(
+                        hazardSwerveScale,
+                        0.35f,
+                        1f
+                    );
+
+                return swerve +
                        Vector3.up * requestedMotion.y;
             }
 
+            hazardRefusalUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0.25f,
+                    hazardRefusalStopSeconds
+                );
+
             return Vector3.up * requestedMotion.y;
         }
+        private bool IsHorsePathSafe(
+            Vector3 horizontalMotion)
+        {
+            horizontalMotion.y = 0f;
+
+            if (horizontalMotion.sqrMagnitude < 0.000001f)
+                return true;
+
+            Vector3 direction =
+                horizontalMotion.normalized;
+
+            float distance =
+                Mathf.Max(
+                    horizontalMotion.magnitude,
+                    hazardLookAheadDistance
+                );
+
+            int samples =
+                Mathf.Clamp(
+                    hazardPathSamples,
+                    3,
+                    8
+                );
+
+            for (int sample = 1;
+                 sample <= samples;
+                 sample++)
+            {
+                float progress =
+                    sample / (float)samples;
+
+                Vector3 point =
+                    transform.position +
+                    direction *
+                    distance *
+                    progress;
+
+                if (!IsHorsePositionSafe(point))
+                    return false;
+            }
+
+            return true;
+        }
+
 
         public bool CanStartJump(
             Vector3 horizontalVelocity,

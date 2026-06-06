@@ -6,28 +6,54 @@ namespace BoredomAndDungeons
     {
         private static Transform cachedPlayer;
         private static float nextSearchAt;
-
         public static Transform FindPlayer()
         {
-            if (cachedPlayer != null)
+            if (IsValidPlayer(cachedPlayer))
                 return cachedPlayer;
 
-            if (Application.isPlaying && Time.time < nextSearchAt)
+            cachedPlayer = null;
+
+            if (Application.isPlaying &&
+                Time.unscaledTime < nextSearchAt)
+            {
                 return null;
+            }
 
-            nextSearchAt = Application.isPlaying ? Time.time + 0.25f : 0f;
+            nextSearchAt =
+                Application.isPlaying
+                    ? Time.unscaledTime + 0.08f
+                    : 0f;
 
-            BDPlayerMarker marker = Object.FindFirstObjectByType<BDPlayerMarker>();
-            if (marker != null)
+            BDPlayerMarker marker =
+                Object.FindFirstObjectByType<BDPlayerMarker>();
+
+            if (marker != null &&
+                marker.gameObject.activeInHierarchy)
             {
                 cachedPlayer = marker.transform;
                 return cachedPlayer;
             }
 
-            GameObject byName = GameObject.Find("BD_Player") ?? GameObject.Find("Player");
-            cachedPlayer = byName != null ? byName.transform : null;
+            GameObject byName =
+                GameObject.Find("BD_Player") ??
+                GameObject.Find("Player");
+
+            cachedPlayer =
+                byName != null &&
+                byName.activeInHierarchy
+                    ? byName.transform
+                    : null;
+
             return cachedPlayer;
         }
+        private static bool IsValidPlayer(
+            Transform candidate)
+        {
+            return candidate != null &&
+                   candidate.gameObject.activeInHierarchy &&
+                   candidate.GetComponent<BDPlayerMarker>() != null;
+        }
+
 
         public static void ClearCache()
         {

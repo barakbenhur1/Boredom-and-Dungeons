@@ -18,6 +18,9 @@ namespace BoredomAndDungeons
             if (!Application.isPlaying)
                 return;
 
+            strength *=
+                BDGameSettings.CameraShakeIntensity;
+
             strength = Mathf.Max(0f, strength);
             duration = Mathf.Max(0f, duration);
 

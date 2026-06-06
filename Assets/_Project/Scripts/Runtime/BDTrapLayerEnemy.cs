@@ -12,8 +12,8 @@ namespace BoredomAndDungeons
         [SerializeField] private Transform target;
 
         [Header("Role: approach, plant, retreat")]
-        [SerializeField] private float aggroRange = 16f;
-        [SerializeField] private float plantRange = 4.25f;
+        [SerializeField] private float aggroRange = 19f;
+        [SerializeField] private float plantRange = 5.0f;
         [SerializeField] private float tooCloseRange = 2.75f;
         [SerializeField] private float retreatUntilRange = 8.6f;
         [SerializeField] private float approachSpeed = 2.85f;
@@ -80,7 +80,7 @@ namespace BoredomAndDungeons
             if (knockback != null && knockback.IsBeingKnocked)
                 return;
 
-            
+
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
                 return;TickTrapLayer();
@@ -212,7 +212,15 @@ namespace BoredomAndDungeons
             if (hitStaggerReceiver == null)
                 hitStaggerReceiver = GetComponent<BDHitStaggerReceiver>();
 
-            return hitStaggerReceiver != null ? hitStaggerReceiver.FilterMove(move) : move;
+            Vector3 staggerFiltered =
+                hitStaggerReceiver != null
+                    ? hitStaggerReceiver.FilterMove(move)
+                    : move;
+
+            return BDEnemyMovementPolish.Filter(
+                this,
+                staggerFiltered
+            );
         }
 
 

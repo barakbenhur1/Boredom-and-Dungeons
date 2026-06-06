@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "horse",
                 "Horse",
-                "The horse starts beside the player, stays still nearby, flees combat, heals, bucks correctly, and keeps all previous behaviour."),
+                "The horse starts at full health on legal ground away from lava/holes, remains calm and idle with no local enemy, then flees only real nearby combat; healing, buck, mount, and previous behaviour still work."),
             new ManualCheck(
                 "square_jumper",
                 "Square Jumper",
@@ -466,6 +466,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanRespawnLoopSafetyContracts(result);
             ScanLongFallAndHorseJumpSafetyContracts(result);
             ScanMountedHorseHazardRecoveryContracts(result);
+            ScanHorseCleanStartContracts(result);
+            ScanSceneYamlIntegrityContracts(result);
+            ScanBBHBootIntroContracts(result);
+            ScanDreamyMainMenuContracts(result);
+            ScanNaturalMovementAwarenessFacingContracts(result);
+            ScanSpinningAoeAttackContracts(result);
+            ScanGameplayShadowPolicyContracts(result);
+            ScanMainMenuSettingsContracts(result);
+            ScanGuardianSameRoomSpawnContracts(result);
+            ScanC07PlayableFrameworkEncounter(result);
             ScanObsoleteHazardFieldContracts(result);
             ScanJumpTimestampDeclaration(result);
             ScanPrototypeHazardScene(result);
@@ -1345,6 +1355,272 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "HORSE_AI_RECOVERY_LOCK_MISSING"
             );
         }
+        private static void ScanBBHBootIntroContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string introRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDBBHBootIntro.cs";
+
+            string installerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDMainMenuSettingsSceneInstaller.cs";
+
+            string c07InstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDC07PlayableBossEncounterInstaller.cs";
+
+            string designRelative =
+                "Assets/_Project/Design/UI/" +
+                "BBH_BOOT_INTRO_V1.md";
+
+            string[] requiredFiles =
+            {
+                introRelative,
+                installerRelative,
+                c07InstallerRelative,
+                designRelative
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative = requiredFiles[index];
+
+                if (File.Exists(
+                        Path.Combine(root, relative)))
+                {
+                    continue;
+                }
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "BBH_BOOT_INTRO_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required BBH boot-intro file is missing."
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, introRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    introRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, introRelative)),
+                    new[]
+                    {
+                        "IntroText = \"BBH\"",
+                        "VerticalScreenPositionFromTop = 0.45f",
+                        "playedThisApplicationSession",
+                        "PerLetterWindow",
+                        "DrawDepthTrail",
+                        "EaseOutBack",
+                        "DrawCompletionLightSweep",
+                        "Time.realtimeSinceStartup"
+                    },
+                    "BBH_BOOT_INTRO_RUNTIME_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, installerRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    installerRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, installerRelative)),
+                    new[]
+                    {
+                        "RemoveMissingScriptsRecursively",
+                        "GetMonoBehavioursWithMissingScriptCount",
+                        "RemoveMonoBehavioursWithMissingScript",
+                        "BDBBHBootIntro",
+                        "EditorSceneManager.MarkSceneDirty"
+                    },
+                    "MAIN_MENU_MISSING_SCRIPT_REPAIR_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, c07InstallerRelative)))
+            {
+                string c07Source =
+                    File.ReadAllText(
+                        Path.Combine(
+                            root,
+                            c07InstallerRelative));
+
+                if (c07Source.Contains(
+                        "EditorSceneManager.SaveScene("))
+                {
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "C07_NESTED_SCENE_SAVE_FORBIDDEN",
+                        c07InstallerRelative,
+                        "TryInstallActiveScene",
+                        "Nested C07 installation must mark the scene dirty instead of saving it directly."
+                    );
+                }
+            }
+
+            if (!BDMainMenuSettingsSceneInstaller
+                    .ValidateActiveScene(out string error))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "BBH_BOOT_INTRO_SCENE_INVALID",
+                    PrototypeScenePath,
+                    BDMainMenuSettingsSceneInstaller
+                        .RootName,
+                    error
+                );
+            }
+        }
+        private static void ScanSceneYamlIntegrityContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+            string sceneRelative = PrototypeScenePath;
+            string absolute =
+                Path.Combine(root, sceneRelative);
+
+            if (!File.Exists(absolute))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "SCENE_YAML_FILE_MISSING",
+                    sceneRelative,
+                    string.Empty,
+                    "The prototype scene file is missing."
+                );
+
+                return;
+            }
+
+            string[] lines =
+                File.ReadAllLines(absolute);
+
+            for (int lineIndex = 0;
+                 lineIndex < lines.Length;
+                 lineIndex++)
+            {
+                string line = lines[lineIndex];
+
+                if (line.Contains("<<<<<<<") ||
+                    line.Contains("=======") ||
+                    line.Contains(">>>>>>>"))
+                {
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "SCENE_YAML_CONFLICT_MARKER",
+                        sceneRelative,
+                        "line " + (lineIndex + 1),
+                        "The Unity scene contains an unresolved merge marker."
+                    );
+
+                    continue;
+                }
+
+                int braceBalance = 0;
+                bool inSingleQuote = false;
+                bool inDoubleQuote = false;
+                bool escaped = false;
+
+                for (int characterIndex = 0;
+                     characterIndex < line.Length;
+                     characterIndex++)
+                {
+                    char character =
+                        line[characterIndex];
+
+                    if (inDoubleQuote)
+                    {
+                        if (escaped)
+                        {
+                            escaped = false;
+                            continue;
+                        }
+
+                        if (character == '\\')
+                        {
+                            escaped = true;
+                            continue;
+                        }
+
+                        if (character == '"')
+                            inDoubleQuote = false;
+
+                        continue;
+                    }
+
+                    if (inSingleQuote)
+                    {
+                        if (character == '\'')
+                        {
+                            if (characterIndex + 1 <
+                                    line.Length &&
+                                line[characterIndex + 1] ==
+                                    '\'')
+                            {
+                                characterIndex++;
+                                continue;
+                            }
+
+                            inSingleQuote = false;
+                        }
+
+                        continue;
+                    }
+
+                    if (character == '#')
+                        break;
+
+                    if (character == '"')
+                    {
+                        inDoubleQuote = true;
+                        continue;
+                    }
+
+                    if (character == '\'')
+                    {
+                        inSingleQuote = true;
+                        continue;
+                    }
+
+                    if (character == '{')
+                        braceBalance++;
+                    else if (character == '}')
+                        braceBalance--;
+                }
+
+                if (braceBalance == 0)
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "SCENE_YAML_FLOW_MAPPING_UNBALANCED",
+                    sceneRelative,
+                    "line " + (lineIndex + 1),
+                    "Unity YAML inline mapping braces are unbalanced: " +
+                    line.Trim()
+                );
+            }
+        }
+
+
 
         private static void ScanHazardRecoveryContracts(
             BDOneClickQAResult result)
@@ -1511,6 +1787,107 @@ namespace BoredomAndDungeons.EditorTools.Validation
             }
         }
 
+        private static void ScanC07PlayableFrameworkEncounter(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            const string runtimeRelative =
+                "Assets/_Project/Scripts/Runtime/Bosses/" +
+                "BDC07FrameworkTestBoss.cs";
+
+            const string installerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDC07PlayableBossEncounterInstaller.cs";
+
+            const string sceneInstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDPrototypeHazardSceneInstaller.cs";
+
+            string runtimePath =
+                Path.Combine(root, runtimeRelative);
+
+            string installerPath =
+                Path.Combine(root, installerRelative);
+
+            string sceneInstallerPath =
+                Path.Combine(root, sceneInstallerRelative);
+
+            if (!File.Exists(runtimePath) ||
+                !File.Exists(installerPath) ||
+                !File.Exists(sceneInstallerPath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "C07_PLAYABLE_ENCOUNTER_SOURCE_MISSING",
+                    PrototypeScenePath,
+                    BDC07PlayableBossEncounterInstaller
+                        .EncounterRootName,
+                    "One or more C07.16 source files are missing."
+                );
+
+                return;
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                runtimeRelative,
+                File.ReadAllText(runtimePath),
+                new[]
+                {
+                    "BDBossEncounterController",
+                    "encounter.IsCombatActive",
+                    "ApplyDamage",
+                    "AttackRoutine",
+                    "arenaRadius"
+                },
+                "C07_PLAYABLE_BOSS_RUNTIME_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                installerRelative,
+                File.ReadAllText(installerPath),
+                new[]
+                {
+                    "C07_FrameworkTestEncounter",
+                    "BDBossHealthDamageBridge",
+                    "BDBossEncounterRuntimeBindings",
+                    "BDBossHealthHud",
+                    "CreateEntryTrigger",
+                    "ValidateActiveScene"
+                },
+                "C07_PLAYABLE_ENCOUNTER_INSTALLER_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                sceneInstallerRelative,
+                File.ReadAllText(sceneInstallerPath),
+                new[]
+                {
+                    "BDC07PlayableBossEncounterInstaller",
+                    "TryInstallActiveScene"
+                },
+                "C07_ENCOUNTER_ONE_BUTTON_WIRING_MISSING"
+            );
+
+            if (!BDC07PlayableBossEncounterInstaller
+                    .ValidateActiveScene(out string error))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "C07_PLAYABLE_ENCOUNTER_INVALID",
+                    PrototypeScenePath,
+                    BDC07PlayableBossEncounterInstaller
+                        .EncounterRootName,
+                    error
+                );
+            }
+        }
+
         private static void ValidateRequiredSourceTokens(
             BDOneClickQAResult result,
             string relativePath,
@@ -1534,6 +1911,789 @@ namespace BoredomAndDungeons.EditorTools.Validation
             }
         }
 
+
+        private static void ScanGuardianSameRoomSpawnContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+            const string relative =
+                "Assets/_Project/Scripts/Runtime/Collectibles/" +
+                "BDCollectibleGuardianSpawner.cs";
+            string absolute = Path.Combine(root, relative);
+
+            if (!File.Exists(absolute))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "GUARDIAN_SPAWNER_MISSING",
+                    relative,
+                    string.Empty,
+                    "The collectible guardian spawner source is missing."
+                );
+                return;
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                relative,
+                File.ReadAllText(absolute),
+                new[]
+                {
+                    "BD SAME-ROOM GUARDIAN SPAWN SAFETY V1",
+                    "TryResolveSpawnRoom",
+                    "spawnRoom.ContainsWorldPosition(player.position, 0f)",
+                    "ClampToRoomInterior",
+                    "IsInsideRoomInterior",
+                    "HasClearPathFromCollectible"
+                },
+                "GUARDIAN_SAME_ROOM_SAFETY_MISSING"
+            );
+        }
+
+        private static void ScanHorseCleanStartContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            const string healthRelative =
+                "Assets/_Project/Scripts/Runtime/BDHorseHealth.cs";
+
+            const string controllerRelative =
+                "Assets/_Project/Scripts/Runtime/BDHorseController.cs";
+
+            ValidateRequiredSourceTokens(
+                result,
+                healthRelative,
+                File.ReadAllText(Path.Combine(root, healthRelative)),
+                new[]
+                {
+                    "BD HORSE CLEAN START V1",
+                    "startupDamageProtectionSeconds",
+                    "ResetForCleanGameStart",
+                    "startup damage ignored"
+                },
+                "HORSE_CLEAN_START_HEALTH_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                controllerRelative,
+                File.ReadAllText(Path.Combine(root, controllerRelative)),
+                new[]
+                {
+                    "BD HORSE CLEAN START V1",
+                    "startupCalmUntil",
+                    "TryResolveSafeStartPosition",
+                    "BDHazardVolume.IsRecoveryPointUnsafe",
+                    "HasLivingEnemyNearHorseOrPlayer",
+                    "ignored remote combat"
+                },
+                "HORSE_CLEAN_START_CONTROLLER_MISSING"
+            );
+        }
+
+        private static void ScanGameplayShadowPolicyContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string runtimeRelative =
+                "Assets/_Project/Scripts/Runtime/Rendering/" +
+                "BDGameplayShadowPolicy.cs";
+
+            string installerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDGameplayShadowSceneInstaller.cs";
+
+            string sceneInstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDPrototypeHazardSceneInstaller.cs";
+
+            string designRelative =
+                "Assets/_Project/Design/Rendering/" +
+                "GAMEPLAY_SHADOW_POLICY_V1.md";
+
+            string[] requiredFiles =
+            {
+                runtimeRelative,
+                installerRelative,
+                designRelative
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative = requiredFiles[index];
+
+                if (File.Exists(
+                        Path.Combine(root, relative)))
+                {
+                    continue;
+                }
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "GAMEPLAY_SHADOW_POLICY_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required gameplay shadow policy file is missing."
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, runtimeRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    runtimeRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, runtimeRelative)),
+                    new[]
+                    {
+                        "keepRequiredAlwaysOn",
+                        "optionalShadowDistance",
+                        "maxOptionalShadowRenderers",
+                        "dynamicDiscoveryInterval",
+                        "ApplyRequiredShadows",
+                        "ApplyOptionalBudget",
+                        "BDPlayerMarker",
+                        "BDHorseController",
+                        "BDEnemyBootstrap",
+                        "BDBossHealthChannel",
+                        "BDCollectibleGuardianSpawner",
+                        "Battery",
+                        "GameBoy",
+                        "Cartridge",
+                        "Cassette",
+                        "DecorationTokens"
+                    },
+                    "GAMEPLAY_SHADOW_POLICY_CONTRACT_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, installerRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    installerRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, installerRelative)),
+                    new[]
+                    {
+                        "B&D Gameplay Shadow Policy",
+                        "TryInstallActiveScene",
+                        "ValidateActiveScene",
+                        "ShadowCastingMode.Off",
+                        "receiveShadows"
+                    },
+                    "GAMEPLAY_SHADOW_INSTALLER_CONTRACT_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, sceneInstallerRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    sceneInstallerRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, sceneInstallerRelative)),
+                    new[]
+                    {
+                        "BDGameplayShadowSceneInstaller",
+                        "TryInstallActiveScene"
+                    },
+                    "GAMEPLAY_SHADOW_ONE_BUTTON_WIRING_MISSING"
+                );
+            }
+
+            if (!BDGameplayShadowSceneInstaller
+                    .ValidateActiveScene(out string error))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "GAMEPLAY_SHADOW_POLICY_INVALID",
+                    PrototypeScenePath,
+                    BDGameplayShadowSceneInstaller
+                        .PolicyRootName,
+                    error
+                );
+            }
+        }
+        private static void ScanMainMenuSettingsContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string menuRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDMainMenuFlow.cs";
+
+            string signalsRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDGameFlowSignals.cs";
+
+            string progressRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDGameProgress.cs";
+
+            string markerRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDGameCompletionMarker.cs";
+
+            string settingsRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDGameSettings.cs";
+
+            string installerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDMainMenuSettingsSceneInstaller.cs";
+
+            string healthRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDHealth.cs";
+
+            string sceneInstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDPrototypeHazardSceneInstaller.cs";
+
+            string designRelative =
+                "Assets/_Project/Design/UI/" +
+                "MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md";
+
+            string[] requiredFiles =
+            {
+                menuRelative,
+                signalsRelative,
+                progressRelative,
+                markerRelative,
+                settingsRelative,
+                installerRelative,
+                healthRelative,
+                designRelative
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative =
+                    requiredFiles[index];
+
+                if (File.Exists(
+                        Path.Combine(root, relative)))
+                {
+                    continue;
+                }
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "MAIN_MENU_SETTINGS_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required main-menu/settings V2 file is missing."
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, menuRelative)))
+            {
+                string menuSource =
+                    File.ReadAllText(
+                        Path.Combine(root, menuRelative));
+
+                ValidateRequiredSourceTokens(
+                    result,
+                    menuRelative,
+                    menuSource,
+                    new[]
+                    {
+                        "\"START GAME\"",
+                        "HandlePlayerDeath",
+                        "BeginResultSequence",
+                        "ReturnToMainMenuAfterSequence",
+                        "CompleteMotherVictorySequence",
+                        "BDGameProgress.MotherDefeated",
+                        "DrawCompletedGameBoyRelic",
+                        "LoadSceneAsync"
+                    },
+                    "MAIN_MENU_FLOW_V2_CONTRACT_MISSING"
+                );
+
+                if (menuSource.Contains("\"DEFEAT\"") ||
+                    menuSource.Contains("\"VICTORY\"") ||
+                    menuSource.Contains("\"START NEW GAME\"") ||
+                    menuSource.Contains("\"I'M BORED\""))
+                {
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "MAIN_MENU_RESULT_TEXT_FORBIDDEN",
+                        menuRelative,
+                        "DrawMainMenu",
+                        "The main menu must not display result wording or change its Start-button text."
+                    );
+                }
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, signalsRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    signalsRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, signalsRelative)),
+                    new[]
+                    {
+                        "TryHandleDeath",
+                        "BeginResultSequence",
+                        "ReturnToMainMenuAfterSequence",
+                        "CompleteMotherVictorySequence"
+                    },
+                    "RESULT_SEQUENCE_ROUTER_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, progressRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    progressRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, progressRelative)),
+                    new[]
+                    {
+                        "MotherDefeated",
+                        "MarkMotherDefeated",
+                        "PlayerPrefs.Save"
+                    },
+                    "MOTHER_COMPLETION_PROGRESS_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, markerRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    markerRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, markerRelative)),
+                    new[]
+                    {
+                        "BeginResultSequence",
+                        "FinishSequenceToUnchangedMainMenu",
+                        "FinishMotherVictorySequence"
+                    },
+                    "CUTSCENE_RESULT_MARKER_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, healthRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    healthRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, healthRelative)),
+                    new[]
+                    {
+                        "BDGameFlowSignals.TryHandleDeath",
+                        "Died?.Invoke(this)"
+                    },
+                    "PLAYER_DEATH_MENU_ROUTING_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, sceneInstallerRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    sceneInstallerRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, sceneInstallerRelative)),
+                    new[]
+                    {
+                        "BDMainMenuSettingsSceneInstaller",
+                        "TryInstallActiveScene"
+                    },
+                    "MAIN_MENU_ONE_BUTTON_WIRING_MISSING"
+                );
+            }
+
+            if (!BDMainMenuSettingsSceneInstaller
+                    .ValidateActiveScene(
+                        out string error))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "MAIN_MENU_SETTINGS_SCENE_INVALID",
+                    PrototypeScenePath,
+                    BDMainMenuSettingsSceneInstaller
+                        .RootName,
+                    error
+                );
+            }
+        }
+
+        private static void ScanDreamyMainMenuContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string backdropRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDDreamyMainMenuBackdrop.cs";
+
+            string menuRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDMainMenuFlow.cs";
+
+            string introRelative =
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDBBHBootIntro.cs";
+
+            string designRelative =
+                "Assets/_Project/Design/UI/" +
+                "MAIN_MENU_DREAMY_STORYBOOK_V1.md";
+
+            string[] requiredFiles =
+            {
+                backdropRelative,
+                menuRelative,
+                introRelative,
+                designRelative
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative = requiredFiles[index];
+
+                if (File.Exists(
+                        Path.Combine(root, relative)))
+                {
+                    continue;
+                }
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "DREAMY_MAIN_MENU_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required dreamy main-menu file is missing."
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, backdropRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    backdropRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, backdropRelative)),
+                    new[]
+                    {
+                        "DrawMoon",
+                        "DrawStars",
+                        "DrawCloudHaze",
+                        "DrawStorybookHorizon",
+                        "DrawGoldenPath",
+                        "CreateVerticalGradientTexture",
+                        "CreateRadialGlowTexture"
+                    },
+                    "DREAMY_MAIN_MENU_BACKDROP_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, menuRelative)))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    menuRelative,
+                    File.ReadAllText(
+                        Path.Combine(root, menuRelative)),
+                    new[]
+                    {
+                        "dreamyPanelTexture",
+                        "dreamyButtonHoverTexture",
+                        "DrawDreamyMenuOrnament",
+                        "CreateMenuTexture",
+                        "DestroyMenuTextures",
+                        "START GAME",
+                        "SETTINGS"
+                    },
+                    "DREAMY_MAIN_MENU_SKIN_MISSING"
+                );
+            }
+
+            if (File.Exists(
+                    Path.Combine(root, introRelative)))
+            {
+                string introSource =
+                    File.ReadAllText(
+                        Path.Combine(root, introRelative));
+
+                if (introSource.Contains(
+                        "CreateDynamicFontFromOSFont") ||
+                    introSource.Contains(
+                        "ResolveIntroFont") ||
+                    introSource.Contains(
+                        "introFont"))
+                {
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "BBH_BOOT_INTRO_INVALID_FONT_REFERENCE",
+                        introRelative,
+                        "EnsureResources",
+                        "BBH intro must use Unity's GUI skin font and must not retain a temporary OS font."
+                    );
+                }
+
+                if (!introSource.Contains(
+                        "font = GUI.skin.label.font"))
+                {
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "BBH_BOOT_INTRO_SAFE_FONT_MISSING",
+                        introRelative,
+                        "EnsureResources",
+                        "BBH intro is missing the GUI skin font assignment."
+                    );
+                }
+            }
+        }
+
+        private static void ScanNaturalMovementAwarenessFacingContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string[] requiredFiles =
+            {
+                "Assets/_Project/Scripts/Runtime/BDEnemyMovementPolish.cs",
+                "Assets/_Project/Scripts/Runtime/BDEnemyAwarenessPulse.cs",
+                "Assets/_Project/Scripts/Runtime/BDTemporaryFacingIndicator.cs",
+                "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
+                "Assets/_Project/Scripts/Runtime/BDHorseController.cs",
+                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
+                "Assets/_Project/Design/Movement/NATURAL_MOVEMENT_AWARENESS_FACING_V1.md"
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative = requiredFiles[index];
+
+                if (File.Exists(Path.Combine(root, relative)))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "NATURAL_MOVEMENT_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required movement, awareness, hazard-refusal, or temporary-facing file is missing."
+                );
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/BDPlayerController.cs")),
+                new[]
+                {
+                    "ApplyNaturalMovementProfile",
+                    "moveAcceleration = 22f",
+                    "moveDeceleration = 28f"
+                },
+                "PLAYER_NATURAL_MOVEMENT_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/BDHorseController.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/BDHorseController.cs")),
+                new[]
+                {
+                    "ApplyNaturalHorseMovementProfile",
+                    "mountedMoveSpeed = 9.6f",
+                    "mountedTravelTurnDegreesPerSecond",
+                    "SmoothMountedTravelDirection",
+                    "natural-wide-horse-turn"
+                },
+                "HORSE_NATURAL_MOVEMENT_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs")),
+                new[]
+                {
+                    "hazardLookAheadDistance",
+                    "hazardRefusalStopSeconds = 1.0f",
+                    "IsRefusingHazard",
+                    "IsHorsePathSafe"
+                },
+                "HORSE_HAZARD_REFUSAL_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/BDEnemyAwarenessPulse.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/BDEnemyAwarenessPulse.cs")),
+                new[]
+                {
+                    "refreshInterval = 0.08f",
+                    "ApplyMinimumRanges",
+                    "BDTargetFinder.FindPlayer",
+                    "maxShootRange"
+                },
+                "ENEMY_AWARENESS_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/BDTemporaryFacingIndicator.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/BDTemporaryFacingIndicator.cs")),
+                new[]
+                {
+                    "BD_TEMP_FRONT_UNTIL_REAL_MODELS",
+                    "BD_TEMP_REAR_UNTIL_REAL_MODELS",
+                    "ActorKind.Player",
+                    "ActorKind.Horse",
+                    "ActorKind.Enemy"
+                },
+                "TEMPORARY_FACING_MARKER_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                "Assets/_Project/Scripts/Runtime/UI/BDMainMenuFlow.cs",
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/UI/BDMainMenuFlow.cs")),
+                new[]
+                {
+                    "StartGameHighlightTint",
+                    "startGamePressed"
+                },
+                "START_GAME_HIGHLIGHT_CONTRACT_MISSING"
+            );
+        }
+
+        private static void ScanSpinningAoeAttackContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            const string combatRelative =
+                "Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs";
+
+            const string visualRelative =
+                "Assets/_Project/Scripts/Runtime/BDSpinAttackVisual.cs";
+
+            const string designRelative =
+                "Assets/_Project/Design/Combat/" +
+                "SPINNING_AOE_LONG_PRESS_LIGHT_ATTACK_V1.md";
+
+            string[] requiredFiles =
+            {
+                combatRelative,
+                visualRelative,
+                designRelative
+            };
+
+            for (int index = 0;
+                 index < requiredFiles.Length;
+                 index++)
+            {
+                string relative = requiredFiles[index];
+
+                if (File.Exists(Path.Combine(root, relative)))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "SPINNING_AOE_FILE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required spinning AOE attack file is missing."
+                );
+            }
+
+            string combatPath = Path.Combine(root, combatRelative);
+            if (File.Exists(combatPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    combatRelative,
+                    File.ReadAllText(combatPath),
+                    new[]
+                    {
+                        "Spinning AOE Attack",
+                        "spinningAttackHoldThreshold = 0.24f",
+                        "spinningAttackCooldown = 0.85f",
+                        "spinningAttackDamageMultiplier = 0.82f",
+                        "BeginPendingLightPress",
+                        "TickPendingLightPress",
+                        "TrySpinningAoeAttack",
+                        "Time.time < nextSpinningAttackAllowedAt",
+                        "TryMeleeAttack(",
+                        "Physics.OverlapSphereNonAlloc",
+                        "WeaponDamageMultiplier",
+                        "BDSpinAttackVisual.Spawn",
+                        "spinningAttackKnockbackStrength",
+                        "TriggerSpinningAttackGlobalFeedback"
+                    },
+                    "SPINNING_AOE_COMBAT_CONTRACT_MISSING"
+                );
+            }
+
+            string visualPath = Path.Combine(root, visualRelative);
+            if (File.Exists(visualPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    visualRelative,
+                    File.ReadAllText(visualPath),
+                    new[]
+                    {
+                        "BD_Spin_Attack_AOE_Visual",
+                        "rotations = 1.55f",
+                        "BuildArcMesh",
+                        "Time.unscaledDeltaTime",
+                        "AllowCosmeticSpawn"
+                    },
+                    "SPINNING_AOE_VISUAL_CONTRACT_MISSING"
+                );
+            }
+        }
 
         private static void ScanArchitectureContracts(
             BDOneClickQAResult result)

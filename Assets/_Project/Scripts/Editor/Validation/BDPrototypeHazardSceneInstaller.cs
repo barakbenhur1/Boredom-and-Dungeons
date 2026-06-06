@@ -100,6 +100,29 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "LAVA\nWALK INTO IT"
                 );
 
+                if (!BDC07PlayableBossEncounterInstaller
+                        .TryInstallActiveScene(out string c07Error))
+                {
+                    error = c07Error;
+                    return false;
+                }
+
+                if (!BDGameplayShadowSceneInstaller
+                        .TryInstallActiveScene(
+                            out string shadowError))
+                {
+                    error = shadowError;
+                    return false;
+                }
+
+                if (!BDMainMenuSettingsSceneInstaller
+                        .TryInstallActiveScene(
+                            out string menuError))
+                {
+                    error = menuError;
+                    return false;
+                }
+
                 EditorSceneManager.MarkSceneDirty(scene);
 
                 if (!EditorSceneManager.SaveScene(scene))
