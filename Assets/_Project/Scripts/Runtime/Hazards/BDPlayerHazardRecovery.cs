@@ -20,10 +20,12 @@ namespace BoredomAndDungeons
 
         [Header("Hole / Chasm Fall")]
         [SerializeField] private float holeFallDuration = 2.25f;
-        [SerializeField] private float holeFallSpeed = 2.35f;
+        [SerializeField] private float holeFallSpeed = 4.60f;
+        [SerializeField] private float holeFallAccelerationMultiplier = 1.35f;
 [Header("Lava Bounce")]
         [SerializeField] private float lavaBounceDuration = 0.42f;
         [SerializeField] private float lavaBounceHeight = 1.35f;
+        [SerializeField, Range(0.55f, 1f)] private float lavaBounceDistanceMultiplier = 0.80f;
         [SerializeField] private float lavaSurfaceContactTolerance = 0.05f;
 
         [Header("Ground Safety")]
@@ -103,6 +105,8 @@ namespace BoredomAndDungeons
 
         private void Awake()
         {
+            ApplyHazardFeelProfile();
+
             characterController =
                 GetComponent<CharacterController>();
             playerController =
@@ -123,6 +127,14 @@ namespace BoredomAndDungeons
             lastGroundedAt = Time.unscaledTime;
             previousTrackedPosition = transform.position;
             hasPreviousTrackedPosition = true;
+        }
+
+        private void ApplyHazardFeelProfile()
+        {
+            holeFallDuration = 2.25f;
+            holeFallSpeed = 4.60f;
+            holeFallAccelerationMultiplier = 1.35f;
+            lavaBounceDistanceMultiplier = 0.80f;
         }
 
         private void Start()
@@ -273,17 +285,20 @@ namespace BoredomAndDungeons
 
         private void TickHoleFall()
         {
-            float speed = Mathf.Max(0.25f, holeFallSpeed);
+            float duration = Mathf.Max(0.12f, holeFallDuration);
+            float elapsed = Time.unscaledTime - holeFallStartedAt;
+            float normalizedFall = Mathf.Clamp01(elapsed / duration);
+            float acceleration = Mathf.Lerp(
+                1f,
+                Mathf.Max(1f, holeFallAccelerationMultiplier),
+                normalizedFall
+            );
+            float speed = Mathf.Max(0.25f, holeFallSpeed) * acceleration;
 
             transform.position +=
-                Vector3.down *
-                speed *
-                Time.unscaledDeltaTime;
+                Vector3.down * speed * Time.unscaledDeltaTime;
 
-            float duration =
-                Mathf.Max(0.12f, holeFallDuration);
-
-            if (Time.unscaledTime - holeFallStartedAt < duration)
+            if (elapsed < duration)
                 return;
 
             float damage =
@@ -354,6 +369,11 @@ namespace BoredomAndDungeons
             lavaBounceStartedAt = Time.unscaledTime;
             lavaBounceStart = transform.position;
 
+            lavaBounceTarget =
+                ResolveReducedLavaBounceTarget(
+                    lavaBounceStart,
+                    lavaBounceTarget
+                );
             lavaControllerWasEnabled =
                 characterController != null &&
                 characterController.enabled;
@@ -366,6 +386,48 @@ namespace BoredomAndDungeons
 
             if (characterController != null)
                 characterController.enabled = false;
+        }
+
+        private Vector3 ResolveReducedLavaBounceTarget(
+            Vector3 start,
+            Vector3 fullSafeTarget)
+        {
+            Vector3 horizontal = fullSafeTarget - start;
+            horizontal.y = 0f;
+
+            if (horizontal.sqrMagnitude < 0.25f)
+                return fullSafeTarget;
+
+            float firstFactor = Mathf.Clamp(
+                lavaBounceDistanceMultiplier,
+                0.55f,
+                1f
+            );
+
+            for (float factor = firstFactor;
+                 factor < 1f;
+                 factor += 0.06f)
+            {
+                Vector3 requested = Vector3.Lerp(
+                    start,
+                    fullSafeTarget,
+                    factor
+                );
+
+                if (!TryResolveGroundedCandidate(
+                        requested,
+                        out Vector3 candidate))
+                {
+                    continue;
+                }
+
+                if (!IsCandidateSafe(candidate))
+                    continue;
+
+                return candidate;
+            }
+
+            return fullSafeTarget;
         }
 
         private void TickLavaBounce()

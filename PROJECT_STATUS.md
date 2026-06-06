@@ -6,15 +6,12 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous categories: C03/C04/C05/C06/C11/C12 — natural movement, horse movement, enemy awareness, temporary facing readability, START GAME emphasis, and long-press spinning AOE
-Previous result: committed on main; cumulative Unity compilation, TEST EVERYTHING, and Play Mode verification are still required
-Current categories: C04/C11 — inserted follow-up required before returning to the existing queue
-Current items: C04.31A horse two-step hazard retreat and C11.13A polished cardinal minimap transition
-Current status: IMPLEMENTED IN LOCAL INSTALL PACKAGE / VERIFY
-Current package behavior: unsafe horse movement starts a safe retreat of roughly 2.6m and then resumes normal behavior; minimap keeps four cardinal targets and eases through the shortest angle
-Enemy-order request: recorded for C05/C10/C14; normal runs currently reload the generated scene, and final deterministic per-run variation remains future architecture
-Next action: install the ZIP locally, compile in Unity, run the single TEST EVERYTHING command, verify both behaviors in Play Mode, and record the real result here
-Resume after PASS: return to the first incomplete item in the ordered authoritative list; stop and ask before entering a new category
+Latest TEST EVERYTHING result: BLOCKED at 2026-06-06T18:27:33.8935110Z with 1 blocker, 0 warnings, and 0 info
+Latest blocker: LONG_HOLE_FALL_CONTRACT_MISSING because the main QA window still expected obsolete holeFallSpeed = 2.35f after C03.57 intentionally changed the runtime contract to 4.60f
+Current repair: update only the stale main QA regression anchor to holeFallSpeed = 4.60f; runtime hazard behavior, lava tuning, Pet Tab binding, scene, and gameplay code remain unchanged
+Current status: QA CONTRACT REPAIRED LOCALLY / VERIFY
+Next action: compile and run the single Boredom And Dungeons -> TEST EVERYTHING command again
+Resume after PASS: complete the focused Play Mode checks for fall feel, repeated holes, lava distance, Tab Pet input, and cue placement; then synchronize the real PASS here
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -235,19 +232,19 @@ A category cannot be completed until applicable checks pass:
 ## Current one-button QA and repository-hygiene work
 
 - [x] C01.16A Existing `TEST EVERYTHING` automated run passed on Unity `6000.0.76f1` at `2026-06-06T03:22:56.8937980Z` with 0 blockers, 0 warnings, and 0 info.
-- [ ] **C01.16B Integrate Camera/Minimap regression checks into the existing `Boredom And Dungeons -> TEST EVERYTHING` action.**
-- [ ] C01.16C Integrate tracked-file repository hygiene into the same `TEST EVERYTHING` action; no second QA menu item may be required.
-- [ ] C01.16D Verify the five obsolete Camera/Minimap fields cannot return:
+- [x] **C01.16B Integrate Camera/Minimap regression checks into the existing `Boredom And Dungeons -> TEST EVERYTHING` action.**
+- [x] C01.16C Integrate tracked-file repository hygiene into the same `TEST EVERYTHING` action; no second QA menu item may be required.
+- [x] C01.16D Verify the five obsolete Camera/Minimap fields cannot return:
   - `rotationSpeedDegreesPerSecond`;
   - `snapToMovementCardinals`;
   - `mapRotationInitialized`;
   - `minimumMovementDirectionMagnitude`;
   - `rotateOnlyWhenActuallyMoving`.
-- [ ] C01.16E Validate required Camera/Minimap behavior anchors remain present.
-- [ ] C01.16F Reject tracked Unity-generated folders, archives, QA exports, backups, IDE outputs, one-shot patch scripts, duplicate status files, and other root clutter.
-- [ ] C01.16G Expand `.gitignore` for all generated/local/package/QA/status-snapshot artifacts while preserving real Unity `.meta` files.
-- [ ] C01.16H Enforce `/PROJECT_STATUS.md` update alongside every material pending change.
-- [ ] C01.16I Run only `TEST EVERYTHING`, complete its one Play Mode checklist, save FINAL QA PASS, and record the result here.
+- [x] C01.16E Validate required Camera/Minimap behavior anchors remain present.
+- [x] C01.16F Reject tracked Unity-generated folders, archives, QA exports, backups, IDE outputs, one-shot patch scripts, duplicate status files, and other root clutter.
+- [x] C01.16G Expand `.gitignore` for all generated/local/package/QA/status-snapshot artifacts while preserving real Unity `.meta` files.
+- [x] C01.16H Enforce `/PROJECT_STATUS.md` update alongside every material pending change.
+- [ ] C01.16I Run only `TEST EVERYTHING`, complete its one Play Mode checklist, save FINAL QA PASS, and record the result here. — AUTOMATED PASS 0/0/0 AT 2026-06-06T17:00:51.3087910Z; FULL MANUAL FINAL PASS REMAINS.
 
 
 ## Latest completed unified QA result
@@ -273,7 +270,7 @@ A category cannot be completed until applicable checks pass:
 
 ## Current blocker truth
 
-The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 blockers, 0 warnings, and 0 info. C01 remains **IN PROGRESS** because Camera/Minimap regression, repository hygiene, and the single-authoritative-status enforcement still need to be integrated into that same button and rerun with the final Play Mode checklist.
+The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:00:51.3087910Z` in Unity `6000.0.76f1` with `0` blockers, `0` warnings, and `0` info. Camera/Minimap regression, repository hygiene, and single-authoritative-status checks are in the same button. C01.16I remains open only for the complete final manual Play Mode checklist and saved FINAL QA PASS.
 
 ---
 
@@ -292,6 +289,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C02.07 Define touch rules for empty-space taps, target loss, overlapping enemies, and UI interception.
 - [ ] C02.08 Preserve keyboard/mouse as a development/debug input path.
 - [ ] C02.09 Add input abstraction so gameplay logic is not coupled to one platform.
+- [ ] C02.09A Build a central rebindable desktop action registry as a later input/settings task: persistent bindings, conflict detection/confirmation, reserved-key rejection, reset defaults, and one display-string API used by all gameplay prompts. This request does not interrupt the current C03/C04 verification work.
 
 ## Architecture and assembly
 
@@ -401,6 +399,9 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C03.53 If the player and horse enter a hazard while mounted, recover both to legal safe locations and always return the player on foot; never restore the mount relationship automatically.
 - [ ] C03.54 Ensure hazard recovery cannot place the player inside enemies, walls, props, lava, holes, chasms, or active boss barriers.
 - [ ] C03.55 Add Play Mode tests for repeated falls, low-health falls, mounted falls, lava-edge contact, moving hazards, death during hazard damage, and missing/invalid safe-point fallback.
+- [ ] **C03.56 After every external hazard recovery, normal walking must never inherit jump/dodge/forced-gap permission. Reset dodge, jump, dash, and forced-entry timers; suppress new forced-gap classification for `0.55s`; then verify repeated walking around the same hole cannot start a damaging fall. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.57 Keep the hole/chasm fall duration at `2.25s`, but increase real downward movement to a `4.60` base speed with acceleration up to `1.35x`, so the fall no longer reads as slow motion. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.58 Reduce lava horizontal knockback toward `80%` of the previous safe displacement, expanding outward only as much as needed to find a validated safe non-lava landing point. Damage and bounce duration remain unchanged. — IMPLEMENTED LOCALLY / VERIFY.**
 
 ## Category acceptance
 
@@ -439,7 +440,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C04.17 Define mounted combat-start behavior.
 - [ ] C04.18 Verify two-hit buck/throw timing and animation.
 - [ ] C04.19 Verify healthy, damaged, fainted, healing, and recovered states.
-- [ ] C04.20 Verify horse cannot receive duplicate damage from one event.
+- [ ] C04.20 Verify horse cannot receive duplicate damage from one event. — Includes the observed startup damage/flee-with-no-local-enemy issue; user instructed that it remain deferred until this verification work.
 - [ ] C04.21 Tune horse movement for final room scale and mobile controls.
 - [ ] C04.22 Add final riding, damage, healing, buck, and flee feedback.
 - [ ] C04.23 Complete full horse Play Mode QA.
@@ -458,14 +459,14 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 
 ## Zero-health exhausted follow and contextual Pet interaction
 
-- [ ] **C04.32 Preserve the horse's current zero-health behavior while the player remains nearby.**
-- [ ] C04.33 When the player remains farther than `14m` for at least `1.25s`, enter an exhausted-follow state and move toward the player at approximately `20%` of normal follow speed.
-- [ ] C04.34 Stop exhausted follow at `8m` or less; use threshold hysteresis to prevent rapid start/stop switching.
-- [ ] C04.35 Exhausted follow does not restore health and cannot enable mounting, mounted shooting, sprinting, combat flee, attack utility, or normal healthy follow behavior.
-- [ ] C04.36 Exhausted movement must retain obstacle, hole, chasm, lava, boss-barrier, and doorway avoidance; invalid cross-room paths use a safe reposition fallback.
-- [ ] C04.37 Show a contextual `Pet` button when the on-foot player is within `2.25m` of the horse and both actors are in a safe interruptible state.
-- [ ] C04.38 Short press: player pets the horse. Long press of at least `0.65s`: the horse affectionately nuzzles/rubs the player. Short and long press are mutually exclusive and long-press progress is visible.
-- [ ] C04.39 Pet interactions are expressive only: no healing, stat, score, collectible, or progression effect; cancel safely for distance, combat, dodge, mount, damage, cutscene, or door transition.
+- [ ] **C04.32 Preserve the horse's current zero-health behavior while the player remains nearby. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] C04.33 When the player remains farther than `14m` for at least `1.25s`, enter an exhausted-follow state and move toward the player at approximately `20%` of normal follow speed. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.34 Stop exhausted follow at `8m` or less; use threshold hysteresis to prevent rapid start/stop switching. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.35 Exhausted follow does not restore health and cannot enable mounting, mounted shooting, sprinting, combat flee, attack utility, or normal healthy follow behavior. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.36 Exhausted movement must retain obstacle, hole, chasm, lava, boss-barrier, and doorway avoidance; invalid cross-room paths use a safe reposition fallback. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.37 Show the separated contextual Pet button and amber world cue without covering the horse HUD. The desktop default Pet binding is `Tab`; legacy serialized `P` migrates to `Tab`; short/long press behavior is unchanged; world and screen labels display the active binding dynamically. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.38 Short press: player pets the horse. Long press of at least `0.65s`: the horse affectionately nuzzles/rubs the player. Short and long press are mutually exclusive and long-press progress is visible. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] C04.39 Pet interactions are expressive only: no healing, stat, score, collectible, or progression effect; cancel safely for distance, combat, dodge, mount, damage, cutscene, or door transition. — IMPLEMENTED LOCALLY / VERIFY.
 
 ## Category acceptance
 
@@ -1076,6 +1077,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C11.33 Status-effect clarity.
 - [ ] C11.34 Input feedback for taps, drags, target loss, and cooldowns.
 - [ ] C11.35 Accessibility options appropriate to the final scope.
+- [ ] **C11.35A Add Key Rebinding to Settings for every rebindable desktop action. Capturing a new key/button must persist, handle duplicates safely, support reset defaults, and immediately update every gameplay HUD prompt, world prompt, tutorial label, cooldown hint, healing label, Pet label, and settings row to the live binding. Touch controls remain a separate presentation of the same gameplay actions.**
 - [ ] C11.36 Validate holes, chasms, lava, and safe routes remain readable under lighting, VFX, bullet hell, and foreground clothing.
 - [ ] C11.37 Validate Mother Boss clothing events keep 2–4 items visible only while active, never cover the full screen, and never erase all critical information.
 
@@ -1376,6 +1378,45 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Repair stale long-hole QA speed contract
+
+- Recorded the supplied `TEST EVERYTHING` result from `2026-06-06T18:27:33.8935110Z`: `BLOCKED`, `1` blocker, `0` warnings, `0` info.
+- The only blocker was `LONG_HOLE_FALL_CONTRACT_MISSING`; the main QA window still required obsolete source token `holeFallSpeed = 2.35f`.
+- Updated that QA regression anchor to the implemented C03.57 value `holeFallSpeed = 4.60f`.
+- No runtime hazard behavior, timing, damage, lava behavior, Pet behavior, scene data, or additional QA command was changed.
+
+
+## 2026-06-06 — Hazard feel tuning, Tab Pet default, and QA repair
+
+- Kept hole/chasm recovery duration at `2.25s` while raising actual downward speed to `4.60` and adding progressive acceleration up to `1.35x`.
+- Reduced lava horizontal throw toward `80%` of the previous displacement, accepting the shorter destination only when the existing grounded and hazard validators approve it.
+- Changed the Pet desktop default from `P` to `Tab`, migrates legacy serialized `P`, and made both Pet labels display the active binding dynamically.
+- Repaired the dedicated Pet QA contract so it validates dynamic binding text instead of requiring obsolete hard-coded `P  PET`.
+- Verification remains in the existing `Boredom And Dungeons -> TEST EVERYTHING` command.
+
+
+## 2026-06-06 — Cue stacking, repeated-hole walking guard, and rebinding requirement
+
+- Repositioned the healing cue to a lower-left screen-relative slot and the Pet cue to a higher-right screen-relative slot, reduced both visual scales, added toward-camera depth offsets, and assigned distinct renderer sorting orders so they do not hide behind the horse health display or one another.
+- Added C03.56 and code support that clears stale dodge/jump/forced-gap permission after external hazard recovery and suppresses forced-gap reclassification for `0.55s`.
+- Added the future C02.09A/C11.35A key-rebinding requirement: Settings persistence, conflict handling, default reset, and immediate refresh of all UI/world prompt labels.
+- Extended the existing dedicated `BDHorseExhaustedFollowPetQA.cs` path; no additional QA menu command was created.
+
+
+## 2026-06-06 — C04 exhausted follow and Pet implementation
+
+- Added `BDHorsePetAvailabilityIndicator.cs`: a pulsing amber world-space heart and `P PET` label appears when Pet is usable, shows hold percentage during the `0.65s` long press, and displays `PETTING` during the animation; the existing bottom-right button remains available for pointer/touch input.
+- C04 exhausted-follow/Pet automated validation is isolated in `BDHorseExhaustedFollowPetQA.cs`; the existing `TEST EVERYTHING` window contains one call only, avoiding duplicate QA commands and large injected method blocks.
+- Recorded the supplied `TEST EVERYTHING` automated PASS from `2026-06-06T17:00:51.3087910Z`: Unity `6000.0.76f1`, `0` blockers, `0` warnings, `0` info.
+- Preserved C04.31A/C11.13A as VERIFY because focused Play Mode confirmation was not explicitly supplied.
+- Implemented C04.32–C04.36: the zero-health horse preserves nearby fainted behavior, begins a delayed `14m` exhausted follow, stops by `8m`, moves at `20%` reference speed, uses existing hazard filtering, and attempts a validated near-player fallback only after being stuck while far away.
+- Implemented C04.37–C04.39: contextual `Pet` at `2.25m`, short press for player-pets-horse, `0.65s` hold for horse-nuzzles-player, visible progress, exclusive outcomes, input locking, emergency cancellation, and no health/stat/progression effect.
+- Added explicit external-control ownership to `BDHorseController` so exhausted follow and Pet cannot fight normal movement, mounting, fleeing, or healing state.
+- Integrated scene serialization, runtime fallback repair, automated source contracts, scene validation, and expanded Play Mode wording into the existing `TEST EVERYTHING` command.
+- Renamed the canonical design document to remove the version suffix; no duplicate V1 copy remains.
+- Kept the observed startup horse damage and flee-with-no-local-enemy issue deferred under existing C04.13/C04.19/C04.20, as requested.
+
 
 ## 2026-06-06 — Horse retreat, minimap transition, and single-source synchronization
 

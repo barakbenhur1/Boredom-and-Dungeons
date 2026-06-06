@@ -1,6 +1,6 @@
-# Boredom & Dungeons — Exhausted Horse Follow and Pet Interaction V1
+# Boredom & Dungeons — Exhausted Horse Follow and Pet Interaction
 
-Status: approved requirement, 2026-06-06.
+Status: IMPLEMENTED IN LOCAL PACKAGE / VERIFY, 2026-06-06.
 
 ## 1. Zero-health horse behavior
 
@@ -158,3 +158,21 @@ Releasing after the threshold must not also trigger the short-press animation.
 - verify no overlap with hazards, walls, props, enemies, or controls;
 - verify mobile and desktop debug input parity;
 - verify no duplicate interaction or stuck player/horse state.
+
+
+## 9. Current implementation state
+
+- The current desktop default for Pet is `Tab`. Existing serialized legacy `P` values migrate to `Tab` at runtime, and the world cue plus on-screen Pet button display the active binding rather than a hard-coded key.
+
+- One runtime component owns both zero-health exhausted follow and contextual Pet interaction.
+- Exhausted follow begins only after the player remains beyond `14m` for `1.25s`, stops at `8m`, and moves at `20%` of the reference normal follow speed.
+- Movement uses the existing horse hazard filter. A safe fallback near the player is attempted only after the horse remains stuck while still far away.
+- Normal horse, flee, mount, jump, and combat control are explicitly locked while exhausted follow or Pet owns movement.
+- Short press and long press are mutually exclusive. The long-press threshold remains `0.65s`.
+- Horse interaction cues use a fixed non-overlapping stack above the horse HUD: healing occupies the lower-left screen-relative slot and Pet occupies the higher-right screen-relative slot. Both use a small toward-camera depth offset and separate sorting orders, and may never cover the horse name/health bar or one another. The amber Pet cue shows long-press progress and changes to `PETTING` during the interaction.
+- When key rebinding is implemented, every keyboard label in this interaction must read the live binding display string instead of a hard-coded `P` or `F`.
+- Pet interaction temporarily disables player movement/combat input, restores the exact previous enabled states, and emergency-cancels on serious damage, invalid separation, death, or hazard recovery.
+- Neither Pet nor exhausted follow calls healing, damage, maximum-health, score, collectible, or progression APIs.
+- The prototype scene installer serializes the component; runtime repair remains an idempotent fallback for older scenes.
+- Automated checks are integrated into the existing `TEST EVERYTHING` command.
+- Unity compilation, automated QA, and the full Play Mode matrix remain required before DONE.

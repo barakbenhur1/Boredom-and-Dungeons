@@ -39,6 +39,9 @@ namespace BoredomAndDungeons
                 {
                     EnsureComponent<BDHorseCombatFleeController>(horse);
                     EnsureComponent<BDHorseReliableFleeMotor>(horse);
+                    EnsureComponent<BDHorseExhaustedFollowAndPetInteraction>(
+                        horse
+                    );
                 }
             }
         }

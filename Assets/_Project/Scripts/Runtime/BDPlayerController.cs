@@ -72,6 +72,7 @@ namespace BoredomAndDungeons
         private float lastDodgeStartedAt;
         private float lastJumpStartedAt = -999f;
         private float forcedGapEntryUntil = -999f;
+        private float postRecoveryGapEntrySuppressedUntil = -999f;
         private float nextDodgeAfterimageAt;
 
         private float lastForwardTapTime = -999f;
@@ -120,10 +121,13 @@ namespace BoredomAndDungeons
         }
         public bool IsDashing => dashTimer > 0f;
         public bool HasRecentIntentionalGapEntry =>
-            IsDashing ||
-            Time.time <= forcedGapEntryUntil ||
-            Time.time - lastDodgeStartedAt <= 0.40f ||
-            Time.time - lastJumpStartedAt <= 0.75f;
+            Time.time >= postRecoveryGapEntrySuppressedUntil &&
+            (
+                IsDashing ||
+                Time.time <= forcedGapEntryUntil ||
+                Time.time - lastDodgeStartedAt <= 0.40f ||
+                Time.time - lastJumpStartedAt <= 0.75f
+            );
         public float EffectiveMoveSpeed =>
             Mathf.Max(0.1f, moveSpeed * boostMoveSpeedMultiplier);
 
@@ -134,6 +138,9 @@ namespace BoredomAndDungeons
         public void NotifyForcedGapEntry(
             float windowSeconds = 0.85f)
         {
+            if (Time.time < postRecoveryGapEntrySuppressedUntil)
+                return;
+
             forcedGapEntryUntil = Mathf.Max(
                 forcedGapEntryUntil,
                 Time.time + Mathf.Max(0.05f, windowSeconds)
@@ -149,8 +156,10 @@ namespace BoredomAndDungeons
             dashCooldownTimer = 0f;
             dodgeInvulnerableUntil = 0f;
             lastMoveInput = Vector2.zero;
-            lastJumpStartedAt = -999f;            forcedGapEntryUntil = -999f;
-
+            lastDodgeStartedAt = -999f;
+            lastJumpStartedAt = -999f;
+            forcedGapEntryUntil = -999f;
+            postRecoveryGapEntrySuppressedUntil = Time.time + 0.55f;
         }
         private void ApplyNaturalMovementProfile()
         {

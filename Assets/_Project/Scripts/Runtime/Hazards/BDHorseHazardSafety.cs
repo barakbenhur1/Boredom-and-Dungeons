@@ -358,6 +358,147 @@ namespace BoredomAndDungeons
         }
 
 
+        // BD C04 EXHAUSTED FOLLOW SAFE FALLBACK V1
+        public bool TryResolveSafePositionNear(
+            Vector3 desiredPosition,
+            float searchRadius,
+            out Vector3 safePosition)
+        {
+            float safeRadius =
+                Mathf.Clamp(searchRadius, 0.5f, 12f);
+
+            float[] ringFractions =
+            {
+                0f, 0.35f, 0.65f, 1f
+            };
+
+            for (int ringIndex = 0;
+                 ringIndex < ringFractions.Length;
+                 ringIndex++)
+            {
+                float radius =
+                    safeRadius *
+                    ringFractions[ringIndex];
+
+                int directionCount =
+                    radius <= 0.001f ? 1 : 12;
+
+                for (int directionIndex = 0;
+                     directionIndex < directionCount;
+                     directionIndex++)
+                {
+                    float angle =
+                        directionIndex *
+                        (360f / directionCount);
+
+                    Vector3 offset =
+                        Quaternion.AngleAxis(
+                            angle,
+                            Vector3.up
+                        ) *
+                        Vector3.forward *
+                        radius;
+
+                    Vector3 requested =
+                        desiredPosition + offset;
+
+                    if (!TryResolveGround(
+                            requested,
+                            out Vector3 grounded))
+                    {
+                        continue;
+                    }
+
+                    Vector3 candidate =
+                        grounded +
+                        Vector3.up *
+                        Mathf.Max(0f, verticalOffset);
+
+                    if (!IsHorsePositionSafe(candidate) ||
+                        !HasHorseClearanceAt(candidate))
+                    {
+                        continue;
+                    }
+
+                    safePosition = candidate;
+                    return true;
+                }
+            }
+
+            safePosition = desiredPosition;
+            return false;
+        }
+
+        private bool HasHorseClearanceAt(
+            Vector3 groundPosition)
+        {
+            float radius =
+                controller != null
+                    ? Mathf.Max(
+                        0.30f,
+                        controller.radius * 0.92f)
+                    : 0.55f;
+
+            float height =
+                controller != null
+                    ? Mathf.Max(
+                        radius * 2f,
+                        controller.height)
+                    : 2f;
+
+            Vector3 bottom =
+                groundPosition +
+                Vector3.up * (radius + 0.10f);
+
+            Vector3 top =
+                groundPosition +
+                Vector3.up *
+                Mathf.Max(
+                    radius + 0.10f,
+                    height - radius);
+
+            Collider[] overlaps =
+                Physics.OverlapCapsule(
+                    bottom,
+                    top,
+                    radius,
+                    ~0,
+                    QueryTriggerInteraction.Ignore
+                );
+
+            for (int index = 0;
+                 index < overlaps.Length;
+                 index++)
+            {
+                Collider overlap = overlaps[index];
+
+                if (overlap == null ||
+                    overlap.isTrigger)
+                {
+                    continue;
+                }
+
+                Transform overlapTransform =
+                    overlap.transform;
+
+                if (overlapTransform == transform ||
+                    overlapTransform.IsChildOf(transform))
+                {
+                    continue;
+                }
+
+                if (overlap.bounds.max.y <=
+                    groundPosition.y + 0.20f)
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
         public bool CanStartJump(
             Vector3 horizontalVelocity,
             float jumpHeight,

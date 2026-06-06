@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "horse",
                 "Horse",
-                "The horse starts safely, keeps healing/buck/mount/flee behavior, and backs away about two short steps from lava, holes, chasms, or missing ground before resuming normal behavior."),
+                "The horse starts safely and preserves healing, buck, mount, flee, and two-step hazard retreat behavior. At zero health it remains fainted while nearby; after the player stays beyond 14m for 1.25 seconds it follows very slowly through hazard-safe movement, stops by 8m, never heals or mounts, and exits after healing. Within 2.25m on foot, tap Pet for player-pets-horse and hold 0.65 seconds for horse-nuzzles-player; the actions are exclusive and cancel safely."),
             new ManualCheck(
                 "square_jumper",
                 "Square Jumper",
@@ -283,7 +283,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             else
             {
                 EditorGUILayout.HelpBox(
-                    "Press Play once, verify these eight items in order, and check each box. Nothing else needs to be run.",
+                    "Press Play once, verify every listed item in order, and check each box. Nothing else needs to be run.",
                     MessageType.Info
                 );
             }
@@ -471,6 +471,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanBBHBootIntroContracts(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);
+            BDHorseExhaustedFollowPetQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);
             ScanMainMenuSettingsContracts(result);
@@ -1196,7 +1197,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 new[]
                 {
                     "holeFallDuration = 2.25f",
-                    "holeFallSpeed = 2.35f",
+                    "holeFallSpeed = 4.60f",
                     "TickHoleFall"
                 },
                 "LONG_HOLE_FALL_CONTRACT_MISSING"

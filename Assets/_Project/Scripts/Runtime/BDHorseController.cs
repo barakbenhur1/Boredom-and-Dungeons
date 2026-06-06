@@ -176,6 +176,12 @@ namespace BoredomAndDungeons
         private bool playerInRange;
         private string lastAction = "none";
 
+        // BD C04 EXTERNAL HORSE CONTROL V1
+        private bool externalControlLock;
+        private string externalControlReason = "none";
+        private HorseState stateBeforeExternalControl =
+            HorseState.Idle;
+
         private bool pointerDragging;
         private Vector2 pointerDragStart;
         private Vector2 lastRideInput;
@@ -214,9 +220,102 @@ namespace BoredomAndDungeons
                 return Vector3.zero;
             }
         }
-        public bool IsAvailable => !health.IsFainted && state != HorseState.Mounted;
+        public bool IsAvailable =>
+            !externalControlLock &&
+            !health.IsFainted &&
+            state != HorseState.Mounted;
         public bool HasSafeSpot => safeSpot != null;
-        public bool IsGrounded => controller != null && controller.isGrounded;
+        public bool IsGrounded =>
+            controller != null && controller.isGrounded;
+        public bool IsExternallyControlled =>
+            externalControlLock;
+        public string ExternalControlReason =>
+            externalControlReason;
+        public bool IsFainted =>
+            health != null && health.IsFainted;
+
+        public void SetExternalControlLock(
+            bool locked,
+            string reason)
+        {
+            if (externalControlLock == locked)
+            {
+                if (locked &&
+                    !string.IsNullOrWhiteSpace(reason))
+                {
+                    externalControlReason = reason;
+                }
+
+                return;
+            }
+
+            if (locked)
+            {
+                stateBeforeExternalControl = state;
+                externalControlLock = true;
+                externalControlReason =
+                    string.IsNullOrWhiteSpace(reason)
+                        ? "external"
+                        : reason;
+
+                smoothedMountedHorizontalVelocity =
+                    Vector3.zero;
+                lastRideInput = Vector2.zero;
+                verticalVelocity = groundedStickVelocity;
+                return;
+            }
+
+            externalControlLock = false;
+            externalControlReason = "none";
+            smoothedMountedHorizontalVelocity =
+                Vector3.zero;
+            lastRideInput = Vector2.zero;
+            verticalVelocity = groundedStickVelocity;
+
+            if (health != null && health.IsFainted)
+            {
+                state = HorseState.Fainted;
+                return;
+            }
+
+            HorseState restored =
+                stateBeforeExternalControl;
+
+            if (restored == HorseState.Mounted ||
+                restored == HorseState.Fainted ||
+                restored == HorseState.FleeingToSafeSpot)
+            {
+                restored = HorseState.Idle;
+            }
+
+            state = restored;
+        }
+
+        public void MoveByExternalControl(
+            Vector3 motion,
+            Vector3 facingDirection,
+            float turnSpeedMultiplier = 1f)
+        {
+            if (!externalControlLock)
+                return;
+
+            MoveHorse(motion);
+
+            facingDirection.y = 0f;
+
+            if (facingDirection.sqrMagnitude < 0.001f)
+                return;
+
+            float previousRotationSpeed = rotationSpeed;
+            rotationSpeed = Mathf.Max(
+                0.1f,
+                previousRotationSpeed *
+                Mathf.Max(0.1f, turnSpeedMultiplier)
+            );
+
+            RotateToward(facingDirection);
+            rotationSpeed = previousRotationSpeed;
+        }
         private void ApplyNaturalHorseMovementProfile()
         {
             baseMoveSpeed = 5.6f;
@@ -679,6 +778,14 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            if (externalControlLock)
+            {
+                lastAction =
+                    "external control - " +
+                    externalControlReason;
+                return;
+            }
+
             playerInRange = rider != null && Vector3.Distance(transform.position, rider.position) <= interactionRange;
 
             if (ReadInteractPressed())
@@ -714,8 +821,12 @@ namespace BoredomAndDungeons
 
         public void SendToSafeSpot()
         {
-            if (health.IsFainted || state == HorseState.Mounted)
+            if (externalControlLock ||
+                health.IsFainted ||
+                state == HorseState.Mounted)
+            {
                 return;
+            }
 
             ResolveSafeSpotIfNeeded();
 
@@ -731,6 +842,9 @@ namespace BoredomAndDungeons
         }
         public void ForceDismountForCombat()
         {
+            if (externalControlLock)
+                return;
+
             if (Time.unscaledTime < startupCalmUntil)
             {
                 if (state != HorseState.Mounted &&
@@ -973,8 +1087,12 @@ namespace BoredomAndDungeons
 
         private void Mount()
         {
-            if (health.IsFainted || rider == null)
+            if (externalControlLock ||
+                health.IsFainted ||
+                rider == null)
+            {
                 return;
+            }
 
             ClearHealingReleaseHold();
 

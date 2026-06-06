@@ -295,6 +295,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
             {
                 Undo.AddComponent<BDHorseHazardSafety>(horse.gameObject);
             }
+
+            if (horse.GetComponent<
+                    BDHorseExhaustedFollowAndPetInteraction>() == null)
+            {
+                Undo.AddComponent<
+                    BDHorseExhaustedFollowAndPetInteraction>(
+                    horse.gameObject
+                );
+            }
         }
 
         private static Vector3 FindPlacement(
