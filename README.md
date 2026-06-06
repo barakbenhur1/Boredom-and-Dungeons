@@ -1,8 +1,8 @@
 # Boredom & Dungeons
 
-**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, melee and ranged combat, horse traversal, hidden optional collectibles, protected encounters, mini-bosses, a final boss, and ending variations.
+**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, melee and ranged combat, horse traversal, hidden collectibles, protected encounters, mini-bosses, a final boss, and multiple ending variations.
 
-The project is an active vertical-slice work in progress. The target is a polished, complete dungeon-style level with readable combat, a designed multi-route map, meaningful secrets, professional code structure, strong visual/audio identity, and a complete start-to-ending flow.
+The target is a polished mobile-landscape vertical slice that feels like a designed game level rather than an endless square maze.
 
 ## Current status
 
@@ -10,96 +10,92 @@ The project is an active vertical-slice work in progress. The target is a polish
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
 Authoritative plan: PROJECT_STATUS.md
-Current category: C06 — player melee combat expansion
-Current code baseline: natural movement + awareness + facing readability + spinning AOE light attack
-Verification state: committed, requires clean Unity compilation, TEST EVERYTHING, and Play Mode verification
+Current committed baseline: C03/C04/C05/C11 movement, horse, enemy-awareness, minimap, and spinning-AOE work
+Current follow-up: C04/C11 horse hazard retreat and polished minimap cardinal transition
+Verification state: clean Unity compilation, TEST EVERYTHING, and Play Mode verification still required
 ```
 
-The old `Stage 11 / V126` summary is no longer the active status model. The categorized plan in `PROJECT_STATUS.md` is authoritative.
+The old `Stage 11 / V126` README status is obsolete. The categorized C00–C14 plan in `PROJECT_STATUS.md` is authoritative.
 
-## Documentation
+## Documentation order
 
-Read documents in this order:
-
-1. [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — complete authoritative requirements, progress, blockers, QA truth, and next action.
-2. [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) — explains which documents are current, canonical, superseded, or historical.
-3. This README — project overview and onboarding.
-4. `Assets/_Project/Design/**` — detailed system and design specifications.
-5. `Assets/_Project/Design/QA/**` — historical stage reports, not the current queue.
+1. [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — complete authoritative requirements, progress, blockers, QA truth, and resume point.
+2. [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) — canonical, working, superseded, and historical document map.
+3. This README — current overview and onboarding.
+4. `Assets/_Project/Design/**` — focused specifications.
+5. `Assets/_Project/Design/QA/**` — historical reports, not the current queue.
 
 When documents conflict, `PROJECT_STATUS.md` wins.
 
-## Current implemented gameplay baseline
+## Current gameplay baseline
 
 ### Player and combat
 
-- Player movement with acceleration/deceleration smoothing.
-- Mouse-directed facing and attacks.
-- Dodge / dash with invulnerability frames.
-- Light melee attack.
-- Heavy melee attack.
+- Natural player acceleration, deceleration, and turning.
+- Dodge/dash and invulnerability frames.
+- Light and heavy melee attacks.
+- Physical parry and landing-attack foundations.
+- Tap and charged ranged shooting.
+- Ammo and automatic reload HUD.
 - Long-press light-input spinning AOE attack:
   - quick left click / quick `J` remains the normal light attack;
-  - hold for about `0.24s` to spin when the spin cooldown is ready;
-  - damages every unique living enemy in range;
-  - lower per-target damage than the normal attack;
-  - outward knockback, stagger, flash, and impact feedback;
-  - independent cooldown that does not block normal light attacks;
-  - weapon-damage pickups scale the spin through the existing multiplier;
-  - dedicated spin visual without the normal forward-slash animation.
-- Ranged tap/charged shooting.
-- Ammo and automatic reload HUD.
-- Physical parry and related feedback.
-
-### Player, horse, and enemy movement
-
-- Player movement is responsive but less mechanically abrupt.
-- Mounted horse speed is clearly higher than player speed.
-- Horse acceleration/braking are softer and turns are wider than player turns.
-- Enemy steering and awareness have been strengthened to reduce passive enemies near the player.
-- Temporary front/back markers distinguish player, horse, and enemies until final models make facing self-evident.
-- Temporary facing markers must be removed when production models are integrated.
+  - hold about `0.24s` to spin when ready;
+  - independent cooldown;
+  - lower per-target damage;
+  - outward knockback and hit feedback;
+  - existing weapon-damage pickups scale it;
+  - dedicated spin visual instead of the normal slash visual.
 
 ### Horse
 
-- Mount/dismount flow.
-- Mounted shooting without forcing horse rotation from the shot.
+- Mount/dismount and mounted shooting.
 - Horse health, healing, faint/recovery, buck, flee, and return behavior.
-- Clean start beside the player on safe ground.
+- Faster movement than the player with softer acceleration and wider turns.
+- Clean safe start beside the player.
 - Proactive lava/hole/chasm/missing-ground detection.
-- Hazard recovery remains a final fallback and must not damage the horse.
+- Emergency recovery without horse-health loss.
 
-Current pending horse follow-up:
+Approved next horse behavior:
 
 ```text
-Replace the one-second hazard stop with a short retreat of roughly two horse steps
-away from the threat, then return to normal behavior.
+When a hazard is detected ahead, replace the one-second stationary refusal with
+roughly two short backward horse steps, then resume the previous behavior.
+```
+
+Specification:
+
+```text
+Assets/_Project/Design/Horse/HORSE_HAZARD_TWO_STEP_RETREAT_V1.md
 ```
 
 ### Enemies and encounters
 
-- Sword, charger, ranged, trap, jumper, patrol, and guardian foundations.
+- Sword, shooter, patrol, jumper, trap, charger, and guardian foundations.
+- Improved awareness and target refresh near the player.
 - Combat-room pressure and escape blocking.
-- Protected collectible guardian encounters.
-- Guardian anticipation/teleport effects.
-- Spawn-position safety for collectible guardians.
+- Protected collectible guardian encounters and spawn presentation.
 - Shared boss/mini-boss framework foundations.
-- Playable Square Jumper framework encounter foundation.
+- Temporary front/back markers until final models make facing clear.
 
-### Minimap and camera
+### Camera and minimap
 
-- Fog-of-war room discovery.
-- Player-position fallback discovery.
-- Player-up orientation in 90-degree sectors.
-- Horse-mounted movement direction support.
-- Hard clipping/grouping to keep map drawing inside the minimap frame.
-- Camera forward-visibility framing with the player lower on screen.
+- Player-up minimap with four cardinal targets.
+- Room discovery and player-position fallback.
+- Mounted movement-direction support.
+- Map clipping inside its square frame.
+- Camera framing with more forward visibility.
 
-Current pending minimap follow-up:
+Approved next minimap behavior:
 
 ```text
-Keep the 90-degree orientation rule, but animate each orientation change more slowly,
-smoothly, and professionally instead of snapping immediately.
+Keep the four cardinal targets, but animate each orientation change more slowly,
+through the shortest angle, with a smoother professional transition.
+```
+
+Specification:
+
+```text
+Assets/_Project/Design/UI/MINIMAP_POLISHED_CARDINAL_ROTATION_V1.md
 ```
 
 ### Main menu and settings
@@ -109,15 +105,14 @@ smoothly, and professionally instead of snapping immediately.
 - START GAME, SETTINGS, and desktop QUIT.
 - Persistent graphics, display, frame-rate, audio, sensitivity, and camera-shake settings.
 - Pause menu.
-- Death/result flow returns to the unchanged main menu without immediate scene reload.
-- Gameplay reload occurs only after the player explicitly presses START GAME.
-- Mother-victory completion relic behavior is documented for the final flow.
+- Results return to the unchanged main menu without an immediate gameplay reload.
+- The scene reloads only after the player explicitly presses START GAME.
+
+`MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md` is current. V1 is only a superseded redirect.
 
 ### Hidden collectibles and endings
 
-Secret collectibles remain genuinely hidden and must not be advertised through objective UI.
-
-Current collectible set:
+Current hidden collectible set:
 
 ```text
 Game Boy
@@ -125,25 +120,21 @@ Battery x2
 Game Cartridge
 ```
 
-Forbidden advertising includes objective markers, empty slots, missing-item text, checklists, and `0/4` progress.
+Do not advertise secrets with objective markers, empty slots, missing-item text, checklists, or `0/4` progress.
 
-Ending foundations include variants for missing Game Boy, missing batteries, missing cartridge, and the fully powered Game Boy state. The deeper final/Mother-boss sequence remains governed by `PROJECT_STATUS.md` and the dedicated boss documents.
+## Why enemy order can feel identical between runs
 
-## Why enemy order can feel the same between runs
+The current prototype uses randomness when the **Unity scene is generated**. A normal run reloads that already-generated scene, so room and enemy order can remain the same between runs.
 
-The current scene builder uses randomness when it **generates the Unity scene**, including room selection, enemy positions, and some enemy choices. A normal new run reloads the already-generated scene rather than generating a fresh runtime layout, so room/enemy order can remain identical between runs.
+Enemy-type progression is also partly based on map depth and cell coordinates, so early/mid/late patterns are intentionally somewhat predictable.
 
-Enemy-type progression is also partly based on map depth and cell coordinates, which intentionally makes early/mid/late difficulty patterns more predictable.
+This is already planned for the production architecture through:
 
-This is already scheduled for the later production map/run architecture:
+- C02 deterministic run-seed ownership and storage;
+- C10 final multi-route map generation and multi-seed validation;
+- C14 random legal encounter roles/placement and run lifecycle verification.
 
-- deterministic run-seed ownership and storage;
-- full multi-route map generation;
-- random legal mini-boss selection, role assignment, and placement;
-- multi-seed validation and reproducible failure seeds;
-- run lifecycle reset/persistence rules.
-
-A temporary second randomization system should not be added now because it would conflict with that planned architecture.
+No temporary competing runtime-randomization system is being added now.
 
 ## QA workflow
 
@@ -153,33 +144,18 @@ There is one required Unity QA command:
 Boredom And Dungeons -> TEST EVERYTHING
 ```
 
-`TEST EVERYTHING` owns the automated project checks. Do not add a second QA command that the developer must remember to run.
+Do not add another required QA button.
 
-The final gate for a material gameplay change is:
+A material gameplay change is not DONE until:
 
-1. Unity finishes compilation with no `CSxxxx` errors.
-2. No parser failure or missing-script error.
-3. Run `TEST EVERYTHING`.
-4. Automated blockers: `0`.
-5. Automated warnings: target `0`.
-6. Enter Play Mode once and complete the displayed manual checklist.
-7. Run repository hygiene / diff checks before commit.
-8. Update `PROJECT_STATUS.md` with the verified result.
+1. Unity compilation has no `CSxxxx` errors.
+2. There is no parser failure or missing script.
+3. `TEST EVERYTHING` reports zero blockers and targets zero warnings.
+4. The displayed Play Mode checklist is completed.
+5. Repository hygiene and diff checks pass.
+6. `PROJECT_STATUS.md` records the real verified result.
 
-A feature is not DONE merely because code or a package exists.
-
-## Technical stack
-
-```text
-Engine: Unity 6000.0.76f1
-Language: C#
-Style: top-down / angled 2.5D action-adventure
-Current harness: desktop Unity Editor, keyboard + mouse
-Final target: mobile landscape
-Architecture: runtime scripts + editor scene-generation/validation tools
-```
-
-Important folders:
+## Technical structure
 
 ```text
 Assets/_Project/Scripts/Runtime
@@ -192,21 +168,13 @@ Packages
 ProjectSettings
 ```
 
-Runtime scripts must not depend on `UnityEditor`. Editor-only tools must remain under `Assets/_Project/Scripts/Editor`.
+Runtime code must not depend on `UnityEditor`. Editor-only tools stay under `Assets/_Project/Scripts/Editor`.
 
-## Opening the project
+Current prototype scene:
 
-```bash
-git clone https://github.com/barakbenhur1/Boredom-and-Dungeons.git
+```text
+Assets/_Project/Scenes/02_CleanCore_MazePrototype.unity
 ```
-
-Then:
-
-1. Open the repository folder in Unity `6000.0.76f1`.
-2. Let Unity import and compile fully.
-3. Open `Assets/_Project/Scenes/02_CleanCore_MazePrototype.unity`.
-4. Run `Boredom And Dungeons -> TEST EVERYTHING`.
-5. Rebuild the prototype scene only when the current task explicitly requires scene regeneration.
 
 Current scene-builder menu:
 
@@ -214,50 +182,18 @@ Current scene-builder menu:
 Boredom And Dungeons -> Create Clean Maze Prototype Scene
 ```
 
-Regenerating the scene can change generated maze/enemy placement. Merely restarting a run does not regenerate it.
+Regenerating the scene may change generated maze/enemy placement. Restarting a run does not regenerate it.
 
 ## Repository hygiene
 
-Commit:
+Commit real project files, required `.meta` files, and authoritative documentation.
 
-```text
-Assets/_Project/**
-Packages/**
-ProjectSettings/**
-README.md
-PROJECT_STATUS.md
-DOCUMENTATION_INDEX.md
-.gitignore
-required Unity .meta files
-```
+Do not commit Unity caches, builds, ZIP files, package payloads, one-shot patch tools, chat exports, local QA output, copied status snapshots, `WORKING_NOW.md`, `PROJECT_STATUS_CURRENT*.md`, or accidental terminal output.
 
-Do not commit:
+## Next action
 
-```text
-Library/
-Temp/
-Obj/
-Logs/
-UserSettings/
-Build/
-Builds/
-*.zip
-one-shot patch/package tools
-package payload folders
-local QA output
-chat exports
-copied status snapshots
-WORKING_NOW.md
-PROJECT_STATUS_CURRENT*.md
-IDE-generated files
-```
-
-Unity `.meta` files are required and must not be ignored globally.
-
-## Current next action
-
-1. Verify the committed natural movement and spinning AOE baseline in Unity.
+1. Verify the committed natural-movement and spinning-AOE baseline.
 2. Implement the approved horse two-step hazard retreat.
-3. Replace the minimap's immediate 90-degree snap with a slower polished transition.
-4. Keep enemy-run randomization in its planned seed/map architecture rather than adding a temporary duplicate system.
-5. Update the authoritative status and run the one-button QA gate.
+3. Implement the polished minimap cardinal transition.
+4. Integrate both checks into the existing `TEST EVERYTHING` command.
+5. Complete Unity and Play Mode verification before the gameplay changes are committed.
