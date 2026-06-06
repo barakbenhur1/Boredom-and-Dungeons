@@ -20,12 +20,11 @@ namespace BoredomAndDungeons
         [SerializeField] private float nearestDiscoveryMaxDistance = 34f;
 
         [Header("Dynamic Player-Up Rotation")]
+        // BD OBSOLETE MINIMAP FIELDS REMOVED V2
         // BD PLAYER-UP DYNAMIC MINIMAP FIX
         [SerializeField] private bool rotateWithPlayerDirection = true;
-        [SerializeField] private float rotationSpeedDegreesPerSecond = 900f;
         [SerializeField] private float rotationOffsetDegrees = 0f;
         // BD MINIMAP 90-DEGREE MOVEMENT SNAP FIX
-        [SerializeField] private bool snapToMovementCardinals = true;
         [SerializeField] private float movementSnapThreshold = 0.35f;
         // BD MINIMAP NEAREST-CARDINAL SECTOR FIX
         [SerializeField] private float diagonalBoundaryHoldEpsilon = 0.015f;
@@ -48,7 +47,6 @@ namespace BoredomAndDungeons
         private BDPlayerController playerController;
         private BDHorseController horseController;
         private float currentMapRotationDegrees;
-        private bool mapRotationInitialized;
 
         private int minX;
         private int maxX;
@@ -230,7 +228,6 @@ namespace BoredomAndDungeons
             currentMapRotationDegrees =
                 desiredRotation + rotationOffsetDegrees;
 
-            mapRotationInitialized = true;
         }
 
         private bool TryResolveMovementCardinalRotation(

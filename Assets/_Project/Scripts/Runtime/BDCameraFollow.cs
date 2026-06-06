@@ -19,11 +19,10 @@ namespace BoredomAndDungeons
         [SerializeField] private float followSmooth = 9.5f;
         [SerializeField] private float rotationSmooth = 8.5f;
 
-        [Header("Movement Based Rotation")]
+        [Header("Mouse / Player Intent Rotation")]
+        // BD OBSOLETE CAMERA FIELDS REMOVED V2
         [SerializeField] private float cameraYawDegreesPerSecond = 86f;
         [SerializeField] private float movementDirectionBlend = 7.5f;
-        [SerializeField] private float minimumMovementDirectionMagnitude = 0.05f;
-        [SerializeField] private bool rotateOnlyWhenActuallyMoving = true;
 
         [Header("Shake")]
         [SerializeField] private float cameraShakeMultiplier = 0.42f;
