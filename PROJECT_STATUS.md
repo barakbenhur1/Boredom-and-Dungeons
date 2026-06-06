@@ -137,7 +137,7 @@ A category cannot be completed until applicable checks pass:
 - [x] C00.08 Reorganize all known work into dependency-ordered categories.
 - [ ] C00.09 Update this file with every future code or requirement change.
 - [ ] C00.10 Keep README status synchronized with this file.
-- [ ] C00.11 Mark the old V128 numeric roadmap as historical/reference-only.
+- [x] C00.11 Mark the old V128 numeric roadmap as historical/reference-only.
 - [ ] C00.12 Recover lost requirements from damaged chat/export evidence when possible.
 - [ ] C00.13 Record unrecoverable requirements explicitly instead of guessing.
 
@@ -1062,3 +1062,4 @@ No legacy requirement is removed by this reorganization.
 - Recorded the Mother Boss as `RECOVERY REQUIRED` without inventing details.
 - Preserved the current resume point at the Stage 16–17 boss framework work.
 - Kept the latest code baseline in `VERIFY` until Unity QA is rerun.
+- Added `Assets/_Project/Design/Roadmap/README.md` to mark V128 as historical and point to this file.
