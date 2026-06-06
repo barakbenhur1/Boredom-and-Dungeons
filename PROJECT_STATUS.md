@@ -14,7 +14,7 @@ Required next action: compile, run TEST EVERYTHING, then repeat death -> New Gam
 Acceptance: no slash, landing strike, impact, hit-stop, shake, flash, or hit audio during load; first deliberate post-load attack works
 Next ordered item only after real Play Mode PASS: C03.23A
 Saved feature resume point: C07.16A, then C07.16 and C07.17
-Future requirements recorded: quicksand hazard and professional floating RPG damage numbers; current item, blockers, and resume order are unchanged.
+Future requirements recorded: quicksand hazard, horse/mounted quicksand behavior through the existing obstacle pipeline, and professional floating RPG damage numbers; current item, blockers, and resume order are unchanged.
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -532,7 +532,15 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
   - Preserve camera framing, minimap readability, doorway clearance, enemy navigation, and room escape routes.
   - Provide a clearly labeled deterministic quicksand test lane/room near spawn but isolated from normal player/horse startup safety.
   - Test walking entry, landing entry, knockback entry, dodge entry, jumping while still touching, fully airborne no-contact state, re-entry, overlapping colliders, repeated ticks, low health, death, safe respawn, and missing-safe-point fallback.
-- [ ] **C03.64 Define horse and mounted quicksand behavior before implementation; do not infer or silently copy lava damage/recovery rules without explicit approval.**
+- [ ] **C03.64 The horse and mounted player must treat quicksand through the same established horse obstacle/hazard pipeline used for the other environmental obstacles.**
+  - Horse AI, pathfinding, safe-spot selection, retreat, and mounted movement must classify quicksand as unsafe/non-traversable exactly as they classify the existing lava/hole obstacle set.
+  - The horse must not choose a route, flee destination, follow path, or recovery point that crosses, touches, or ends inside quicksand.
+  - When approaching quicksand, the horse uses the same existing obstacle-avoidance response as for the other hazards: stop, back away/retreat, and choose a safe alternate route where available.
+  - Accidental horse contact or entry uses the existing horse hazard-safety and safe-recovery pipeline, returning the horse and rider to the latest valid horse-safe point without leaving stale flee, retreat, or mounted-control state.
+  - While mounted, the horse remains authoritative for obstacle interaction; the rider follows the horse recovery and does not independently enter the player quicksand sinking/jump-escape loop.
+  - After dismounting, the player follows the normal player quicksand rules whenever the player personally touches or enters quicksand.
+  - Quicksand must be included in the same horse hazard masks, path rejection, safe-point validation, startup safety, near-spawn QA, and regression coverage as the other obstacles.
+  - Do not create a special exception that allows the horse to cross quicksand, and do not leave horse behavior undefined.**
 <!-- B&D QUICKSAND-HAZARD END -->
 
 ## Category acceptance
@@ -1514,6 +1522,18 @@ No legacy requirement is removed by this reorganization.
 
 # 8. Changelog
 
+## 2026-06-06 — Clarify horse and mounted quicksand behavior
+
+- Replaced the unresolved horse/mounted quicksand placeholder with an approved rule.
+- The horse treats quicksand exactly through the same established obstacle/hazard pipeline used for lava, holes, and the other environmental obstacles.
+- Horse pathing, safe-spot selection, follow, flee, retreat, mounted movement, and recovery may not cross or end inside quicksand.
+- Approaching quicksand uses the existing stop/back-away/alternate-route behavior.
+- Accidental contact uses the existing horse hazard-safe recovery and restores both horse and rider without stale control/flee state.
+- While mounted, the horse owns the obstacle interaction; the rider does not independently enter the player sinking mini-game.
+- After dismounting, the player uses the normal player quicksand contact, damage, sinking, jump-escape, failure, and respawn rules.
+- The current implementation order remains unchanged.
+
+
 ## 2026-06-06 — Add quicksand hazard and floating RPG damage-number requirements
 
 - Added quicksand as a future room hazard/obstacle with the same physical entry possibilities as lava.
@@ -1521,7 +1541,7 @@ No legacy requirement is removed by this reorganization.
 - A player who is airborne above the quicksand and no longer touching its surface/volume receives no quicksand damage and no new sinking progress.
 - Added progressive sinking, jump-based escape, increased escape difficulty at greater depth, half-body failure threshold, hole-equivalent fall damage, and safe respawn requirements.
 - Added duplicate-tick prevention, safe-point restrictions, entry/exit reset rules, telegraphing, mobile/desktop parity, and a deterministic near-spawn test lane.
-- Recorded horse/mounted quicksand behavior as an explicit unresolved contract that must be approved rather than guessed.
+- Approved horse/mounted quicksand behavior: quicksand uses the same horse obstacle/hazard classification, avoidance, retreat, path rejection, safe-point validation, and recovery pipeline as the existing environmental obstacles.
 - Added professional world-space RPG damage numbers for real health loss: one readable animated number per logical damage event, no number for blocked/parried/invulnerable/no-damage events, overlap control, pooling, and mobile readability.
 - These are later requirements and do not interrupt the current earlier blocking restart/run-intro regression work.
 
