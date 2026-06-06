@@ -411,6 +411,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             ScanRequiredFiles(result);
             ScanSource(result);
+            // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
+            ScanCameraMinimapRegression(result);
+            ScanArchitectureContracts(result);
+            ScanRepositoryHygiene(result);
             ScanMetaGuids(result);
             ScanAllScenes(result);
             ScanAllPrefabs(result);
@@ -596,6 +600,702 @@ namespace BoredomAndDungeons.EditorTools.Validation
                         );
                     }
                 }
+            }
+        }
+
+
+        // BD UNIFIED QA METHODS V1
+        private static void ScanCameraMinimapRegression(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string cameraRelative =
+                "Assets/_Project/Scripts/Runtime/BDCameraFollow.cs";
+            string minimapRelative =
+                "Assets/_Project/Scripts/Runtime/BDMazeMinimap.cs";
+
+            string cameraPath = Path.Combine(root, cameraRelative);
+            string minimapPath = Path.Combine(root, minimapRelative);
+
+            if (!File.Exists(cameraPath) || !File.Exists(minimapPath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "CAMERA_MINIMAP_SOURCE_MISSING",
+                    !File.Exists(cameraPath)
+                        ? cameraRelative
+                        : minimapRelative,
+                    string.Empty,
+                    "Camera/minimap regression source is missing."
+                );
+                return;
+            }
+
+            string camera = File.ReadAllText(cameraPath);
+            string minimap = File.ReadAllText(minimapPath);
+
+            string[] obsoleteTokens =
+            {
+                "rotationSpeedDegreesPerSecond",
+                "snapToMovementCardinals",
+                "mapRotationInitialized",
+                "minimumMovementDirectionMagnitude",
+                "rotateOnlyWhenActuallyMoving"
+            };
+
+            foreach (string token in obsoleteTokens)
+            {
+                if (!camera.Contains(token) && !minimap.Contains(token))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "OBSOLETE_CAMERA_MINIMAP_FIELD_RETURNED",
+                    camera.Contains(token)
+                        ? cameraRelative
+                        : minimapRelative,
+                    string.Empty,
+                    $"Obsolete field/reference returned: {token}."
+                );
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                cameraRelative,
+                camera,
+                new[]
+                {
+                    "cameraYawDegreesPerSecond",
+                    "movementDirectionBlend",
+                    "ResolveCameraIntentDirection",
+                    "Vector3.RotateTowards",
+                    "LastMountedAimDirection",
+                    "LastLookDirection"
+                },
+                "CAMERA_REGRESSION_ANCHOR_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                minimapRelative,
+                minimap,
+                new[]
+                {
+                    "rotateWithPlayerDirection",
+                    "movementSnapThreshold",
+                    "diagonalBoundaryHoldEpsilon",
+                    "TryResolveMovementCardinalRotation",
+                    "currentMapRotationDegrees",
+                    "GUIUtility.RotateAroundPivot",
+                    "LastMountedMovementDirection",
+                    "LastMoveWorldDirection"
+                },
+                "MINIMAP_REGRESSION_ANCHOR_MISSING"
+            );
+        }
+
+        private static void ValidateRequiredSourceTokens(
+            BDOneClickQAResult result,
+            string relativePath,
+            string source,
+            IEnumerable<string> requiredTokens,
+            string findingCode)
+        {
+            foreach (string token in requiredTokens)
+            {
+                if (source.Contains(token))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    findingCode,
+                    relativePath,
+                    string.Empty,
+                    $"Required regression anchor is missing: {token}."
+                );
+            }
+        }
+
+
+        private static void ScanArchitectureContracts(
+            BDOneClickQAResult result)
+        {
+            string[] sceneGuids = AssetDatabase.FindAssets(
+                "t:Scene",
+                new[] { "Assets/_Project/Scenes" }
+            );
+
+            SceneSetup[] originalSetup =
+                EditorSceneManager.GetSceneManagerSetup();
+
+            try
+            {
+                foreach (string guid in sceneGuids)
+                {
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    Scene scene = EditorSceneManager.OpenScene(
+                        path,
+                        OpenSceneMode.Single
+                    );
+
+                    List<MonoBehaviour> behaviours =
+                        new List<MonoBehaviour>();
+
+                    foreach (GameObject root in scene.GetRootGameObjects())
+                    {
+                        behaviours.AddRange(
+                            root.GetComponentsInChildren<MonoBehaviour>(true)
+                                .Where(item => item != null)
+                        );
+                    }
+
+                    ValidateRequiredSceneComponents(
+                        behaviours,
+                        path,
+                        result
+                    );
+
+                    ValidateConflictingSceneFamilies(
+                        behaviours,
+                        path,
+                        result
+                    );
+
+                    ValidateInstallerMultiplicity(
+                        behaviours,
+                        path,
+                        result
+                    );
+                }
+            }
+            catch (Exception exception)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "ARCHITECTURE_CONTRACT_SCAN_FAILED",
+                    string.Empty,
+                    string.Empty,
+                    exception.Message
+                );
+            }
+            finally
+            {
+                EditorSceneManager.RestoreSceneManagerSetup(
+                    originalSetup
+                );
+            }
+        }
+
+        private static void ValidateRequiredSceneComponents(
+            List<MonoBehaviour> behaviours,
+            string assetPath,
+            BDOneClickQAResult result)
+        {
+            MonoBehaviour playerMarker =
+                behaviours.FirstOrDefault(item =>
+                    item.GetType().Name == "BDPlayerMarker"
+                );
+
+            if (playerMarker == null)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "PLAYER_MISSING",
+                    assetPath,
+                    string.Empty,
+                    "No BDPlayerMarker was found."
+                );
+            }
+            else
+            {
+                ValidateRequiredTypesOnGameObject(
+                    playerMarker.gameObject,
+                    assetPath,
+                    result,
+                    "PLAYER_REQUIRED_COMPONENT_MISSING",
+                    new[]
+                    {
+                        "BDPlayerController",
+                        "BDPlayerCombat",
+                        "BDHealth"
+                    }
+                );
+            }
+
+            MonoBehaviour horseController =
+                behaviours.FirstOrDefault(item =>
+                    item.GetType().Name == "BDHorseController"
+                );
+
+            if (horseController == null)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Warning,
+                    "HORSE_MISSING",
+                    assetPath,
+                    string.Empty,
+                    "No BDHorseController was found."
+                );
+            }
+            else
+            {
+                ValidateRequiredTypesOnGameObject(
+                    horseController.gameObject,
+                    assetPath,
+                    result,
+                    "HORSE_REQUIRED_COMPONENT_MISSING",
+                    new[] { "BDHorseHealth" }
+                );
+            }
+        }
+
+        private static void ValidateRequiredTypesOnGameObject(
+            GameObject target,
+            string assetPath,
+            BDOneClickQAResult result,
+            string findingCode,
+            IEnumerable<string> requiredTypes)
+        {
+            HashSet<string> attached =
+                target.GetComponents<MonoBehaviour>()
+                    .Where(item => item != null)
+                    .Select(item => item.GetType().Name)
+                    .ToHashSet();
+
+            foreach (string required in requiredTypes)
+            {
+                if (attached.Contains(required))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    findingCode,
+                    assetPath,
+                    BuildObjectPath(target.transform),
+                    $"Required component is missing: {required}."
+                );
+            }
+        }
+
+        private static void ValidateConflictingSceneFamilies(
+            List<MonoBehaviour> behaviours,
+            string assetPath,
+            BDOneClickQAResult result)
+        {
+            string[][] families =
+            {
+                new[]
+                {
+                    "BDMazeMinimap",
+                    "BDMinimapPerspectiveAlignment"
+                },
+                new[]
+                {
+                    "BDHorseReliableFleeMotor",
+                    "BDHorseFleeMotor",
+                    "BDHorseCombatFleeMotor"
+                },
+                new[]
+                {
+                    "BDPlayerAttackBuffer",
+                    "BDMeleeAttackBuffer"
+                },
+                new[]
+                {
+                    "BDHitStopController",
+                    "BDGlobalHitStop",
+                    "BDParryTimeFreezeController"
+                }
+            };
+
+            foreach (string[] family in families)
+            {
+                List<MonoBehaviour> matches =
+                    behaviours
+                        .Where(item =>
+                            item.isActiveAndEnabled &&
+                            family.Contains(item.GetType().Name))
+                        .ToList();
+
+                int distinctTypes =
+                    matches.Select(item => item.GetType().Name)
+                        .Distinct()
+                        .Count();
+
+                if (distinctTypes <= 1)
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "CONFLICTING_SYSTEM_FAMILY",
+                    assetPath,
+                    string.Join(
+                        " | ",
+                        matches.Select(item =>
+                            $"{item.GetType().Name}@" +
+                            BuildObjectPath(item.transform))
+                    ),
+                    "More than one implementation of the same " +
+                    "gameplay responsibility is active."
+                );
+            }
+        }
+
+        // BD PER-ENTITY BOOTSTRAP CLASSIFICATION FIX V1
+        private static void ValidateInstallerMultiplicity(
+            List<MonoBehaviour> behaviours,
+            string assetPath,
+            BDOneClickQAResult result)
+        {
+            // BDEnemyBootstrap is an intentional per-enemy setup component.
+            // It may legitimately appear once on every enemy instance. The
+            // generic Bootstrap keyword must not classify those independent
+            // enemy components as duplicate scene-level installers.
+            HashSet<string> allowedPerEntityBootstrapTypes =
+                new HashSet<string>(StringComparer.Ordinal)
+                {
+                    "BDEnemyBootstrap"
+                };
+
+            string[] globalLifecycleKeywords =
+            {
+                "Installer",
+                "RuntimeRepair",
+                "AutoSetup"
+            };
+
+            IEnumerable<IGrouping<string, MonoBehaviour>> groups =
+                behaviours
+                    .Where(item =>
+                    {
+                        if (!item.isActiveAndEnabled)
+                            return false;
+
+                        string typeName = item.GetType().Name;
+
+                        if (allowedPerEntityBootstrapTypes.Contains(typeName))
+                            return false;
+
+                        bool explicitGlobalLifecycleType =
+                            globalLifecycleKeywords.Any(keyword =>
+                                typeName.IndexOf(
+                                    keyword,
+                                    StringComparison.OrdinalIgnoreCase
+                                ) >= 0);
+
+                        bool otherBootstrapType =
+                            typeName.IndexOf(
+                                "Bootstrap",
+                                StringComparison.OrdinalIgnoreCase
+                            ) >= 0;
+
+                        return explicitGlobalLifecycleType ||
+                               otherBootstrapType;
+                    })
+                    .GroupBy(item => item.GetType().Name)
+                    .Where(group => group.Count() > 1);
+
+            foreach (IGrouping<string, MonoBehaviour> group in groups)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Warning,
+                    "MULTIPLE_RUNTIME_INSTALLERS",
+                    assetPath,
+                    string.Join(
+                        " | ",
+                        group.Select(item =>
+                            BuildObjectPath(item.transform))
+                    ),
+                    $"{group.Count()} active instances of " +
+                    $"{group.Key} were found. Verify that every " +
+                    "scene-level installer is necessary and idempotent."
+                );
+            }
+        }
+
+        private static void ScanRepositoryHygiene(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+            string gitIgnorePath = Path.Combine(root, ".gitignore");
+
+            if (!File.Exists(gitIgnorePath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "GITIGNORE_MISSING",
+                    ".gitignore",
+                    string.Empty,
+                    "The repository must contain a project .gitignore."
+                );
+            }
+            else
+            {
+                string ignore = File.ReadAllText(gitIgnorePath);
+                string[] requiredIgnoreRules =
+                {
+                    "/[Ll]ibrary/",
+                    "/[Tt]emp/",
+                    "/[Oo]bj/",
+                    "/[Ll]ogs/",
+                    "*.zip",
+                    "/APPLY_*.command",
+                    "/PROJECT_STATUS_CURRENT_V*.md",
+                    "/ONE_CLICK_QA*.txt",
+                    "/tools/apply_*.py",
+                    "/.package_tools/"
+                };
+
+                foreach (string rule in requiredIgnoreRules)
+                {
+                    if (ignore.Contains(rule))
+                        continue;
+
+                    Add(
+                        result,
+                        BDOneClickQASeverity.Blocker,
+                        "GITIGNORE_RULE_MISSING",
+                        ".gitignore",
+                        string.Empty,
+                        $"Required ignore rule is missing: {rule}"
+                    );
+                }
+            }
+
+            if (!TryReadTrackedFiles(
+                    root,
+                    out List<string> tracked,
+                    out string gitError))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Warning,
+                    "GIT_TRACKED_SCAN_UNAVAILABLE",
+                    ".git",
+                    string.Empty,
+                    gitError
+                );
+                return;
+            }
+
+            foreach (string rawPath in tracked)
+            {
+                string path = rawPath.Replace('\\', '/');
+                string fileName = Path.GetFileName(path);
+                bool rootFile = path.IndexOf('/') < 0;
+
+                bool versionedStatus =
+                    rootFile &&
+                    fileName.StartsWith(
+                        "PROJECT_STATUS_CURRENT_V",
+                        StringComparison.OrdinalIgnoreCase
+                    ) &&
+                    fileName.EndsWith(
+                        ".md",
+                        StringComparison.OrdinalIgnoreCase
+                    );
+
+                bool rootPatchCommand =
+                    rootFile &&
+                    fileName.StartsWith(
+                        "APPLY_",
+                        StringComparison.OrdinalIgnoreCase
+                    ) &&
+                    fileName.EndsWith(
+                        ".command",
+                        StringComparison.OrdinalIgnoreCase
+                    );
+
+                bool oldRootHelper =
+                    rootFile &&
+                    (
+                        fileName.Equals(
+                            "RUN_STABILITY_SOURCE_SCAN.command",
+                            StringComparison.OrdinalIgnoreCase
+                        ) ||
+                        fileName.Equals(
+                            "README_HE.txt",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    );
+
+                bool oneShotTool =
+                    path.StartsWith(
+                        "tools/apply_",
+                        StringComparison.OrdinalIgnoreCase
+                    ) &&
+                    path.EndsWith(
+                        ".py",
+                        StringComparison.OrdinalIgnoreCase
+                    );
+
+                bool generatedArtifact =
+                    IsGeneratedTrackedPath(path);
+
+                if (!versionedStatus &&
+                    !rootPatchCommand &&
+                    !oldRootHelper &&
+                    !oneShotTool &&
+                    !generatedArtifact)
+                {
+                    continue;
+                }
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "TRACKED_REPOSITORY_CLUTTER",
+                    path,
+                    string.Empty,
+                    "Generated, one-shot, duplicated-status, or local-only " +
+                    "artifact is tracked. Remove it from Git."
+                );
+            }
+        }
+
+        private static bool IsGeneratedTrackedPath(string path)
+        {
+            string normalized = path.Replace('\\', '/');
+            string lower = normalized.ToLowerInvariant();
+
+            string[] generatedSegments =
+            {
+                "library/",
+                "temp/",
+                "obj/",
+                "logs/",
+                "usersettings/",
+                "memorycaptures/",
+                "recordings/",
+                "__pycache__/",
+                ".pytest_cache/",
+                ".mypy_cache/",
+                ".ruff_cache/",
+                "node_modules/"
+            };
+
+            if (generatedSegments.Any(segment =>
+                    lower.StartsWith(segment) ||
+                    lower.Contains("/" + segment)))
+            {
+                return true;
+            }
+
+            string[] generatedSuffixes =
+            {
+                ".zip",
+                ".rar",
+                ".7z",
+                ".tar",
+                ".tar.gz",
+                ".unitypackage",
+                ".log",
+                ".bak",
+                ".backup",
+                ".orig",
+                ".tmp",
+                ".temp",
+                ".pyc",
+                ".pyo",
+                ".ds_store"
+            };
+
+            if (generatedSuffixes.Any(suffix =>
+                    lower.EndsWith(suffix)))
+            {
+                return true;
+            }
+
+            string fileName = Path.GetFileName(normalized);
+
+            return fileName.StartsWith(
+                       "ONE_CLICK_QA",
+                       StringComparison.OrdinalIgnoreCase
+                   ) ||
+                   fileName.StartsWith(
+                       "PACKAGE_MANIFEST",
+                       StringComparison.OrdinalIgnoreCase
+                   ) ||
+                   fileName.StartsWith(
+                       "README_C01_",
+                       StringComparison.OrdinalIgnoreCase
+                   );
+        }
+
+        private static bool TryReadTrackedFiles(
+            string root,
+            out List<string> tracked,
+            out string error)
+        {
+            tracked = new List<string>();
+            error = string.Empty;
+
+            try
+            {
+                System.Diagnostics.ProcessStartInfo startInfo =
+                    new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "git",
+                        Arguments = "ls-files -z",
+                        WorkingDirectory = root,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    };
+
+                using (System.Diagnostics.Process process =
+                       new System.Diagnostics.Process())
+                {
+                    process.StartInfo = startInfo;
+
+                    if (!process.Start())
+                    {
+                        error = "Could not start git ls-files.";
+                        return false;
+                    }
+
+                    string output = process.StandardOutput.ReadToEnd();
+                    string standardError =
+                        process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        error =
+                            "git ls-files failed: " +
+                            standardError.Trim();
+                        return false;
+                    }
+
+                    tracked.AddRange(
+                        output.Split(
+                            new[] { '\0' },
+                            StringSplitOptions.RemoveEmptyEntries
+                        )
+                    );
+                }
+
+                return true;
+            }
+            catch (Exception exception)
+            {
+                error =
+                    "Could not inspect tracked repository files: " +
+                    exception.Message;
+                return false;
             }
         }
 

@@ -3,7 +3,7 @@
 # - Assets/** including .meta files
 # - ProjectSettings/**
 # - Packages/**
-# - User-authored scripts, prefabs, materials, scenes and design docs
+# - User-authored scripts, prefabs, materials, scenes and curated design docs
 #
 # Do NOT ignore *.meta globally. Unity .meta files are required.
 
@@ -105,7 +105,7 @@ Desktop.ini
 *.dSYM
 
 # -----------------------------------------------------------------------------
-# Local logs, temp, backups
+# Local logs, temp, backups and QA exports
 # -----------------------------------------------------------------------------
 *.log
 *.bak
@@ -115,9 +115,13 @@ Desktop.ini
 *.swo
 *.tmp
 *.temp
+/ONE_CLICK_QA*.txt
+/STABILITY_*.txt
+/PLAY_MODE_*.txt
+/QA_REPORT*.txt
 
 # -----------------------------------------------------------------------------
-# Python / tooling caches sometimes created by helper scripts
+# Python / tooling caches
 # -----------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
@@ -143,7 +147,7 @@ yarn-error.log*
 
 # -----------------------------------------------------------------------------
 # Large local video/audio exports generated during tests
-# Keep source assets intentionally added under Assets/_Project/Audio if needed.
+# Keep intentional source assets under Assets/_Project.
 # -----------------------------------------------------------------------------
 *.mp4
 *.mov
@@ -153,8 +157,29 @@ yarn-error.log*
 *.mp3.tmp
 
 # -----------------------------------------------------------------------------
-# Generated version/package docs from iterative ChatGPT builds
-# Keep only the main README.md and curated docs such as NEXT_STEPS.md.
+# One-shot delivery packages and patch helpers
+# -----------------------------------------------------------------------------
+/.package_tools/
+/PACKAGE_*.txt
+/PACKAGE_*.json
+/PACKAGE_MANIFEST*
+/README_C01_*.txt
+/_PACKAGE_*.txt
+/APPLY_*.command
+/RUN_*_FIX*.command
+/RUN_STABILITY_SOURCE_SCAN.command
+/README_HE.txt
+/tools/apply_*.py
+
+# -----------------------------------------------------------------------------
+# Duplicate/versioned status snapshots
+# Keep only PROJECT_STATUS.md as the authoritative live tracker.
+# -----------------------------------------------------------------------------
+/PROJECT_STATUS_CURRENT*.md
+/WORKING_NOW.md
+
+# -----------------------------------------------------------------------------
+# Generated version/package docs from iterative builds
 # -----------------------------------------------------------------------------
 README_V*.md
 README_CLEAN_CORE*.md
@@ -174,3 +199,6 @@ clean_core*/
 bd_v*/
 bd_*_upload*/
 releases/
+
+# Authoritative progress tracker hygiene
+/PROJECT_STATUS_CURRENT_V*.md
