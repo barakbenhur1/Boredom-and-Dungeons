@@ -154,7 +154,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 recoveryRelative,
                 new[]
                 {
-                    "holeFallDuration = 2.25f",
+                    "holeFallDuration = 2.05f",
                     "holeFallSpeed = 4.60f",
                     "holeFallAccelerationMultiplier = 1.35f",
                     "lavaBounceDistanceMultiplier = 0.80f",

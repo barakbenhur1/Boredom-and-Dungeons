@@ -19,7 +19,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float groundProbeDistance = 3.5f;
 
         [Header("Hole / Chasm Fall")]
-        [SerializeField] private float holeFallDuration = 2.25f;
+        [SerializeField] private float holeFallDuration = 2.05f;
         [SerializeField] private float holeFallSpeed = 4.60f;
         [SerializeField] private float holeFallAccelerationMultiplier = 1.35f;
 [Header("Lava Bounce")]
@@ -131,7 +131,7 @@ namespace BoredomAndDungeons
 
         private void ApplyHazardFeelProfile()
         {
-            holeFallDuration = 2.25f;
+            holeFallDuration = 2.05f;
             holeFallSpeed = 4.60f;
             holeFallAccelerationMultiplier = 1.35f;
             lavaBounceDistanceMultiplier = 0.80f;

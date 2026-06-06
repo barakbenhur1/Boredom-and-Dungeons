@@ -6,12 +6,13 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Latest TEST EVERYTHING result: BLOCKED at 2026-06-06T18:27:33.8935110Z with 1 blocker, 0 warnings, and 0 info
-Latest blocker: LONG_HOLE_FALL_CONTRACT_MISSING because the main QA window still expected obsolete holeFallSpeed = 2.35f after C03.57 intentionally changed the runtime contract to 4.60f
-Current repair: update only the stale main QA regression anchor to holeFallSpeed = 4.60f; runtime hazard behavior, lava tuning, Pet Tab binding, scene, and gameplay code remain unchanged
-Current status: QA CONTRACT REPAIRED LOCALLY / VERIFY
-Next action: compile and run the single Boredom And Dungeons -> TEST EVERYTHING command again
-Resume after PASS: complete the focused Play Mode checks for fall feel, repeated holes, lava distance, Tab Pet input, and cue placement; then synchronize the real PASS here
+Latest accepted result: TEST EVERYTHING PASS at 2026-06-06T18:31:23.9561590Z with 0 blockers, 0 warnings, and 0 info; user confirmed the Play Mode behavior is excellent
+Accepted completed behavior: post-recovery walking-hole guard, faster hole descent, reduced safe lava knockback, separated horse cues, Tab Pet default, dynamic Pet labels, and current horse interaction behavior
+Current small refinement: shorten only the total hole/chasm fall duration by 0.20s, from 2.25s to 2.05s, while preserving 4.60 base descent speed, 1.35x acceleration, damage, recovery, and all other hazard behavior
+Current status: C03.57 DURATION REFINEMENT IMPLEMENTED LOCALLY / VERIFY
+Next action: compile and run the single Boredom And Dungeons -> TEST EVERYTHING command, then confirm the 2.05s fall timing in Play Mode
+Next saved development item after PASS: C07.16
+Category-transition rule: stop before C07 and ask for additions or changes before continuing
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -400,7 +401,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C03.54 Ensure hazard recovery cannot place the player inside enemies, walls, props, lava, holes, chasms, or active boss barriers.
 - [ ] C03.55 Add Play Mode tests for repeated falls, low-health falls, mounted falls, lava-edge contact, moving hazards, death during hazard damage, and missing/invalid safe-point fallback.
 - [ ] **C03.56 After every external hazard recovery, normal walking must never inherit jump/dodge/forced-gap permission. Reset dodge, jump, dash, and forced-entry timers; suppress new forced-gap classification for `0.55s`; then verify repeated walking around the same hole cannot start a damaging fall. — IMPLEMENTED LOCALLY / VERIFY.**
-- [ ] **C03.57 Keep the hole/chasm fall duration at `2.25s`, but increase real downward movement to a `4.60` base speed with acceleration up to `1.35x`, so the fall no longer reads as slow motion. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.57 Keep the hole/chasm fall duration at `2.05s`, with `4.60` base downward speed and acceleration up to `1.35x`, so the fall remains decisive without feeling too long. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] **C03.58 Reduce lava horizontal knockback toward `80%` of the previous safe displacement, expanding outward only as much as needed to find a validated safe non-lava landing point. Damage and bounce duration remain unchanged. — IMPLEMENTED LOCALLY / VERIFY.**
 
 ## Category acceptance
@@ -1378,6 +1379,16 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Shorten accepted hole/chasm fall timing to 2.05s
+
+- Recorded the supplied `TEST EVERYTHING` PASS from `2026-06-06T18:31:23.9561590Z`: `0` blockers, `0` warnings, `0` info.
+- Recorded the user's Play Mode acceptance that the current hazard, lava, Pet, and horse-cue behavior is excellent.
+- Shortened only `holeFallDuration` from `2.25s` to `2.05s` — a `0.20s` reduction.
+- Preserved `holeFallSpeed = 4.60f`, progressive acceleration up to `1.35x`, hole damage, recovery target, repeated-fall protection, lava behavior, and all Pet behavior.
+- Updated the runtime source plus both the main and dedicated QA regression contracts to the same `2.05s` source of truth.
+- The next saved item is `C07.16`; this is a category transition, so work pauses for additions or changes before entering it.
+
 
 ## 2026-06-06 — Repair stale long-hole QA speed contract
 

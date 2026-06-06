@@ -1196,7 +1196,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     Path.Combine(root, recoveryRelative)),
                 new[]
                 {
-                    "holeFallDuration = 2.25f",
+                    "holeFallDuration = 2.05f",
                     "holeFallSpeed = 4.60f",
                     "TickHoleFall"
                 },
