@@ -6,13 +6,15 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Current category: earlier blocking regression work before C07.16
-Current item: C03.44A — clear stale hit feedback after death -> New Game
-Implementation: automatic persistent run-start guard resets time/audio, known static parry/game-feel state, strictly identified transient particles/audio/flash animation, and camera-shake state for a 0.45s startup window
-Current status: IMPLEMENTED LOCALLY / VERIFY
-Required verification: clean compile, TEST EVERYTHING, then repeat death -> New Game at least twice and confirm no stale hit-stop, shake, flash, impact sound, or impact particles while a later real hit still has normal feedback
-Next ordered item after PASS: C04.20A — horse starts full-health and calm without phantom combat/flee
-Saved resume point after earlier blockers: C07.16A, then C07.16 and C07.17
+User verification: hit-like effect still appears after death -> New Game
+Confirmed root cause: the left-click used on the New Game UI can survive into the first gameplay frame; both BDPlayerCombat and BDPlayerMeleeEnhancer read that click, and startup settling can classify it as a landing attack
+Current repair: quarantine combat input for at least 0.20s and until attack buttons are released, with a 1.50s maximum; clear pending combat input and suppress startup landing-attack classification
+Current status: NEW GAME CLICK-LEAK REPAIR V5 IMPLEMENTED LOCALLY / VERIFY
+Required next action: compile, run TEST EVERYTHING, then repeat death -> New Game at least three times
+Acceptance: no slash, landing strike, impact, hit-stop, shake, flash, or hit audio during load; first deliberate post-load attack works
+Next ordered item only after real Play Mode PASS: C03.23A
+Saved feature resume point: C07.16A, then C07.16 and C07.17
+Future requirements recorded: quicksand hazard and professional floating RPG damage numbers; current item, blockers, and resume order are unchanged.
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -357,7 +359,49 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 
 ---
 
+<!-- B&D BIOME-WALLS-AND-PORTALS START -->
+### C02.BIOME — Biome-authentic world boundaries and doorway presentation
+
+- [ ] **C02.BIOME.1 Replace generic, flat, artificial-looking room/corridor walls with natural or context-appropriate boundary forms for the active biome.**
+- [ ] Forest/overgrown biomes may use trees, roots, thick vegetation, earthen banks, mossy stones, wooden fences, and fallen trunks.
+- [ ] Mountain/highland biomes may use boulders, rock shelves, cliff faces, ridges, steep slopes, and distant mountain massing.
+- [ ] Cave/underground biomes may use cave walls, irregular stone, stalagmites, collapsed rock, roots, mineral formations, and carved passages.
+- [ ] Ruin/settlement/farm biomes may use broken masonry, natural stone walls, hedges, timber fences, ruins, gates, and terrain embankments where appropriate.
+- [ ] Desert/dry biomes may use sandstone, dunes, eroded rock, canyon walls, dead vegetation, and rough fences where appropriate.
+- [ ] Boundaries must never look like one repeated placeholder cube wall across every biome.
+- [ ] Preserve clear gameplay readability: the player must understand what is solid, traversable, dangerous, decorative, climbable, or an entrance.
+- [ ] Preserve valid collision, nav/pathing, horse clearance, combat spacing, line of sight, camera framing, minimap room boundaries, and hazard recovery.
+- [ ] Use controlled procedural variation in scale, rotation, silhouette, material, clustering, and decoration without creating collision gaps or visual noise.
+- [ ] Blend transitions between neighboring biomes so boundary language changes gradually instead of snapping abruptly.
+- [ ] Reuse modular/poolable assets and LOD/culling-friendly compositions so the richer environment remains production-safe on target hardware.
+- [ ] Add focused near-spawn biome test rooms/lanes for new boundary sets, then remove, retain as isolated harnesses, or convert them to production after approval.
+
+- [ ] **C02.PORTAL.1 Open entrance and exit doorways must contain a beautiful light/portal surface that blocks visibility through the doorway and matches the current biome and the game’s visual identity.**
+- [ ] The portal surface must clearly communicate an active passage without looking like a debug plane or opaque flat color.
+- [ ] The effect should use restrained depth, motion, particles/noise, rim light, and color variation appropriate to the biome.
+- [ ] The surface must not obscure interaction prompts, collision readability, mounted clearance, or transition state.
+- [ ] Closed/locked doors must not display the same open-passage treatment.
+<!-- B&D BIOME-WALLS-AND-PORTALS END -->
+
 # C03 — Player movement, aiming, combat, damage, and weapons
+
+<!-- B&D MOUNTED-RUN-INTRO START -->
+### C03.RUN-INTRO — Mounted cinematic entrance before gameplay control
+
+- [ ] **C03.RUN-INTRO.1 Replace the invisible startup input delay with a short in-world entrance cinematic.**
+- [ ] On every fresh run and death -> New Game restart, the child begins already mounted on the horse outside/inside the entrance threshold as appropriate.
+- [ ] The horse carries the child through the visible map entrance into the start area using a deliberate riding animation/path.
+- [ ] During the entrance, player movement, attacks, ranged input, horse commands, Pet, menus that affect gameplay, and buffered actions remain locked.
+- [ ] Inputs pressed while the scene is loading or while the cinematic is active are discarded, not replayed when control opens.
+- [ ] The camera starts slightly closer to the child and horse for a cinematic zoom-in, tracks the entrance ride cleanly, then performs a smooth zoom-out to the normal gameplay framing.
+- [ ] Gameplay control opens only after the horse reaches the validated end marker, the camera finishes returning to normal, and all transient input buffers are empty.
+- [ ] The transition must not produce a slash, landing attack, red ground marker, damage effect, camera shake, hit-stop, or audio impact.
+- [ ] The entrance route and end marker must be safe from enemies, lava, holes, telegraphs, test fixtures, collision seams, and horse flee triggers.
+- [ ] The implementation must preserve normal mounted controls immediately after the cinematic ends.
+- [ ] Provide a near-spawn deterministic test path and automated QA contracts; after approval, keep only the production entrance presentation and remove temporary markers/debug visuals.
+
+- [ ] **C03.RUN-INTRO.2 Identify and remove the red floor artifact that appears immediately after death -> New Game before accepting the mounted entrance cinematic.**
+<!-- B&D MOUNTED-RUN-INTRO END -->
 
 **Category status: PROTOTYPE DONE / verification and production work remain**
 
@@ -426,8 +470,23 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.42 Damage/death/reset foundations exist.
 - [ ] C03.43 Verify one source cannot apply duplicate damage in one hit.
 - [ ] C03.44 Verify clean death and restart/reset state.
-- [ ] **C03.44A After death and `New Game`, suppress stale hit-stop, camera shake, damage flash, impact audio/VFX, buffered feedback, and previous-run combat feedback so the reloaded map starts cleanly. The guard lasts `0.45s` and must not suppress a later legitimate hit. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.44A After death and `New Game`, quarantine combat input for at least `0.20s` and until attack buttons are released (maximum `1.50s`), clear pending melee/ranged/charged state, and prevent startup settling from becoming a landing attack. No slash, impact, hit-stop, shake, flash, or hit audio may occur on load; the first deliberate post-load attack must work normally. — REPAIR V5 IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] C03.45 Add final player health feedback and accessibility cues.
+<!-- B&D FLOATING-DAMAGE-NUMBERS START -->
+- [ ] **C03.45A Add professional world-space RPG damage numbers for every real damage event that actually reduces health.**
+  - Show exactly one number per logical damage application, even when several colliders, trigger callbacks, or feedback systems observe the same hit.
+  - Do not show a damage number for a parried, blocked, dodged, invulnerable, cancelled, zero-damage, or otherwise rejected hit.
+  - Display the number close to the damaged visible target, facing the camera and remaining readable in the top-down/angled view.
+  - Use a polished animation: quick controlled pop, slight upward travel, easing, short hold, and clean fade rather than a debug-style instant label.
+  - Use strong contrast, outline/shadow, and restrained role-aware color treatment that fits the game; do not use an arbitrary flat debug red.
+  - Scale emphasis by damage amount within safe visual limits, without allowing large values to cover the target or UI.
+  - Offset/stack simultaneous numbers so multi-hit attacks remain readable and unrelated hits are not merged accidentally.
+  - Preserve exact damage truth: displayed numbers must come from the authoritative applied-health delta, not the requested pre-mitigation amount.
+  - Support player, enemy, horse, mini-boss, and boss damage when the target is visible and the encounter's presentation policy allows it.
+  - Damage numbers are damage-only for this requirement; healing numbers require a separate approved rule.
+  - Pool/reuse number objects and avoid per-hit material/font allocations so rapid attacks remain production-safe.
+  - Verify desktop and mobile readability, camera zoom changes, mounted combat, multi-target attacks, repeated ticks, and low/high damage values.
+<!-- B&D FLOATING-DAMAGE-NUMBERS END -->
 
 ## Environmental hazard recovery — inserted earlier-category work
 
@@ -444,7 +503,37 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] **C03.56 After every external hazard recovery, normal walking must never inherit jump/dodge/forced-gap permission. Reset dodge, jump, dash, and forced-entry timers; suppress new forced-gap classification for `0.55s`; then verify repeated walking around the same hole cannot start a damaging fall. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] **C03.57 Keep the hole/chasm fall duration at `2.05s`, with `4.60` base downward speed and acceleration up to `1.35x`, so the fall remains decisive without feeling too long. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] **C03.58 Reduce lava horizontal knockback toward `80%` of the previous safe displacement, expanding outward only as much as needed to find a validated safe non-lava landing point. Damage and bounce duration remain unchanged. — IMPLEMENTED LOCALLY / VERIFY.**
-- [ ] **C03.59 Move or disable spawn-adjacent lava/hole/chasm test fixtures. Place them in a deliberate near-spawn test area that the player enters intentionally, far enough from the player and horse spawn to prevent startup damage, panic, flee, or accidental hazard activation. — INSERTED EARLIER BLOCKING WORK.**
+- [ ] **C03.59 Keep lava/hole/chasm test fixtures in a deliberate test lane at least `14m` from player spawn, using `16–28m` candidates and `18m/24m` fallbacks; TEST EVERYTHING regenerates the authoritative scene. — REPAIR V2 IMPLEMENTED LOCALLY / VERIFY.**
+<!-- B&D QUICKSAND-HAZARD START -->
+- [ ] **C03.60 Add quicksand as a room hazard/obstacle with the same legal physical entry possibilities as lava.**
+  - The player may enter it by walking, landing, being knocked, dodging, or otherwise crossing into the quicksand surface/volume wherever the existing lava-entry rules permit equivalent contact.
+  - Quicksand damage is exactly `4` health every `0.50s`.
+  - A damage tick is legal only while the player is physically touching the quicksand, standing on its surface, or submerged in its volume.
+  - If the player jumps and is airborne without touching the quicksand surface/volume, quicksand damage stops immediately; no damage tick may occur merely because the player is horizontally above it.
+  - Sinking progress also pauses while the player is airborne and not touching quicksand.
+  - Re-entering after a clean airborne separation resumes through the authoritative contact state; stale contact callbacks may not continue ticking damage.
+  - Multiple quicksand colliders or overlapping trigger callbacks may not produce duplicate `4`-damage ticks in the same `0.50s` interval.
+- [ ] **C03.61 While the player remains in contact, sink the character gradually and visibly into the quicksand.**
+  - Sinking must be smooth, readable, and tied to authoritative continuous contact rather than frame rate.
+  - The player escapes by jumping out.
+  - The deeper the player has sunk, the more jump effort/progress is required to escape and the harder it becomes to leave.
+  - Exact sink speed, jump-progress curve, movement reduction, and escape thresholds must be tuned in Play Mode without changing the approved damage/timing contract.
+  - Leaving the quicksand legally clears sinking and escape-progress state so it cannot affect later movement.
+- [ ] **C03.62 If the player becomes submerged beyond half of the body, trigger a quicksand failure/fall state.**
+  - Stop normal movement/attack input for the failure transition.
+  - Apply the same authoritative damage amount and death interaction used by falling into a hole/chasm.
+  - Respawn the player at the latest validated safe position using the existing hazard-recovery rules.
+  - The safe position tracker must never record a point inside, touching, or too close to active quicksand.
+  - Recovery protection must prevent immediate quicksand retrigger or duplicate damage.
+- [ ] **C03.63 Add professional quicksand presentation and QA.**
+  - Use biome-appropriate sand/mud motion, sinking ripples, contact feedback, and audio without obscuring the player.
+  - Make the contact boundary readable without looking like a debug trigger.
+  - Show clear visual escalation as the player approaches the half-body failure threshold.
+  - Preserve camera framing, minimap readability, doorway clearance, enemy navigation, and room escape routes.
+  - Provide a clearly labeled deterministic quicksand test lane/room near spawn but isolated from normal player/horse startup safety.
+  - Test walking entry, landing entry, knockback entry, dodge entry, jumping while still touching, fully airborne no-contact state, re-entry, overlapping colliders, repeated ticks, low health, death, safe respawn, and missing-safe-point fallback.
+- [ ] **C03.64 Define horse and mounted quicksand behavior before implementation; do not infer or silently copy lava damage/recovery rules without explicit approval.**
+<!-- B&D QUICKSAND-HAZARD END -->
 
 ## Category acceptance
 
@@ -484,7 +573,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C04.18 Verify two-hit buck/throw timing and animation.
 - [ ] C04.19 Verify healthy, damaged, fainted, healing, and recovered states.
 - [ ] C04.20 Verify horse cannot receive duplicate damage from one event. — Includes the observed startup damage/flee-with-no-local-enemy issue; user instructed that it remain deferred until this verification work.
-- [ ] **C04.20A On every fresh run and death -> New Game reload, initialize the horse at valid full health and a calm non-combat state; clear stale damage/combat/flee events before AI updates so the horse never starts injured or runs away without a real active threat. — INSERTED EARLIER BLOCKING WORK.**
+- [ ] **C04.20A Maintain full horse health and cleared AI/hazard state through a `1.50s` startup stabilization window with `3.50s` calm/protection; flee requires a living combatant in the same room and within local range. — REPAIR V2 IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] C04.21 Tune horse movement for final room scale and mobile controls.
 - [ ] C04.22 Add final riding, damage, healing, buck, and flee feedback.
 - [ ] C04.23 Complete full horse Play Mode QA.
@@ -1424,6 +1513,87 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Add quicksand hazard and floating RPG damage-number requirements
+
+- Added quicksand as a future room hazard/obstacle with the same physical entry possibilities as lava.
+- Quicksand deals exactly `4` damage every `0.50s` only while the player is physically touching, standing on, or submerged in the quicksand.
+- A player who is airborne above the quicksand and no longer touching its surface/volume receives no quicksand damage and no new sinking progress.
+- Added progressive sinking, jump-based escape, increased escape difficulty at greater depth, half-body failure threshold, hole-equivalent fall damage, and safe respawn requirements.
+- Added duplicate-tick prevention, safe-point restrictions, entry/exit reset rules, telegraphing, mobile/desktop parity, and a deterministic near-spawn test lane.
+- Recorded horse/mounted quicksand behavior as an explicit unresolved contract that must be approved rather than guessed.
+- Added professional world-space RPG damage numbers for real health loss: one readable animated number per logical damage event, no number for blocked/parried/invulnerable/no-damage events, overlap control, pooling, and mobile readability.
+- These are later requirements and do not interrupt the current earlier blocking restart/run-intro regression work.
+
+
+## 2026-06-06 — Add biome-authentic boundaries, portal doors, and mounted run intro requirements
+
+- Added a future environment requirement to replace generic artificial walls with natural, biome-authentic boundaries such as rocks, boulders, cliff faces, cave walls, vegetation, trees, mountains, roots, ruins, and fences according to the current biome.
+- Added requirements for readable collision, navigation, minimap boundaries, camera safety, procedural variation, transition blending, and performance-safe reuse.
+- Added a door presentation requirement: open entrances and exits use an attractive light/portal surface that hides what is behind the doorway while matching the game’s visual language.
+- Added the revised run-start direction: the child starts mounted, rides through the entrance in a short cinematic with a modest camera zoom-in, the camera returns to normal at the end, and gameplay inputs open only after the entrance animation completes.
+- The mounted intro replaces an arbitrary invisible input delay; inputs pressed during loading must be discarded and may not trigger an attack when control opens.
+- The red floor artifact visible immediately after death -> New Game remains a blocking early-run regression and must be removed before the run intro is accepted.
+- The current blocking work remains earlier than these later environment-art tasks.
+
+
+## 2026-06-06 — Block New Game UI click from leaking into combat
+
+- Recorded that the hit-like effect still occurred after the feedback-only repairs.
+- Identified the remaining root cause: the left mouse click used on `New Game` reached both combat readers on the first gameplay frame.
+- Added a release-aware combat-input quarantine with a `0.20s` minimum and `1.50s` maximum.
+- `BDPlayerCombat` clears pending light, ranged, and charged state while quarantined.
+- `BDPlayerMeleeEnhancer` clears its buffer and cannot spawn a leaked slash or landing strike.
+- `BDPlayerAirStateTracker` cannot classify startup settling as a landing attack during quarantine.
+- Migrated the versioned early-run design file to `EARLY_RUN_REGRESSION_REPAIR.md` and removed the obsolete V2 design copy.
+- Extended the existing QA helper; no new QA menu command was created.
+- No horse, hazard, damage, cooldown, or scene values were changed.
+
+
+## 2026-06-06 — Synchronize stale horse clean-start QA contracts
+
+- Recorded the supplied `TEST EVERYTHING` result from `2026-06-06T19:54:38.9494250Z`: `BLOCKED`, `5` blockers, `0` warnings, `0` info.
+- Confirmed all five blockers came from superseded expectations in `BDHorseCleanRunStartQA`, not from new compiler failures.
+- Updated the helper from `2.50s` / `0.55s` to the implemented `3.50s` / `1.50s` startup contract.
+- Replaced obsolete `CanReactToCombatThreat` and exact formatting expectations with the current `BDHorseLocalThreatUtility.HasLivingThreatNear` contract.
+- Added regression checks for direct static `ResetHorse` use and qualified `UnityEngine.Object.FindObjectsByType` calls.
+- No runtime code, scene content, horse health, startup timing, threat radius, hazard placement, or unrelated local changes were modified.
+- Early-run behavior remains `VERIFY` until automated QA and all three Play Mode checks pass.
+
+
+## 2026-06-06 — Repair V2 Unity compilation errors
+
+- Recorded the supplied `TEST EVERYTHING` result from `2026-06-06T19:44:25.7374870Z`: `BLOCKED`, `1` blocker, `0` warnings, `0` info.
+- Fixed `CS0176` in `BDHorseCleanRunStartGuard.RegisterHorse`: static `ResetHorse` is now called directly.
+- Fixed both `CS0103` errors in `BDHorseLocalThreatUtility`: static scene queries now call `UnityEngine.Object.FindObjectsByType<T>`.
+- Extended `BDEarlyRunRegressionRepairQA` so these exact source regressions cannot silently return.
+- No gameplay values, startup durations, radii, hazard positions, scene objects, or unrelated local changes were modified.
+- The early-run behavior repair remains `VERIFY` until compilation, TEST EVERYTHING, and focused Play Mode checks pass.
+
+
+## 2026-06-06 — Early-run regression repair V2 after failed Play Mode verification
+
+- Recorded that the first fixes did not resolve the three observed behaviors.
+- Removed damage shake/audio from `BDHealth.SetMaxHealth`; configuration/refill is no longer treated as a hit.
+- Added explicit suppression/reset entry points to camera shake, one-shot game-feel audio, and damage flash for the `1.50s` new-run window.
+- Strengthened horse startup to repeat full-health and transient-state reset through `1.50s`, with `3.50s` calm/protection.
+- Replaced scene-global unfinished-encounter flee detection with same-room, in-range living-combatant detection.
+- Moved the generated hazard test lane from 5.5–12m candidates to 16–28m candidates, with at least 14m spawn clearance and 18m/24m fallbacks.
+- Added automated regression contracts to the existing single `TEST EVERYTHING` flow.
+- Work remains before C07.16A; after this repair passes, continue with C03.23A.
+
+
+## 2026-06-06 — Horse full-health clean start and local-threat flee
+
+- Added `BDHorseCleanRunStartGuard` before scene loading with a `2.50s` calm/protection contract and `0.55s` startup maintenance window.
+- The guard resets full health, recent-hit/buck/healing locks, controller motion/state, flee state, and hazard retreat/polling before startup AI can restore stale behavior.
+- `BDHorseController` now exposes explicit startup-calm and real-local-threat contracts and rejects safe-spot commands during startup.
+- `BDHorseCombatFleeController` and `BDHorseReliableFleeMotor` no longer treat every unfinished `BDRoomEncounter` in the scene as danger; they react only to a living combatant near the horse or player after startup calm.
+- `BDHorseHazardSafety` now clears retreat/recovery state and delays startup polling through the calm window.
+- Runtime horse repair registers newly repaired horses with the active clean-start guard.
+- Added focused design documentation and `BDHorseCleanRunStartQA` to the existing single `TEST EVERYTHING` command.
+- C03.44A remains pending user Play Mode acceptance; the next earlier blocker after this item is C03.59, followed by C03.23A, then the saved C07.16A resume point.
+
 
 ## 2026-06-06 — Clear stale hit feedback on New Game reload
 
