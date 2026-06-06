@@ -1039,12 +1039,31 @@ namespace BoredomAndDungeons
 
             if (controller.isGrounded && verticalVelocity < 0f)
                 verticalVelocity = groundedStickVelocity;
-
-            if ((!allowHorseJumpOnlyMounted || state == HorseState.Mounted) && controller.isGrounded && ReadHorseJumpPressed())
+            if ((!allowHorseJumpOnlyMounted ||
+                 state == HorseState.Mounted) &&
+                controller.isGrounded &&
+                ReadHorseJumpPressed())
             {
-                verticalVelocity = Mathf.Sqrt(horseJumpHeight * -2f * horseGravity);
-                jumpedThisFrame = true;
-                lastAction = "horse jump";
+                if (CanStartHorseJump(move))
+                {
+                    verticalVelocity = Mathf.Sqrt(
+                        horseJumpHeight *
+                        -2f *
+                        horseGravity
+                    );
+
+                    jumpedThisFrame = true;
+                    lastAction = "horse jump";
+                }
+                else
+                {
+                    verticalVelocity =
+                        groundedStickVelocity;
+
+                    jumpedThisFrame = false;
+                    lastAction =
+                        "horse jump blocked by hole/lava";
+                }
             }
 
             verticalVelocity += horseGravity * Time.deltaTime;
@@ -1418,6 +1437,37 @@ namespace BoredomAndDungeons
 #endif
 
             return move;
+        }
+
+        private bool CanStartHorseJump(
+            Vector3 desiredMoveDirection)
+        {
+            if (hazardSafety == null)
+                return true;
+
+            Vector3 horizontalVelocity = Vector3.zero;
+
+            if (desiredMoveDirection.sqrMagnitude > 0.001f)
+            {
+                float injuryMultiplier = Mathf.Lerp(
+                    1f,
+                    0.45f,
+                    health != null
+                        ? health.Injury01
+                        : 0f
+                );
+
+                horizontalVelocity =
+                    desiredMoveDirection.normalized *
+                    mountedMoveSpeed *
+                    injuryMultiplier;
+            }
+
+            return hazardSafety.CanStartJump(
+                horizontalVelocity,
+                horseJumpHeight,
+                horseGravity
+            );
         }
 
         private bool ReadHorseJumpPressed()

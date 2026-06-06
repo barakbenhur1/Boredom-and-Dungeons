@@ -355,7 +355,6 @@ namespace BoredomAndDungeons
 
             return playerForward.normalized;
         }
-
         private void OnGUI()
         {
             if (!visible)
@@ -366,6 +365,7 @@ namespace BoredomAndDungeons
             if (rooms.Count == 0)
             {
                 refreshRetryTimer -= Time.deltaTime;
+
                 if (refreshRetryTimer <= 0f)
                 {
                     refreshRetryTimer = 0.5f;
@@ -375,67 +375,543 @@ namespace BoredomAndDungeons
 
             TickPlayerDiscovery();
 
-            Rect rect = new Rect(
-                Screen.width - panel.width - marginRight,
-                Screen.height - panel.height - marginBottom,
-                panel.width,
-                panel.height
+            Rect panelRect = ResolveScreenPanelRect();
+
+            GUI.BeginGroup(panelRect);
+
+            Rect localPanelRect = new Rect(
+                0f,
+                0f,
+                panelRect.width,
+                panelRect.height
             );
 
-            DrawRect(rect, backgroundColor);
-            GUI.Box(rect, GUIContent.none);
-            GUI.Label(new Rect(rect.x + 8f, rect.y + 6f, rect.width - 16f, 22f), "Minimap / Fog of War", labelStyle);
+            DrawRect(localPanelRect, backgroundColor);
+            GUI.Box(localPanelRect, GUIContent.none);
+
+            GUI.Label(
+                new Rect(
+                    8f,
+                    5f,
+                    localPanelRect.width - 16f,
+                    22f
+                ),
+                "Minimap / Fog of War",
+                labelStyle
+            );
 
             if (!boundsReady || rooms.Count == 0)
             {
-                GUI.Label(new Rect(rect.x + 8f, rect.y + 32f, rect.width - 16f, 22f), "No minimap rooms", labelStyle);
+                GUI.Label(
+                    new Rect(
+                        8f,
+                        32f,
+                        localPanelRect.width - 16f,
+                        22f
+                    ),
+                    "No minimap rooms",
+                    labelStyle
+                );
+
+                GUI.EndGroup();
                 return;
             }
 
-            Rect mapRect = new Rect(
-                rect.x + 12f,
-                rect.y + 34f,
-                rect.width - 24f,
-                rect.height - 46f
+            float availableMapWidth = Mathf.Max(
+                24f,
+                localPanelRect.width - 24f
             );
 
-            Matrix4x4 originalGuiMatrix = GUI.matrix;
-            Vector2 rotationPivot = mapRect.center;
+            float availableMapHeight = Mathf.Max(
+                24f,
+                localPanelRect.height - 76f
+            );
+
+            float mapSize = Mathf.Min(
+                availableMapWidth,
+                availableMapHeight
+            );
+
+            Rect localMapRect = new Rect(
+                (localPanelRect.width - mapSize) * 0.5f,
+                30f,
+                mapSize,
+                mapSize
+            );
+
+            DrawRect(
+                localMapRect,
+                new Color(
+                    backgroundColor.r,
+                    backgroundColor.g,
+                    backgroundColor.b,
+                    Mathf.Clamp01(
+                        backgroundColor.a + 0.12f
+                    )
+                )
+            );
+
+            GUI.BeginGroup(localMapRect);
+
+            Rect clipRect = new Rect(
+                0f,
+                0f,
+                mapSize,
+                mapSize
+            );
+
+            Vector2 rotationPivot = clipRect.center;
 
             if (TryResolveMapPoint(
-                    mapRect,
+                    clipRect,
                     player,
                     out Vector2 playerMapPoint))
             {
                 rotationPivot = playerMapPoint;
             }
 
-            if (rotateWithPlayerDirection)
-            {
-                GUIUtility.RotateAroundPivot(
-                    currentMapRotationDegrees,
-                    rotationPivot
-                );
-            }
+            DrawRotatedRoomsClipped(
+                clipRect,
+                rotationPivot
+            );
 
-            DrawRooms(mapRect);
-            DrawMarker(
-                mapRect,
+            DrawRotatedMarkerClipped(
+                clipRect,
+                rotationPivot,
                 horse,
                 horseColor,
                 markerSize * 0.85f
             );
 
-            GUI.matrix = originalGuiMatrix;
-
-            DrawMarker(
-                mapRect,
+            DrawRotatedMarkerClipped(
+                clipRect,
+                rotationPivot,
                 player,
                 playerColor,
                 markerSize
             );
 
-            GUI.Label(new Rect(rect.x + 8f, rect.y + rect.height - 24f, rect.width - 16f, 20f), $"Explored {CountDiscoveredRooms()}/{rooms.Count}  |  M: toggle", labelStyle);
+            GUI.EndGroup();
+
+            DrawRoomOutline(
+                localMapRect,
+                roomOutlineColor,
+                2f
+            );
+
+            GUI.Label(
+                new Rect(
+                    8f,
+                    localPanelRect.height - 24f,
+                    localPanelRect.width - 16f,
+                    20f
+                ),
+                $"Explored {CountDiscoveredRooms()}/" +
+                $"{rooms.Count}  |  M: toggle",
+                labelStyle
+            );
+
+            GUI.EndGroup();
+        }
+       private void DrawRotatedRoomsClipped(
+            Rect mapRect,
+            Vector2 pivot)
+        {
+            int widthCells =
+                Mathf.Max(1, maxX - minX + 1);
+            int heightCells =
+                Mathf.Max(1, maxY - minY + 1);
+
+            float cellSize = Mathf.Min(
+                mapRect.width / widthCells,
+                mapRect.height / heightCells
+            );
+
+            foreach (BDMinimapRoom room in rooms)
+            {
+                if (room == null || !room.Discovered)
+                    continue;
+
+                Rect sourceRect =
+                    CellToRect(
+                        mapRect,
+                        room.Cell,
+                        cellSize
+                    );
+
+                sourceRect.x += roomGap * 0.5f;
+                sourceRect.y += roomGap * 0.5f;
+                sourceRect.width -= roomGap;
+                sourceRect.height -= roomGap;
+
+                Vector2 center = RotateMapPoint(
+                    sourceRect.center,
+                    pivot
+                );
+
+                Rect rotatedRect = new Rect(
+                    center.x - sourceRect.width * 0.5f,
+                    center.y - sourceRect.height * 0.5f,
+                    sourceRect.width,
+                    sourceRect.height
+                );
+
+                DrawRectClipped(
+                    rotatedRect,
+                    discoveredRoomColor,
+                    mapRect
+                );
+
+                Color outline =
+                    player != null &&
+                    room.ContainsWorldPosition(
+                        player.position,
+                        1.25f)
+                        ? currentRoomColor
+                        : roomOutlineColor;
+
+                DrawOutlineClipped(
+                    rotatedRect,
+                    outline,
+                    player != null &&
+                    room.ContainsWorldPosition(
+                        player.position,
+                        1.25f)
+                        ? 2.5f
+                        : 1f,
+                    mapRect
+                );
+
+                DrawRotatedRoomWallsClipped(
+                    room,
+                    sourceRect,
+                    pivot,
+                    mapRect
+                );
+            }
+        }
+
+        private void DrawRotatedRoomWallsClipped(
+            BDMinimapRoom room,
+            Rect sourceRect,
+            Vector2 pivot,
+            Rect clipRect)
+        {
+            if (!room.NorthOpen)
+            {
+                DrawRotatedEdgeClipped(
+                    new Vector2(
+                        sourceRect.xMin,
+                        sourceRect.yMin),
+                    new Vector2(
+                        sourceRect.xMax,
+                        sourceRect.yMin),
+                    pivot,
+                    clipRect
+                );
+            }
+
+            if (!room.SouthOpen)
+            {
+                DrawRotatedEdgeClipped(
+                    new Vector2(
+                        sourceRect.xMin,
+                        sourceRect.yMax),
+                    new Vector2(
+                        sourceRect.xMax,
+                        sourceRect.yMax),
+                    pivot,
+                    clipRect
+                );
+            }
+
+            if (!room.WestOpen)
+            {
+                DrawRotatedEdgeClipped(
+                    new Vector2(
+                        sourceRect.xMin,
+                        sourceRect.yMin),
+                    new Vector2(
+                        sourceRect.xMin,
+                        sourceRect.yMax),
+                    pivot,
+                    clipRect
+                );
+            }
+
+            if (!room.EastOpen)
+            {
+                DrawRotatedEdgeClipped(
+                    new Vector2(
+                        sourceRect.xMax,
+                        sourceRect.yMin),
+                    new Vector2(
+                        sourceRect.xMax,
+                        sourceRect.yMax),
+                    pivot,
+                    clipRect
+                );
+            }
+        }
+
+        private void DrawRotatedEdgeClipped(
+            Vector2 start,
+            Vector2 end,
+            Vector2 pivot,
+            Rect clipRect)
+        {
+            start = RotateMapPoint(start, pivot);
+            end = RotateMapPoint(end, pivot);
+
+            const float thickness = 3f;
+
+            Rect edge;
+
+            if (Mathf.Abs(end.x - start.x) >=
+                Mathf.Abs(end.y - start.y))
+            {
+                edge = new Rect(
+                    Mathf.Min(start.x, end.x),
+                    Mathf.Min(start.y, end.y) -
+                        thickness * 0.5f,
+                    Mathf.Abs(end.x - start.x),
+                    thickness
+                );
+            }
+            else
+            {
+                edge = new Rect(
+                    Mathf.Min(start.x, end.x) -
+                        thickness * 0.5f,
+                    Mathf.Min(start.y, end.y),
+                    thickness,
+                    Mathf.Abs(end.y - start.y)
+                );
+            }
+
+            DrawRectClipped(
+                edge,
+                wallColor,
+                clipRect
+            );
+        }
+
+        private void DrawRotatedMarkerClipped(
+            Rect mapRect,
+            Vector2 pivot,
+            Transform target,
+            Color color,
+            float size)
+        {
+            if (!TryResolveMapPoint(
+                    mapRect,
+                    target,
+                    out Vector2 point))
+            {
+                return;
+            }
+
+            point = RotateMapPoint(point, pivot);
+
+            float half = Mathf.Max(1f, size * 0.5f);
+
+            point.x = Mathf.Clamp(
+                point.x,
+                mapRect.xMin + half,
+                mapRect.xMax - half
+            );
+
+            point.y = Mathf.Clamp(
+                point.y,
+                mapRect.yMin + half,
+                mapRect.yMax - half
+            );
+
+            DrawRectClipped(
+                new Rect(
+                    point.x - half,
+                    point.y - half,
+                    half * 2f,
+                    half * 2f
+                ),
+                color,
+                mapRect
+            );
+        }
+
+        private Vector2 RotateMapPoint(
+            Vector2 point,
+            Vector2 pivot)
+        {
+            float radians =
+                currentMapRotationDegrees *
+                Mathf.Deg2Rad;
+
+            float cosine = Mathf.Cos(radians);
+            float sine = Mathf.Sin(radians);
+            Vector2 delta = point - pivot;
+
+            return pivot + new Vector2(
+                delta.x * cosine -
+                delta.y * sine,
+                delta.x * sine +
+                delta.y * cosine
+            );
+        }
+
+        private void DrawOutlineClipped(
+            Rect rect,
+            Color color,
+            float thickness,
+            Rect clipRect)
+        {
+            thickness = Mathf.Max(1f, thickness);
+
+            DrawRectClipped(
+                new Rect(
+                    rect.x,
+                    rect.y,
+                    rect.width,
+                    thickness),
+                color,
+                clipRect
+            );
+
+            DrawRectClipped(
+                new Rect(
+                    rect.x,
+                    rect.yMax - thickness,
+                    rect.width,
+                    thickness),
+                color,
+                clipRect
+            );
+
+            DrawRectClipped(
+                new Rect(
+                    rect.x,
+                    rect.y,
+                    thickness,
+                    rect.height),
+                color,
+                clipRect
+            );
+
+            DrawRectClipped(
+                new Rect(
+                    rect.xMax - thickness,
+                    rect.y,
+                    thickness,
+                    rect.height),
+                color,
+                clipRect
+            );
+        }
+
+        private void DrawRectClipped(
+            Rect rect,
+            Color color,
+            Rect clipRect)
+        {
+            Rect clipped = IntersectRects(
+                rect,
+                clipRect
+            );
+
+            if (clipped.width <= 0f ||
+                clipped.height <= 0f)
+            {
+                return;
+            }
+
+            DrawRect(clipped, color);
+        }
+
+        private static Rect IntersectRects(
+            Rect first,
+            Rect second)
+        {
+            float xMin = Mathf.Max(
+                first.xMin,
+                second.xMin
+            );
+
+            float yMin = Mathf.Max(
+                first.yMin,
+                second.yMin
+            );
+
+            float xMax = Mathf.Min(
+                first.xMax,
+                second.xMax
+            );
+
+            float yMax = Mathf.Min(
+                first.yMax,
+                second.yMax
+            );
+
+            if (xMax <= xMin || yMax <= yMin)
+                return Rect.zero;
+
+            return Rect.MinMaxRect(
+                xMin,
+                yMin,
+                xMax,
+                yMax
+            );
+        }
+
+        private Rect ResolveScreenPanelRect()
+        {
+            float availableWidth = Mathf.Max(
+                120f,
+                Screen.width -
+                Mathf.Max(0f, marginRight) -
+                4f
+            );
+
+            float availableHeight = Mathf.Max(
+                120f,
+                Screen.height -
+                Mathf.Max(0f, marginBottom) -
+                4f
+            );
+
+            float width = Mathf.Clamp(
+                panel.width,
+                120f,
+                availableWidth
+            );
+
+            float height = Mathf.Clamp(
+                panel.height,
+                120f,
+                availableHeight
+            );
+
+            float x = Mathf.Clamp(
+                Screen.width -
+                width -
+                Mathf.Max(0f, marginRight),
+                0f,
+                Mathf.Max(0f, Screen.width - width)
+            );
+
+            float y = Mathf.Clamp(
+                Screen.height -
+                height -
+                Mathf.Max(0f, marginBottom),
+                0f,
+                Mathf.Max(0f, Screen.height - height)
+            );
+
+            return new Rect(
+                x,
+                y,
+                width,
+                height
+            );
         }
 
         private int CountDiscoveredRooms()

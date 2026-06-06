@@ -33,6 +33,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float mousePointAimSmoothing = 60f;
         // BD MOUSE-INTENT DEADZONE FIX
         [SerializeField] private float mouseIntentDeadZonePixels = 9f;
+        [SerializeField, Range(0.40f, 1.20f)] private float mouseSensitivityMultiplier = 0.90f;
 
         [Header("Jump")]
         [SerializeField] private float jumpHeight = 1.35f;
@@ -70,6 +71,7 @@ namespace BoredomAndDungeons
         private float dodgeInvulnerableUntil;
         private float lastDodgeStartedAt;
         private float lastJumpStartedAt = -999f;
+        private float forcedGapEntryUntil = -999f;
         private float nextDodgeAfterimageAt;
 
         private float lastForwardTapTime = -999f;
@@ -119,6 +121,7 @@ namespace BoredomAndDungeons
         public bool IsDashing => dashTimer > 0f;
         public bool HasRecentIntentionalGapEntry =>
             IsDashing ||
+            Time.time <= forcedGapEntryUntil ||
             Time.time - lastDodgeStartedAt <= 0.40f ||
             Time.time - lastJumpStartedAt <= 0.75f;
         public float EffectiveMoveSpeed =>
@@ -128,6 +131,15 @@ namespace BoredomAndDungeons
         {
             boostMoveSpeedMultiplier = Mathf.Max(0.1f, multiplier);
         }
+        public void NotifyForcedGapEntry(
+            float windowSeconds = 0.85f)
+        {
+            forcedGapEntryUntil = Mathf.Max(
+                forcedGapEntryUntil,
+                Time.time + Mathf.Max(0.05f, windowSeconds)
+            );
+        }
+
         public void ResetMotionAfterExternalTeleport()
         {
             verticalVelocity = -2f;
@@ -137,7 +149,8 @@ namespace BoredomAndDungeons
             dashCooldownTimer = 0f;
             dodgeInvulnerableUntil = 0f;
             lastMoveInput = Vector2.zero;
-            lastJumpStartedAt = -999f;
+            lastJumpStartedAt = -999f;            forcedGapEntryUntil = -999f;
+
         }
 
 
@@ -178,6 +191,7 @@ namespace BoredomAndDungeons
             }
 
             float turnSpeed = wantsMove ? mouseAimMovingTurnDegreesPerSecond : mouseAimIdleTurnDegreesPerSecond;
+            turnSpeed *= mouseSensitivityMultiplier;
             lastLookDirection = TurnAimGradually(lastLookDirection, targetLookDirection, turnSpeed);
 
             RotateToward(lastLookDirection);
@@ -193,8 +207,17 @@ namespace BoredomAndDungeons
             Vector3 worldMove = wantsMove ? ToPlayerRelativeMove(moveInput) : Vector3.zero;
             Vector3 horizontalVelocity = SmoothHorizontalVelocity(worldMove, wantsMove);
             Vector3 velocity = horizontalVelocity + dashVelocity + Vector3.up * verticalVelocity;
+            Vector3 requestedMotion =
+                velocity * Time.deltaTime;
 
-            characterController.Move(velocity * Time.deltaTime);
+            Vector3 safeMotion =
+                BDHazardVolume.FilterPlayerMotion(
+                    characterController,
+                    requestedMotion,
+                    HasRecentIntentionalGapEntry
+                );
+
+            characterController.Move(safeMotion);
             lastLookSource = wantsMove ? "mouse-clamped-60-front-cone-moving" : "mouse-clamped-60-front-cone-idle";
         }
 

@@ -10,6 +10,8 @@ namespace BoredomAndDungeons
     {
         [Header("Proactive Avoidance")]
         [SerializeField] private float proactiveClearance = 1.05f;
+        [SerializeField] private float jumpPathClearance = 1.25f;
+        [SerializeField, Min(4)] private int jumpTrajectorySamples = 16;
         [SerializeField] private float groundProbeHeight = 1.4f;
         [SerializeField] private float groundProbeDistance = 4.0f;
         [SerializeField] private float maximumGroundAngle = 55f;
@@ -106,11 +108,91 @@ namespace BoredomAndDungeons
             return Vector3.up * requestedMotion.y;
         }
 
+        public bool CanStartJump(
+            Vector3 horizontalVelocity,
+            float jumpHeight,
+            float gravity)
+        {
+            if (recovering)
+                return false;
+
+            float gravityMagnitude = Mathf.Max(
+                0.01f,
+                Mathf.Abs(gravity)
+            );
+
+            float initialVerticalVelocity =
+                Mathf.Sqrt(
+                    Mathf.Max(0f, jumpHeight) *
+                    2f *
+                    gravityMagnitude
+                );
+
+            float flightDuration = Mathf.Max(
+                0.15f,
+                (2f * initialVerticalVelocity) /
+                gravityMagnitude
+            );
+
+            Vector3 horizontal = horizontalVelocity;
+            horizontal.y = 0f;
+
+            int samples = Mathf.Max(
+                4,
+                jumpTrajectorySamples
+            );
+
+            float clearance = Mathf.Max(
+                proactiveClearance,
+                jumpPathClearance
+            );
+
+            for (int sampleIndex = 1;
+                 sampleIndex <= samples;
+                 sampleIndex++)
+            {
+                float progress =
+                    sampleIndex / (float)samples;
+
+                float sampleTime =
+                    flightDuration * progress;
+
+                Vector3 samplePosition =
+                    transform.position +
+                    horizontal *
+                    sampleTime;
+
+                if (BDHazardVolume.IsRecoveryPointUnsafe(
+                        samplePosition,
+                        clearance))
+                {
+                    return false;
+                }
+
+                if (!TryResolveGround(
+                        samplePosition,
+                        out _))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public bool TryHandleHazard(BDHazardVolume volume)
         {
             if (volume == null ||
                 recovering ||
                 Time.unscaledTime < protectedUntil)
+            {
+                return false;
+            }
+
+            if (volume.HazardType == BDHazardType.Lava &&
+                !volume.IsActorTouchingSurface(
+                    controller,
+                    0.08f))
             {
                 return false;
             }
@@ -202,7 +284,7 @@ namespace BoredomAndDungeons
 
         private bool IsHorsePositionSafe(Vector3 position)
         {
-            if (BDHazardVolume.IsPointUnsafe(
+            if (BDHazardVolume.IsRecoveryPointUnsafe(
                     position,
                     Mathf.Max(0f, proactiveClearance)))
             {

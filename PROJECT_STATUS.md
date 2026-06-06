@@ -6,14 +6,13 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous category: C03 — Prototype hazard scene integration
-Previous result: INSTALLATION PARTIAL — jump field repaired, QA patch anchor failed, scene YAML contained trailing whitespace
-Current category: C01/C03 — Compilation repair and QA integrity
-Current item: Independent jump-field scanner, compiler-failure blocker, and clean prototype-scene serialization
-Current status: IMPLEMENTED — awaiting zero-error Unity compilation and a fresh TEST EVERYTHING report
-Next category: C03 — Player hazard Play Mode verification
-Next item: Verify walking rejection, jump/dodge damage, lava damage, mounted on-foot recovery, and duplicate-trigger protection
-Saved later category: C04 — Full proactive horse hazard avoidance verification
+Previous category: C03/C04 — Longer falling and proactive horse hazard safety
+Previous result: AUTOMATED PASS — 0 blockers, 0 warnings, 0 info; Unity compiler still emitted CS0414 for an obsolete field
+Current category: C01/C03 — Compiler cleanliness and hazard-source maintenance
+Current item: Remove obsolete emergencyHoleFallDepth and make TEST EVERYTHING detect its return
+Current status: IMPLEMENTED — awaiting Unity compilation and fresh TEST EVERYTHING
+Next category: C03/C04 — Play Mode verification of 2.25-second falling and horse jump rejection
+Next item: Verify exact fall timing, damage, safe respawn, and horse rejection around lava/hole/chasm edges
 Saved later resume point: C07.16 — Wire the shared boss framework into one playable encounter
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
@@ -1510,3 +1509,113 @@ No legacy requirement is removed by this reorganization.
 - Lava recovery still returns the player to a validated non-lava safe point.
 - Mounted lava recovery returns the player on foot and restores the horse separately without horse health loss.
 - `TEST EVERYTHING` wording now explicitly covers every lava entry method.
+
+## 2026-06-06 — Precise hole and lava contact repair
+
+- Ordinary player movement is filtered before `CharacterController.Move`; a normal walk cannot cross into a hole/chasm footprint.
+- The movement filter preserves safe-axis sliding around the hole instead of freezing all movement.
+- A recent jump or dodge bypasses the walk filter and allows intentional hole entry.
+- Hole/chasm triggers now sit below the surface instead of extending high above it.
+- An emergency horizontal-footprint/depth check applies `15` damage and safe recovery if a falling player misses the trigger callback.
+- Lava triggers are thin and aligned to the visible surface.
+- Lava damage requires actual collider overlap at the lava surface; passing above or beside lava does not apply damage.
+- Every real lava contact still applies exactly `10` damage regardless of walking, jumping, dodging, knockback, forced movement, or mounted entry.
+- The previous automated PASS remains insufficient; this repair requires a fresh Play Mode check.
+
+## 2026-06-06 — Minimap, ground safety, and hazard-transition repair
+
+- Minimap rooms, walls, horse marker, and player marker are clipped to the internal minimap rectangle even while the map rotates.
+- The outer minimap panel is clamped to the current screen dimensions.
+- Normal voluntary movement cannot leave supported ground or cross a hole/chasm boundary.
+- Ground exit is allowed only during a recent jump, dodge, detected knockback, or explicitly notified forced movement.
+- Accidental non-intentional falling is returned to the latest validated safe point without damage.
+- A hole/chasm fall now has a visible downward fall interval before applying exactly `15` damage and respawning.
+- A real lava-surface contact applies exactly `10` damage immediately and animates a short upward arc back to the safe map point.
+- Passing above or beside lava without collider contact does not apply damage.
+- The failed Knockback V2 installer is superseded by this repair.
+- `TEST EVERYTHING` validates minimap clipping, ground support, forced movement, hole fall, and lava bounce.
+
+## 2026-06-06 — Correct hazard QA contract ownership
+
+- The five blockers in the latest report were false QA ownership errors, not runtime failures.
+- `FilterPlayerMotion` belongs to `BDHazardVolume.cs`, not `BDHorseHazardSafety.cs`.
+- `CheckEmergencyHoleFall` / hole-transition behavior belongs to `BDPlayerHazardRecovery.cs`, not the horse file.
+- Prototype trigger geometry tokens belong to `BDPrototypeHazardSceneInstaller.cs`.
+- The current player recovery property is `HasRecentIntentionalGapEntry`; the obsolete `HasIntentionalGapEntry` token is no longer required.
+- `ScanHazardRecoveryContracts` was normalized so every source file is checked only for its own responsibilities.
+- The newer combined minimap/ground/hazard scanner remains active and is not duplicated.
+
+## 2026-06-06 — Respawn safe-point timing and death-loop repair
+
+- Safe points require a longer stable grounded interval before they are committed.
+- Safe points are rejected using the full horizontal footprint of holes, chasms, and lava, even when the hazard trigger is physically below the floor surface.
+- Safe-point updates are frozen during jump/dodge/knockback intent, hazard transitions, and for a protected period after recovery.
+- The recovery component preserves both the latest safe point and the previous safe point.
+- A second hazard recovery within the rapid-loop window skips the newest point and uses the older safe point or initial spawn.
+- Respawn cannot immediately overwrite the stored point with the recovery location.
+- `TEST EVERYTHING` now validates the horizontal recovery clearance, saved-point history, post-recovery lock, and rapid-loop fallback.
+
+## 2026-06-06 — Forward-biased gameplay camera framing
+
+- The gameplay camera now frames slightly more world in front of the player and slightly less behind.
+- Default forward bias is `1.65` world units and is smoothed rather than snapped.
+- The direction follows current movement first, then current look/aim direction.
+- During short idle periods, the last useful forward direction is retained to prevent framing jitter.
+- Mounted movement and mounted aim direction are supported.
+- The component removes its previous offset before the existing camera-follow logic runs, then reapplies the final bias after camera movement, preventing cumulative drift.
+- The bias returns smoothly to zero when player control is disabled.
+- The component installs automatically on the active gameplay camera; no additional button or menu is required.
+- `TEST EVERYTHING` validates the camera-framing source contract.
+
+## 2026-06-06 — Viewport camera composition and true minimap square
+
+- The previous directional camera bias was removed because it moved the camera in world space and did not guarantee a useful screen composition.
+- The player is now targeted at viewport `x = 0.50`, `y = 0.40`: horizontally centered and forty percent up from the bottom of the screen.
+- The correction is calculated in the camera's own right/up plane, so it remains stable when the player changes direction.
+- The correction is resolution-, aspect-ratio-, field-of-view-, and orthographic-safe.
+- The minimap now has a dedicated square whose height excludes both the title and the `Explored` footer.
+- `GUI.BeginGroup(localMapRect)` hard-clips all rooms, walls, and markers to that inner square.
+- Player and horse markers remain clamped inside the square and can no longer overlap the footer.
+- The previously failed scene-installer edit is completed by replacing `CreateHazard` directly rather than searching for one historical geometry layout.
+- Start-room cleanup and mouse-sensitivity scene serialization are completed.
+- `TEST EVERYTHING` validates the camera viewport target, the true minimap square, and the repaired scene installer.
+
+## 2026-06-06 — Remove duplicate minimap panel resolver
+
+- The active Unity compiler failure was `CS0111`: `BDMazeMinimap` defined `ResolveScreenPanelRect()` more than once.
+- Historical errors earlier in `Editor.log` were not part of the latest compiler output.
+- Every existing `ResolveScreenPanelRect()` method body is removed using brace-aware parsing.
+- Exactly one canonical screen-clamped implementation is inserted.
+- Existing viewport-camera composition and inner-square minimap rendering are preserved.
+- The package validator requires exactly one method declaration and checks that `OnGUI` still calls it.
+
+## 2026-06-06 — Remove obsolete QA regression anchors
+
+- The latest `TEST EVERYTHING` report compiled successfully but was blocked by five stale source-token checks.
+- Scene hazard geometry now uses lava trigger `new Vector3(0f, 0.04f, 0f)` and hole trigger `new Vector3(0f, 0.55f, 0f)`.
+- Player recovery now uses `CheckGroundExit`, replacing the obsolete `CheckUnintentionalGroundExit`.
+- The minimap now clips inside `GUI.BeginGroup(localMapRect)`, not the obsolete `GUI.BeginGroup(mapRect)`.
+- The minimap intentionally no longer uses `GUIUtility.RotateAroundPivot`; mathematical rotation is validated through `RotateMapPoint` and `DrawRotatedRoomsClipped`.
+- All legacy scanners were updated globally so an older scanner cannot contradict the current camera/minimap/hazard contract.
+- No runtime gameplay behavior was changed by this repair.
+
+## 2026-06-06 — Longer falling and horse jump hazard prevention
+
+- Hole/chasm and intentional off-map falling now lasts `2.25` seconds, more than 2.5 times the previous `0.85` seconds.
+- Fall speed is reduced to `2.35` world units per second so the longer sequence remains readable instead of dropping the player far below the camera immediately.
+- The horse evaluates the full projected jump path before accepting a jump.
+- Every sampled jump-path position is checked against the horizontal footprint of lava, holes, and chasms.
+- Every sampled position must also have supported ground; the horse cannot jump off the map.
+- The same horizontal hazard-footprint check is used by normal horse movement while airborne, so momentum cannot carry the horse over the guard after takeoff.
+- A blocked jump does not consume the jump and reports `horse jump blocked by hole/lava` in the horse debug state.
+- The rule applies to mounted horse jumps. Independent horse navigation continues to use proactive movement filtering and cannot enter the same hazards.
+- Exceptional external entry still invokes the existing no-damage horse recovery and forces the rider to return on foot.
+- `TEST EVERYTHING` validates the longer fall timing, jump-path guard, controller wiring, and horizontal hazard-footprint protection.
+
+## 2026-06-06 — Remove obsolete emergency hole-depth field
+
+- Unity emitted `CS0414` because `emergencyHoleFallDepth` was assigned but never read.
+- The field belonged to the older `CheckEmergencyHoleFall` implementation.
+- Current hazard behavior uses continuous `CheckActiveHazardContact` and `CheckGroundExit`, so the field has no runtime purpose.
+- Removed only the obsolete serialized field; hole timing, damage, respawn, lava behavior, and horse safety are unchanged.
+- `TEST EVERYTHING` now reports a warning if `emergencyHoleFallDepth` is reintroduced.

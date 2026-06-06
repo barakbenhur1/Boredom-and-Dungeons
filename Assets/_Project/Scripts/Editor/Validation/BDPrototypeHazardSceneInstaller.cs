@@ -58,6 +58,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 Transform player = playerMarker.transform;
 
                 EnsureActorComponents(player.gameObject);
+                ConfigureMouseSensitivity(player.gameObject);
+                RemoveStartRoomEnemies(player);
                 EnsureHorseComponents();
 
                 GameObject previous = GameObject.Find(RootName);
@@ -106,6 +108,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     return false;
                 }
 
+                CleanSerializedYaml(scenePath);
+                AssetDatabase.ImportAsset(
+                    scenePath,
+                    ImportAssetOptions.ForceUpdate
+                );
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 return true;
@@ -122,6 +129,134 @@ namespace BoredomAndDungeons.EditorTools.Validation
             if (player.GetComponent<BDPlayerHazardRecovery>() == null)
             {
                 Undo.AddComponent<BDPlayerHazardRecovery>(player);
+            }
+        }
+
+        private static void ConfigureMouseSensitivity(
+            GameObject player)
+        {
+            BDPlayerController controller =
+                player.GetComponent<
+                    BDPlayerController>();
+
+            if (controller == null)
+                return;
+
+            SerializedObject serialized =
+                new SerializedObject(controller);
+
+            SerializedProperty sensitivity =
+                serialized.FindProperty(
+                    "mouseSensitivityMultiplier"
+                );
+
+            if (sensitivity != null)
+                sensitivity.floatValue = 0.90f;
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+        }
+
+        private static void RemoveStartRoomEnemies(
+            Transform player)
+        {
+            BDMinimapRoom[] rooms =
+                UnityEngine.Object.FindObjectsByType<
+                    BDMinimapRoom>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+
+            BDMinimapRoom startRoom = null;
+            float nearestDistance =
+                float.PositiveInfinity;
+
+            foreach (BDMinimapRoom room in rooms)
+            {
+                if (room == null)
+                    continue;
+
+                if (room.ContainsWorldPosition(
+                        player.position,
+                        0.05f))
+                {
+                    startRoom = room;
+                    break;
+                }
+
+                float distance =
+                    room.SqrDistanceToCenter(
+                        player.position);
+
+                if (distance >= nearestDistance)
+                    continue;
+
+                nearestDistance = distance;
+                startRoom = room;
+            }
+
+            if (startRoom == null)
+                return;
+
+            BDHealth[] healthComponents =
+                UnityEngine.Object.FindObjectsByType<
+                    BDHealth>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+
+            foreach (BDHealth health in healthComponents)
+            {
+                if (health == null ||
+                    health.GetComponentInParent<
+                        BDPlayerMarker>() != null ||
+                    health.GetComponentInParent<
+                        BDHorseHealth>() != null ||
+                    health.GetComponent<
+                        CharacterController>() == null ||
+                    !startRoom.ContainsWorldPosition(
+                        health.transform.position,
+                        0f))
+                {
+                    continue;
+                }
+
+                UnityEngine.Object.DestroyImmediate(
+                    health.gameObject
+                );
+            }
+
+            MonoBehaviour[] behaviours =
+                UnityEngine.Object.FindObjectsByType<
+                    MonoBehaviour>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+
+            foreach (MonoBehaviour behaviour in behaviours)
+            {
+                if (behaviour == null)
+                    continue;
+
+                string typeName =
+                    behaviour.GetType().Name;
+
+                if (typeName.IndexOf(
+                        "Enemy",
+                        StringComparison.OrdinalIgnoreCase) < 0 ||
+                    typeName.IndexOf(
+                        "Spawner",
+                        StringComparison.OrdinalIgnoreCase) < 0 ||
+                    !startRoom.ContainsWorldPosition(
+                        behaviour.transform.position,
+                        0f))
+                {
+                    continue;
+                }
+
+                UnityEngine.Object.DestroyImmediate(
+                    behaviour.gameObject
+                );
             }
         }
 
@@ -288,7 +423,6 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             return true;
         }
-
         private static void CreateHazard(
             Transform parent,
             string objectName,
@@ -296,71 +430,180 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Vector3 position,
             string labelText)
         {
-            GameObject hazard = new GameObject(objectName);
+            GameObject hazard =
+                new GameObject(objectName);
+
             hazard.transform.SetParent(parent, false);
             hazard.transform.position = position;
 
-            GameObject visual = GameObject.CreatePrimitive(
-                type == BDHazardType.Lava
-                    ? PrimitiveType.Cube
-                    : PrimitiveType.Cylinder
-            );
+            GameObject visual =
+                GameObject.CreatePrimitive(
+                    type == BDHazardType.Lava
+                        ? PrimitiveType.Cube
+                        : PrimitiveType.Cylinder
+                );
 
             visual.name = "Visual";
-            visual.transform.SetParent(hazard.transform, false);
-            visual.transform.localPosition = Vector3.zero;
+            visual.transform.SetParent(
+                hazard.transform,
+                false
+            );
 
             if (type == BDHazardType.Lava)
             {
+                visual.transform.localPosition =
+                    new Vector3(0f, 0.02f, 0f);
+
                 visual.transform.localScale =
-                    new Vector3(2.7f, 0.06f, 2.7f);
+                    new Vector3(
+                        2.70f,
+                        0.06f,
+                        2.70f
+                    );
             }
             else
             {
+                visual.transform.localPosition =
+                    new Vector3(0f, -0.015f, 0f);
+
                 visual.transform.localScale =
-                    new Vector3(1.35f, 0.025f, 1.35f);
+                    new Vector3(
+                        2.70f,
+                        0.025f,
+                        2.70f
+                    );
             }
 
-            Collider visualCollider = visual.GetComponent<Collider>();
+            Collider visualCollider =
+                visual.GetComponent<Collider>();
+
             if (visualCollider != null)
             {
-                UnityEngine.Object.DestroyImmediate(visualCollider);
+                UnityEngine.Object.DestroyImmediate(
+                    visualCollider
+                );
             }
 
-            Renderer renderer = visual.GetComponent<Renderer>();
+            Renderer renderer =
+                visual.GetComponent<Renderer>();
+
             if (renderer != null)
             {
                 renderer.shadowCastingMode =
-                    UnityEngine.Rendering.ShadowCastingMode.Off;
+                    UnityEngine.Rendering
+                        .ShadowCastingMode.Off;
+
                 renderer.receiveShadows = false;
             }
 
-            GameObject trigger = new GameObject("Trigger");
-            trigger.transform.SetParent(hazard.transform, false);
-            trigger.transform.localPosition =
-                new Vector3(0f, 0.65f, 0f);
+            GameObject trigger =
+                new GameObject("Trigger");
 
-            BoxCollider box = trigger.AddComponent<BoxCollider>();
+            trigger.transform.SetParent(
+                hazard.transform,
+                false
+            );
+
+            BoxCollider box =
+                trigger.AddComponent<BoxCollider>();
+
             box.isTrigger = true;
-            box.size = new Vector3(2.7f, 1.4f, 2.7f);
+
+            if (type == BDHazardType.Lava)
+            {
+                trigger.transform.localPosition =
+                    new Vector3(0f, 0.04f, 0f);
+
+                box.size = new Vector3(
+                    2.50f,
+                    0.16f,
+                    2.50f
+                );
+            }
+            else
+            {
+                trigger.transform.localPosition =
+                    new Vector3(0f, 0.55f, 0f);
+
+                box.size = new Vector3(
+                    2.45f,
+                    1.20f,
+                    2.45f
+                );
+            }
 
             BDHazardVolume volume =
-                trigger.AddComponent<BDHazardVolume>();
+                trigger.AddComponent<
+                    BDHazardVolume>();
+
             volume.Configure(type);
 
-            GameObject label = new GameObject("Label");
-            label.transform.SetParent(hazard.transform, false);
+            GameObject label =
+                new GameObject("Label");
+
+            label.transform.SetParent(
+                hazard.transform,
+                false
+            );
+
             label.transform.localPosition =
                 new Vector3(0f, 0.08f, -1.55f);
-            label.transform.localRotation =
-                Quaternion.Euler(90f, 0f, 0f);
 
-            TextMesh text = label.AddComponent<TextMesh>();
+            label.transform.localRotation =
+                Quaternion.Euler(
+                    90f,
+                    0f,
+                    0f
+                );
+
+            TextMesh text =
+                label.AddComponent<TextMesh>();
+
             text.text = labelText;
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
             text.characterSize = 0.20f;
             text.fontSize = 48;
+        }
+
+        private static void CleanSerializedYaml(
+            string scenePath)
+        {
+            string source = File.ReadAllText(scenePath);
+            string[] lines = source.Replace(
+                "\r\n",
+                "\n"
+            ).Split('\n');
+
+            for (int index = 0;
+                 index < lines.Length;
+                 index++)
+            {
+                string trimmed =
+                    lines[index].TrimEnd(' ', '\t');
+
+                if (trimmed.EndsWith(
+                        "m_Name:",
+                        StringComparison.Ordinal))
+                {
+                    trimmed += " \"\"";
+                }
+                else if (trimmed.EndsWith(
+                             "m_EditorClassIdentifier:",
+                             StringComparison.Ordinal))
+                {
+                    trimmed += " \"\"";
+                }
+
+                lines[index] = trimmed;
+            }
+
+            File.WriteAllText(
+                scenePath,
+                string.Join("\n", lines)
+                    .TrimEnd('\n') +
+                "\n"
+            );
         }
 
         private static float HorizontalDistance(

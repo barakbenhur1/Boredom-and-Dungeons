@@ -99,8 +99,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Jump, hard landing, bullet hell, visible double swords, summons, enraged phase, death cleanup, and reward chest all work."),
             new ManualCheck(
                 "hazards",
-                "Player and horse environmental hazards",
-                "Walking into a hole/chasm is rejected without damage. Jumping or dodging into it causes 15 damage. Walking, jumping, dodging, knockback, forced movement, or mounted entry into lava causes exactly 10 damage. Mounted recovery returns the player on foot, and the horse avoids hazards proactively."),
+                "Ground, holes, lava, horse, and minimap",
+                "The minimap never draws outside its frame. Normal walking never leaves supported ground. Jump, dodge, knockback, or explicit forced movement may enter a hole. A hole shows a brief fall, applies exactly 15 damage, then respawns. Real lava contact immediately applies exactly 10 damage and visibly bounces the player back to safe ground. Mounted recovery returns the player on foot and does not damage the horse."),
             new ManualCheck(
                 "console",
                 "Console",
@@ -459,7 +459,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanSource(result);
             // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
             ScanCameraMinimapRegression(result);
+            ScanCameraForwardViewBiasContracts(result);
             ScanHazardRecoveryContracts(result);
+            ScanGroundHazardAndMinimapContracts(result);
+            ScanCameraMinimapSceneRepairContracts(result);
+            ScanRespawnLoopSafetyContracts(result);
+            ScanLongFallAndHorseJumpSafetyContracts(result);
+            ScanObsoleteHazardFieldContracts(result);
             ScanJumpTimestampDeclaration(result);
             ScanPrototypeHazardScene(result);
             ScanArchitectureContracts(result);
@@ -654,6 +660,49 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
 
         // BD UNIFIED QA METHODS V1
+        private static void ScanCameraForwardViewBiasContracts(
+            BDOneClickQAResult result)
+        {
+            const string relativePath =
+                "Assets/_Project/Scripts/Runtime/Camera/" +
+                "BDCameraForwardViewBias.cs";
+
+            string absolutePath = Path.Combine(
+                ResolveProjectRoot(),
+                relativePath
+            );
+
+            if (!File.Exists(absolutePath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "CAMERA_VIEWPORT_FRAMING_SOURCE_MISSING",
+                    relativePath,
+                    string.Empty,
+                    "The viewport-framing camera source is missing."
+                );
+
+                return;
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                relativePath,
+                File.ReadAllText(absolutePath),
+                new[]
+                {
+                    "desiredPlayerViewport",
+                    "new Vector2(0.50f, 0.40f)",
+                    "WorldToViewportPoint",
+                    "targetCamera.transform.right",
+                    "targetCamera.transform.up",
+                    "RemovePreviouslyAppliedOffset"
+                },
+                "CAMERA_VIEWPORT_FRAMING_CONTRACT_MISSING"
+            );
+        }
+
         private static void ScanCameraMinimapRegression(
             BDOneClickQAResult result)
         {
@@ -738,7 +787,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "diagonalBoundaryHoldEpsilon",
                     "TryResolveMovementCardinalRotation",
                     "currentMapRotationDegrees",
-                    "GUIUtility.RotateAroundPivot",
+                    "RotateMapPoint",
                     "LastMountedMovementDirection",
                     "LastMoveWorldDirection"
                 },
@@ -917,21 +966,333 @@ namespace BoredomAndDungeons.EditorTools.Validation
         }
 
 
+        private static void ScanGroundHazardAndMinimapContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string playerRelative =
+                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs";
+            string volumeRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHazardVolume.cs";
+            string recoveryRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+            string minimapRelative =
+                "Assets/_Project/Scripts/Runtime/BDMazeMinimap.cs";
+
+            string[] requiredPaths =
+            {
+                playerRelative,
+                volumeRelative,
+                recoveryRelative,
+                minimapRelative
+            };
+
+            foreach (string relative in requiredPaths)
+            {
+                if (File.Exists(Path.Combine(root, relative)))
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "GROUND_HAZARD_MINIMAP_SOURCE_MISSING",
+                    relative,
+                    string.Empty,
+                    "Required ground, hazard, or minimap source is missing."
+                );
+            }
+
+            ValidateRequiredSourceTokens(
+                result,
+                playerRelative,
+                File.ReadAllText(
+                    Path.Combine(root, playerRelative)),
+                new[]
+                {
+                    "forcedGapEntryUntil",
+                    "NotifyForcedGapEntry",
+                    "BDHazardVolume.FilterPlayerMotion(",
+                    "forcedGapEntryUntil = -999f"
+                },
+                "PLAYER_GROUND_EXIT_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                volumeRelative,
+                File.ReadAllText(
+                    Path.Combine(root, volumeRelative)),
+                new[]
+                {
+                    "HasGroundSupport",
+                    "ResolveGroundedAxes",
+                    "IsActorTouchingSurface",
+                    "IsInsideHoleHorizontal"
+                },
+                "GROUND_SUPPORT_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                recoveryRelative,
+                File.ReadAllText(
+                    Path.Combine(root, recoveryRelative)),
+                new[]
+                {
+                    "TickHoleFall",
+                    "holeFallDuration",
+                    "TickLavaBounce",
+                    "lavaBounceHeight",
+                    "CheckGroundExit",
+                    "DetectForcedDisplacement"
+                },
+                "HAZARD_TRANSITION_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                minimapRelative,
+                File.ReadAllText(
+                    Path.Combine(root, minimapRelative)),
+                new[]
+                {
+                    "ResolveScreenPanelRect",
+                    "GUI.BeginGroup(localMapRect)",
+                    "GUI.EndGroup()",
+                    "localMapRect"
+                },
+                "MINIMAP_CLIPPING_CONTRACT_MISSING"
+            );
+        }
+        private static void ScanRespawnLoopSafetyContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string volumeRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHazardVolume.cs";
+            string recoveryRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+
+            ValidateRequiredSourceTokens(
+                result,
+                volumeRelative,
+                File.ReadAllText(
+                    Path.Combine(root, volumeRelative)),
+                new[]
+                {
+                    "IsRecoveryPointUnsafe",
+                    "ContainsHorizontalPoint"
+                },
+                "RESPAWN_HORIZONTAL_SAFETY_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                recoveryRelative,
+                File.ReadAllText(
+                    Path.Combine(root, recoveryRelative)),
+                new[]
+                {
+                    "previousSafePosition",
+                    "safePointUpdatesBlockedUntil",
+                    "TryResolveLoopBreakerPoint",
+                    "rapidRecoveryLoopWindow",
+                    "postRecoverySafePointLock",
+                    "IsRecoveryPointUnsafe"
+                },
+                "RESPAWN_LOOP_BREAKER_MISSING"
+            );
+        }
+
+        private static void ScanCameraMinimapSceneRepairContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string minimapRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDMazeMinimap.cs";
+
+            string sceneInstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDPrototypeHazardSceneInstaller.cs";
+
+            ValidateRequiredSourceTokens(
+                result,
+                minimapRelative,
+                File.ReadAllText(
+                    Path.Combine(root, minimapRelative)),
+                new[]
+                {
+                    "float mapSize = Mathf.Min",
+                    "GUI.BeginGroup(localMapRect)",
+                    "DrawRotatedRoomsClipped",
+                    "DrawRotatedMarkerClipped",
+                    "localPanelRect.height - 76f"
+                },
+                "MINIMAP_INNER_SQUARE_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                sceneInstallerRelative,
+                File.ReadAllText(
+                    Path.Combine(root, sceneInstallerRelative)),
+                new[]
+                {
+                    "ConfigureMouseSensitivity(player.gameObject)",
+                    "RemoveStartRoomEnemies(player)",
+                    "new Vector3(0f, 0.55f, 0f)",
+                    "new Vector3(0f, 0.04f, 0f)"
+                },
+                "SCENE_REPAIR_CONTRACT_MISSING"
+            );
+        }
+
+        private static void ScanLongFallAndHorseJumpSafetyContracts(
+            BDOneClickQAResult result)
+        {
+            string root = ResolveProjectRoot();
+
+            string recoveryRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+
+            string horseSafetyRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHorseHazardSafety.cs";
+
+            string horseControllerRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDHorseController.cs";
+
+            ValidateRequiredSourceTokens(
+                result,
+                recoveryRelative,
+                File.ReadAllText(
+                    Path.Combine(root, recoveryRelative)),
+                new[]
+                {
+                    "holeFallDuration = 2.25f",
+                    "holeFallSpeed = 2.35f",
+                    "TickHoleFall"
+                },
+                "LONG_HOLE_FALL_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                horseSafetyRelative,
+                File.ReadAllText(
+                    Path.Combine(root, horseSafetyRelative)),
+                new[]
+                {
+                    "jumpPathClearance",
+                    "jumpTrajectorySamples",
+                    "CanStartJump",
+                    "IsRecoveryPointUnsafe",
+                    "TryResolveGround"
+                },
+                "HORSE_JUMP_HAZARD_SAFETY_MISSING"
+            );
+
+            ValidateRequiredSourceTokens(
+                result,
+                horseControllerRelative,
+                File.ReadAllText(
+                    Path.Combine(root, horseControllerRelative)),
+                new[]
+                {
+                    "CanStartHorseJump",
+                    "hazardSafety.CanStartJump",
+                    "horse jump blocked by hole/lava"
+                },
+                "HORSE_JUMP_GUARD_WIRING_MISSING"
+            );
+        }
+
+        private static void ScanObsoleteHazardFieldContracts(
+            BDOneClickQAResult result)
+        {
+            const string relativePath =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+
+            string absolutePath = Path.Combine(
+                ResolveProjectRoot(),
+                relativePath
+            );
+
+            if (!File.Exists(absolutePath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "PLAYER_HAZARD_RECOVERY_SOURCE_MISSING",
+                    relativePath,
+                    string.Empty,
+                    "BDPlayerHazardRecovery.cs is required."
+                );
+                return;
+            }
+
+            string source = File.ReadAllText(absolutePath);
+
+            if (source.IndexOf(
+                    "emergencyHoleFallDepth",
+                    StringComparison.Ordinal) < 0)
+            {
+                return;
+            }
+
+            Add(
+                result,
+                BDOneClickQASeverity.Warning,
+                "OBSOLETE_EMERGENCY_HOLE_FIELD_PRESENT",
+                relativePath,
+                "emergencyHoleFallDepth",
+                "The obsolete emergencyHoleFallDepth field causes CS0414 and must remain removed."
+            );
+        }
+
         private static void ScanHazardRecoveryContracts(
             BDOneClickQAResult result)
         {
             string root = ResolveProjectRoot();
 
+            string volumeRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHazardVolume.cs";
+            string recoveryRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDPlayerHazardRecovery.cs";
+            string horseSafetyRelative =
+                "Assets/_Project/Scripts/Runtime/Hazards/" +
+                "BDHorseHazardSafety.cs";
+            string horseControllerRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDHorseController.cs";
+            string playerControllerRelative =
+                "Assets/_Project/Scripts/Runtime/" +
+                "BDPlayerController.cs";
+            string sceneInstallerRelative =
+                "Assets/_Project/Scripts/Editor/Validation/" +
+                "BDPrototypeHazardSceneInstaller.cs";
+
             string[] relativePaths =
             {
-                "Assets/_Project/Scripts/Runtime/Hazards/BDHazardType.cs",
-                "Assets/_Project/Scripts/Runtime/Hazards/BDHazardVolume.cs",
-                "Assets/_Project/Scripts/Runtime/Hazards/BDPlayerHazardRecovery.cs",
-                "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
-                "Assets/_Project/Scripts/Editor/Validation/BDPrototypeHazardSceneInstaller.cs",
-                "Assets/_Project/Scripts/Runtime/BDHealth.cs",
-                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
-                "Assets/_Project/Scripts/Runtime/BDHorseController.cs"
+                volumeRelative,
+                recoveryRelative,
+                horseSafetyRelative,
+                horseControllerRelative,
+                playerControllerRelative,
+                sceneInstallerRelative
             };
 
             foreach (string relative in relativePaths)
@@ -949,33 +1310,49 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 );
             }
 
-            string recoveryPath = Path.Combine(
-                root,
-                "Assets/_Project/Scripts/Runtime/Hazards/" +
-                "BDPlayerHazardRecovery.cs"
-            );
-            string horseSafetyPath = Path.Combine(
-                root,
-                "Assets/_Project/Scripts/Runtime/Hazards/" +
-                "BDHorseHazardSafety.cs"
-            );
-            string horsePath = Path.Combine(
-                root,
-                "Assets/_Project/Scripts/Runtime/BDHorseController.cs"
-            );
+            string volumePath =
+                Path.Combine(root, volumeRelative);
+            string recoveryPath =
+                Path.Combine(root, recoveryRelative);
+            string horseSafetyPath =
+                Path.Combine(root, horseSafetyRelative);
+            string horseControllerPath =
+                Path.Combine(root, horseControllerRelative);
+            string playerControllerPath =
+                Path.Combine(root, playerControllerRelative);
+            string sceneInstallerPath =
+                Path.Combine(root, sceneInstallerRelative);
+
+            if (File.Exists(volumePath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    volumeRelative,
+                    File.ReadAllText(volumePath),
+                    new[]
+                    {
+                        "BDHazardType.HoleOrChasm",
+                        "BDHazardType.Lava",
+                        "IsActorTouchingSurface",
+                        "IsInsideHoleHorizontal"
+                    },
+                    "HAZARD_VOLUME_RULE_MISSING"
+                );
+            }
 
             if (File.Exists(recoveryPath))
             {
                 ValidateRequiredSourceTokens(
                     result,
-                    MakeRelative(recoveryPath),
+                    recoveryRelative,
                     File.ReadAllText(recoveryPath),
                     new[]
                     {
-                        "HasIntentionalGapEntry",
+                        "HasRecentIntentionalGapEntry",
                         "forceActivation",
                         "ApplyUnavoidableDamage",
-                        "BDHazardType.HoleOrChasm"
+                        "TickHoleFall",
+                        "TickLavaBounce"
                     },
                     "PLAYER_HAZARD_RULE_MISSING"
                 );
@@ -985,7 +1362,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             {
                 ValidateRequiredSourceTokens(
                     result,
-                    MakeRelative(horseSafetyPath),
+                    horseSafetyRelative,
                     File.ReadAllText(horseSafetyPath),
                     new[]
                     {
@@ -999,12 +1376,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 );
             }
 
-            if (File.Exists(horsePath))
+            if (File.Exists(horseControllerPath))
             {
                 ValidateRequiredSourceTokens(
                     result,
-                    MakeRelative(horsePath),
-                    File.ReadAllText(horsePath),
+                    horseControllerRelative,
+                    File.ReadAllText(horseControllerPath),
                     new[]
                     {
                         "RequireComponent(typeof(BDHorseHazardSafety))",
@@ -1015,8 +1392,39 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "HORSE_HAZARD_CONTROLLER_RULE_MISSING"
                 );
             }
-        }
 
+            if (File.Exists(playerControllerPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    playerControllerRelative,
+                    File.ReadAllText(playerControllerPath),
+                    new[]
+                    {
+                        "HasRecentIntentionalGapEntry",
+                        "NotifyForcedGapEntry",
+                        "BDHazardVolume.FilterPlayerMotion"
+                    },
+                    "PLAYER_GROUND_EXIT_RULE_MISSING"
+                );
+            }
+
+            if (File.Exists(sceneInstallerPath))
+            {
+                ValidateRequiredSourceTokens(
+                    result,
+                    sceneInstallerRelative,
+                    File.ReadAllText(sceneInstallerPath),
+                    new[]
+                    {
+                        "new Vector3(0f, 0.04f, 0f)",
+                        "new Vector3(0f, 0.55f, 0f)",
+                        "CleanSerializedYaml"
+                    },
+                    "HAZARD_SCENE_INSTALLER_RULE_MISSING"
+                );
+            }
+        }
 
         private static void ValidateRequiredSourceTokens(
             BDOneClickQAResult result,
