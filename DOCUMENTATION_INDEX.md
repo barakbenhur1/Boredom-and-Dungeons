@@ -60,8 +60,7 @@ The following are retained only when they still provide useful implementation hi
 - Stage-numbered documents under `Assets/_Project/Design/QA/` — historical reports only.
 - Version-numbered design documents — system-specific history/specification; they do not override `PROJECT_STATUS.md`.
 - `MOTHER_BOSS_DESIGN_V2_WORKING.md` — working-era material only; final decisions are governed by `PROJECT_STATUS.md` and the later decision documents.
-
-The contradictory `MAIN_MENU_SETTINGS_RESULT_FLOW_V1.md` has been removed because V2 explicitly corrected it.
+- `MAIN_MENU_SETTINGS_RESULT_FLOW_V1.md` — reduced to a short superseded redirect so old links cannot be mistaken for active requirements; V2 is canonical.
 
 ## Repository-documentation rules
 
