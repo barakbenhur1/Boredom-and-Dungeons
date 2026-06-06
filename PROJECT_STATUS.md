@@ -6,13 +6,13 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Latest accepted result: TEST EVERYTHING PASS at 2026-06-06T18:31:23.9561590Z with 0 blockers, 0 warnings, and 0 info; user confirmed the Play Mode behavior is excellent
-Accepted completed behavior: post-recovery walking-hole guard, faster hole descent, reduced safe lava knockback, separated horse cues, Tab Pet default, dynamic Pet labels, and current horse interaction behavior
-Current small refinement: shorten only the total hole/chasm fall duration by 0.20s, from 2.25s to 2.05s, while preserving 4.60 base descent speed, 1.35x acceleration, damage, recovery, and all other hazard behavior
-Current status: C03.57 DURATION REFINEMENT IMPLEMENTED LOCALLY / VERIFY
-Next action: compile and run the single Boredom And Dungeons -> TEST EVERYTHING command, then confirm the 2.05s fall timing in Play Mode
-Next saved development item after PASS: C07.16
-Category-transition rule: stop before C07 and ask for additions or changes before continuing
+Current category: C07 — boss framework, with earlier blocking regressions inserted before C07.16 verification
+New permanent process rule: every new testable boss, obstacle, hazard, enemy, reward, transition, or mechanic receives an immediate near-spawn test room/lane/portal; accepted temporary content is removed, deliberately retained, or converted to production without creating end-of-project cleanup debt
+Earlier blocking work now recorded: remove the stale hit effect after death -> New Game; make the horse start full-health/calm without phantom flee; move spawn-adjacent lava/hole tests into a deliberate test area; replace the landing attack look with the normal slash language rotated vertically
+Current C07 clarification: mini-boss rooms remain escapable and do not hard-lock the player
+Current work item: document and enforce the workflow/test-harness contract, then implement the inserted regressions and the near-spawn C07.16 test encounter
+Current status: REQUIREMENTS AND WORKFLOW DOCUMENTED / IMPLEMENTATION PENDING
+Saved resume point: C07.16 framework playable-encounter acceptance, followed by C07.17
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -107,6 +107,40 @@ A category cannot be completed until applicable checks pass:
 - Git diff check and repository hygiene;
 - status document update.
 
+<!-- B&D PACKAGE AND TEST-HARNESS PROTOCOL START -->
+### 3.6 Mandatory ZIP and Git handoff
+
+Every material change is delivered as a downloadable ZIP. Prefer the complete
+updated project; when it is too large, include every changed directory and all
+required source, asset, scene, `.meta`, QA, design, and status files.
+
+The package must include an idempotent installer, validator, README, manifest,
+preflight checks, and no automatic commit/push. After Unity verification, provide
+the exact `git add`, staged diff checks, commit, pull-rebase, and push commands.
+
+The assistant never commits directly. Failed packages are repaired from the real
+partial local state without discarding unrelated local changes.
+
+The full process contract is `DEVELOPMENT_WORKFLOW.md`.
+
+### 3.7 Near-spawn test harness and cleanup
+
+Every newly added testable boss, mini-boss, enemy, obstacle, hazard, reward,
+transition, attack, interaction, or system must be immediately reachable through
+a clearly identified test room, lane, arena, or portal close to player spawn.
+
+The user must not search a generated map to locate new test content.
+
+Temporary lava, holes, enemies, barriers, or props must never threaten the normal
+player/horse spawn. Mini-boss test encounters remain escapable and may not hard-lock
+the room.
+
+After user acceptance, every temporary object is removed, deliberately retained
+as an isolated documented development harness, or converted to production.
+Obsolete placeholders and test clutter must be cleaned continuously rather than
+deferred to the end of the project.
+<!-- B&D PACKAGE AND TEST-HARNESS PROTOCOL END -->
+
 ## 4. Permanent product rules
 
 - Working title: **Boredom & Dungeons**.
@@ -154,6 +188,11 @@ A category cannot be completed until applicable checks pass:
 - [ ] C00.16 Update `/PROJECT_STATUS.md` in every material commit that changes code, requirements, QA truth, priorities, blockers, or implementation order.
 - [ ] C00.17 `TEST EVERYTHING` must block a material pending change when `/PROJECT_STATUS.md` is not updated in the same working tree/staged change set.
 - [ ] C00.18 Remove and prevent versioned status snapshots such as `PROJECT_STATUS_CURRENT_V*.md`; historical detail stays in Git history, not duplicate live files.
+- [x] C00.19 Add `/DEVELOPMENT_WORKFLOW.md` as the authoritative working-method contract while keeping `/PROJECT_STATUS.md` as the only product-status and requirement source of truth.
+- [x] C00.20 Require every material assistant-delivered change to arrive as a validated idempotent ZIP package, followed only after user verification by exact local Git commit/pull/push commands; the assistant does not commit directly.
+- [x] C00.21 Require a clearly identified near-spawn test room, lane, arena, or portal for every new boss, mini-boss, enemy, obstacle, hazard, reward, transition, attack, interaction, or system that otherwise requires map searching.
+- [ ] C00.22 After each accepted feature, remove temporary test objects or explicitly classify them as retained development harnesses or converted production content; do not accumulate placeholder/test cleanup debt.
+- [ ] C00.23 Keep every material package synchronized across code, scenes/prefabs, `.meta` files, QA contracts, relevant design documents, `PROJECT_STATUS.md`, and stable README/workflow discovery.
 
 
 ## Recovered requirement
@@ -350,6 +389,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.21 Airborne descent tracking.
 - [x] C03.22 Landing attack detection and `x1.2` damage foundation.
 - [x] C03.23 Landing attack visual improvement.
+- [ ] **C03.23A Replace the current landing-attack presentation with the normal melee slash visual language rotated into a vertical/top-to-bottom strike; preserve landing damage, hit feedback, exclusivity, and heavy/light distinction. — INSERTED EARLIER BLOCKING WORK.**
 - [ ] C03.24 Verify buffered attack ordering and prevent duplicate attacks.
 - [ ] C03.25 Verify landing attack minimum-height threshold.
 - [ ] C03.26 Verify landing attack multi-target damage exactly once per target.
@@ -386,6 +426,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.42 Damage/death/reset foundations exist.
 - [ ] C03.43 Verify one source cannot apply duplicate damage in one hit.
 - [ ] C03.44 Verify clean death and restart/reset state.
+- [ ] **C03.44A After death and `New Game`, suppress stale hit-stop, camera shake, damage flash, impact audio/VFX, buffered damage, or previous-run combat events so the reloaded map starts cleanly without a hit effect. — INSERTED EARLIER BLOCKING WORK.**
 - [ ] C03.45 Add final player health feedback and accessibility cues.
 
 ## Environmental hazard recovery — inserted earlier-category work
@@ -403,6 +444,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] **C03.56 After every external hazard recovery, normal walking must never inherit jump/dodge/forced-gap permission. Reset dodge, jump, dash, and forced-entry timers; suppress new forced-gap classification for `0.55s`; then verify repeated walking around the same hole cannot start a damaging fall. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] **C03.57 Keep the hole/chasm fall duration at `2.05s`, with `4.60` base downward speed and acceleration up to `1.35x`, so the fall remains decisive without feeling too long. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] **C03.58 Reduce lava horizontal knockback toward `80%` of the previous safe displacement, expanding outward only as much as needed to find a validated safe non-lava landing point. Damage and bounce duration remain unchanged. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.59 Move or disable spawn-adjacent lava/hole/chasm test fixtures. Place them in a deliberate near-spawn test area that the player enters intentionally, far enough from the player and horse spawn to prevent startup damage, panic, flee, or accidental hazard activation. — INSERTED EARLIER BLOCKING WORK.**
 
 ## Category acceptance
 
@@ -442,6 +484,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C04.18 Verify two-hit buck/throw timing and animation.
 - [ ] C04.19 Verify healthy, damaged, fainted, healing, and recovered states.
 - [ ] C04.20 Verify horse cannot receive duplicate damage from one event. — Includes the observed startup damage/flee-with-no-local-enemy issue; user instructed that it remain deferred until this verification work.
+- [ ] **C04.20A On every fresh run and death -> New Game reload, initialize the horse at valid full health and a calm non-combat state; clear stale damage/combat/flee events before AI updates so the horse never starts injured or runs away without a real active threat. — INSERTED EARLIER BLOCKING WORK.**
 - [ ] C04.21 Tune horse movement for final room scale and mobile controls.
 - [ ] C04.22 Add final riding, damage, healing, buck, and flee feedback.
 - [ ] C04.23 Complete full horse Play Mode QA.
@@ -630,9 +673,11 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 ## Current ordered work
 
 - [ ] **C07.16 Wire the framework into one real playable test encounter. — IMPLEMENTED / VERIFY.**
+- [ ] **C07.16A Add a clearly labeled, deterministic boss-framework test room/arena or direct portal immediately near player spawn so C07.16 can be tested without searching the generated map. Keep it isolated from normal spawn safety and classify/remove/convert it immediately after acceptance. — CURRENT PREREQUISITE.**
 - [ ] **C07.17 Connect real damage sources to health channels and life states. — NEXT AFTER C07.16 ACCEPTANCE.**
 - [ ] C07.18 Connect boss HUD to authoritative scene/prefab flow.
 - [ ] C07.19 Implement arena activation, entrance lock, intro lockout, victory unlock, and cleanup.
+- [ ] **C07.19A Mini-boss encounters do not hard-lock or seal the room: the player may escape. Reserve mandatory arena locking for approved full/final-boss encounters, and define safe mini-boss disengage/re-entry/reset behavior. — USER-APPROVED CONTRACT CLARIFICATION.**
 - [ ] C07.20 Prove one-bar, multi-bar, knockout, zero-health-active, critical, and linked-death states.
 - [ ] C07.21 Connect every real summoner to the shared summon budget.
 - [ ] C07.22 Replace unnecessary reflection/runtime repair wiring with serialized references.
@@ -1379,6 +1424,17 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Canonical workflow and near-spawn test-harness policy
+
+- Added root-level `DEVELOPMENT_WORKFLOW.md` as the exact process contract without creating a second progress source of truth.
+- Recorded mandatory ZIP delivery, idempotent installer/validator testing, Unity verification, and post-PASS local Git handoff.
+- Added the permanent rule that every new testable gameplay element must be immediately reachable in a clearly identified near-spawn test room/lane/arena/portal.
+- Added continuous cleanup: accepted test objects must be removed, deliberately retained as isolated development harnesses, or converted to production rather than left for final cleanup.
+- Recorded the pending earlier blocking regressions: death -> New Game stale hit effect, horse startup injury/phantom flee, unsafe spawn-adjacent lava/hole tests, and the vertical normal-slash landing-attack presentation.
+- Clarified that mini-boss rooms remain escapable and do not use mandatory boss-room locking.
+- Saved the return point at C07.16, with C07.16A as its immediate testability prerequisite.
+
 
 ## 2026-06-06 — Shorten accepted hole/chasm fall timing to 2.05s
 

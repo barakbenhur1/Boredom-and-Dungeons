@@ -12,6 +12,21 @@ PROJECT_STATUS.md
 
 This README intentionally does not duplicate current progress or the active task, so it cannot become a second conflicting status source.
 
+<!-- B&D DEVELOPMENT WORKFLOW LINK START -->
+## Mandatory development workflow
+
+The exact required working method for changes, ZIP delivery, verification,
+near-spawn test harnesses, temporary-test cleanup, documentation synchronization,
+and Git handoff is:
+
+```text
+DEVELOPMENT_WORKFLOW.md
+```
+
+`PROJECT_STATUS.md` remains the only authoritative product progress/requirement
+list. `DEVELOPMENT_WORKFLOW.md` defines the process and does not duplicate status.
+<!-- B&D DEVELOPMENT WORKFLOW LINK END -->
+
 ## Engine and target
 
 ```text
