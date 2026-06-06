@@ -28,6 +28,10 @@ namespace BoredomAndDungeons
         [SerializeField] private float movementSnapThreshold = 0.35f;
         // BD MINIMAP NEAREST-CARDINAL SECTOR FIX
         [SerializeField] private float diagonalBoundaryHoldEpsilon = 0.015f;
+        [SerializeField, Range(0.12f, 0.65f)]
+        private float cardinalRotationSmoothTime = 0.28f;
+        [SerializeField] private float cardinalRotationMaxSpeed = 300f;
+        [SerializeField] private float cardinalRotationSnapEpsilon = 0.15f;
 
         [Header("Colors")]
         [SerializeField] private Color backgroundColor = new Color(0f, 0f, 0f, 0.78f);
@@ -47,6 +51,9 @@ namespace BoredomAndDungeons
         private BDPlayerController playerController;
         private BDHorseController horseController;
         private float currentMapRotationDegrees;
+        private float targetMapRotationDegrees;
+        private float mapRotationVelocity;
+        private bool hasMapRotationTarget;
 
         private int minX;
         private int maxX;
@@ -218,16 +225,53 @@ namespace BoredomAndDungeons
             if (!rotateWithPlayerDirection || player == null)
                 return;
 
-            if (!TryResolveMovementCardinalRotation(
+            if (TryResolveMovementCardinalRotation(
                     out float desiredRotation))
             {
-                return;
+                targetMapRotationDegrees =
+                    desiredRotation +
+                    rotationOffsetDegrees;
+
+                hasMapRotationTarget = true;
             }
 
-            // Immediate 90-degree snap keeps the map parallel to its frame.
-            currentMapRotationDegrees =
-                desiredRotation + rotationOffsetDegrees;
+            if (!hasMapRotationTarget)
+                return;
 
+            currentMapRotationDegrees =
+                Mathf.SmoothDampAngle(
+                    currentMapRotationDegrees,
+                    targetMapRotationDegrees,
+                    ref mapRotationVelocity,
+                    Mathf.Max(
+                        0.05f,
+                        cardinalRotationSmoothTime
+                    ),
+                    Mathf.Max(
+                        90f,
+                        cardinalRotationMaxSpeed
+                    ),
+                    Mathf.Max(
+                        0f,
+                        Time.unscaledDeltaTime
+                    )
+                );
+
+            if (Mathf.Abs(
+                    Mathf.DeltaAngle(
+                        currentMapRotationDegrees,
+                        targetMapRotationDegrees
+                    )) <=
+                Mathf.Max(
+                    0.01f,
+                    cardinalRotationSnapEpsilon
+                ))
+            {
+                currentMapRotationDegrees =
+                    targetMapRotationDegrees;
+
+                mapRotationVelocity = 0f;
+            }
         }
 
         private bool TryResolveMovementCardinalRotation(

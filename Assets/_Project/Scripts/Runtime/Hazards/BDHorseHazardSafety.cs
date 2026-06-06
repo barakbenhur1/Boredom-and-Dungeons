@@ -16,8 +16,9 @@ namespace BoredomAndDungeons
         [SerializeField] private float groundProbeDistance = 4.0f;
         [SerializeField] private float maximumGroundAngle = 55f;
         [SerializeField] private float hazardLookAheadDistance = 2.45f;
-        [SerializeField] private float hazardRefusalStopSeconds = 1.0f;
-        [SerializeField] private float hazardSwerveScale = 0.72f;
+        [SerializeField] private float hazardRetreatDistance = 2.6f;
+        [SerializeField] private float hazardRetreatSpeed = 4.8f;
+        [SerializeField] private float hazardRetreatRearmSeconds = 0.10f;
         [SerializeField, Range(3, 8)] private int hazardPathSamples = 5;
 
         [Header("Safe Recovery")]
@@ -30,9 +31,9 @@ namespace BoredomAndDungeons
         [SerializeField] private float mountedPairSeparation = 1.65f;
         [SerializeField] private float verticalOffset = 0.08f;
 
-        private static readonly float[] SteeringAngles =
+        private static readonly float[] RetreatAngles =
         {
-            -35f, 35f, -70f, 70f, -110f, 110f, 180f
+            0f, -25f, 25f, -50f, 50f, -80f, 80f
         };
 
         private readonly RaycastHit[] groundHits =
@@ -56,7 +57,9 @@ namespace BoredomAndDungeons
         private float safePointUpdatesBlockedUntil = -999f;
         private float lastRecoveryCompletedAt = -999f;
         private float nextHazardPollAt;
-        private float hazardRefusalUntil = -999f;
+        private Vector3 hazardRetreatDirection;
+        private float hazardRetreatRemainingDistance;
+        private float hazardRetreatRearmUntil = -999f;
 
 
         public bool IsRecovering =>
@@ -64,7 +67,7 @@ namespace BoredomAndDungeons
             Time.unscaledTime <
                 recoveryGraceUntil;
         public bool IsRefusingHazard =>
-            Time.unscaledTime < hazardRefusalUntil;
+            hazardRetreatRemainingDistance > 0.001f;
         private void Awake()
         {
             controller = GetComponent<CharacterController>();
@@ -161,14 +164,10 @@ namespace BoredomAndDungeons
             Vector3 requestedMotion)
         {
             if (recovering)
-            {
                 return Vector3.up * requestedMotion.y;
-            }
 
-            if (Time.unscaledTime < hazardRefusalUntil)
-            {
-                return Vector3.up * requestedMotion.y;
-            }
+            if (hazardRetreatRemainingDistance > 0.001f)
+                return BuildHazardRetreatMotion(requestedMotion.y);
 
             if (requestedMotion.sqrMagnitude < 0.000001f)
                 return requestedMotion;
@@ -186,47 +185,133 @@ namespace BoredomAndDungeons
             if (IsHorsePathSafe(horizontal))
                 return requestedMotion;
 
-            for (int index = 0;
-                 index < SteeringAngles.Length;
-                 index++)
+            if (Time.unscaledTime >= hazardRetreatRearmUntil &&
+                TryBeginHazardRetreat(horizontal))
             {
-                Vector3 alternative =
-                    Quaternion.AngleAxis(
-                        SteeringAngles[index],
-                        Vector3.up
-                    ) *
-                    horizontal;
-
-                if (!IsHorsePathSafe(alternative))
-                    continue;
-
-                hazardRefusalUntil =
-                    Time.unscaledTime +
-                    Mathf.Max(
-                        0.25f,
-                        hazardRefusalStopSeconds
-                    );
-
-                Vector3 swerve =
-                    alternative *
-                    Mathf.Clamp(
-                        hazardSwerveScale,
-                        0.35f,
-                        1f
-                    );
-
-                return swerve +
-                       Vector3.up * requestedMotion.y;
+                return BuildHazardRetreatMotion(requestedMotion.y);
             }
 
-            hazardRefusalUntil =
-                Time.unscaledTime +
+            return Vector3.up * requestedMotion.y;
+        }
+
+        private bool TryBeginHazardRetreat(
+            Vector3 unsafeHorizontalMotion)
+        {
+            unsafeHorizontalMotion.y = 0f;
+
+            if (unsafeHorizontalMotion.sqrMagnitude < 0.000001f)
+                return false;
+
+            Vector3 directlyAway =
+                -unsafeHorizontalMotion.normalized;
+
+            float retreatDistance =
                 Mathf.Max(
-                    0.25f,
-                    hazardRefusalStopSeconds
+                    0.5f,
+                    hazardRetreatDistance
                 );
 
-            return Vector3.up * requestedMotion.y;
+            for (int index = 0;
+                 index < RetreatAngles.Length;
+                 index++)
+            {
+                Vector3 candidate =
+                    Quaternion.AngleAxis(
+                        RetreatAngles[index],
+                        Vector3.up
+                    ) *
+                    directlyAway;
+
+                candidate.y = 0f;
+
+                if (candidate.sqrMagnitude < 0.000001f)
+                    continue;
+
+                candidate.Normalize();
+
+                if (!IsHorsePathSafe(
+                        candidate * retreatDistance))
+                {
+                    continue;
+                }
+
+                hazardRetreatDirection = candidate;
+                hazardRetreatRemainingDistance =
+                    retreatDistance;
+
+                return true;
+            }
+
+            hazardRetreatRearmUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0.05f,
+                    hazardRetreatRearmSeconds
+                );
+
+            return false;
+        }
+
+        private Vector3 BuildHazardRetreatMotion(
+            float requestedVerticalMotion)
+        {
+            if (hazardRetreatRemainingDistance <= 0.001f ||
+                hazardRetreatDirection.sqrMagnitude < 0.000001f)
+            {
+                FinishHazardRetreat();
+                return Vector3.up * requestedVerticalMotion;
+            }
+
+            float frameDistance =
+                Mathf.Min(
+                    hazardRetreatRemainingDistance,
+                    Mathf.Max(
+                        0.1f,
+                        hazardRetreatSpeed
+                    ) *
+                    Mathf.Max(
+                        0f,
+                        Time.deltaTime
+                    )
+                );
+
+            if (frameDistance <= 0f)
+                return Vector3.up * requestedVerticalMotion;
+
+            Vector3 retreatMotion =
+                hazardRetreatDirection.normalized *
+                frameDistance;
+
+            if (!IsHorsePathSafe(retreatMotion))
+            {
+                FinishHazardRetreat();
+                return Vector3.up * requestedVerticalMotion;
+            }
+
+            hazardRetreatRemainingDistance =
+                Mathf.Max(
+                    0f,
+                    hazardRetreatRemainingDistance -
+                    frameDistance
+                );
+
+            if (hazardRetreatRemainingDistance <= 0.001f)
+                FinishHazardRetreat();
+
+            return retreatMotion +
+                   Vector3.up * requestedVerticalMotion;
+        }
+
+        private void FinishHazardRetreat()
+        {
+            hazardRetreatRemainingDistance = 0f;
+            hazardRetreatDirection = Vector3.zero;
+            hazardRetreatRearmUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0.05f,
+                    hazardRetreatRearmSeconds
+                );
         }
         private bool IsHorsePathSafe(
             Vector3 horizontalMotion)
@@ -278,8 +363,11 @@ namespace BoredomAndDungeons
             float jumpHeight,
             float gravity)
         {
-            if (recovering)
+            if (recovering ||
+                IsRefusingHazard)
+            {
                 return false;
+            }
 
             float gravityMagnitude = Mathf.Max(
                 0.01f,
@@ -384,6 +472,7 @@ namespace BoredomAndDungeons
                     : null;
 
             recovering = true;
+            FinishHazardRetreat();
 
             safePointUpdatesBlockedUntil =
                 now +

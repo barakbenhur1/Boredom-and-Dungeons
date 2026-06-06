@@ -76,7 +76,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "minimap",
                 "Minimap",
-                "The minimap changes only in 90-degree steps when moving forward/back/left/right, and map edges stay parallel to the frame."),
+                "The minimap keeps four 90-degree targets, transitions smoothly through the shortest angle, settles cleanly, and never draws outside its frame."),
             new ManualCheck(
                 "camera",
                 "Camera and forward visibility",
@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "horse",
                 "Horse",
-                "The horse starts at full health on legal ground away from lava/holes, remains calm and idle with no local enemy, then flees only real nearby combat; healing, buck, mount, and previous behaviour still work."),
+                "The horse starts safely, keeps healing/buck/mount/flee behavior, and backs away about two short steps from lava, holes, chasms, or missing ground before resuming normal behavior."),
             new ManualCheck(
                 "square_jumper",
                 "Square Jumper",
@@ -100,7 +100,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "hazards",
                 "Ground, holes, lava, horse, and minimap",
-                "The minimap never draws outside its frame. Normal walking never leaves supported ground. Jump, dodge, knockback, or explicit forced movement may enter a hole. A hole shows a brief fall, applies exactly 15 damage, then respawns. Real lava contact immediately applies exactly 10 damage and visibly bounces the player back to safe ground. Mounted recovery returns the player on foot and does not damage the horse."),
+                "The minimap remains clipped while its cardinal transition animates. Normal walking never leaves supported ground. A hole applies exactly 15 damage and respawns; real lava contact applies exactly 10 damage and returns the player safely. The horse performs a two-step retreat before hazards, and mounted emergency recovery returns the player on foot without horse damage."),
             new ManualCheck(
                 "console",
                 "Console",
@@ -798,6 +798,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "diagonalBoundaryHoldEpsilon",
                     "TryResolveMovementCardinalRotation",
                     "currentMapRotationDegrees",
+                    "targetMapRotationDegrees",
+                    "cardinalRotationSmoothTime",
+                    "Mathf.SmoothDampAngle",
+                    "Mathf.DeltaAngle",
+                    "hasMapRotationTarget",
                     "RotateMapPoint",
                     "LastMountedMovementDirection",
                     "LastMoveWorldDirection"
@@ -2546,20 +2551,45 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "HORSE_NATURAL_MOVEMENT_CONTRACT_MISSING"
             );
 
+            string horseHazardSource =
+                File.ReadAllText(Path.Combine(root,
+                    "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs"));
+
             ValidateRequiredSourceTokens(
                 result,
                 "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
-                File.ReadAllText(Path.Combine(root,
-                    "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs")),
+                horseHazardSource,
                 new[]
                 {
                     "hazardLookAheadDistance",
-                    "hazardRefusalStopSeconds = 1.0f",
+                    "hazardRetreatDistance = 2.6f",
+                    "hazardRetreatSpeed = 4.8f",
+                    "hazardRetreatRemainingDistance",
+                    "TryBeginHazardRetreat",
+                    "BuildHazardRetreatMotion",
+                    "FinishHazardRetreat",
                     "IsRefusingHazard",
                     "IsHorsePathSafe"
                 },
-                "HORSE_HAZARD_REFUSAL_CONTRACT_MISSING"
+                "HORSE_HAZARD_RETREAT_CONTRACT_MISSING"
             );
+
+            if (horseHazardSource.Contains(
+                    "hazardRefusalStopSeconds") ||
+                horseHazardSource.Contains(
+                    "hazardSwerveScale") ||
+                horseHazardSource.Contains(
+                    "hazardRefusalUntil"))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "OBSOLETE_HORSE_HAZARD_STOP_RETURNED",
+                    "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
+                    "FilterMovement",
+                    "The old one-second refusal/stop implementation must not return."
+                );
+            }
 
             ValidateRequiredSourceTokens(
                 result,

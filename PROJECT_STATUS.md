@@ -6,13 +6,15 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous category: C03/C04/C05/C12 — natural movement, horse traversal, enemy awareness, and temporary facing readability
-Previous item: package natural player/horse/enemy motion, faster wide-turn horse, proactive hazard refusal, enemy awareness repair, temporary front/back markers, and START GAME highlight
-Previous result: package prepared but not yet installed or verified in Unity
-Current category: C06 — player melee combat expansion
-Current item: long-press left attack triggers a fast spinning AOE with independent cooldown, lower per-target damage, outward knockback, dedicated animation, and weapon-damage boost integration
-Current status: IMPLEMENTED IN CUMULATIVE V2 PACKAGE — requires clean Unity compilation, TEST EVERYTHING, and Play Mode verification before PASS
-Next item: verify quick click vs hold, cooldown fallback to normal light attack, multi-enemy AOE hits, knockback, boost scaling, and visual exclusivity
+Previous categories: C03/C04/C05/C06/C11/C12 — natural movement, horse movement, enemy awareness, temporary facing readability, START GAME emphasis, and long-press spinning AOE
+Previous result: committed on main; cumulative Unity compilation, TEST EVERYTHING, and Play Mode verification are still required
+Current categories: C04/C11 — inserted follow-up required before returning to the existing queue
+Current items: C04.31A horse two-step hazard retreat and C11.13A polished cardinal minimap transition
+Current status: IMPLEMENTED IN LOCAL INSTALL PACKAGE / VERIFY
+Current package behavior: unsafe horse movement starts a safe retreat of roughly 2.6m and then resumes normal behavior; minimap keeps four cardinal targets and eases through the shortest angle
+Enemy-order request: recorded for C05/C10/C14; normal runs currently reload the generated scene, and final deterministic per-run variation remains future architecture
+Next action: install the ZIP locally, compile in Unity, run the single TEST EVERYTHING command, verify both behaviors in Play Mode, and record the real result here
+Resume after PASS: return to the first incomplete item in the ordered authoritative list; stop and ask before entering a new category
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -20,24 +22,9 @@ Next item: verify quick click vs hold, cooldown fallback to normal light attack,
 > This is the single authoritative living development plan and status tracker.
 > It must be updated whenever code, requirements, QA results, priorities, blockers, category status, or implementation order changes.
 
-## 1. Snapshot
+## 1. Current-stage rule
 
-```text
-Status date: 2026-06-06
-Engine: Unity 6000.0.76f1
-Single authoritative progress file: /PROJECT_STATUS.md
-Previous category: C01 — Project stability, QA, validation, and repository health
-Previous item: Repair invalid C# backslash character literals in unified TEST EVERYTHING
-Previous result: Unity compilation recovered; TEST EVERYTHING PASS with 0 blockers and 1 warning at 2026-06-06T03:42:01.6743540Z
-Current category: C01 — Project stability, QA, validation, and repository health
-Current item: Correct MULTIPLE_RUNTIME_INSTALLERS false positive for per-enemy BDEnemyBootstrap instances
-Current finding: 79 BDEnemyBootstrap components are distributed across enemy objects; they are per-entity setup components, not duplicate scene-level installers
-Next category: C01 — Project stability, QA, validation, and repository health
-Next item: Rerun the single TEST EVERYTHING command and complete the Play Mode checklist; target 0 blockers and 0 warnings
-Queued after C01: C03.46–C03.55 player safe-point/chasm/lava recovery
-Queued after C03: C04.24–C04.39 horse hazard recovery, zero-health exhausted follow, and Pet interaction
-Saved later resume point: C07.16 — Wire the shared boss framework into one real playable test encounter
-```
+The marked `Current Development Snapshot` block at the top of this file is the only current Previous / Current / Next pointer. The ordered checklist below remains the complete requirement list. No second snapshot or parallel status document is allowed.
 
 ## 2. Status labels
 
@@ -467,6 +454,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C04.29 SUPERSEDED BY LATER USER DECISION: mounted hazard recovery always returns the player on foot; recover the horse without health loss; place both in one legal area without overlap when possible. — IMPLEMENTED / VERIFY.
 - [ ] C04.30 Prevent repeated hazard loops, separation across inaccessible geometry, and flee/follow systems overriding recovery. — IMPLEMENTED / VERIFY.
 - [ ] **C04.31 Add Play Mode tests for mounted/unmounted chasm and lava recovery, flee pathing near hazards, and safe fallback when no recent horse-safe point is valid. — CURRENT ACCEPTANCE GATE.**
+- [ ] **C04.31A Replace the one-second stationary hazard refusal with a safe retreat of roughly two short horse steps, then resume the prior mounted/AI behavior. — IMPLEMENTED IN LOCAL PACKAGE / VERIFY.**
 
 ## Zero-health exhausted follow and contextual Pet interaction
 
@@ -531,6 +519,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C05.23 Skip a summon safely when no valid position exists. — SAME-ROOM HARD SAFETY IMPLEMENTED / VERIFY FOR COLLECTIBLE GUARDIANS.
 - [ ] C05.24 Add spawn/summon limits per encounter.
 - [ ] C05.25 Verify sword weapon/double-slash visuals in Play Mode.
+- [ ] C05.26 Final normal-enemy composition, placement, and encounter order must vary legally per run under the deterministic run seed; editor-time scene randomness alone is not sufficient.
 
 ## Category acceptance
 
@@ -1056,6 +1045,7 @@ The existing one-click automated gate passed on 2026-06-06 at 03:22:56Z with 0 b
 - [ ] C11.11 Preserve mouse/touch aiming rules while changing camera visibility.
 - [ ] C11.12 Tune camera tilt, forward visibility, darkness, and horizon readability.
 - [ ] C11.13 Make camera and minimap resolution/aspect-ratio safe for mobile landscape.
+- [ ] **C11.13A Keep the four cardinal minimap targets, but animate target changes through the shortest angle with a slower eased transition while preserving hard clipping. — IMPLEMENTED IN LOCAL PACKAGE / VERIFY.**
 
 ## HUD/UI
 
@@ -1386,6 +1376,17 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Horse retreat, minimap transition, and single-source synchronization
+
+- Implemented C04.31A in the local install package: the horse no longer waits in place for one second near a detected hazard; it chooses a validated away direction, backs away roughly `2.6m`, and then returns to normal mounted or AI behavior.
+- Implemented C11.13A in the local install package: the minimap still selects only `0/90/180/270` degree targets, but uses `Mathf.SmoothDampAngle` and shortest-angle settling instead of an immediate snap.
+- Integrated both contracts and their Play Mode wording into the existing `Boredom And Dungeons -> TEST EVERYTHING` command.
+- Recorded C05.26 so final normal-enemy composition, placement, and encounter order vary by deterministic run seed; current editor-generated scene randomness is not treated as final per-run variation.
+- Removed the duplicate section-1 current snapshot and made the marked snapshot at the top of this file the only live Previous / Current / Next pointer.
+- Removed known superseded or duplicate progress/reference documents. Their active requirements are preserved in this authoritative file.
+- Verification remains open until the package is installed in the real Unity project and passes compilation, TEST EVERYTHING, and Play Mode.
+
 
 ## 2026-06-06 — Categorized authoritative plan
 
