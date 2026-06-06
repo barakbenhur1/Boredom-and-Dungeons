@@ -2,10 +2,11 @@
 
 Current authoritative status:
 
-`/PROJECT_STATUS_CURRENT_V3.md`
+`/PROJECT_STATUS_CURRENT_V4.md`
 
 Detailed supporting documents:
 
+- `/PROJECT_STATUS_CURRENT_V3.md`
 - `/PROJECT_STATUS_CURRENT_V2.md`
 - `/PROJECT_STATUS_CURRENT.md`
 - `/PROJECT_STATUS.md`
@@ -14,8 +15,9 @@ Detailed supporting documents:
 - `/Assets/_Project/Design/Bosses/MOTHER_BOSS_DESIGN_V1.md`
 - `/Assets/_Project/Design/Bosses/MOTHER_BOSS_DESIGN_V2_WORKING.md`
 - `/Assets/_Project/Design/Bosses/MOTHER_BOSS_DESIGN_V3_DECISIONS.md`
+- `/Assets/_Project/Design/Bosses/MOTHER_BOSS_HORSE_ENTRY_GATE_V1.md`
 
-`PROJECT_STATUS_CURRENT_V3.md` wins when status snapshots differ. The newest dedicated design document wins for its own feature area.
+`PROJECT_STATUS_CURRENT_V4.md` wins when status snapshots differ. The newest dedicated design document wins for its own feature area.
 
 `MASTER_REMAINING_WORK_ROADMAP_V128.md` is historical only.
 
