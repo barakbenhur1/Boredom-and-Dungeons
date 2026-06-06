@@ -6,13 +6,14 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Previous category: C01 — Project stability, QA, validation, and repository health
-Previous result: DONE — TEST EVERYTHING passed with 0 blockers / 0 warnings / 0 info
-Current category: C03 — Player movement, aiming, combat, damage, and weapons
-Current item: C03.46–C03.55 — player hazard rules, mounted dismount recovery, and Play Mode verification
-Current status: IMPLEMENTED — awaiting Unity compilation and TEST EVERYTHING
-Next category: C04 — Horse traversal, mounted combat, damage, healing, and flee behavior
-Next item: Verify proactive horse avoidance and exceptional no-damage recovery for holes, chasms, and lava
+Previous category: C03 — Prototype hazard scene integration
+Previous result: INSTALLATION PARTIAL — jump field repaired, QA patch anchor failed, scene YAML contained trailing whitespace
+Current category: C01/C03 — Compilation repair and QA integrity
+Current item: Independent jump-field scanner, compiler-failure blocker, and clean prototype-scene serialization
+Current status: IMPLEMENTED — awaiting zero-error Unity compilation and a fresh TEST EVERYTHING report
+Next category: C03 — Player hazard Play Mode verification
+Next item: Verify walking rejection, jump/dodge damage, lava damage, mounted on-foot recovery, and duplicate-trigger protection
+Saved later category: C04 — Full proactive horse hazard avoidance verification
 Saved later resume point: C07.16 — Wire the shared boss framework into one playable encounter
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
@@ -1472,7 +1473,7 @@ No legacy requirement is removed by this reorganization.
 
 - Hole/chasm entry by ordinary grounded walking is rejected without damage.
 - A player receives the `15` hole/chasm damage only after entering through a jump, dodge, forced displacement, or mounted exceptional fall.
-- Lava may be entered by ordinary walking and applies exactly `10` unavoidable environmental damage.
+- Lava applies exactly `10` unavoidable environmental damage through every entry method: walking, jumping, dodging, knockback, forced movement, or mounted entry.
 - When player and horse enter any hazard while mounted, both recover separately and the player returns on foot.
 - Hazard recovery never restores the mounted relationship automatically.
 - The horse proactively filters movement toward lava, holes, chasms, and unsupported ground.
@@ -1480,3 +1481,32 @@ No legacy requirement is removed by this reorganization.
 - A normal horse walk, follow, flee, return, or mounted movement must not cause a fall.
 - Exceptional or scripted horse hazard entry recovers the horse without health loss.
 - C03/C04 remain awaiting Unity compilation, `TEST EVERYTHING`, and Play Mode verification.
+
+## 2026-06-06 — Prototype hazard scene integration
+
+- Previous automated result: `TEST EVERYTHING` passed with `0` blockers, `0` warnings, and `0` info.
+- `TEST EVERYTHING` now opens the authoritative prototype scene and idempotently creates one test hole/chasm and one test lava volume.
+- No additional menu command or QA button is required.
+- The installer finds nearby clear grounded positions around the player and avoids placing the two hazards on top of each other.
+- The prototype player receives a serialized `BDPlayerHazardRecovery`.
+- The prototype horse receives a serialized `BDHorseHazardSafety`.
+- Automated QA verifies exactly one hazard root, one hole/chasm volume, one lava volume, trigger colliders, and serialized player/horse safety components.
+- Current verification target: the single Play Mode hazard checklist in `TEST EVERYTHING`.
+
+## 2026-06-06 — Robust compiler-state and jump-field QA repair
+
+- `lastJumpStartedAt` is now required exactly once in `BDPlayerController.cs`.
+- The check is implemented as an independent scanner and no longer depends on the structure of another hazard-token list.
+- `TEST EVERYTHING` blocks and writes a blocker report when `EditorUtility.scriptCompilationFailed` is true.
+- The previous stale `PASS` reports remain invalid.
+- Cleaned Unity-scene trailing whitespace produced by empty serialized string fields.
+- A fresh report is accepted only after Unity completes compilation with no Console compiler errors.
+
+## 2026-06-06 — Lava damages through every entry method
+
+- The hole/chasm walking restriction applies only to holes and chasms.
+- Lava has no safe entry method.
+- Walking, jumping, dodging, knockback, forced movement, or mounted entry into lava applies exactly `10` unavoidable environmental damage.
+- Lava recovery still returns the player to a validated non-lava safe point.
+- Mounted lava recovery returns the player on foot and restores the horse separately without horse health loss.
+- `TEST EVERYTHING` wording now explicitly covers every lava entry method.

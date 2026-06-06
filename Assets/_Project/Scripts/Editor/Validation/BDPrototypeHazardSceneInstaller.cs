@@ -1,0 +1,376 @@
+#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+namespace BoredomAndDungeons.EditorTools.Validation
+{
+    public static class BDPrototypeHazardSceneInstaller
+    {
+        public const string RootName = "__BD_HAZARD_TEST_AREA";
+        public const string HoleName = "Hazard_HoleOrChasm";
+        public const string LavaName = "Hazard_Lava";
+
+        private const float HazardHalfSize = 1.35f;
+        private const float MinimumPlayerDistance = 4.5f;
+        private const float MinimumHazardSpacing = 4.0f;
+
+        public static bool TryEnsureInstalled(
+            string scenePath,
+            out string error)
+        {
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(scenePath) ||
+                !File.Exists(scenePath))
+            {
+                error = $"Prototype scene is missing: {scenePath}";
+                return false;
+            }
+
+            try
+            {
+                Scene scene = SceneManager.GetActiveScene();
+
+                if (!scene.IsValid() || scene.path != scenePath)
+                {
+                    scene = EditorSceneManager.OpenScene(
+                        scenePath,
+                        OpenSceneMode.Single
+                    );
+                }
+
+                Physics.SyncTransforms();
+
+                BDPlayerMarker playerMarker =
+                    UnityEngine.Object.FindFirstObjectByType<BDPlayerMarker>();
+
+                if (playerMarker == null)
+                {
+                    error = "Prototype scene has no BDPlayerMarker.";
+                    return false;
+                }
+
+                Transform player = playerMarker.transform;
+
+                EnsureActorComponents(player.gameObject);
+                EnsureHorseComponents();
+
+                GameObject previous = GameObject.Find(RootName);
+                if (previous != null)
+                    UnityEngine.Object.DestroyImmediate(previous);
+
+                GameObject root = new GameObject(RootName);
+                root.transform.SetPositionAndRotation(
+                    Vector3.zero,
+                    Quaternion.identity
+                );
+
+                Vector3 holePosition = FindPlacement(
+                    player.position,
+                    null,
+                    player.right
+                );
+
+                Vector3 lavaPosition = FindPlacement(
+                    player.position,
+                    holePosition,
+                    player.forward
+                );
+
+                CreateHazard(
+                    root.transform,
+                    HoleName,
+                    BDHazardType.HoleOrChasm,
+                    holePosition,
+                    "HOLE / CHASM\nJUMP OR DODGE"
+                );
+
+                CreateHazard(
+                    root.transform,
+                    LavaName,
+                    BDHazardType.Lava,
+                    lavaPosition,
+                    "LAVA\nWALK INTO IT"
+                );
+
+                EditorSceneManager.MarkSceneDirty(scene);
+
+                if (!EditorSceneManager.SaveScene(scene))
+                {
+                    error = "Unity could not save the prototype scene.";
+                    return false;
+                }
+
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                error = exception.ToString();
+                return false;
+            }
+        }
+
+        private static void EnsureActorComponents(GameObject player)
+        {
+            if (player.GetComponent<BDPlayerHazardRecovery>() == null)
+            {
+                Undo.AddComponent<BDPlayerHazardRecovery>(player);
+            }
+        }
+
+        private static void EnsureHorseComponents()
+        {
+            BDHorseController horse =
+                UnityEngine.Object.FindFirstObjectByType<BDHorseController>();
+
+            if (horse == null)
+                return;
+
+            if (horse.GetComponent<BDHorseHazardSafety>() == null)
+            {
+                Undo.AddComponent<BDHorseHazardSafety>(horse.gameObject);
+            }
+        }
+
+        private static Vector3 FindPlacement(
+            Vector3 playerPosition,
+            Vector3? avoidPosition,
+            Vector3 preferredDirection)
+        {
+            Vector3 preferred = preferredDirection;
+            preferred.y = 0f;
+
+            if (preferred.sqrMagnitude < 0.001f)
+                preferred = Vector3.forward;
+
+            preferred.Normalize();
+
+            List<Vector3> directions = new List<Vector3>
+            {
+                preferred,
+                Quaternion.Euler(0f, 45f, 0f) * preferred,
+                Quaternion.Euler(0f, -45f, 0f) * preferred,
+                Quaternion.Euler(0f, 90f, 0f) * preferred,
+                Quaternion.Euler(0f, -90f, 0f) * preferred,
+                Quaternion.Euler(0f, 135f, 0f) * preferred,
+                Quaternion.Euler(0f, -135f, 0f) * preferred,
+                -preferred
+            };
+
+            float[] radii = { 5.5f, 7.0f, 8.5f, 10.0f, 12.0f };
+
+            foreach (float radius in radii)
+            {
+                foreach (Vector3 direction in directions)
+                {
+                    Vector3 requested =
+                        playerPosition +
+                        direction.normalized * radius;
+
+                    if (!TryFindGround(requested, out Vector3 grounded))
+                        continue;
+
+                    if (HorizontalDistance(
+                            grounded,
+                            playerPosition) < MinimumPlayerDistance)
+                    {
+                        continue;
+                    }
+
+                    if (avoidPosition.HasValue &&
+                        HorizontalDistance(
+                            grounded,
+                            avoidPosition.Value) < MinimumHazardSpacing)
+                    {
+                        continue;
+                    }
+
+                    if (!HasPlacementClearance(grounded))
+                        continue;
+
+                    return grounded;
+                }
+            }
+
+            Vector3 fallback =
+                playerPosition +
+                preferred * (avoidPosition.HasValue ? 9f : 6f);
+
+            if (TryFindGround(fallback, out Vector3 fallbackGround))
+                return fallbackGround;
+
+            fallback.y = playerPosition.y;
+            return fallback;
+        }
+
+        private static bool TryFindGround(
+            Vector3 requested,
+            out Vector3 grounded)
+        {
+            Vector3 origin = requested + Vector3.up * 4f;
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin,
+                Vector3.down,
+                10f,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            Array.Sort(
+                hits,
+                (left, right) =>
+                    left.distance.CompareTo(right.distance)
+            );
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == null)
+                    continue;
+
+                if (hit.collider.GetComponentInParent<BDPlayerMarker>() != null)
+                    continue;
+
+                if (hit.collider.GetComponentInParent<BDHorseController>() != null)
+                    continue;
+
+                float slope = Vector3.Angle(hit.normal, Vector3.up);
+                if (slope > 35f)
+                    continue;
+
+                grounded = hit.point + Vector3.up * 0.03f;
+                return true;
+            }
+
+            grounded = requested;
+            return false;
+        }
+
+        private static bool HasPlacementClearance(Vector3 grounded)
+        {
+            Vector3 center = grounded + Vector3.up * 0.8f;
+            Vector3 halfExtents = new Vector3(
+                HazardHalfSize + 0.45f,
+                0.65f,
+                HazardHalfSize + 0.45f
+            );
+
+            Collider[] overlaps = Physics.OverlapBox(
+                center,
+                halfExtents,
+                Quaternion.identity,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            foreach (Collider overlap in overlaps)
+            {
+                if (overlap == null)
+                    continue;
+
+                if (overlap.GetComponentInParent<BDPlayerMarker>() != null)
+                    continue;
+
+                if (overlap.GetComponentInParent<BDHorseController>() != null)
+                    continue;
+
+                if (overlap.bounds.max.y <= grounded.y + 0.20f)
+                    continue;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void CreateHazard(
+            Transform parent,
+            string objectName,
+            BDHazardType type,
+            Vector3 position,
+            string labelText)
+        {
+            GameObject hazard = new GameObject(objectName);
+            hazard.transform.SetParent(parent, false);
+            hazard.transform.position = position;
+
+            GameObject visual = GameObject.CreatePrimitive(
+                type == BDHazardType.Lava
+                    ? PrimitiveType.Cube
+                    : PrimitiveType.Cylinder
+            );
+
+            visual.name = "Visual";
+            visual.transform.SetParent(hazard.transform, false);
+            visual.transform.localPosition = Vector3.zero;
+
+            if (type == BDHazardType.Lava)
+            {
+                visual.transform.localScale =
+                    new Vector3(2.7f, 0.06f, 2.7f);
+            }
+            else
+            {
+                visual.transform.localScale =
+                    new Vector3(1.35f, 0.025f, 1.35f);
+            }
+
+            Collider visualCollider = visual.GetComponent<Collider>();
+            if (visualCollider != null)
+            {
+                UnityEngine.Object.DestroyImmediate(visualCollider);
+            }
+
+            Renderer renderer = visual.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.shadowCastingMode =
+                    UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+            }
+
+            GameObject trigger = new GameObject("Trigger");
+            trigger.transform.SetParent(hazard.transform, false);
+            trigger.transform.localPosition =
+                new Vector3(0f, 0.65f, 0f);
+
+            BoxCollider box = trigger.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = new Vector3(2.7f, 1.4f, 2.7f);
+
+            BDHazardVolume volume =
+                trigger.AddComponent<BDHazardVolume>();
+            volume.Configure(type);
+
+            GameObject label = new GameObject("Label");
+            label.transform.SetParent(hazard.transform, false);
+            label.transform.localPosition =
+                new Vector3(0f, 0.08f, -1.55f);
+            label.transform.localRotation =
+                Quaternion.Euler(90f, 0f, 0f);
+
+            TextMesh text = label.AddComponent<TextMesh>();
+            text.text = labelText;
+            text.anchor = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignment.Center;
+            text.characterSize = 0.20f;
+            text.fontSize = 48;
+        }
+
+        private static float HorizontalDistance(
+            Vector3 first,
+            Vector3 second)
+        {
+            first.y = 0f;
+            second.y = 0f;
+            return Vector3.Distance(first, second);
+        }
+    }
+}
+#endif

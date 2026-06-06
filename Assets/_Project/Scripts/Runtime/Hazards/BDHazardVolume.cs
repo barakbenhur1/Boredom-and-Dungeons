@@ -80,6 +80,17 @@ namespace BoredomAndDungeons
             if (playerRecovery != null)
                 playerRecovery.TryHandleHazard(this);
         }
+        public void Configure(BDHazardType type)
+        {
+            hazardType = type;
+
+            if (volumeCollider == null)
+                volumeCollider = GetComponent<Collider>();
+
+            if (volumeCollider != null)
+                volumeCollider.isTrigger = true;
+        }
+
 
         public bool IsPointWithin(
             Vector3 worldPoint,

@@ -69,6 +69,7 @@ namespace BoredomAndDungeons
         private float dashCooldownTimer;
         private float dodgeInvulnerableUntil;
         private float lastDodgeStartedAt;
+        private float lastJumpStartedAt = -999f;
         private float nextDodgeAfterimageAt;
 
         private float lastForwardTapTime = -999f;

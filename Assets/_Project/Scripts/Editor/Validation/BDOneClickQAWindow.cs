@@ -100,7 +100,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "hazards",
                 "Player and horse environmental hazards",
-                "Walking into a hole/chasm is rejected without damage. Jumping or dodging into it causes 15 damage. Walking into lava causes 10 damage. Mounted recovery returns the player on foot, and the horse avoids hazards proactively."),
+                "Walking into a hole/chasm is rejected without damage. Jumping or dodging into it causes 15 damage. Walking, jumping, dodging, knockback, forced movement, or mounted entry into lava causes exactly 10 damage. Mounted recovery returns the player on foot, and the horse avoids hazards proactively."),
             new ManualCheck(
                 "console",
                 "Console",
@@ -387,6 +387,38 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 return;
             }
 
+            if (EditorUtility.scriptCompilationFailed)
+            {
+                latestResult = new BDOneClickQAResult
+                {
+                    generatedUtc = DateTime.UtcNow.ToString("O"),
+                    unityVersion = Application.unityVersion,
+                    blockerCount = 1,
+                    warningCount = 0,
+                    infoCount = 0
+                };
+
+                latestResult.findings.Add(
+                    new BDOneClickQAFinding(
+                        BDOneClickQASeverity.Blocker,
+                        "UNITY_SCRIPT_COMPILATION_FAILED",
+                        string.Empty,
+                        string.Empty,
+                        "Unity reports C# compilation errors. Clear every Console compiler error before TEST EVERYTHING can pass."
+                    )
+                );
+
+                WriteAutomatedReport(latestResult);
+                Repaint();
+
+                EditorUtility.DisplayDialog(
+                    "TEST EVERYTHING — BLOCKED",
+                    "Unity still has C# compilation errors. Fix the Console errors, wait for compilation to finish, and run TEST EVERYTHING again.",
+                    "OK"
+                );
+                return;
+            }
+
             if (EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 EditorUtility.DisplayDialog(
@@ -399,6 +431,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return;
+
+            if (!BDPrototypeHazardSceneInstaller.TryEnsureInstalled(
+                    PrototypeScenePath,
+                    out string hazardInstallError))
+            {
+                Debug.LogError(
+                    "B&D hazard scene integration failed: " +
+                    hazardInstallError
+                );
+            }
 
             latestResult = ExecuteAutomatedChecks();
             WriteAutomatedReport(latestResult);
@@ -418,6 +460,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
             // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
             ScanCameraMinimapRegression(result);
             ScanHazardRecoveryContracts(result);
+            ScanJumpTimestampDeclaration(result);
+            ScanPrototypeHazardScene(result);
             ScanArchitectureContracts(result);
             ScanRepositoryHygiene(result);
             ScanMetaGuids(result);
@@ -701,6 +745,178 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "MINIMAP_REGRESSION_ANCHOR_MISSING"
             );
         }
+        private static void ScanPrototypeHazardScene(
+            BDOneClickQAResult result)
+        {
+            Scene active = SceneManager.GetActiveScene();
+
+            if (!active.IsValid() ||
+                active.path != PrototypeScenePath)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HAZARD_PROTOTYPE_SCENE_NOT_ACTIVE",
+                    PrototypeScenePath,
+                    string.Empty,
+                    "TEST EVERYTHING could not open the prototype scene."
+                );
+                return;
+            }
+
+            GameObject[] roots = active.GetRootGameObjects();
+            List<GameObject> hazardRoots = roots
+                .Where(item =>
+                    item != null &&
+                    item.name ==
+                        BDPrototypeHazardSceneInstaller.RootName)
+                .ToList();
+
+            if (hazardRoots.Count != 1)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HAZARD_TEST_ROOT_COUNT_INVALID",
+                    PrototypeScenePath,
+                    string.Empty,
+                    $"Expected exactly one hazard test root, found {hazardRoots.Count}."
+                );
+                return;
+            }
+
+            BDHazardVolume[] volumes =
+                hazardRoots[0].GetComponentsInChildren<BDHazardVolume>(
+                    true
+                );
+
+            int holes = volumes.Count(
+                item =>
+                    item != null &&
+                    item.HazardType ==
+                        BDHazardType.HoleOrChasm
+            );
+            int lava = volumes.Count(
+                item =>
+                    item != null &&
+                    item.HazardType ==
+                        BDHazardType.Lava
+            );
+
+            if (holes != 1 || lava != 1)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HAZARD_TEST_VOLUME_SET_INVALID",
+                    PrototypeScenePath,
+                    BDPrototypeHazardSceneInstaller.RootName,
+                    $"Expected one hole/chasm and one lava volume; found hole={holes}, lava={lava}."
+                );
+            }
+
+            foreach (BDHazardVolume volume in volumes)
+            {
+                Collider collider =
+                    volume != null
+                        ? volume.GetComponent<Collider>()
+                        : null;
+
+                if (collider != null && collider.isTrigger)
+                    continue;
+
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HAZARD_VOLUME_NOT_TRIGGER",
+                    PrototypeScenePath,
+                    volume != null ? volume.name : string.Empty,
+                    "Every BDHazardVolume must use a trigger collider."
+                );
+            }
+
+            BDPlayerMarker player =
+                UnityEngine.Object.FindFirstObjectByType<BDPlayerMarker>();
+            if (player == null ||
+                player.GetComponent<BDPlayerHazardRecovery>() == null)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "PLAYER_HAZARD_RECOVERY_NOT_SERIALIZED",
+                    PrototypeScenePath,
+                    player != null ? player.name : string.Empty,
+                    "The prototype player must serialize BDPlayerHazardRecovery."
+                );
+            }
+
+            BDHorseController horse =
+                UnityEngine.Object.FindFirstObjectByType<BDHorseController>();
+            if (horse == null ||
+                horse.GetComponent<BDHorseHazardSafety>() == null)
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "HORSE_HAZARD_SAFETY_NOT_SERIALIZED",
+                    PrototypeScenePath,
+                    horse != null ? horse.name : string.Empty,
+                    "The prototype horse must serialize BDHorseHazardSafety."
+                );
+            }
+        }
+        private static void ScanJumpTimestampDeclaration(
+            BDOneClickQAResult result)
+        {
+            const string relativePath =
+                "Assets/_Project/Scripts/Runtime/BDPlayerController.cs";
+            string absolutePath = Path.Combine(
+                ResolveProjectRoot(),
+                relativePath
+            );
+
+            if (!File.Exists(absolutePath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "PLAYER_CONTROLLER_SOURCE_MISSING",
+                    relativePath,
+                    string.Empty,
+                    "BDPlayerController.cs is required for hazard intent validation."
+                );
+                return;
+            }
+
+            string source = File.ReadAllText(absolutePath);
+            const string declaration =
+                "private float lastJumpStartedAt = -999f;";
+
+            int first = source.IndexOf(
+                declaration,
+                StringComparison.Ordinal
+            );
+            int last = source.LastIndexOf(
+                declaration,
+                StringComparison.Ordinal
+            );
+
+            if (first >= 0 && first == last)
+                return;
+
+            Add(
+                result,
+                BDOneClickQASeverity.Blocker,
+                "JUMP_TIMESTAMP_DECLARATION_INVALID",
+                relativePath,
+                string.Empty,
+                first < 0
+                    ? "The lastJumpStartedAt field declaration is missing."
+                    : "The lastJumpStartedAt field is declared more than once."
+            );
+        }
+
+
         private static void ScanHazardRecoveryContracts(
             BDOneClickQAResult result)
         {
@@ -712,6 +928,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/Hazards/BDHazardVolume.cs",
                 "Assets/_Project/Scripts/Runtime/Hazards/BDPlayerHazardRecovery.cs",
                 "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
+                "Assets/_Project/Scripts/Editor/Validation/BDPrototypeHazardSceneInstaller.cs",
                 "Assets/_Project/Scripts/Runtime/BDHealth.cs",
                 "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
                 "Assets/_Project/Scripts/Runtime/BDHorseController.cs"
