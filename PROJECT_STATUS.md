@@ -6,13 +6,13 @@
 ```text
 Status date: 2026-06-06
 Engine: Unity 6000.0.76f1
-Current category: C07 — boss framework, with earlier blocking regressions inserted before C07.16 verification
-New permanent process rule: every new testable boss, obstacle, hazard, enemy, reward, transition, or mechanic receives an immediate near-spawn test room/lane/portal; accepted temporary content is removed, deliberately retained, or converted to production without creating end-of-project cleanup debt
-Earlier blocking work now recorded: remove the stale hit effect after death -> New Game; make the horse start full-health/calm without phantom flee; move spawn-adjacent lava/hole tests into a deliberate test area; replace the landing attack look with the normal slash language rotated vertically
-Current C07 clarification: mini-boss rooms remain escapable and do not hard-lock the player
-Current work item: document and enforce the workflow/test-harness contract, then implement the inserted regressions and the near-spawn C07.16 test encounter
-Current status: REQUIREMENTS AND WORKFLOW DOCUMENTED / IMPLEMENTATION PENDING
-Saved resume point: C07.16 framework playable-encounter acceptance, followed by C07.17
+Current category: earlier blocking regression work before C07.16
+Current item: C03.44A — clear stale hit feedback after death -> New Game
+Implementation: automatic persistent run-start guard resets time/audio, known static parry/game-feel state, strictly identified transient particles/audio/flash animation, and camera-shake state for a 0.45s startup window
+Current status: IMPLEMENTED LOCALLY / VERIFY
+Required verification: clean compile, TEST EVERYTHING, then repeat death -> New Game at least twice and confirm no stale hit-stop, shake, flash, impact sound, or impact particles while a later real hit still has normal feedback
+Next ordered item after PASS: C04.20A — horse starts full-health and calm without phantom combat/flee
+Saved resume point after earlier blockers: C07.16A, then C07.16 and C07.17
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -426,7 +426,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.42 Damage/death/reset foundations exist.
 - [ ] C03.43 Verify one source cannot apply duplicate damage in one hit.
 - [ ] C03.44 Verify clean death and restart/reset state.
-- [ ] **C03.44A After death and `New Game`, suppress stale hit-stop, camera shake, damage flash, impact audio/VFX, buffered damage, or previous-run combat events so the reloaded map starts cleanly without a hit effect. — INSERTED EARLIER BLOCKING WORK.**
+- [ ] **C03.44A After death and `New Game`, suppress stale hit-stop, camera shake, damage flash, impact audio/VFX, buffered feedback, and previous-run combat feedback so the reloaded map starts cleanly. The guard lasts `0.45s` and must not suppress a later legitimate hit. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] C03.45 Add final player health feedback and accessibility cues.
 
 ## Environmental hazard recovery — inserted earlier-category work
@@ -1424,6 +1424,17 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-06 — Clear stale hit feedback on New Game reload
+
+- Added `BDNewRunFeedbackReset.cs`, installed automatically before scene loading and retained across scene reloads without requiring scene edits.
+- Added a `0.45s` real-time startup suppression window that restores normal time/audio state, resets known transient parry/game-feel systems, and repeatedly clears strictly identified old hit/damage/impact particles, audio, flashes, and camera-shake state.
+- Added explicit `IsFeedbackSuppressed` and `RunStartFeedbackResetRequested` hooks for future feedback systems.
+- Added `BDNewRunFeedbackResetQA.cs` to the existing single `TEST EVERYTHING` flow.
+- Added the focused design/verification contract at `Assets/_Project/Design/Runtime/NEW_RUN_FEEDBACK_RESET.md`.
+- No player health, scene layout, enemy behavior, horse behavior, hazard behavior, or New Game routing was changed.
+- Next ordered blocking item after acceptance is `C04.20A`; the saved feature resume point remains `C07.16A`.
+
 
 ## 2026-06-06 — Canonical workflow and near-spawn test-harness policy
 

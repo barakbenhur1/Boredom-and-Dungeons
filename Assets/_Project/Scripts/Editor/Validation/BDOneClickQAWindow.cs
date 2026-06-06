@@ -472,6 +472,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);
             BDHorseExhaustedFollowPetQA.Scan(result);
+            BDNewRunFeedbackResetQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);
             ScanMainMenuSettingsContracts(result);
