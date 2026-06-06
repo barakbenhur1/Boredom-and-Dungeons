@@ -1,31 +1,182 @@
 # Boredom & Dungeons
 
-**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, combat, riding, hidden optional collectibles, protected encounters, mini-bosses, a final boss, and multiple ending variations.
+**Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure prototype about exploration, melee and ranged combat, horse traversal, hidden optional collectibles, protected encounters, mini-bosses, a final boss, and ending variations.
 
-The project is still a prototype / vertical-slice work in progress. The goal is to grow it into a polished playable dungeon-style level with professional code structure, clear combat feel, readable UI, hidden secrets, meaningful encounters, strong environmental identity, sound, visual effects, and a complete playable ending flow.
-
----
+The project is an active vertical-slice work in progress. The target is a polished, complete dungeon-style level with readable combat, a designed multi-route map, meaningful secrets, professional code structure, strong visual/audio identity, and a complete start-to-ending flow.
 
 ## Current status
 
 ```text
-Current development stage: 11 / 36
-Current latest clean core: V126
-Current latest feature: Battery encounters hardening
-Current next planned stage: Stage 12 — Mini-boss 1 design: Game Boy guardian
+Status date: 2026-06-06
+Engine: Unity 6000.0.76f1
+Authoritative plan: PROJECT_STATUS.md
+Current category: C06 — player melee combat expansion
+Current code baseline: natural movement + awareness + facing readability + spinning AOE light attack
+Verification state: committed, requires clean Unity compilation, TEST EVERYTHING, and Play Mode verification
 ```
 
----
+The old `Stage 11 / V126` summary is no longer the active status model. The categorized plan in `PROJECT_STATUS.md` is authoritative.
+
+## Documentation
+
+Read documents in this order:
+
+1. [`PROJECT_STATUS.md`](PROJECT_STATUS.md) — complete authoritative requirements, progress, blockers, QA truth, and next action.
+2. [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) — explains which documents are current, canonical, superseded, or historical.
+3. This README — project overview and onboarding.
+4. `Assets/_Project/Design/**` — detailed system and design specifications.
+5. `Assets/_Project/Design/QA/**` — historical stage reports, not the current queue.
+
+When documents conflict, `PROJECT_STATUS.md` wins.
+
+## Current implemented gameplay baseline
+
+### Player and combat
+
+- Player movement with acceleration/deceleration smoothing.
+- Mouse-directed facing and attacks.
+- Dodge / dash with invulnerability frames.
+- Light melee attack.
+- Heavy melee attack.
+- Long-press light-input spinning AOE attack:
+  - quick left click / quick `J` remains the normal light attack;
+  - hold for about `0.24s` to spin when the spin cooldown is ready;
+  - damages every unique living enemy in range;
+  - lower per-target damage than the normal attack;
+  - outward knockback, stagger, flash, and impact feedback;
+  - independent cooldown that does not block normal light attacks;
+  - weapon-damage pickups scale the spin through the existing multiplier;
+  - dedicated spin visual without the normal forward-slash animation.
+- Ranged tap/charged shooting.
+- Ammo and automatic reload HUD.
+- Physical parry and related feedback.
+
+### Player, horse, and enemy movement
+
+- Player movement is responsive but less mechanically abrupt.
+- Mounted horse speed is clearly higher than player speed.
+- Horse acceleration/braking are softer and turns are wider than player turns.
+- Enemy steering and awareness have been strengthened to reduce passive enemies near the player.
+- Temporary front/back markers distinguish player, horse, and enemies until final models make facing self-evident.
+- Temporary facing markers must be removed when production models are integrated.
+
+### Horse
+
+- Mount/dismount flow.
+- Mounted shooting without forcing horse rotation from the shot.
+- Horse health, healing, faint/recovery, buck, flee, and return behavior.
+- Clean start beside the player on safe ground.
+- Proactive lava/hole/chasm/missing-ground detection.
+- Hazard recovery remains a final fallback and must not damage the horse.
+
+Current pending horse follow-up:
+
+```text
+Replace the one-second hazard stop with a short retreat of roughly two horse steps
+away from the threat, then return to normal behavior.
+```
+
+### Enemies and encounters
+
+- Sword, charger, ranged, trap, jumper, patrol, and guardian foundations.
+- Combat-room pressure and escape blocking.
+- Protected collectible guardian encounters.
+- Guardian anticipation/teleport effects.
+- Spawn-position safety for collectible guardians.
+- Shared boss/mini-boss framework foundations.
+- Playable Square Jumper framework encounter foundation.
+
+### Minimap and camera
+
+- Fog-of-war room discovery.
+- Player-position fallback discovery.
+- Player-up orientation in 90-degree sectors.
+- Horse-mounted movement direction support.
+- Hard clipping/grouping to keep map drawing inside the minimap frame.
+- Camera forward-visibility framing with the player lower on screen.
+
+Current pending minimap follow-up:
+
+```text
+Keep the 90-degree orientation rule, but animate each orientation change more slowly,
+smoothly, and professionally instead of snapping immediately.
+```
+
+### Main menu and settings
+
+- BBH boot intro.
+- Main menu before gameplay.
+- START GAME, SETTINGS, and desktop QUIT.
+- Persistent graphics, display, frame-rate, audio, sensitivity, and camera-shake settings.
+- Pause menu.
+- Death/result flow returns to the unchanged main menu without immediate scene reload.
+- Gameplay reload occurs only after the player explicitly presses START GAME.
+- Mother-victory completion relic behavior is documented for the final flow.
+
+### Hidden collectibles and endings
+
+Secret collectibles remain genuinely hidden and must not be advertised through objective UI.
+
+Current collectible set:
+
+```text
+Game Boy
+Battery x2
+Game Cartridge
+```
+
+Forbidden advertising includes objective markers, empty slots, missing-item text, checklists, and `0/4` progress.
+
+Ending foundations include variants for missing Game Boy, missing batteries, missing cartridge, and the fully powered Game Boy state. The deeper final/Mother-boss sequence remains governed by `PROJECT_STATUS.md` and the dedicated boss documents.
+
+## Why enemy order can feel the same between runs
+
+The current scene builder uses randomness when it **generates the Unity scene**, including room selection, enemy positions, and some enemy choices. A normal new run reloads the already-generated scene rather than generating a fresh runtime layout, so room/enemy order can remain identical between runs.
+
+Enemy-type progression is also partly based on map depth and cell coordinates, which intentionally makes early/mid/late difficulty patterns more predictable.
+
+This is already scheduled for the later production map/run architecture:
+
+- deterministic run-seed ownership and storage;
+- full multi-route map generation;
+- random legal mini-boss selection, role assignment, and placement;
+- multi-seed validation and reproducible failure seeds;
+- run lifecycle reset/persistence rules.
+
+A temporary second randomization system should not be added now because it would conflict with that planned architecture.
+
+## QA workflow
+
+There is one required Unity QA command:
+
+```text
+Boredom And Dungeons -> TEST EVERYTHING
+```
+
+`TEST EVERYTHING` owns the automated project checks. Do not add a second QA command that the developer must remember to run.
+
+The final gate for a material gameplay change is:
+
+1. Unity finishes compilation with no `CSxxxx` errors.
+2. No parser failure or missing-script error.
+3. Run `TEST EVERYTHING`.
+4. Automated blockers: `0`.
+5. Automated warnings: target `0`.
+6. Enter Play Mode once and complete the displayed manual checklist.
+7. Run repository hygiene / diff checks before commit.
+8. Update `PROJECT_STATUS.md` with the verified result.
+
+A feature is not DONE merely because code or a package exists.
 
 ## Technical stack
 
 ```text
-Engine: Unity
+Engine: Unity 6000.0.76f1
 Language: C#
-Game style: top-down / angled 2.5D action-adventure
-Input target: keyboard + mouse first
-Current platform target: desktop / Unity Editor prototype
-Architecture: Unity Runtime scripts + Unity Editor scene-builder tools
+Style: top-down / angled 2.5D action-adventure
+Current harness: desktop Unity Editor, keyboard + mouse
+Final target: mobile landscape
+Architecture: runtime scripts + editor scene-generation/validation tools
 ```
 
 Important folders:
@@ -36,377 +187,77 @@ Assets/_Project/Scripts/Editor
 Assets/_Project/Design
 Assets/_Project/Art
 Assets/_Project/Audio
+Assets/_Project/Scenes
 Packages
 ProjectSettings
 ```
 
-Runtime scripts must not depend on `UnityEditor`. Editor-only tools must stay under `Assets/_Project/Scripts/Editor`.
+Runtime scripts must not depend on `UnityEditor`. Editor-only tools must remain under `Assets/_Project/Scripts/Editor`.
 
----
-
-## Project vision
-
-The game should feel like a real level/map, not just a maze generator.
-
-Core direction:
-
-- A readable top-down / angled 2.5D action game.
-- Exploration through a complex but understandable map.
-- Large rooms and natural areas rather than endless square corridors.
-- Natural rounded turns and less grid-like movement flow.
-- Horse riding as part of traversal and combat.
-- Melee and ranged combat with clear aiming and feedback.
-- Optional hidden collectibles that change the ending.
-- Stronger enemies, mini-bosses, and a final boss.
-- A cinematic ending room with different outcomes based on secrets found.
-
-The long-term goal is a playable vertical slice that feels like a small complete game level.
-
----
-
-## Main systems currently implemented
-
-### Player and combat
-
-- Player movement.
-- Dodge / dash movement.
-- Dodge i-frames.
-- Visual pulse during dodge invulnerability.
-- Light melee attack.
-- Heavy melee attack.
-- Ranged shooting.
-- Ammo / reload HUD.
-- Bullets should collide with walls instead of passing through them.
-
-Current combat aiming rule:
-
-```text
-On foot:
-attacks aim toward the mouse world point
-and the player rotates toward the attack direction.
-```
-
-```text
-Mounted:
-shots aim toward the mouse world point
-but the horse does not rotate because of shooting.
-```
-
----
-
-### Horse system
-
-- Horse exists as part of gameplay.
-- Mounted shooting is supported.
-- Mounted shooting does not force the horse to rotate.
-- Horse healing support exists.
-
-Planned horse improvements:
-
-- Better horse texture/model.
-- Clearer healing indicator.
-- Better riding sound and feedback.
-- Better visual state for healthy / damaged / fainted / healing horse.
-
----
-
-### Minimap and HUD
-
-- Minimap exists.
-- Minimap discovers explored rooms.
-- Minimap uses player world-position fallback, not only trigger events.
-- Minimap displays explored room count.
-
-Current intended HUD layout:
-
-```text
-Ammo / reload HUD: top-right
-Minimap: bottom-right
-Secret collectible badges: top-left, only after pickup
-```
-
----
-
-### Secret collectibles
-
-Secret collectibles are optional and should not be advertised to the player.
-
-Current secret collectible types:
-
-```text
-Game Boy
-Battery
-Game Cartridge
-```
-
-Important design rule:
-
-```text
-Secrets are discovered through play, not through objective text.
-```
-
-Forbidden:
-
-```text
-Objective markers
-Checklist
-Empty slots
-0/4 progress
-Missing item text
-Text telling the player to find or collect secrets
-```
-
-Allowed:
-
-```text
-Small badge only after pickup
-Pickup visual effects
-Environmental hints
-Cinematic consequences
-```
-
-Current badge labels:
-
-```text
-GB
-BAT / BAT x2
-CART
-```
-
----
-
-### Guardian encounters
-
-Protected collectibles can spawn guardian enemies.
-
-Current V126 behavior:
-
-```text
-1. Player approaches a protected collectible.
-2. A teleport/smoke/ring VFX appears on the floor.
-3. Guardians are created hidden and inactive.
-4. A short anticipation delay runs.
-5. Guardians move into fair resolved positions and become active.
-6. A final flash appears.
-```
-
-Battery guardian encounters are now harder and fairer:
-
-```text
-- Default encounter pressure is higher.
-- Guardians avoid spawning too close to the player.
-- Guardians avoid spawning too close to the collectible.
-- Guardians avoid overlapping each other.
-- If the first spawn point is bad, alternate angles/distances are tried.
-- If all candidates are imperfect, the best scored fallback is used.
-```
-
----
-
-### Game Boy ending logic
-
-The ending system has four procedural ending variants based on collected secrets.
-
-Current ending variants:
-
-```text
-NoGameBoy
-GameBoyNoBatteries
-PoweredNoCartridge
-PoweredWithCartridge
-```
-
-Meaning:
-
-```text
-NoGameBoy:
-The player reaches the ending room, sits, and does not pull out anything.
-```
-
-```text
-GameBoyNoBatteries:
-The player has the Game Boy, pulls it out, but there is not enough power.
-```
-
-```text
-PoweredNoCartridge:
-The player has Game Boy + enough batteries.
-The Game Boy powers on with gray/white light, but there is no game loaded.
-```
-
-```text
-PoweredWithCartridge:
-The player has Game Boy + enough batteries + Game Cartridge.
-The Game Boy powers on with colorful lights, showing that a game loaded.
-```
-
-The current ending cinematic is procedural and temporary. It still needs final animation, camera cuts, audio, lighting, and polish.
-
-Planned ending speech bubble rule for the day ending scene:
-
-```text
-If the player does not have all secret collectibles:
-I'm bored
-```
-
-```text
-If the player has Game Boy + 2 Batteries + Game Cartridge:
-I'm having fun :)
-```
-
-This speech bubble rule should remain a final scene result only. It must not become a checklist, objective, missing-item hint, or pre-ending instruction.
-
----
-
-## Current roadmap
-
-The full roadmap is 36 stages. The project is currently around Stage 11.
-
-Completed or partially completed:
-
-```text
-1. QA baseline workflow
-2. Project structure pass
-3. Scene builder decomposition preparation
-4. Inventory state expansion
-5. Game Cartridge collectible type
-6. Secret collectible badge HUD
-7. Ending state controller
-8. Four procedural ending variants
-9. Secret collectible advertising guard
-10. Guardian Spawn VFX
-11. Battery encounters hardening
-```
-
-Next major stages:
-
-```text
-12. Mini-boss 1 design — guards the Game Boy
-13. Mini-boss 2 design — pre-boss encounter
-14. Mini-boss 3 design — random late mini-boss that drops Game Cartridge
-15. Final boss design
-16. Boss / mini-boss framework
-17. Full map redesign
-18. Natural rounded / curved map pass
-19. Large room and level-feel pass
-20. Gameplay placement pass
-21. Biome / ground texture pass
-22. Wall / environment material pass
-23. Lighting / atmosphere pass
-24. Environmental storytelling props
-25. Player art / texture pass
-26. Horse art / texture pass
-27. Enemy / guardian / boss art pass
-28. Weapons / projectiles / bombs VFX pass
-29. Ammo / reload HUD polish
-30. General UI / HUD polish
-31. Audio foundation
-32. Cinematic polish, including final speech bubble result
-33. Combat / difficulty balance
-34. Readability + performance pass
-35. Code cleanup + production asset pipeline + save/progression planning
-36. Full vertical slice QA + playable build
-```
-
----
-
-## Boss placement rules
-
-Planned boss structure:
-
-```text
-Mini-boss 1:
-Guards the Game Boy.
-```
-
-```text
-Mini-boss 2:
-Appears before the final boss, but not directly next to it.
-After beating it, there should still be a bit more map to play.
-```
-
-```text
-Mini-boss 3:
-Appears later in the map in a dynamic/random legal location.
-Drops the Game Cartridge.
-```
-
-```text
-Final boss:
-Located in the last room.
-The exit is blocked until the boss is defeated.
-```
-
----
-
-## How to open the project
-
-1. Clone the repository:
+## Opening the project
 
 ```bash
 git clone https://github.com/barakbenhur1/Boredom-and-Dungeons.git
 ```
 
-2. Open the folder in Unity.
-3. Let Unity import and compile.
-4. Use the editor scene builder menu to create the current prototype scene.
+Then:
 
-The exact editor menu may change as the scene builder evolves. Current work has been using the clean maze prototype scene builder flow.
+1. Open the repository folder in Unity `6000.0.76f1`.
+2. Let Unity import and compile fully.
+3. Open `Assets/_Project/Scenes/02_CleanCore_MazePrototype.unity`.
+4. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+5. Rebuild the prototype scene only when the current task explicitly requires scene regeneration.
 
----
+Current scene-builder menu:
+
+```text
+Boredom And Dungeons -> Create Clean Maze Prototype Scene
+```
+
+Regenerating the scene can change generated maze/enemy placement. Merely restarting a run does not regenerate it.
 
 ## Repository hygiene
 
-This repository should contain the real extracted Unity project files, not old ZIP/version packages.
-
-Should be committed:
+Commit:
 
 ```text
 Assets/_Project/**
 Packages/**
 ProjectSettings/**
 README.md
+PROJECT_STATUS.md
+DOCUMENTATION_INDEX.md
 .gitignore
-Unity .meta files for committed assets
+required Unity .meta files
 ```
 
-Should not be committed:
+Do not commit:
 
 ```text
 Library/
 Temp/
 Obj/
-Build/
-Builds/
 Logs/
 UserSettings/
+Build/
+Builds/
 *.zip
-README_V*.md
-README_CLEAN_CORE*.md
-package_manifest.json
-old generated version folders
-local exported packages
-IDE generated files
+one-shot patch/package tools
+package payload folders
+local QA output
+chat exports
+copied status snapshots
+WORKING_NOW.md
+PROJECT_STATUS_CURRENT*.md
+IDE-generated files
 ```
 
-Important:
+Unity `.meta` files are required and must not be ignored globally.
 
-```text
-Do not ignore Unity .meta files globally.
-Unity .meta files are required for references to stay stable.
-```
+## Current next action
 
----
-
-## Current priority
-
-```text
-Stage 12 — Mini-boss 1 design: Game Boy guardian
-```
-
-Goal:
-
-- Define the first mini-boss that protects the Game Boy.
-- Keep its location decided later by explicit placement, not by assumption.
-- Create a readable design before implementation.
-- Preserve the secret collectible rule: no objective marker, no checklist, no advertising.
+1. Verify the committed natural movement and spinning AOE baseline in Unity.
+2. Implement the approved horse two-step hazard retreat.
+3. Replace the minimap's immediate 90-degree snap with a slower polished transition.
+4. Keep enemy-run randomization in its planned seed/map architecture rather than adding a temporary duplicate system.
+5. Update the authoritative status and run the one-button QA gate.
