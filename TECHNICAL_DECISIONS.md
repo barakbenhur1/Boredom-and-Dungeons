@@ -19,7 +19,7 @@ This file records long-lived choices and rationale. Current implementation statu
 
 - Preserve existing functionality and assets by default.
 - Partial-package failures are repaired on top of the real local state.
-- Broad reset/clean/checkout is not an accepted repair strategy without explicit user approval.
+- Broad reset, clean, or checkout is not an accepted repair strategy without explicit user approval.
 
 ### TD-004 — Existing system owner before new system
 
@@ -33,8 +33,8 @@ This file records long-lived choices and rationale. Current implementation statu
 
 ### TD-006 — Structural patching over fragile text matching
 
-- Installers prefer method/block/token-aware edits.
-- Whitespace-sensitive replacement is acceptable only when the preflight uniquely proves the expected state.
+- Installers prefer method, block, or token-aware edits.
+- Whitespace-sensitive replacement is acceptable only when preflight uniquely proves the expected state.
 - Installers must be idempotent and support partial previous application.
 
 ### TD-007 — Documentation changes are part of implementation
@@ -43,33 +43,44 @@ This file records long-lived choices and rationale. Current implementation statu
 - Architecture, design, QA, technical decisions, and performance documents are updated when their truth changes.
 - Chat-only decisions are not accepted project state.
 
-<!-- B&D QA CONTRACT DRIFT DECISIONS V9 START -->
 ### TD-008 — Conflict-marker scans are line-aware
 
 - Only standalone Git conflict-marker lines are blockers.
-- Inline examples in maintained documentation and quoted strings in validator
-  source are allowed and must not be treated as unresolved conflicts.
+- Inline examples in maintained documentation and quoted strings in validator source are allowed.
 - External package validation and Unity QA use the same interpretation.
 
 ### TD-009 — QA contracts follow the active implementation
 
 - Regression checks validate current behavior and stable ownership contracts.
-- QA must not require obsolete local-variable names or superseded version labels
-  after a structural implementation changes.
-- The V7 minimap contract is `BD MINIMAP RIGID CLIP MASK V7` plus the rigid
-  `GUI.matrix` rotation method.
-- The current START GAME highlight contract is the action-aware
-  `DrawActionButton` path with `MenuActionVisual.Progress` and
-  `StartGameHighlightTint`; the removed `startGamePressed` local variable is not
-  a product requirement.
-<!-- B&D QA CONTRACT DRIFT DECISIONS V9 END -->
+- QA must not require obsolete local-variable names or superseded package labels after a structural implementation changes.
+
+### TD-010 — Current-only maintained documentation
+
+- Maintained Git documents describe current truth, not a chronological accumulation of package repairs.
+- Git history stores historical versions.
+- When a document is superseded, merge valid requirements into its authoritative owner, update `DOCUMENTATION_INDEX.md`, and remove the obsolete file in the same change.
+- Root Markdown is restricted to the canonical allowlist. Feature contracts live under `Assets/_Project/Design/`.
+- Temporary package, README, manifest, QA export, chat, and patch artifacts are never authoritative project documentation.
+
+### TD-011 — Cinematic camera and input ownership
+
+- `BDRunPresentationCoordinator` may temporarily own camera transform and input lock during the mounted entrance.
+- `BDCameraFollow` is restored only after the horse completes the approved right turn and full stop.
+- The Main Camera GameObject and its sole `AudioListener` remain active; camera-follow ownership may be disabled without disabling audio.
+- All gameplay input readers, including mouse-facing state, respect the central presentation lock.
+
+### TD-012 — Semantic documentation QA
+
+- Stable IDs and implementation anchors remain strict.
+- Human documentation wording is validated semantically when equivalent phrases describe the same approved behavior.
+- Semantic wording tolerance must not weaken Runtime, scene, ownership, or Play Mode verification.
 
 ## Decision lifecycle
 
 A decision may be:
 
 - `ACTIVE`
-- `SUPERSEDED` with a link/name of the replacing decision
+- `SUPERSEDED` with the replacing decision identified
 - `REJECTED` with rationale
 - `RECOVERY REQUIRED` when evidence is incomplete
 
