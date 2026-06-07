@@ -6,10 +6,10 @@
 Status date: 2026-06-07
 Classification: EARLIER / BLOCKING REGRESSION
 Active work: C03/C10/C11.RUNTIME.V23R2
-Current truth: V23R1 did not install because its preflight pinned an outdated design-document hash. No V23R1 code or QA file was applied. The current local code remains post-V22R2.
+Current truth: V23R1 stopped on an outdated design-document hash after its replacement phase had already copied some earlier files. The local repository is therefore in a partial V23R1 state: some Runtime/documentation replacements may exist, while the new V23 QA file and final cleanup/deletions were not completed.
 New gameplay blockers: the hole/chasm can still be entered by ordinary walking at certain angles, and after one intentional dodge fall ordinary walking can keep re-entering it. Hole recovery also returns the player too far from the hole.
-Prepared repair: V23R2 supersedes V23R1. It includes the single-owner camera and combat-grounding repairs, replaces endpoint-only hole blocking with a swept capsule-footprint check, limits intentional hole entry to an active dodge/jump/forced movement window, clears stale gap intent after recovery, and stores a nearest valid local recovery anchor just outside the hole.
-Verification state: package construction/static validation required; Unity compilation, TEST EVERYTHING, focused Play Mode, and Console verification remain mandatory.
+Prepared repair: V23R2 supersedes V23R1. It supports both the current partial V23R1 state and a clean post-V22R2 state. It includes the single-owner camera and combat-grounding repairs, replaces endpoint-only hole blocking with a swept capsule-footprint check, limits intentional hole entry to an active dodge/jump/forced movement window, clears stale gap intent after recovery, and stores a nearest valid local recovery anchor just outside the hole.
+Verification state: package construction/static validation completed; Unity compilation, TEST EVERYTHING, focused Play Mode, and Console verification remain mandatory.
 Saved feature resume point after V23R2 passes: C03.23A -> C07.16A -> C07.16 -> C07.17.
 Later work retained without interrupting V23R2: C12.42 explicit AudioMixer routing for Master, Music, SFX, and Ambience.
 ```
@@ -63,7 +63,7 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R2 acceptance gate
 
-1. Install V23R2 on the exact current post-V22R2 local state; the failed V23R1 attempt must not be required.
+1. Install V23R2 on the current partial V23R1 state or a clean post-V22R2 state; no reset, stash, or older-package reinstall is required.
 2. Unity compiles without project errors or new warnings.
 3. `Boredom And Dungeons -> TEST EVERYTHING` passes, including camera, grounding, swept-hole, active-intent, and local-respawn contracts.
 4. Walk toward every side and corner of the hole at slow and full speed; walking never falls in.
@@ -94,7 +94,7 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 # Exact current sequence
 
-1. Install V23R2 on the current post-V22R2 local state.
+1. Install V23R2 on the current partial V23R1 or post-V22R2 local state.
 2. Wait for Unity compilation.
 3. Run TEST EVERYTHING.
 4. Verify camera/wall/room-transition behavior.
@@ -108,6 +108,7 @@ This file is the only live source for current status, ordering, blockers, verifi
 # Current risks
 
 - Exact-hash preflight on maintained documentation can block a valid code repair after documentation was updated independently.
+- A failed sequential installer can leave an intentional partial state; repair packages must detect and continue from it rather than assuming no files changed.
 - Endpoint-only hazard checks allow diagonal tunnelling.
 - Long recent-action grace windows can turn later ordinary walking into an unintended gap entry.
 - A global conservative safe point can make hole recovery feel disconnected from the fall location.
@@ -117,8 +118,8 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## 2026-06-07 — V23R2 hole boundary and local respawn regression
 
-- V23R1 installer stopped before modifying code because one maintained design document had a newer hash than its package manifest.
+- V23R1 stopped on a newer design-document hash after earlier replacement files had already been copied, leaving a partial V23R1 local state without the new QA file and final cleanup/deletions.
 - User reported ordinary walking can enter the hole from specific angles.
 - User reported walking can repeatedly re-enter after an earlier dodge fall.
 - User requested a respawn close to the same hole rather than a distant safe point.
-- V23R2 supersedes V23R1 and preserves the saved feature resume point.
+- V23R2 supersedes V23R1, supports the partial state directly, and preserves the saved feature resume point.
