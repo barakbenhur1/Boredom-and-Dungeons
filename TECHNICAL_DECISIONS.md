@@ -60,13 +60,12 @@ This file records long-lived choices and rationale. Current implementation statu
 - Git history stores historical versions.
 - When a document is superseded, merge valid requirements into its authoritative owner, update `DOCUMENTATION_INDEX.md`, and remove the obsolete file in the same change.
 - Root Markdown is restricted to the canonical allowlist. Feature contracts live under `Assets/_Project/Design/`.
-- Temporary package, README, manifest, QA export, chat, and patch artifacts are never authoritative project documentation.
 
 ### TD-011 — Cinematic camera and input ownership
 
 - `BDRunPresentationCoordinator` may temporarily own camera transform and input lock during the mounted entrance.
 - `BDCameraFollow` is restored only after the horse completes the approved right turn and full stop.
-- The Main Camera GameObject and its sole `AudioListener` remain active; camera-follow ownership may be disabled without disabling audio.
+- The Main Camera GameObject and its sole `AudioListener` remain active.
 - All gameplay input readers, including mouse-facing state, respect the central presentation lock.
 
 ### TD-012 — Semantic documentation QA
@@ -75,16 +74,22 @@ This file records long-lived choices and rationale. Current implementation statu
 - Human documentation wording is validated semantically when equivalent phrases describe the same approved behavior.
 - Semantic wording tolerance must not weaken Runtime, scene, ownership, or Play Mode verification.
 
+### TD-013 — One normal-gameplay camera transform owner
+
+- `BDCameraFollow` owns every normal-gameplay Main Camera position and rotation write.
+- Composition, room containment, smoothing, collision, and shake are resolved inside that owner before one final transform assignment.
+- A second post-follow offset component is not allowed because it can bypass wall containment and produce transition or combat camera drift.
+- Mouse yaw uses one rate-limited stage. Wall proximity does not change sensitivity, and combat shake does not change vertical position or pitch.
+
+### TD-014 — CharacterController-root-safe recovery
+
+- Ground recovery computes root height from `CharacterController.center`, `height`, and `skinWidth`; a fixed world-space offset is insufficient.
+- Safe-ground probes reject dynamic actors, hazards, structural walls, and moving bodies.
+- Successful player damage starts a short grounding guard that freezes safe-point updates and recovers only unexpected floor loss, while intentional jump/dodge/gap motion remains valid.
+
 ## Decision lifecycle
 
-A decision may be:
-
-- `ACTIVE`
-- `SUPERSEDED` with the replacing decision identified
-- `REJECTED` with rationale
-- `RECOVERY REQUIRED` when evidence is incomplete
-
-Do not silently delete superseded decisions.
+A decision may be `ACTIVE`, `SUPERSEDED`, `REJECTED`, or `RECOVERY REQUIRED`. Do not silently delete superseded decisions.
 
 ## Template for future decisions
 
