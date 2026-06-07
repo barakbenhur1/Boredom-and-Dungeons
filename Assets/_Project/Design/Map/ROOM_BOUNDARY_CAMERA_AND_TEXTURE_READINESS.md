@@ -2,7 +2,7 @@
 
 ## Immediate prototype contract
 
-- Every room-boundary wall reaches at least **22 world units** in visible and collision height.
+- Every room-boundary wall reaches at least **36 world units** in visible and collision height.
 - The original wall base remains fixed; height grows upward.
 - The player, horse, enemies, projectiles, and camera may not pass through a closed room wall.
 - Authored open doorway sides remain usable and transition normally when the player actually crosses them.
@@ -13,10 +13,16 @@ A closed wall is a camera-visibility boundary, not only a movement collider.
 
 - Clamp camera position and look point to the current room interior every frame.
 - Rotating mouse or touch aim while standing beside a wall may not move either point around, through, or above the wall.
-- Sphere and collision tests must handle diagonal angles, near-corner positions, screen-edge/frustum leakage, and mounted target height.
-- Push the camera inward when necessary instead of allowing a view into an adjacent room.
-- Re-resolve the current room immediately near boundaries; a stale-room interval may not expose another room.
+- Sphere and collision tests cover diagonal angles, corners, screen-edge leakage, and mounted target height.
+- Push the camera inward rather than exposing an adjacent room.
 - Only legal authored openings permit visibility and traversal between rooms.
+
+## Smooth room-boundary handoff
+
+- A legal doorway crossing does not switch the camera clamp by a full room in one frame.
+- Keep the previous room as camera owner until the player is clearly inside the next room.
+- Blend room-boundary center and size during handoff so the player does not appear to jump backward when the minimap node changes.
+- Minimap discovery and rotation do not move player or horse transforms.
 
 ## Future natural wall contract
 
@@ -35,4 +41,4 @@ The profile is metadata, not a forced material clone. Future shaders or authored
 
 ## QA
 
-Verify all four closed sides, every open doorway, mounted and on-foot targets, quick camera rotations, diagonal and corner viewpoints, different aspect ratios, tall-wall bases, non-negative scale, and future texture-orientation metadata. No closed-wall test may reveal an adjacent room in any frame.
+Verify all closed sides, legal openings, mounted and on-foot targets, rapid rotations, diagonal and corner views, repeated room/node crossings, multiple aspect ratios, wall height, and texture-orientation metadata. No closed-wall view reveals an adjacent room, and no room handoff creates a backward visual snap.
