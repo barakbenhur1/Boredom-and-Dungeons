@@ -1,3 +1,3 @@
-# Current project plan
+# Current order
 
-See `PROJECT_STATUS.md` for the only authoritative current order, blockers, QA truth, and resume point.
+Use PROJECT_STATUS.md.
