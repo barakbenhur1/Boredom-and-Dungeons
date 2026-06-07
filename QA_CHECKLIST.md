@@ -21,19 +21,23 @@ New automated checks integrate into this command; do not create another mandator
 7. **Performance when relevant:** measure CPU/GPU/memory/GC/draw calls/loading on a representative target.
 8. **Documentation truth:** record real results and exact resume point in `PROJECT_STATUS.md`.
 
-## Active V23 regression gate
+## Active V23R2 regression gate
 
 1. **Single camera owner:** `BDCameraFollow` is the only normal-gameplay Main Camera transform owner; the old viewport-bias source is absent.
-2. **Stable yaw:** mouse/player intent uses one angular-speed-limited yaw stage and does not change sensitivity near walls or enemies.
-3. **Stable pitch:** enemy presence, damage, walls, and room/tile handoff do not push the camera up/down or change gameplay pitch.
-4. **Planar shake:** combat shake has no vertical component.
-5. **Closed walls:** on foot and mounted, side/corner/diagonal rotation never reveals an adjacent room.
-6. **Room/tile handoff:** cross several legal transitions in both directions. Distance/FOV/pitch remain stable with no snap or zoom.
-7. **Combat grounding:** repeated enemy hits near walls and transitions do not move the player below the floor.
-8. **Recovery placement:** any forced recovery places the CharacterController root high enough that the capsule is fully above ground and not stuck.
-9. **Ground filtering:** recovery points are not sampled from enemies, horses, players, CharacterControllers, hazards, structural walls, or moving bodies.
-10. **Existing regressions:** charged shot, AudioListener, mounted intro, BBH first frame, current-status QA, and V22R2 Console cleanup remain passing.
-11. **Console:** no project-generated red errors or repeated warnings.
+2. **Stable yaw/pitch:** wall proximity, enemies, damage, and room/tile handoff do not alter mouse sensitivity or gameplay pitch.
+3. **Planar shake:** combat shake has no vertical component.
+4. **Closed walls:** on foot and mounted, side/corner/diagonal rotation never reveals an adjacent room.
+5. **Room/tile handoff:** cross several legal transitions in both directions. Distance/FOV/pitch remain stable with no snap or zoom.
+6. **Combat grounding:** repeated enemy hits near walls and transitions do not move the player below the floor.
+7. **Root-safe recovery:** any forced recovery places the CharacterController capsule fully above ground and movable.
+8. **Walking-proof hole boundary:** approach every side and corner of the hole using ordinary walking at slow/full speed and diagonal angles; walking never enters.
+9. **Swept footprint:** hazard filtering checks intermediate path samples and capsule footprint, not only final center position.
+10. **Active intent only:** intentional gap entry is limited to active dodge, actively ascending jump, or explicit forced movement. Recent historical dodge/jump timestamps do not authorize later walking entry.
+11. **Post-recovery suppression:** after a hole recovery, immediately walk toward the same hole from multiple angles; ordinary movement remains blocked.
+12. **Near-hole respawn:** intentional fall recovery uses a valid local point just outside the same hole before older safe points or spawn.
+13. **Respawn safety:** local recovery is outside all hazard volumes, above ground, free of overlap, and does not loop.
+14. **Existing regressions:** charged shot, AudioListener, mounted intro, BBH first frame, current-status QA, and V22R2 Console cleanup remain passing.
+15. **Console:** no project-generated red errors or repeated warnings.
 
 ## Repository-hygiene gate
 
