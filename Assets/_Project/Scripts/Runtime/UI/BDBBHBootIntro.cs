@@ -9,6 +9,13 @@ namespace BoredomAndDungeons
         private const int LetterCount = 3;
         private const string IntroText = "BBH";
         private const float VerticalScreenPositionFromTop = 0.45f;
+        // BD BBH STRICT SEQUENTIAL FILLED CIRCLE V10
+        private const float StrictInitialBlackHold = 0.36f;
+        private const float StrictLetterDuration = 0.72f;
+        private const float StrictGapAfterLetter = 0.14f;
+        private const float StrictCircleGrowthDuration = 0.56f;
+        private const float StrictCircleHoldAfterGrowth = 0.50f;
+        private const float StrictFadeOutDuration = 0.18f;
 
         [Header("Timing")]
         [SerializeField] private float initialBlackHold = 0.24f;
@@ -130,27 +137,22 @@ namespace BoredomAndDungeons
             Time.realtimeSinceStartup - startedAt;
 
         private float PerLetterWindow =>
-            Mathf.Max(0.05f, letterDuration) +
-            Mathf.Max(0f, gapAfterLetter);
+            StrictLetterDuration + StrictGapAfterLetter;
 
         private float LettersEndTime =>
-            Mathf.Max(0f, initialBlackHold) +
+            StrictInitialBlackHold +
             PerLetterWindow * LetterCount -
-            Mathf.Max(0f, gapAfterLetter);
+            StrictGapAfterLetter;
 
         private float CircleGrowthEndTime =>
-            LettersEndTime + Mathf.Max(0.05f, circleGrowthDuration);
+            LettersEndTime + StrictCircleGrowthDuration;
 
         private float FadeStartTime =>
             CircleGrowthEndTime +
-            Mathf.Max(
-                0f,
-                Mathf.Max(0.05f, circleFinalHold) -
-                Mathf.Max(0.05f, fadeOutDuration)
-            );
+            Mathf.Max(0f, StrictCircleHoldAfterGrowth - StrictFadeOutDuration);
 
         private float TotalDuration =>
-            CircleGrowthEndTime + Mathf.Max(0.05f, circleFinalHold);
+            CircleGrowthEndTime + StrictCircleHoldAfterGrowth;
 
         private void CompleteIntro()
         {
@@ -217,7 +219,7 @@ namespace BoredomAndDungeons
             );
 float shimmerProgress = Mathf.Clamp01(
                 (Elapsed - LettersEndTime) /
-                Mathf.Max(0.01f, completedHold)
+                Mathf.Max(0.01f, StrictCircleHoldAfterGrowth)
             );
 
             DrawFilledCircleBadge(
@@ -230,12 +232,12 @@ float shimmerProgress = Mathf.Clamp01(
             for (int index = 0; index < LetterCount; index++)
             {
                 float letterStart =
-                    Mathf.Max(0f, initialBlackHold) +
+                    StrictInitialBlackHold +
                     index * PerLetterWindow;
 
                 float localProgress =
                     (Elapsed - letterStart) /
-                    Mathf.Max(0.05f, letterDuration);
+                    StrictLetterDuration;
 
                 if (localProgress <= 0f)
                     continue;
@@ -538,7 +540,7 @@ float shimmerProgress = Mathf.Clamp01(
 
             float progress = Mathf.Clamp01(
                 (Elapsed - LettersEndTime) /
-                Mathf.Max(0.05f, circleGrowthDuration)
+                StrictCircleGrowthDuration
             );
             float eased = EaseOutBack(progress);
             float diameter =
@@ -559,18 +561,18 @@ float shimmerProgress = Mathf.Clamp01(
 
             Color previous = GUI.color;
             GUI.color = new Color(
-                0.035f,
-                0.075f,
-                0.17f,
-                globalAlpha * 0.96f
+                0.055f,
+                0.145f,
+                0.34f,
+                globalAlpha * 0.97f
             );
             GUI.DrawTexture(rect, filledCircleTexture);
 
             GUI.color = new Color(
-                0.58f,
-                0.76f,
+                0.70f,
+                0.90f,
                 1f,
-                globalAlpha * 0.82f
+                globalAlpha * 0.92f
             );
             GUI.DrawTexture(rect, circleRimTexture);
             GUI.color = previous;

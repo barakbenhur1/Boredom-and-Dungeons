@@ -5,15 +5,11 @@
 
 ```text
 Status date: 2026-06-07
-Engine: Unity 6000.0.76f1
-Previous package result: Repair V6 copied its payload, then stopped before core-file patching because the minimap preflight did not recognize the actual local partial state.
-Current repair: cumulative V7 continues from that partial state without reset; completes run presentation, authored entrance/exit flow, existing Pause/menu polish, rigid minimap clipping, tall room walls, closed-wall camera stop, asymmetric-texture readiness, and the BBH filled-circle completion.
-Current status: IMPLEMENTED LOCALLY / VERIFY
-Required next action: install V7, compile, run TEST EVERYTHING, then complete the focused run-flow, minimap, wall/camera, and BBH intro Play Mode matrix.
-Acceptance: no pre-menu map flash; fresh/abandoned/post-cinematic mounted intro; ordinary death restart on foot; authored exit continuation; one Pause owner; rigid clipped minimap; adjacent rooms invisible across closed walls; camera stops at closed walls; BBH filled circle grows behind the letters and holds 0.50s.
-Later requirements recorded without interrupting current work: C10 inaccessible 1–4-room macro-regions already exist and now explicitly include rocks/boulder fields; Mother Dodge receives exact phase budgets and scheduler/fairness rules for later C09 implementation.
-Saved resume point after PASS: C03.23A, then C07.16A, C07.16, and C07.17.
-Do not commit until automated QA and the focused Play Mode matrix pass.
+Current repair: C03/C11.V10 — visual-entry/minimap/mounted-combat regression repair
+Reason: user Play Mode QA found BBH intro sequencing/circle failure, authored-door entry regression, minimap overflow, and mounted combat hit routing problems after the previous PASS.
+Immediate rule: treat this as a blocking regression before any feature work or commit.
+Required next action: install V10, run TEST EVERYTHING, then verify focused Play Mode: BBH one-letter sequence and filled circle, authored entrance/exit only with soft light portal, clipped minimap, mounted horse/player hit routing, and buck after any two mounted hits.
+Saved feature resume point: return to the prior current C03/C11 verification path only after this regression passes Play Mode.
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
 
@@ -2552,3 +2548,25 @@ No legacy requirement is removed by this reorganization.
 - Updated `QA_CHECKLIST.md` and `TECHNICAL_DECISIONS.md` so future checks follow active behavior rather than fragile implementation trivia.
 - Static/package validation is required before Unity. Unity compilation, automated QA, and Play Mode remain unverified until rerun locally.
 <!-- B&D QA CONTRACT DRIFT V9 CHANGELOG END -->
+
+
+## 2026-06-07 — C03/C11.V10 — visual-entry, minimap, and mounted-combat regression repair
+
+- User Play Mode QA found blocking regressions after the automated QA PASS:
+  - BBH intro can begin with more than one visible letter and the filled circle is not visible.
+  - The run entrance/exit presentation must not create a new box/door; it must use the authored entrance and authored exit only, with a soft light portal surface attached to those authored openings.
+  - The authored entrance is a one-way presentation surface after the player is already in the map and must not be treated as an accessible return door.
+  - If doorway start animation needs ground, use a small authored-door start position/grounding solution without replacing the original entrance.
+  - Minimap content still visually escapes the square frame and must be masked after rotation.
+  - Mounted combat must let enemies/projectiles hit the actual object they touch: horse or rider. Damage is not duplicated to both automatically.
+  - While mounted, hits on the rider count toward the horse's two-hit buck/throw burst, the same as hits on the horse.
+- This is a blocking regression. It must be fixed before commit or future feature work.
+- V10 implementation notes:
+  - BBH intro timing becomes strict and non-Inspector-stale for one-letter-at-a-time start order and post-letter filled-circle hold.
+  - Portal effect is changed from a visible rectangular/box-like surface to a soft generated oval light mask attached to the authored door only.
+  - Run entrance start is resolved from the authored entrance mouth and grounded by raycast; no replacement entrance box is generated.
+  - Minimap receives an after-rotation overflow mask over every edge around the inner square.
+  - Mounted rider CharacterController remains enabled as a hurtbox while movement control stays disabled.
+  - Horse receives a BDHealth bridge so generic enemy/projectile hit code can damage BDHorseHealth.
+  - Player damage while mounted notifies BDHorseHealth as a mounted-rider hit for buck counting.
+- Status: IMPLEMENTED IN LOCAL PACKAGE / VERIFY.
