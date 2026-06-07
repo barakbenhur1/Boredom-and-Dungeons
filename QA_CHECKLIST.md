@@ -56,15 +56,18 @@ The automated conflict scan blocks only real standalone Git marker lines after l
 - `No profiler data collected` means performance remains unverified.
 - A task is not `DONE` until all applicable gates and documentation requirements pass.
 
-## Active V20 focused regression gate
+## Active V20/V21 focused regression gate
 
 Automated PASS does not close this work while Play Mode or Console still shows a project error. Verify:
 
 - first BBH frame contains no pre-visible first `B`;
-- mounted-entry camera is inside the room, farther and higher, looking at the entrance;
+- mounted-entry camera is inside the room, at the approved 30% depth, and visibly higher at the V21 elevation;
 - mouse aim and every gameplay action remain locked through the horse right turn, full stop, and short hold;
 - normal camera ownership returns only after the stop;
-- rotating the camera beside every closed wall, including diagonal and mounted angles, never reveals the adjacent room;
+- structural walls reach at least `36` world units after `TEST EVERYTHING` installs and saves the scene;
+- rotating the camera beside every closed wall, including diagonal and mounted angles, never reveals or sees over the adjacent room;
+- crossing multiple legal doorways/minimap nodes never causes a backward visual snap;
+- minimap discovery and rotation never move player or horse transforms;
 - repeated charged-shot x3 use does not add duplicate `TrailRenderer` components and does not throw `BDChargedProjectileVisual` exceptions;
 - exactly one `AudioListener` remains active before, during, and after the cinematic;
 - the Console contains no project-generated red error before acceptance.
