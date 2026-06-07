@@ -87,6 +87,20 @@ This file records long-lived choices and rationale. Current implementation statu
 - Safe-ground probes reject dynamic actors, hazards, structural walls, and moving bodies.
 - Successful player damage starts a short grounding guard that freezes safe-point updates and recovers only unexpected floor loss, while intentional jump/dodge/gap motion remains valid.
 
+### TD-015 — Swept hole boundary and active-intent entry
+
+- Ordinary movement is evaluated as a swept CharacterController footprint, not a single endpoint test.
+- Walking cannot enter holes through diagonal tunnelling or corner overlap.
+- Hole entry permission is state-based and frame-current: active dodge, actively ascending jump, or explicit forced-gap movement only.
+- Historical dodge/jump timestamps never authorize later walking movement.
+- Recovery clears gap-entry state before control returns.
+
+### TD-016 — Local hole recovery before historical safe points
+
+- Hole falls capture a nearby valid recovery anchor beside the same hazard.
+- Local recovery uses a small dedicated edge clearance and CharacterController-root-safe placement.
+- The local anchor is preferred before older safe points or spawn, while loop-breaking and global fallbacks remain available only when the local point is invalid.
+
 ## Decision lifecycle
 
 A decision may be `ACTIVE`, `SUPERSEDED`, `REJECTED`, or `RECOVERY REQUIRED`. Do not silently delete superseded decisions.
