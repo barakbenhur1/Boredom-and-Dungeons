@@ -70,3 +70,14 @@ flowchart TD
     J --> K[Unity compile, TEST EVERYTHING, focused Play Mode]
     K --> L[Record real result in PROJECT_STATUS]
 ```
+
+## Permanent current-document and repository-hygiene rule
+
+Git must always contain the current, accurate project truth. Every material request, correction, implementation, QA result, blocker, and resume-point change is synchronized into the maintained repository documents in the same change.
+
+- Do not leave material requirements only in chat, a downloaded TXT, a package README, or an untracked local note.
+- Do not keep obsolete roadmaps, superseded repair reports, duplicate status files, temporary package documents, or stale instructions as live repository documentation.
+- Before removing a superseded document, merge every still-valid requirement into its authoritative owner and update `DOCUMENTATION_INDEX.md`.
+- Use Git history for old versions. Maintained files describe current truth.
+- Run repository-hygiene checks on every handoff and before every commit.
+- When the user explicitly requests a direct Git update, the assistant may update the repository directly; otherwise follow the normal reviewed local verification/commit flow.
