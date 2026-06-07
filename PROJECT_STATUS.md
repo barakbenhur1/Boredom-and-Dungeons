@@ -5,12 +5,13 @@
 ```text
 Status date: 2026-06-07
 Classification: EARLIER / BLOCKING REGRESSION
-Active work: C03/C11/C12.RUNTIME.V22
-Current truth: V20 and V21R1 are installed locally. V21 improved the entrance camera but did not close wall visibility and introduced a small camera zoom during room/minimap-node handoff.
-Prepared repair: V22 permanent structural-wall opacity, 64-unit wall height, closed-wall camera-intent guard, near-wall top-down pitch, and distance-preserving two-room union handoff.
-Verification state: package validation passed; Unity compilation, TEST EVERYTHING, focused Play Mode, and Console verification are still required.
-Saved feature resume point after V22 passes: C03.23A -> C07.16A -> C07.16 -> C07.17.
-Later work retained without interrupting V22: C12.42 explicit AudioMixer routing for Master, Music, SFX, and Ambience.
+Active work: C03/C11/C12.RUNTIME.V22R2
+Current truth: V22 TEST EVERYTHING passed with 0 blockers, 0 warnings, and 0 info, but the Unity Console is still not clean.
+Console blockers: CS0414 for the unused BDCameraFollow.minimumCameraDistance field and repeated edit-mode material-instantiation leak warnings from BDOccludingWall.Initialize during TEST EVERYTHING.
+Prepared repair: V22R2 removes the unused field, uses sharedMaterial in Edit Mode and a per-renderer material instance only during Play Mode, and adds regression QA for both warning classes.
+Verification state: package validation passed; Unity compilation, TEST EVERYTHING, focused Play Mode, and a clean Console are still required.
+Saved feature resume point after V22R2 passes: C03.23A -> C07.16A -> C07.16 -> C07.17.
+Later work retained without interrupting V22R2: C12.42 explicit AudioMixer routing for Master, Music, SFX, and Ambience.
 ```
 
 This file is the only live source for current status, ordering, blockers, verification truth, and the resume point. Durable behavior belongs in the maintained files under `Assets/_Project/Design/`. Git history stores previous states; stale package narratives and duplicate roadmaps are not live documentation.
@@ -26,7 +27,7 @@ This file is the only live source for current status, ordering, blockers, verifi
 7. Repair from the actual local state; never replace current systems with older package copies.
 8. Run repository hygiene on every handoff and before every commit.
 
-# Active blocking work — C03/C11/C12.RUNTIME.V22
+# Active blocking work — C03/C11/C12.RUNTIME.V22R2
 
 ## V20 Runtime fixes — IMPLEMENTED LOCALLY / VERIFY
 
@@ -37,44 +38,40 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V21R1 documentation QA — IMPLEMENTED LOCALLY / VERIFY
 
-- Current-status QA no longer pins the obsolete exact V20 heading.
-- Required verification: `PROJECT_STATUS_CURRENT_ACTIVE_WORK_MISSING` does not return.
+- Current-status QA no longer pins an obsolete exact version heading.
+- Latest TEST EVERYTHING no longer reports `PROJECT_STATUS_CURRENT_ACTIVE_WORK_MISSING`.
 
-## V22.1 Permanent closed-wall visibility — BLOCKING / PREPARED
+## V22 wall visibility and room handoff — IMPLEMENTED LOCALLY / PLAY MODE VERIFY
 
-Authoritative contract: `Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md`.
+- Structural walls are raised to at least 64 world units and remain permanently opaque.
+- Legacy structural-wall fading is removed.
+- Near-wall camera intent and pitch prevent side/corner/diagonal leakage.
+- Room transitions use a distance-preserving previous/current-room union with no intended FOV or camera-distance change.
+- Automated QA passed; focused Play Mode still determines whether wall visibility and room-node handoff are truly accepted.
 
-- Raise structural room walls to at least 64 world units while preserving their base.
-- Remove legacy `BDOccludingWall` components from structural walls in the authoritative scene.
-- Force structural walls immediately opaque at Runtime and never route them through fading.
-- Near a closed wall, attenuate outward camera intent while preserving inward and tangential rotation.
-- Increase pitch near a closed wall to prevent side, corner, diagonal, mounted, and screen-edge leakage.
-- Preserve legal authored openings.
+## V22R2 Console-warning cleanup — BLOCKING / PREPARED
 
-## V22.2 Distance-preserving room/node handoff — BLOCKING / PREPARED
+- Remove the unused serialized `minimumCameraDistance` field from `BDCameraFollow`.
+- `BDOccludingWall.Initialize` uses `renderer.sharedMaterial` outside Play Mode and `renderer.material` only during Play Mode.
+- TEST EVERYTHING must not instantiate materials during edit-mode scene installation.
+- Add automated QA that blocks the unsafe direct material assignment and the removed unused field from returning.
 
-- Remove room-center/half-size interpolation that introduced the visible zoom-in.
-- During a legal crossing, use the union of previous and next room bounds.
-- End handoff only when the target and desired camera position naturally fit inside the next room.
-- Do not change FOV, camera distance, player transform, or horse transform when the minimap node changes.
-- Accept neither backward snap nor zoom-in.
+## V22R2 acceptance gate
 
-## V22 acceptance gate
-
-1. Unity compiles with no project errors.
-2. `Boredom And Dungeons -> TEST EVERYTHING` passes and saves the scene with 64-unit structural walls and no legacy structural wall faders.
-3. Focused Play Mode confirms no view beyond closed walls from any tested angle.
-4. Repeated room/node crossings show neither backward snap nor zoom-in.
-5. Recheck charged shot, AudioListener, mounted input/turn/stop, and BBH first frame.
-6. Console contains no project-generated red error.
+1. Install V22R2 on the exact post-V22 local state.
+2. Unity compiles with no CS0414 warning from `BDCameraFollow`.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING` twice.
+4. Both runs pass with zero blockers and no edit-mode material-instantiation warning.
+5. Focused Play Mode confirms wall visibility, room/node handoff, mounted intro, BBH, charged shot, and AudioListener behavior.
+6. Console contains no project-generated red errors or warning spam from the repaired systems.
 7. Record real results here, then resume at C03.23A.
 
 # Ordered project categories
 
 - **C00 Governance:** one authoritative status, current-only documentation, request capture, repository hygiene.
-- **C01 Stability/QA:** one TEST EVERYTHING entry point and truthful Runtime regression coverage.
+- **C01 Stability/QA:** one TEST EVERYTHING entry point and truthful Runtime/Console regression coverage.
 - **C02 Platform/architecture:** Unity 6000.0.76f1, runtime/editor separation, mobile-landscape target.
-- **C03 Player/combat:** finish V22 verification, then resume C03.23A.
+- **C03 Player/combat:** finish V22R2 verification, then resume C03.23A.
 - **C04 Horse:** mounted hit routing, buck logic, healing, flee, hazard safety, and restart grounding.
 - **C05 Enemies:** sword, patrol, charger, trap, ranged, and exit-interference roles.
 - **C06 Collectibles/rewards:** secret Game Boy, Batteries, Cartridge, guardians, chests, ammo, and run boosts.
@@ -82,18 +79,18 @@ Authoritative contract: `Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEX
 - **C08 Mini-bosses:** Square Jumper, Roller, Serpent, Quad Gunners; choose three per run.
 - **C09 Narrative bosses:** preserve final-boss and complete Mother-boss contracts, including phase-specific Dodge budgets.
 - **C10 Map/hazards:** multi-route generation, inaccessible natural macro-regions, legal doorways, hazards, and recovery.
-- **C11 Camera/UI:** close V22 first, then minimap/HUD/settings/accessibility/mobile readability.
+- **C11 Camera/UI:** close V22R2 first, then minimap/HUD/settings/accessibility/mobile readability.
 - **C12 Art/audio:** visual/audio production; C12.42 AudioMixer routing remains later.
 - **C13 Story/endings:** incomplete-set endings, secret continuation, Mother loss/victory, state isolation.
 - **C14 Balance/release:** profiling, pooling, persistence, cleanup, target build, clean-clone verification, release tag.
 
 # Exact current sequence
 
-1. Install V22 on top of the current post-V21R1 local state.
-2. Wait for Unity compilation.
-3. Run `Boredom And Dungeons -> TEST EVERYTHING` so structural walls are upgraded and saved.
-4. Test every closed wall on foot and mounted while rotating cardinally, diagonally, and at corners.
-5. Cross multiple legal room/minimap nodes in both directions and confirm no backward snap or zoom-in.
+1. Install V22R2 on top of the current post-V22 local state.
+2. Wait for Unity compilation and confirm the CS0414 warning is gone.
+3. Clear the Console.
+4. Run TEST EVERYTHING twice and confirm no material-instantiation leak warning appears.
+5. Perform focused Play Mode verification for closed walls and room/node handoff.
 6. Recheck V20 Runtime fixes and inspect the Console.
 7. Record real results here.
 8. Resume C03.23A, then C07.16A -> C07.16 -> C07.17.
@@ -101,6 +98,7 @@ Authoritative contract: `Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEX
 
 # Current risks
 
+- Automated QA can pass while the Console still contains compiler/editor warnings.
 - Static QA can pass while visual Runtime behavior remains wrong.
 - Camera ownership must never disable the only AudioListener.
 - Old full-file package copies can erase current fixes.
@@ -110,8 +108,11 @@ Authoritative contract: `Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEX
 
 ## 2026-06-07 — V22 wall visibility and no-zoom handoff
 
-- User confirmed V21 still allowed visibility beyond closed walls.
-- User confirmed V21 introduced a small camera zoom during room/minimap-node handoff.
-- Replaced boundary-size smoothing with a distance-preserving previous/current-room union.
-- Added permanent structural-wall opacity, legacy fader removal, 64-unit wall height, closed-wall intent guard, and near-wall top-down pitch.
-- Preserved the saved feature resume point.
+- Added permanent structural-wall opacity, 64-unit wall height, closed-wall intent guard, near-wall top-down pitch, and distance-preserving union handoff.
+- TEST EVERYTHING later passed with zero automated findings.
+
+## 2026-06-07 — V22R2 Console-warning cleanup prepared
+
+- Latest TEST EVERYTHING report passed with zero blockers, warnings, and info.
+- Unity Console still reported one unused-field compiler warning and repeated edit-mode material-instantiation leak warnings.
+- Prepared a minimal code-only cleanup that does not change V22 camera behavior, wall geometry, room handoff, FOV, input, or scene layout.
