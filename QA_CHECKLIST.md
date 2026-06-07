@@ -1,6 +1,6 @@
 # QA Checklist — Required Verification Gates
 
-This document defines the stable verification layers. Actual pass/fail truth and current blockers belong in `PROJECT_STATUS.md`.
+Actual pass/fail truth belongs in `PROJECT_STATUS.md`.
 
 ## Single required Unity QA command
 
@@ -8,75 +8,43 @@ This document defines the stable verification layers. Actual pass/fail truth and
 Boredom And Dungeons -> TEST EVERYTHING
 ```
 
-New automated checks must integrate into this command. Do not create another mandatory QA menu action.
+New automated checks integrate into this command; do not create another mandatory QA action.
 
 ## Gate order
 
-1. **Repository/preflight**
-   - required files exist;
-   - no unresolved `<<<<<<<`, `=======`, or `>>>>>>>` conflict markers in maintained source/documentation;
-   - Unity `.meta` files are present and stable;
-   - no package tools, caches, build output, or duplicate status files are staged.
-2. **Package validation**
-   - installer syntax check;
-   - first installation run;
-   - second installation run for idempotency;
-   - validator run;
-   - `git diff --check`.
-3. **Unity compilation**
-   - documented Unity version;
-   - no compiler errors;
-   - no release-blocking Console errors.
-4. **Automated project QA**
-   - run `TEST EVERYTHING`;
-   - blockers must be resolved;
-   - warnings must be explained and accepted or fixed.
-5. **Focused Play Mode**
-   - test the changed feature;
-   - repeat reset/death/reload/re-entry paths;
-   - test nearby systems and edge cases;
-   - verify no duplicate UI, state owner, installer, or runtime controller was introduced.
-6. **Performance verification when relevant**
-   - capture measurements rather than assumptions;
-   - compare before/after on the documented target or representative device;
-   - inspect CPU, GPU, memory, GC, draw calls, loading, and spikes relevant to the change.
-7. **Documentation truth**
-   - update `PROJECT_STATUS.md` with the real result;
-   - update relevant design, architecture, decisions, QA, and performance documents.
+1. **Repository/preflight:** required files, stable `.meta`, no real conflict markers, no staged package/cache/duplicate-status artifacts.
+2. **Package validation:** syntax, first install, second install for idempotency, validator, `git diff --check`.
+3. **Unity compilation:** documented Unity version, no compiler errors, no project-generated red Console error.
+4. **Automated QA:** TEST EVERYTHING, zero blockers; warnings fixed or explicitly accepted.
+5. **Focused Play Mode:** changed behavior, repeated use, death/restart/re-entry, nearby-system regression checks.
+6. **Performance when relevant:** measure CPU/GPU/memory/GC/draw calls/loading on a representative target.
+7. **Documentation truth:** record real results and exact resume point in `PROJECT_STATUS.md`.
 
-## Conflict-marker detection precision
+## Active V20/V21R1/V22 regression gate
 
-The automated conflict scan blocks only real standalone Git marker lines after leading whitespace is removed. Inline examples inside prose, Markdown code spans, comments, or quoted source strings must not produce a false blocker.
-
-## Truthful status language
-
-- `Static validator passed` does not mean Unity compiled.
-- `Unity compiled` does not mean Play Mode passed.
-- `Play Mode passed once` does not prove restart/re-entry behavior.
-- `No profiler data collected` means performance remains unverified.
-- A task is not `DONE` until all applicable gates and documentation requirements pass.
-
-## Active V20/V21 focused regression gate
-
-Automated PASS does not close this work while Play Mode or Console still shows a project error. Verify:
-
-- first BBH frame contains no pre-visible first `B`;
-- mounted-entry camera is inside the room, at the approved 30% depth, and visibly higher at the V21 elevation;
-- mouse aim and every gameplay action remain locked through the horse right turn, full stop, and short hold;
-- normal camera ownership returns only after the stop;
-- structural walls reach at least `36` world units after `TEST EVERYTHING` installs and saves the scene;
-- rotating the camera beside every closed wall, including diagonal and mounted angles, never reveals or sees over the adjacent room;
-- crossing multiple legal doorways/minimap nodes never causes a backward visual snap;
-- minimap discovery and rotation never move player or horse transforms;
-- repeated charged-shot x3 use does not add duplicate `TrailRenderer` components and does not throw `BDChargedProjectileVisual` exceptions;
-- exactly one `AudioListener` remains active before, during, and after the cinematic;
-- the Console contains no project-generated red error before acceptance.
+1. **Charged shot:** repeatedly fire charged x3 shots. No duplicate `TrailRenderer`, no `BDChargedProjectileVisual` null exception, and visuals remain present.
+2. **Audio:** exactly one active `AudioListener` before, during, and after mounted entrance.
+3. **Mounted cinematic:** approved entrance camera, full input lock, right turn, full stop, short hold, then camera/control return.
+4. **BBH:** first rendered frame black; first B visibly animates from zero.
+5. **Current-status QA:** no false blocker caused by an obsolete exact V20/V21 heading.
+6. **Structural walls:** after TEST EVERYTHING, every structural wall is at least 64 world units high, fully opaque, and has no active legacy `BDOccludingWall`.
+7. **Closed-wall camera:** on foot and mounted, at sides/corners/diagonals, outward rotation cannot reveal or see over an adjacent room; inward/tangential rotation remains usable.
+8. **Room/node handoff:** cross multiple legal doorways in both directions. Camera distance/FOV remains stable; there is no backward snap and no zoom-in.
+9. **Minimap isolation:** minimap discovery/rotation does not move player or horse transforms.
+10. **Console:** no project-generated red errors and no charged-shot or AudioListener warnings.
 
 ## Repository-hygiene gate
 
-Before every handoff and commit:
+- Run `python3 tools/check_repository_hygiene.py` before handoff and commit.
+- Root Markdown matches `DOCUMENTATION_INDEX.md`.
+- No obsolete roadmap/status copy, package README/manifest, repair narrative, chat export, or copied QA report remains tracked.
+- Every removed document had valid requirements merged first.
+- `PROJECT_STATUS.md` matches the real current state and resume point.
 
-- root Markdown matches the canonical allowlist in `DOCUMENTATION_INDEX.md`;
-- no obsolete `NEXT_STEPS.md`, duplicate roadmap/status, package README/manifest, repair narrative, chat export, or copied QA report remains tracked;
-- every removed document had its still-valid contract merged first;
-- the current snapshot, QA truth, and exact resume point in `PROJECT_STATUS.md` match reality.
+## Truthful status language
+
+- Static validator passed does not mean Unity compiled.
+- Unity compiled does not mean Play Mode passed.
+- One Play Mode pass does not prove restart/re-entry behavior.
+- No profiler data means performance remains unverified.
+- A task is not DONE until all applicable gates pass.
