@@ -194,6 +194,15 @@ namespace BoredomAndDungeons
         private Quaternion riderOriginalLocalRotation = Quaternion.identity;
 
         public bool IsMounted => state == HorseState.Mounted;
+        public bool IsStartupCalm =>
+            Time.unscaledTime < startupCalmUntil;
+        public bool HasImmediateCombatThreat =>
+            HasLivingEnemyNearHorseOrPlayer(
+                combatAwarenessRadius
+            );
+        public bool CanReactToCombatThreat =>
+            !IsStartupCalm &&
+            HasImmediateCombatThreat;
         public Transform Rider => rider;
         public Vector3 LastMountedAimDirection => lastMountedAimDirection.sqrMagnitude > 0.001f ? lastMountedAimDirection.normalized : transform.forward;
         public Vector2 LastRideInput => lastRideInput;
@@ -233,6 +242,49 @@ namespace BoredomAndDungeons
             externalControlReason;
         public bool IsFainted =>
             health != null && health.IsFainted;
+
+        public void ResetForCleanGameStart(
+            float calmSeconds)
+        {
+            float safeCalmSeconds =
+                Mathf.Max(0f, calmSeconds);
+
+            startupCalmUntil =
+                Mathf.Max(
+                    startupCalmUntil,
+                    Time.unscaledTime +
+                    safeCalmSeconds
+                );
+
+            state = HorseState.Idle;
+            stateBeforeExternalControl =
+                HorseState.Idle;
+            externalControlLock = false;
+            externalControlReason = "none";
+
+            smoothedMountedHorizontalVelocity =
+                Vector3.zero;
+            smoothedMountedTravelDirection =
+                transform.forward;
+            smoothedMountedTravelDirection.y = 0f;
+            lastRideInput = Vector2.zero;
+            verticalVelocity =
+                groundedStickVelocity;
+            mountedYawInitialized = false;
+            pointerDragging = false;
+
+            healingSessionActive = false;
+            healingReleaseHoldActive = false;
+            healingSessionStartedAt = 0f;
+            healingStartHealth = 0f;
+            healingHeldFloor = 0f;
+
+            playerInRange = false;
+            lastCombatActiveAt = -999f;
+            lastDismountMode = "none";
+            lastAction =
+                "clean run start - full health calm idle";
+        }
 
         public void SetExternalControlLock(
             bool locked,
@@ -291,6 +343,120 @@ namespace BoredomAndDungeons
             state = restored;
         }
 
+        public bool BeginMountedRunIntro(
+            Transform introRider,
+            Vector3 startPosition,
+            Vector3 facingDirection)
+        {
+            if (health == null)
+                health = GetComponent<BDHorseHealth>();
+
+            if (health == null || health.IsFainted)
+                return false;
+
+            if (introRider != null)
+                rider = introRider;
+
+            if (rider == null)
+                rider = BDTargetFinder.FindPlayer();
+
+            if (rider == null)
+                return false;
+
+            CachePlayerComponents();
+
+            if (externalControlLock &&
+                externalControlReason != "mounted run intro")
+            {
+                return false;
+            }
+
+            externalControlLock = false;
+            externalControlReason = "none";
+            state = HorseState.Idle;
+
+            bool controllerWasEnabled =
+                controller != null &&
+                controller.enabled;
+
+            if (controllerWasEnabled)
+                controller.enabled = false;
+
+            transform.position = startPosition;
+
+            facingDirection.y = 0f;
+
+            if (facingDirection.sqrMagnitude > 0.001f)
+            {
+                transform.rotation =
+                    Quaternion.LookRotation(
+                        facingDirection.normalized,
+                        Vector3.up
+                    );
+            }
+
+            if (controllerWasEnabled)
+                controller.enabled = true;
+
+            Physics.SyncTransforms();
+
+            Mount();
+
+            if (state != HorseState.Mounted)
+                return false;
+
+            stateBeforeExternalControl =
+                HorseState.Mounted;
+            externalControlLock = true;
+            externalControlReason =
+                "mounted run intro";
+
+            smoothedMountedHorizontalVelocity =
+                Vector3.zero;
+            lastRideInput = Vector2.zero;
+            verticalVelocity =
+                groundedStickVelocity;
+            mountedYawInitialized = false;
+
+            PlaceRiderOnMountPoint();
+            lastAction =
+                "mounted run intro active";
+            return true;
+        }
+
+        public void CompleteMountedRunIntro()
+        {
+            if (!externalControlLock ||
+                externalControlReason != "mounted run intro")
+            {
+                return;
+            }
+
+            externalControlLock = false;
+            externalControlReason = "none";
+            stateBeforeExternalControl =
+                HorseState.Mounted;
+            state = HorseState.Mounted;
+
+            smoothedMountedHorizontalVelocity =
+                Vector3.zero;
+            lastRideInput = Vector2.zero;
+            verticalVelocity =
+                groundedStickVelocity;
+            mountedYawInitialized = false;
+            InitializeMountedYawFromTransform();
+
+            if (playerController != null)
+                playerController.enabled = false;
+
+            if (playerCharacterController != null)
+                playerCharacterController.enabled = false;
+
+            PlaceRiderOnMountPoint();
+            lastAction =
+                "mounted run intro complete";
+        }
+
         public void MoveByExternalControl(
             Vector3 motion,
             Vector3 facingDirection,
@@ -345,6 +511,10 @@ namespace BoredomAndDungeons
             health.Fainted += OnFainted;
             health.Recovered += OnRecovered;
             health.DamageBurstTriggered += OnHorseDamageBurstTriggered;
+
+            ResetForCleanGameStart(
+                startupCalmSeconds
+            );
         }
 
         private void Start()
@@ -353,12 +523,9 @@ namespace BoredomAndDungeons
                 rider = BDTargetFinder.FindPlayer();
 
             CachePlayerComponents();
-            startupCalmUntil =
-                Time.unscaledTime +
-                Mathf.Max(
-                    0f,
-                    startupCalmSeconds
-                );
+            ResetForCleanGameStart(
+                startupCalmSeconds
+            );
 
             if (health != null)
             {
@@ -366,6 +533,7 @@ namespace BoredomAndDungeons
                     startupCalmSeconds
                 );
             }
+
             PlaceHorseBesidePlayerAtStart();
             ResolveSafeSpotIfNeeded();
         }
@@ -680,85 +848,11 @@ namespace BoredomAndDungeons
         private bool HasLivingEnemyNearHorseOrPlayer(
             float radius)
         {
-            float safeRadius = Mathf.Max(1f, radius);
-            float radiusSquared =
-                safeRadius * safeRadius;
-
-            BDHealth[] candidates =
-                FindObjectsByType<BDHealth>(
-                    FindObjectsInactive.Exclude,
-                    FindObjectsSortMode.None
-                );
-
-            for (int index = 0;
-                 index < candidates.Length;
-                 index++)
-            {
-                BDHealth candidate = candidates[index];
-
-                if (candidate == null ||
-                    candidate.IsDead ||
-                    !candidate.gameObject.activeInHierarchy)
-                {
-                    continue;
-                }
-
-                if (candidate.GetComponentInParent<
-                        BDPlayerMarker>() != null ||
-                    candidate.GetComponentInParent<
-                        BDHorseHealth>() != null)
-                {
-                    continue;
-                }
-
-                bool looksLikeCombatant =
-                    candidate.GetComponent<
-                        CharacterController>() != null ||
-                    candidate.GetComponent<
-                        BDBossHealthChannel>() != null;
-
-                if (!looksLikeCombatant)
-                    continue;
-
-                BDBossEncounterController bossEncounter =
-                    candidate.GetComponentInParent<
-                        BDBossEncounterController>();
-
-                if (bossEncounter != null &&
-                    !bossEncounter.IsCombatActive)
-                {
-                    continue;
-                }
-
-                Vector3 horseDelta =
-                    candidate.transform.position -
-                    transform.position;
-
-                horseDelta.y = 0f;
-
-                if (horseDelta.sqrMagnitude <=
-                    radiusSquared)
-                {
-                    return true;
-                }
-
-                if (rider == null)
-                    continue;
-
-                Vector3 playerDelta =
-                    candidate.transform.position -
-                    rider.position;
-
-                playerDelta.y = 0f;
-
-                if (playerDelta.sqrMagnitude <=
-                    radiusSquared)
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return BDHorseLocalThreatUtility.HasLivingThreatNear(
+                transform,
+                rider,
+                radius
+            );
         }
 
         private void Update()
@@ -821,6 +915,19 @@ namespace BoredomAndDungeons
 
         public void SendToSafeSpot()
         {
+            if (IsStartupCalm)
+            {
+                if (state != HorseState.Mounted &&
+                    state != HorseState.Fainted)
+                {
+                    state = HorseState.Idle;
+                }
+
+                lastAction =
+                    "startup calm - ignored safe spot request";
+                return;
+            }
+
             if (externalControlLock ||
                 health.IsFainted ||
                 state == HorseState.Mounted)
@@ -1084,6 +1191,23 @@ namespace BoredomAndDungeons
                 combatAwarenessRadius
             );
         }
+        // BD CINEMATIC MOUNT API V7
+        public bool ForceMountForCinematic(Transform expectedRider)
+        {
+            if (expectedRider != null)
+                rider = expectedRider;
+
+            CachePlayerComponents();
+            Mount();
+            return IsMounted;
+        }
+
+        public void SnapCinematicRiderToMountPoint()
+        {
+            if (rider != null && IsMounted)
+                PlaceRiderOnMountPoint();
+        }
+
 
         private void Mount()
         {

@@ -12,15 +12,33 @@ namespace BoredomAndDungeons
         [SerializeField] private float checkInterval = 0.20f;
         [SerializeField] private float resendInterval = 1.25f;
         [SerializeField] private float safeSpotSwitchHysteresis = 2.0f;
+        [SerializeField] private float localThreatRadius = 12.0f;
 
         private BDHorseController horse;
         private float nextCheckAt;
         private float nextSendAt;
         private Transform currentSafeSpot;
+        private float suppressedUntil = -999f;
 
         private void Awake()
         {
             horse = GetComponent<BDHorseController>();
+            ResetForCleanGameStart(2.50f);
+        }
+
+        public void ResetForCleanGameStart(
+            float calmSeconds)
+        {
+            suppressedUntil =
+                Mathf.Max(
+                    suppressedUntil,
+                    Time.unscaledTime +
+                    Mathf.Max(0f, calmSeconds)
+                );
+
+            nextCheckAt = 0f;
+            nextSendAt = 0f;
+            currentSafeSpot = null;
         }
 
         private void Update()
@@ -28,13 +46,22 @@ namespace BoredomAndDungeons
             if (!fleeWhenCombatIsActive || horse == null)
                 return;
 
+            if (Time.unscaledTime < suppressedUntil ||
+                horse.IsStartupCalm)
+            {
+                return;
+            }
+
             if (Time.time < nextCheckAt)
                 return;
 
             nextCheckAt = Time.time + Mathf.Max(0.05f, checkInterval);
 
             if (!IsCombatActive())
+            {
+                currentSafeSpot = null;
                 return;
+            }
 
             Transform nearest = FindNearestSafeSpot();
             if (nearest != null && ShouldSwitchSafeSpot(nearest))
@@ -102,25 +129,16 @@ namespace BoredomAndDungeons
             return Vector3.Distance(a, b);
         }
 
-        private static bool IsCombatActive()
+        private bool IsCombatActive()
         {
-            BDCombatRoom[] combatRooms = FindObjectsByType<BDCombatRoom>(FindObjectsSortMode.None);
-            for (int i = 0; i < combatRooms.Length; i++)
-            {
-                BDCombatRoom room = combatRooms[i];
-                if (room != null && room.CombatActivated && room.LiveEnemies > 0)
-                    return true;
-            }
+            if (horse == null)
+                return false;
 
-            BDRoomEncounter[] encounters = FindObjectsByType<BDRoomEncounter>(FindObjectsSortMode.None);
-            for (int i = 0; i < encounters.Length; i++)
-            {
-                BDRoomEncounter encounter = encounters[i];
-                if (encounter != null && !encounter.IsComplete && encounter.LiveEnemies > 0)
-                    return true;
-            }
-
-            return false;
+            return BDHorseLocalThreatUtility.HasLivingThreatNear(
+                horse.transform,
+                horse.Rider,
+                localThreatRadius
+            );
         }
     }
 }

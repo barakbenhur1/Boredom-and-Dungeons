@@ -21,17 +21,40 @@ namespace BoredomAndDungeons
         private Transform assignedSafeSpot;
         private float nextCheckAt;
         private float nextResendAt;
+        private float suppressedUntil = -999f;
 
         private void Awake()
         {
             horseController = GetComponent<BDHorseController>();
             horseHealth = GetComponent<BDHorseHealth>();
+            ResetForCleanGameStart(2.50f);
+        }
+
+        public void ResetForCleanGameStart(
+            float calmSeconds)
+        {
+            suppressedUntil =
+                Mathf.Max(
+                    suppressedUntil,
+                    Time.unscaledTime +
+                    Mathf.Max(0f, calmSeconds)
+                );
+
+            assignedSafeSpot = null;
+            nextCheckAt = 0f;
+            nextResendAt = 0f;
         }
 
         private void Update()
         {
             if (horseController == null || horseHealth == null || horseHealth.IsFainted)
                 return;
+
+            if (Time.unscaledTime < suppressedUntil ||
+                horseController.IsStartupCalm)
+            {
+                return;
+            }
 
             if (Time.time < nextCheckAt)
                 return;
@@ -67,38 +90,14 @@ namespace BoredomAndDungeons
 
         private bool IsDangerActive()
         {
-            BDCombatRoom[] combatRooms = FindObjectsByType<BDCombatRoom>(FindObjectsSortMode.None);
-            for (int i = 0; i < combatRooms.Length; i++)
-            {
-                BDCombatRoom room = combatRooms[i];
-                if (room != null && room.CombatActivated && room.LiveEnemies > 0)
-                    return true;
-            }
+            if (horseController == null)
+                return false;
 
-            BDRoomEncounter[] encounters = FindObjectsByType<BDRoomEncounter>(FindObjectsSortMode.None);
-            for (int i = 0; i < encounters.Length; i++)
-            {
-                BDRoomEncounter encounter = encounters[i];
-                if (encounter != null && !encounter.IsComplete && encounter.LiveEnemies > 0)
-                    return true;
-            }
-
-            float dangerRadiusSquared = nearbyEnemyDangerRadius * nearbyEnemyDangerRadius;
-            BDHealth[] healthComponents = FindObjectsByType<BDHealth>(FindObjectsSortMode.None);
-
-            for (int i = 0; i < healthComponents.Length; i++)
-            {
-                BDHealth candidate = healthComponents[i];
-                if (!IsLivingEnemy(candidate))
-                    continue;
-
-                Vector3 delta = candidate.transform.position - transform.position;
-                delta.y = 0f;
-                if (delta.sqrMagnitude <= dangerRadiusSquared)
-                    return true;
-            }
-
-            return false;
+            return BDHorseLocalThreatUtility.HasLivingThreatNear(
+                horseController.transform,
+                horseController.Rider,
+                nearbyEnemyDangerRadius
+            );
         }
 
         private Transform FindBestSafeSpot()

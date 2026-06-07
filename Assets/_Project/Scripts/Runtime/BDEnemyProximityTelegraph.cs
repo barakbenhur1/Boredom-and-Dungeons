@@ -26,6 +26,9 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+                return;
+
             if (health != null && health.IsDead)
                 return;
 

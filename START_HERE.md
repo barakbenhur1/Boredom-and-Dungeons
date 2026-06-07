@@ -1,0 +1,72 @@
+# START HERE — Mandatory First Read
+
+This file is the permanent entry point for every human contributor and every AI assistant working on this repository.
+
+## Required reading order
+
+Before proposing, editing, generating, or validating a material change, read these files in order:
+
+1. `START_HERE.md` — repository entry point and non-negotiable rules.
+2. `DEVELOPMENT_WORKFLOW.md` — authoritative working method.
+3. `PROJECT_STATUS.md` — only authoritative source for requirements, ordering, current state, QA truth, blockers, and the exact resume point.
+4. `DOCUMENTATION_INDEX.md` — map of maintained documentation and update responsibilities.
+5. `ARCHITECTURE.md` — stable system boundaries and integration map.
+6. `QA_CHECKLIST.md` — validation and release gates.
+7. The design/specification files relevant to the requested feature.
+
+`README.md` is the public orientation page. It points here and must not become a competing status document.
+
+## Permanent user-request capture rule
+
+Every new user request must be recorded in the correct logical place in `PROJECT_STATUS.md` before implementation or in the same change package as implementation. A request must never remain only in chat.
+
+Classify every request before implementation:
+
+- **Earlier/blocking:** regression, compilation failure, broken QA, data loss risk, repository corruption, documentation/workflow failure, or prerequisite missing from the current work. Record it, preserve the current resume point, implement and verify it immediately, then return to the saved work.
+- **Current:** belongs to the active category or feature. Record it and implement it now in dependency order.
+- **Later:** belongs to a future category and does not block current work. Record it in the correct future location and continue the current work.
+- **Unknown:** record it as requiring clarification or recovery. Do not invent missing requirements.
+
+This is a standing instruction. The user does not need to explain or repeat it in later conversations.
+
+## Non-destructive repository rule
+
+- Preserve existing code, scenes, prefabs, assets, materials, animation, audio, documentation, colors, and behavior by default.
+- Do not use destructive `reset`, `clean`, broad checkout, or deletion to solve a partial installation.
+- Repair the actual partial local state and preserve unrelated local work.
+- Do not create a second implementation when an existing owner/system can be extended.
+- Do not claim Unity compilation, Play Mode, performance, or QA success unless it was actually run.
+
+## Sources of truth
+
+| Subject | Authoritative file |
+|---|---|
+| Requirements, ordering, current/next work, blockers, QA truth | `PROJECT_STATUS.md` |
+| How work is performed and delivered | `DEVELOPMENT_WORKFLOW.md` |
+| Documentation map and maintenance ownership | `DOCUMENTATION_INDEX.md` |
+| Stable system boundaries and diagrams | `ARCHITECTURE.md` |
+| Verification gates | `QA_CHECKLIST.md` |
+| Long-lived technical choices | `TECHNICAL_DECISIONS.md` |
+| Performance measurement rules | `PERFORMANCE_GUIDELINES.md` |
+
+Git history stores previous versions. Do not create competing live status files.
+
+## Standard change path
+
+```mermaid
+flowchart TD
+    A[Read mandatory documents] --> B[Inspect repository and local-state evidence]
+    B --> C[Record request in PROJECT_STATUS]
+    C --> D{Earlier, current, later, or unknown?}
+    D -->|Earlier/blocking| E[Save resume point and repair now]
+    D -->|Current| F[Implement in dependency order]
+    D -->|Later| G[Document for future and continue current work]
+    D -->|Unknown| H[Record recovery or clarification requirement]
+    E --> I[Update code, docs, architecture, and QA]
+    F --> I
+    G --> I
+    H --> I
+    I --> J[Run package validation and git diff check]
+    J --> K[Unity compile, TEST EVERYTHING, focused Play Mode]
+    K --> L[Record real result in PROJECT_STATUS]
+```

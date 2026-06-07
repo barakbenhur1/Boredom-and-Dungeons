@@ -22,6 +22,9 @@ namespace BoredomAndDungeons
 
         public static void Spawn(Vector3 position, Vector3 direction, float radius, float duration, bool ranged)
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+                return;
+
             if (!BDPerformanceGuard.AllowCosmeticSpawn(ranged ? 0.45f : 0.60f))
                 return;
             direction.y = 0f;

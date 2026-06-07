@@ -41,6 +41,12 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            if (BDNewRunFeedbackReset.IsFeedbackSuppressed)
+            {
+                ResetTransientFeedback();
+                return;
+            }
+
             if (flashTimer <= 0f)
                 return;
 
@@ -57,6 +63,14 @@ namespace BoredomAndDungeons
         }
 
 
+        public void ResetTransientFeedback()
+        {
+            flashTimer = 0f;
+            deathFlash = false;
+            previousHealth = health != null ? health.CurrentHealth : previousHealth;
+            ClearFlash();
+        }
+
         public void TriggerImpactFlash(bool heavy)
         {
             deathFlash = false;
@@ -66,6 +80,13 @@ namespace BoredomAndDungeons
 
         private void OnHealthChanged(BDHealth changedHealth, float current, float max)
         {
+            if (BDNewRunFeedbackReset.IsFeedbackSuppressed)
+            {
+                previousHealth = current;
+                ResetTransientFeedback();
+                return;
+            }
+
             if (current < previousHealth)
             {
                 deathFlash = false;

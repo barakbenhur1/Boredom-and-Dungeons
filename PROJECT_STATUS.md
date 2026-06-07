@@ -4,19 +4,71 @@
 ## Current Development Snapshot
 
 ```text
-Status date: 2026-06-06
+Status date: 2026-06-07
 Engine: Unity 6000.0.76f1
-User verification: hit-like effect still appears after death -> New Game
-Confirmed root cause: the left-click used on the New Game UI can survive into the first gameplay frame; both BDPlayerCombat and BDPlayerMeleeEnhancer read that click, and startup settling can classify it as a landing attack
-Current repair: quarantine combat input for at least 0.20s and until attack buttons are released, with a 1.50s maximum; clear pending combat input and suppress startup landing-attack classification
-Current status: NEW GAME CLICK-LEAK REPAIR V5 IMPLEMENTED LOCALLY / VERIFY
-Required next action: compile, run TEST EVERYTHING, then repeat death -> New Game at least three times
-Acceptance: no slash, landing strike, impact, hit-stop, shake, flash, or hit audio during load; first deliberate post-load attack works
-Next ordered item only after real Play Mode PASS: C03.23A
-Saved feature resume point: C07.16A, then C07.16 and C07.17
-Future requirements recorded: quicksand hazard, horse/mounted quicksand behavior through the existing obstacle pipeline, and professional floating RPG damage numbers; current item, blockers, and resume order are unchanged.
+Previous package result: Repair V6 copied its payload, then stopped before core-file patching because the minimap preflight did not recognize the actual local partial state.
+Current repair: cumulative V7 continues from that partial state without reset; completes run presentation, authored entrance/exit flow, existing Pause/menu polish, rigid minimap clipping, tall room walls, closed-wall camera stop, asymmetric-texture readiness, and the BBH filled-circle completion.
+Current status: IMPLEMENTED LOCALLY / VERIFY
+Required next action: install V7, compile, run TEST EVERYTHING, then complete the focused run-flow, minimap, wall/camera, and BBH intro Play Mode matrix.
+Acceptance: no pre-menu map flash; fresh/abandoned/post-cinematic mounted intro; ordinary death restart on foot; authored exit continuation; one Pause owner; rigid clipped minimap; adjacent rooms invisible across closed walls; camera stops at closed walls; BBH filled circle grows behind the letters and holds 0.50s.
+Later requirements recorded without interrupting current work: C10 inaccessible 1–4-room macro-regions already exist and now explicitly include rocks/boulder fields; Mother Dodge receives exact phase budgets and scheduler/fairness rules for later C09 implementation.
+Saved resume point after PASS: C03.23A, then C07.16A, C07.16, and C07.17.
+Do not commit until automated QA and the focused Play Mode matrix pass.
 ```
 <!-- B&D CURRENT SNAPSHOT END -->
+
+<!-- B&D QA CONTRACT DRIFT V9 SNAPSHOT START -->
+### Earlier/blocking QA reliability repair — 2026-06-07
+
+- ID: `C01.QA-CONTRACT-DRIFT.V9`.
+- Real Unity result before repair: `TEST EVERYTHING` BLOCKED with 4 blockers and 0 warnings.
+- Two blockers were false conflict reports caused by substring scanning of inline documentation/source examples.
+- The other two blockers were stale QA anchors: the current V7 rigid minimap and action-aware START GAME implementations were present, but older checks required superseded identifiers.
+- Repair rule: fix QA truth rather than reintroduce obsolete runtime code solely to satisfy stale string checks.
+- Status: IMPLEMENTED LOCALLY / EXTERNAL VALIDATOR REQUIRED / UNITY TEST EVERYTHING RERUN REQUIRED.
+- Resume point: after automated QA passes and focused Play Mode is rechecked, return to the previously recorded current gameplay item; no feature ordering changes.
+<!-- B&D QA CONTRACT DRIFT V9 SNAPSHOT END -->
+
+<!-- B&D DOC GOVERNANCE V8 SNAPSHOT START -->
+### Cross-cutting documentation/QA repair — 2026-06-07
+
+- ID: `C00.DOC-GOVERNANCE.V8`.
+- Every user request is recorded before or with implementation in its correct `PROJECT_STATUS.md` location.
+- Every request is classified as earlier/blocking, current, later, or recovery-required; the saved resume point is preserved whenever work is interrupted.
+- The standing rule is permanent and does not need to be repeated by the user.
+- Added mandatory first-read, documentation index, architecture/flow diagrams, QA, technical-decision, and performance guidance documents.
+- `BDOneClickQAWindow.cs` conflict markers are an earlier QA blocker. The repair restores only that file from `HEAD` when conflicted, preserves every other local change, and reconnects all discovered modular `BD*QA.Scan` checks.
+- Status: IMPLEMENTED LOCALLY / EXTERNAL VALIDATOR REQUIRED / UNITY COMPILE AND TEST EVERYTHING STILL REQUIRED.
+- Resume rule: after this blocker passes, return to the exact pre-existing resume point already recorded above; this repair does not reorder gameplay work.
+<!-- B&D DOC GOVERNANCE V8 SNAPSHOT END -->
+
+<!-- B&D PET-INTRO-QA-CONTRACT-REPAIR START -->
+## Current QA repair — mounted intro Pet contract
+
+```text
+Latest TEST EVERYTHING: BLOCKED at 2026-06-06T21:47:46.9476910Z
+Blocker: MOUNTED_RUN_INTRO_CONTRACT_MISSING
+Asset: Assets/_Project/Scripts/Runtime/Horse/BDHorseExhaustedFollowAndPetInteraction.cs
+Reported missing token: PET_RUN_INTRO_CANCEL_CONTRACT
+Root cause: BDMountedRunIntroQA required an internal package marker as if it were a real runtime contract
+Repair: remove the synthetic marker requirement and keep validation of the real behavior contracts only
+Current status: C03 PET INTRO QA CONTRACT REPAIR V4 IMPLEMENTED LOCALLY / VERIFY
+Next action: return to Unity and run TEST EVERYTHING again
+```
+<!-- B&D PET-INTRO-QA-CONTRACT-REPAIR END -->
+
+<!-- B&D PET-INTRO-COMPILE-REPAIR START -->
+## Current compile repair — mounted intro Pet cancellation
+
+```text
+Latest TEST EVERYTHING: BLOCKED at 2026-06-06T21:38:18.5757470Z
+Compiler error: Assets/_Project/Scripts/Runtime/Horse/BDHorseExhaustedFollowAndPetInteraction.cs(169,17) CS0103
+Root cause: the mounted-intro input gate called an undefined CancelInteraction method
+Repair: use CancelPetInteractionForRunIntro, clear pending Pet hold state, and request the existing Pet coroutine's safe emergency-cancel cleanup only when an interaction is active
+Current status: C03 PET INTRO COMPILE REPAIR V3 IMPLEMENTED LOCALLY / VERIFY
+Next action: allow Unity to compile, copy any remaining Console compiler errors exactly, then run TEST EVERYTHING
+```
+<!-- B&D PET-INTRO-COMPILE-REPAIR END -->
 
 
 > This is the single authoritative living development plan and status tracker.
@@ -196,6 +248,16 @@ deferred to the end of the project.
 - [ ] C00.22 After each accepted feature, remove temporary test objects or explicitly classify them as retained development harnesses or converted production content; do not accumulate placeholder/test cleanup debt.
 - [ ] C00.23 Keep every material package synchronized across code, scenes/prefabs, `.meta` files, QA contracts, relevant design documents, `PROJECT_STATUS.md`, and stable README/workflow discovery.
 
+<!-- B&D DOC GOVERNANCE V8 ITEMS START -->
+- [ ] **C00.24 `C00.DOC-GOVERNANCE.V8` — Permanent request capture:** every user request is recorded in the correct logical/dependency position before or with implementation; the user never needs to repeat this rule. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.25 Request timing classification:** classify every request as earlier/blocking, current, later, or unknown/recovery-required; preserve and return to the saved resume point. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.26 Mandatory first-read discovery:** maintain `START_HERE.md` and a prominent README link so a new human/AI contributor cannot miss the required reading order. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.27 Maintained documentation map:** maintain `DOCUMENTATION_INDEX.md` with purpose, ownership, and update triggers for every durable document. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.28 Architecture and flow truth:** maintain `ARCHITECTURE.md` and its diagrams whenever system ownership, dependencies, scene/run flow, or integration boundaries change. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.29 QA, decisions, and performance truth:** maintain `QA_CHECKLIST.md`, `TECHNICAL_DECISIONS.md`, and `PERFORMANCE_GUIDELINES.md` whenever their contracts change. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C00.30 Critical conflict-marker guard:** unresolved source/scene/documentation conflict markers are immediate blockers and must be detected before later work continues. — IMPLEMENTED LOCALLY / VERIFY.
+<!-- B&D DOC GOVERNANCE V8 ITEMS END -->
+
 
 ## Recovered requirement
 
@@ -244,6 +306,15 @@ deferred to the end of the project.
 - [x] C01.25 Repair the invalid backslash character literals introduced by the unified-QA patch and restore clean Unity compilation.
 - [x] C01.26 Correct the generic runtime-installer classifier so `BDEnemyBootstrap` may appear once per enemy without producing a false duplicate-installer warning.
 - [ ] C01.27 Rerun `TEST EVERYTHING` after C01.26 and confirm `0` blockers and `0` warnings.
+
+<!-- B&D QA CONTRACT DRIFT V9 ITEMS START -->
+## Cross-cutting QA contract reliability
+
+- [ ] **C01.QA-CONFLICT-SCAN.V9:** detect only real standalone Git conflict-marker lines; inline examples and quoted strings must not block QA. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C01.MINIMAP-QA-DRIFT.V9:** validate the active V7 rigid clipped minimap contract instead of the superseded V1 marker. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C01.MENU-QA-DRIFT.V9:** validate the action-aware START GAME highlight path instead of the removed `startGamePressed` local variable. — IMPLEMENTED LOCALLY / VERIFY.
+- [ ] **C01.QA-CONTRACT-DRIFT.V9:** rerun Unity compilation and `TEST EVERYTHING`; record the real result before resuming feature work. — VERIFY.
+<!-- B&D QA CONTRACT DRIFT V9 ITEMS END -->
 
 ## Immediate prerequisite gate
 
@@ -312,7 +383,7 @@ deferred to the end of the project.
 
 ## Current blocker truth
 
-The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:00:51.3087910Z` in Unity `6000.0.76f1` with `0` blockers, `0` warnings, and `0` info. Camera/Minimap regression, repository hygiene, and single-authoritative-status checks are in the same button. C01.16I remains open only for the complete final manual Play Mode checklist and saved FINAL QA PASS.
+The latest supplied `TEST EVERYTHING` report was generated on `2026-06-06T21:38:18.5757470Z` in Unity `6000.0.76f1` and is **BLOCKED** with `1` blocker: `UNITY_SCRIPT_COMPILATION_FAILED`. The report contains no compiler file, line, or C# error text, so the Unity Console compiler lines remain required before the current mounted-run-intro work can be accepted. The projectile/AoE and destructible-obstacle changes in this package are documentation-only future requirements and do not bypass the active compilation gate.
 
 ---
 
@@ -376,7 +447,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] Reuse modular/poolable assets and LOD/culling-friendly compositions so the richer environment remains production-safe on target hardware.
 - [ ] Add focused near-spawn biome test rooms/lanes for new boundary sets, then remove, retain as isolated harnesses, or convert them to production after approval.
 
-- [ ] **C02.PORTAL.1 Open entrance and exit doorways must contain a beautiful light/portal surface that blocks visibility through the doorway and matches the current biome and the game’s visual identity.**
+- [ ] **C02.PORTAL.1 Open external entrance and exit doorways receive two-sided opaque animated light portals with a luminous frame and moving light bands; they hide what is behind the doorway, have no collider, and are generated only for legal open doorway metadata. — RUNTIME PROTOTYPE IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] The portal surface must clearly communicate an active passage without looking like a debug plane or opaque flat color.
 - [ ] The effect should use restrained depth, motion, particles/noise, rim light, and color variation appropriate to the biome.
 - [ ] The surface must not obscure interaction prompts, collision readability, mounted clearance, or transition state.
@@ -388,7 +459,16 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 <!-- B&D MOUNTED-RUN-INTRO START -->
 ### C03.RUN-INTRO — Mounted cinematic entrance before gameplay control
 
-- [ ] **C03.RUN-INTRO.1 Replace the invisible startup input delay with a short in-world entrance cinematic.**
+- [ ] **C03.RUN-INTRO.1 Play the mounted doorway entrance only for a fresh New Game or a non-death victory/cinematic restart. For the current rule, any new-run return after a cinematic shown beyond the doorway following the first boss counts as a victory/cinematic restart. The child begins mounted, rides through the legal entrance, receives the cinematic zoom-in/zoom-out, and control opens after the animation and input release. — REPAIR V2 IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.RUN-INTRO.1A Death -> New Game must not play the mounted entrance.**
+  - Death overrides a death cutscene or other death presentation; it remains a death restart.
+  - Keep the newly loaded player unmounted at the authored spawn point in the starting room.
+  - Do not reposition the player/horse to the doorway, do not mount the player, and do not run the cinematic camera zoom.
+  - Use the normal gameplay camera immediately.
+  - Clear transient combat/telegraph state.
+  - Inputs held during loading are discarded until physical release; when nothing is held, gameplay opens without an additional timer.
+  - Menu/cinematic scenes without gameplay room metadata may not consume the pending death-restart reason.
+  - — REPAIR V2 IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] On every fresh run and death -> New Game restart, the child begins already mounted on the horse outside/inside the entrance threshold as appropriate.
 - [ ] The horse carries the child through the visible map entrance into the start area using a deliberate riding animation/path.
 - [ ] During the entrance, player movement, attacks, ranged input, horse commands, Pet, menus that affect gameplay, and buffered actions remain locked.
@@ -400,7 +480,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] The implementation must preserve normal mounted controls immediately after the cinematic ends.
 - [ ] Provide a near-spawn deterministic test path and automated QA contracts; after approval, keep only the production entrance presentation and remove temporary markers/debug visuals.
 
-- [ ] **C03.RUN-INTRO.2 Identify and remove the red floor artifact that appears immediately after death -> New Game before accepting the mounted entrance cinematic.**
+- [ ] **C03.RUN-INTRO.2 Remove the red startup floor artifact by blocking enemy proximity/attack telegraphs and landing/combat visuals during the locked intro, destroying transient telegraph objects on load, and preventing player damage until gameplay opens. — IMPLEMENTED LOCALLY / VERIFY.**
 <!-- B&D MOUNTED-RUN-INTRO END -->
 
 **Category status: PROTOTYPE DONE / verification and production work remain**
@@ -460,7 +540,25 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.35 Projectiles collide with walls.
 - [x] C03.36 Projectile knockback policy by combatant profile.
 - [ ] C03.37 Verify tap/charge/cancel/full-charge behavior.
-- [ ] C03.38 Define charged-shot ammunition cost and damage.
+- [ ] **C03.38 Define charged-shot ammunition cost and authoritative AoE damage: a normal shot uses multiplier `1`; a charged shot uses multiplier `N`, where `N` is the exact number of bullets actually consumed by that shot. Every unique eligible enemy reached by the shot's AoE receives base ranged damage × the multiplier, and every unique destructible reached receives the same multiplier as structural-hit damage. — REQUIREMENT DEFINED / IMPLEMENTATION PENDING.**
+<!-- B&D RANGED-AOE-PROJECTILES START -->
+- [ ] **C03.38A Make every player projectile an authoritative area-of-effect attack against enemies and destructible objects.**
+  - A normal shot resolves one logical AoE event with multiplier `1`.
+  - A charged shot that actually consumes `N` bullets resolves one logical AoE event with multiplier `N`.
+  - Each unique enemy inside the valid AoE receives the shot's authoritative base ranged damage multiplied by `N`.
+  - Each unique destructible object inside the valid AoE receives `N` structural hits; therefore a normal shot deals `1` structural hit.
+  - `N` comes from ammunition actually removed at fire time, not requested charge duration, UI prediction, magazine capacity, or a stale pre-reload value.
+  - If only part of the requested charged ammunition is available and the shot is legally fired, use the exact amount actually consumed.
+  - Resolve direct projectile contact and the AoE through one shared logical-shot identifier so a target cannot receive both direct damage and duplicate overlap damage from the same shot.
+  - Multiple colliders belonging to one enemy or one destructible count as one target for that logical shot.
+  - Every different eligible enemy or destructible touched by the AoE may receive damage once from that shot; damage is not limited to the first target.
+  - If a projectile is allowed to travel through several targets, retain a per-shot hit set and damage each unique target at most once.
+  - Closed walls, closed doors, and other solid room boundaries block AoE propagation; do not damage unrelated targets through sealed geometry.
+  - The gameplay collision radius and the visible impact/VFX radius must agree. Exact radius tuning remains a Play Mode task and may not silently change the approved multipliers.
+  - Damage numbers show one final applied value per damaged enemy. A charged shot displays the total applied damage once per enemy, not one number per consumed bullet.
+  - Destructible impact feedback must show the correct structural stage after the complete shot multiplier is applied.
+  - Verify normal shots, partially charged shots, full-magazine shots, multiple enemies, multiple destructibles, mixed enemy/destructible groups, overlapping colliders, walls, doors, low ammunition, reload boundaries, and mobile aiming.
+<!-- B&D RANGED-AOE-PROJECTILES END -->
 - [ ] C03.39 Verify automatic reload without requiring another fire input.
 - [ ] C03.40 Define and test laser behavior against dodge i-frames.
 - [ ] C03.41 Tune ammo economy and recovery windows.
@@ -470,7 +568,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C03.42 Damage/death/reset foundations exist.
 - [ ] C03.43 Verify one source cannot apply duplicate damage in one hit.
 - [ ] C03.44 Verify clean death and restart/reset state.
-- [ ] **C03.44A After death and `New Game`, quarantine combat input for at least `0.20s` and until attack buttons are released (maximum `1.50s`), clear pending melee/ranged/charged state, and prevent startup settling from becoming a landing attack. No slash, impact, hit-stop, shake, flash, or hit audio may occur on load; the first deliberate post-load attack must work normally. — REPAIR V5 IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C03.44A Run-start input safety is reason-aware: fresh/cinematic starts discard input throughout the mounted entrance; death restarts skip the entrance but still discard held loading input until release while leaving the player unmounted at the authored spawn. No buffered action may replay. — SUPERSEDED BY C03.RUN-INTRO.1 / C03.RUN-INTRO.1A IMPLEMENTATION / VERIFY.**
 - [ ] C03.45 Add final player health feedback and accessibility cues.
 <!-- B&D FLOATING-DAMAGE-NUMBERS START -->
 - [ ] **C03.45A Add professional world-space RPG damage numbers for every real damage event that actually reduces health.**
@@ -1042,6 +1140,11 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [x] C09.79F Jump reduces attraction buildup by `35%`; Dodge reduces it by `60%`; neither completely resets it.
 - [x] C09.79G Father cannot be parried. Pinning stun is `1.75s`; scream stun is `0.75s` and interrupts the current player attack; post-stun resistance is `1.25s`.
 - [x] C09.79H Mother's Dodge uses the player's core distance, duration, i-frame, and collision rules, while AI frequency preserves real punish windows.
+- [x] C09.79H1 Mother may dodge only from neutral movement or approved dodge-cancellable recovery; she cannot cancel committed broom/spray/Father/beam/scream/attraction/transition/stun/defeat states.
+- [x] C09.79H2 Calm: 1 charge, `10.0s` recharge, maximum 1 dodge per rolling `8.0s` and 3 total in the phase; `0.65s` attack lock after recovery.
+- [x] C09.79H3 Irritated: 2 charges, `8.0s` recharge each, maximum 2 dodges per rolling `14.0s`, minimum `1.10s` between starts, and a `1.00s` punish window after the second.
+- [x] C09.79H4 Angry: 2 charges, `6.0s` recharge each, maximum 3 dodges per rolling `14.0s`, no more than two consecutive, minimum `0.75s` between starts, `1.20s` lockout after two consecutive dodges, and no dodge during the attraction/spiral channel.
+- [x] C09.79H5 Danger: zero combat dodges; Mother follows only the fixed visible Game Boy route. All dodge directions must pass wall, hazard, doorway, arena, player-overlap, and legal-follow-up validation.
 - [ ] C09.79I Foreground clothing is non-interactive and phase-aware:
   - Calm: every `14–20s`, 2 items, about `0.8–1.2s`;
   - Irritated: every `10–16s`, 2–3 items, about `1.0–1.5s`;
@@ -1101,7 +1204,7 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 ## Inaccessible macro-regions and route-shaping obstacles
 
 - [ ] C10.16 Reserve inaccessible regions with an approximate footprint of 1–4 room units.
-- [ ] C10.17 Inaccessible regions may use mountains, lakes, chasms, holes, columns, large obstacles, or mixed landmark formations.
+- [ ] C10.17 Inaccessible regions may use mountains, rock formations, boulder fields, lakes, chasms, holes, columns, large obstacles, or mixed landmark formations.
 - [ ] C10.18 These regions are route-shaping negative space, not fake accessible rooms.
 - [ ] C10.19 Use them to keep major routes apart, create landmarks, hide connections, and force meaningful detours.
 - [ ] C10.20 Never create an inaccessible formation that disconnects every valid route, traps required content, or makes the horse path impossible.
@@ -1127,6 +1230,62 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C10.34 If player and horse fall together, ensure both return to a legal shared recovery area.
 - [ ] C10.35 Hazards must not be hidden completely by foreground clothing, camera framing, VFX, darkness, or enemy clutter.
 - [ ] C10.36 Required routes, boss arenas, spawn points, reward chests, and ending interactions must remain reachable after hazard placement.
+
+<!-- B&D DESTRUCTIBLE-PATH-BLOCKERS START -->
+## Destructible biome-authentic path and doorway blockers
+
+- [ ] **C10.36A Add a shared destructible-obstacle system for blockers placed inside rooms, across internal passages, or across open room exits.**
+  - Every blocker is a real solid navigation/collision obstacle until fully destroyed.
+  - A blocker receives structural damage at most once from one logical sword attack or one logical projectile, even if several hit colliders overlap it.
+  - Standard light sword hit = `1` structural hit; spinning sword = `1` per blocker per attack; heavy or valid landing sword strike = `2`.
+  - Normal projectile AoE = `1` structural hit to every unique destructible reached by that shot.
+  - Charged projectile AoE = `N` structural hits to every unique destructible reached, where `N` is the exact number of bullets actually consumed by that charged shot.
+  - Direct projectile collision and the projectile's AoE are one logical damage event; the same blocker may not receive both and may not be multiplied by child colliders.
+  - One projectile may damage every different eligible blocker and enemy reached by its AoE, each exactly once.
+  - Each hit must have readable impact, staged visual damage, debris/audio appropriate to the material, and no health-style combat feedback that confuses it with an enemy.
+  - When destroyed, remove every blocking collider/nav obstruction atomically, update affected pathfinding, and leave no invisible collision.
+  - Horse and enemy navigation treat the blocker as solid before destruction and re-evaluate routes after destruction.
+  - Required progression can ask the player to destroy a blocker, but placement must never create a softlock, trap the horse, hide an unavoidable attack, or block the only safe combat area.
+
+- [ ] **C10.36B Use the following initial eight blocker families, selected only where they fit the active biome and room language.**
+  1. **Clay pots / urn row — `1` hit per pot.** Use rows or clustered pots in ruins, settlements, caves, and dry areas. Each pot shatters independently; collision disappears with that pot immediately. A single projectile AoE may shatter every separate pot it reaches.
+  2. **Tall grass, reeds, or thin bamboo — `2` hits.** First hit bends/thins the mass; second clears it. Best for grassland, swamp, lakeside, and overgrown rooms.
+  3. **Thorn bush / bramble — `3` hits.** Each hit removes one visible density layer. It blocks movement but deals no contact damage unless a separate rule is approved.
+  4. **Dense vines / root tangle — `4` hits.** Cut sections progressively; keep the passage solid until the final required section breaks. Best for forest, cave, ruin, and overgrown transitions.
+  5. **Rotten wooden barricade / rough fence — `4` hits.** Splinters in stages and fits settlements, farms, forest paths, and abandoned structures.
+  6. **Sand, dirt, or loose-rubble pile — `5` hits.** Visually collapses after every hit, but keeps one clean authoritative collider until fully cleared so the player cannot squeeze through a half-broken state.
+  7. **Cracked boulder / fractured stone slab — `6` hits.** Three crack stages, material-specific chips, and a strong final break. Fits mountain, cave, desert, lava, and ruin areas.
+  8. **Crystal, ice, or mineral growth — `5` hits.** Biome-specific brittle cluster with progressive fractures and a clean final shatter; cosmetic shards may not become damaging physics clutter.
+
+- [ ] **C10.36C Apply blocker families by biome rather than selecting from one universal visual pool.**
+  - Grass/forest/overgrown: tall grass, bramble, vines/roots, wooden barricades.
+  - Mud/swamp/lakeside: reeds, roots, bramble, rotten wood.
+  - Sand/desert/dry ground: pots, sand piles, cracked sandstone, rough fences.
+  - Cave/mountain: roots, rubble, boulders, mineral growth.
+  - Ruin/settlement/farm: pots, barricades, rubble piles, cracked masonry.
+  - Ice/magical/mineral regions: cracked stone plus ice/crystal growth.
+  - Transition rooms may blend only compatible neighboring families.
+
+- [ ] **C10.36D Increase blocker frequency and per-room density gradually by normalized route depth, using these initial tuning targets.**
+  - Start/tutorial/entrance room and immediate mounted-intro route: `0` blockers.
+  - `0–20%` depth: `0–1` blocker group in at most about `25%` of eligible rooms; never block the sole mandatory exit.
+  - `20–45%` depth: `0–2` groups in about `30–45%` of eligible rooms.
+  - `45–70%` depth: `1–3` groups in about `50–65%` of eligible rooms; one required breakable passage may appear when safe.
+  - `70–100%` depth: `2–4` groups in about `65–80%` of eligible rooms; up to two blocked lanes/doorways only when enough combat and horse clearance remains.
+  - These percentages are tuning targets, not permission to violate route, encounter, reward, boss, or accessibility contracts.
+
+- [ ] **C10.36E Prevent unfair repetition and procedural softlocks.**
+  - Use the deterministic run seed for family, placement, durability variant, and grouping.
+  - Cap consecutive blocker-heavy rooms and avoid repeating the same family in every neighboring room.
+  - Never place blockers inside boss-intro paths, reward/chest interaction space, spawn protection, hazard recovery points, hidden-item pickup radius, ending interactions, or the mounted run entrance.
+  - A doorway blocker must be reachable by sword or projectile from a legal standing position and may not overlap lava, holes, quicksand, enemies, portals, doors, or another blocker.
+  - Keep at least one readable movement pocket and one legal retreat direction during active encounters.
+
+- [ ] **C10.36F Add a clearly labeled deterministic blocker test room close to spawn containing all eight families and depth presets.**
+  - The test room must be isolated from normal startup, horse calm, mounted intro, and production progression.
+  - Validate light/heavy/spin/landing hit accounting, normal-shot `1` structural damage, charged-shot `N` damage from actual bullets consumed, AoE multi-enemy/multi-blocker damage, duplicate collider protection, direct-plus-AoE deduplication, staged visuals, collider removal, nav refresh, horse refusal before destruction, traversal after destruction, and mobile readability.
+  - After approval, remove temporary labels/debug objects and either convert the room into an isolated retained harness or remove it from production generation.
+<!-- B&D DESTRUCTIBLE-PATH-BLOCKERS END -->
 
 ## Final placement and pacing
 
@@ -1155,6 +1314,9 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C10.56 Lava regions where appropriate.
 - [ ] C10.57 Mixed transition zones.
 - [ ] C10.58 Region-appropriate walls, mountains, columns, and obstacle materials.
+- [ ] **C10.58A Keep every closed room boundary visually and physically high enough that the angled camera cannot see over it into an adjacent room; the prototype minimum is `22` world units. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C10.58B Preserve each wall base while extending height upward, avoid negative transform scale, and attach explicit texture-facing/quarter-turn/UV metadata so future natural asymmetric textures are never mirrored accidentally. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] C10.58C Future natural boundaries may replace the prototype wall silhouette, but must preserve the same collision, camera occlusion, doorway, minimap, horse-clearance, and asymmetric-texture orientation contracts.
 - [ ] C10.59 Vegetation density varies by area.
 - [ ] C10.60 Large rooms and inaccessible regions have distinct silhouettes.
 - [ ] C10.61 Environmental storytelling props.
@@ -1188,8 +1350,23 @@ The latest supplied `TEST EVERYTHING` automated report passed on `2026-06-06T17:
 - [ ] C11.10 Verify keyboard movement does not rotate the camera incorrectly.
 - [ ] C11.11 Preserve mouse/touch aiming rules while changing camera visibility.
 - [ ] C11.12 Tune camera tilt, forward visibility, darkness, and horizon readability.
+- [ ] **C11.12A When the player or mounted horse approaches a closed room wall, clamp both camera position and look point to the current room boundary and stop at the real wall collider; never reveal the next room through or above a closed wall. Authored open doorway sides remain traversable. — IMPLEMENTED LOCALLY / VERIFY.**
+- [ ] **C11.12B Add a completed BBH circular badge: after all letters settle, a fully filled circle with a visible rim grows from zero behind the text, reaches full size, holds for exactly `0.50s`, and the intro ends at the end of that hold. — IMPLEMENTED LOCALLY / VERIFY.**
 - [ ] C11.13 Make camera and minimap resolution/aspect-ratio safe for mobile landscape.
-- [ ] **C11.13A Keep the four cardinal minimap targets, but animate target changes through the shortest angle with a slower eased transition while preserving hard clipping. — IMPLEMENTED IN LOCAL PACKAGE / VERIFY.**
+- [ ] **C11.13A The previous per-element cardinal rotation retained the approved four targets and easing but FAILED visual acceptance because room nodes, walls, and markers appeared to deform or flicker. — SUPERSEDED BY C11.13B RIGID-UNIT CORRECTION / VERIFY.**
+<!-- B&D MINIMAP-RIGID-ROTATION START -->
+- [ ] **C11.13B Rotate the complete minimap content as one rigid visual unit under one GUI matrix around one authoritative pivot. The fixed frame and clipping group remain outside the rotation; rooms, walls, openings, player marker, and horse marker preserve exact relative positions. Existing shortest-angle SmoothDampAngle targeting and exact epsilon snap remain active. — REPAIR V2 IMPLEMENTED LOCALLY / VERIFY.**
+  - Put every room node, corridor/link, discovered/undiscovered layer, route line, hazard marker, player/horse/enemy marker, and map decoration under one stable minimap-content rotation root.
+  - The clipping mask/frame may remain fixed, but all content inside it must rotate through the same parent transform and preserve exact relative positions.
+  - Animate only the single content-root angle. Individual nodes, lines, icons, and labels may not run separate rotation, position, scale, layout, or easing animations during a direction change.
+  - Preserve a fixed central pivot, uniform scale, stable anchors, and one authoritative local transform; do not rebuild layout or recalculate node coordinates every animation frame.
+  - Continue using the four cardinal target angles and interpolate through the shortest signed angle with the approved slower professional ease-in/ease-out.
+  - A new direction request during an active turn must retarget from the currently displayed root angle without snapping back, overshooting, stretching, or restarting child animations.
+  - Snap to the exact target angle within a small completion epsilon to prevent perpetual sub-pixel shimmer.
+  - Rotation must not disconnect corridors from rooms, move icons relative to their rooms, change clipping shape, alter room discovery, or distort the map at any aspect ratio.
+  - Verify repeated rapid `90°`, `180°`, clockwise/counter-clockwise changes, low/high frame rates, paused/unpaused state, newly discovered rooms during rotation, mounted movement, and desktop/mobile landscape resolutions.
+  - Acceptance requires zero node jitter, flicker, stretching, drifting, pulsing, corridor separation, or per-element wobble throughout the complete animation.
+<!-- B&D MINIMAP-RIGID-ROTATION END -->
 
 ## HUD/UI
 
@@ -1497,6 +1674,18 @@ No legacy requirement is removed by this reorganization.
 9. Update Git and pause at C07.30.
 10. Tell the user C07 is complete, propose C08, and ask for changes before entering the next category.
 
+
+
+<!-- B&D C03-C11 REPAIR V7 START -->
+## Cross-cutting V7 repair order
+
+1. Repair the failed V6 partial installation without resetting unrelated local work.
+2. Finish the earlier blocking run-start/death-restart/entrance/exit/Pause/minimap contracts.
+3. Implement the closed-wall room-visibility regression because it affects current camera and prototype verification.
+4. Implement the BBH completed-circle change because it is an existing startup presentation, not a future art replacement.
+5. Record the inaccessible macro-region clarification and the detailed Mother Dodge budgets as later C10/C09 work; do not begin those later systems before the current verification gate passes.
+<!-- B&D C03-C11 REPAIR V7 END -->
+
 # 7. Current blockers and risks
 
 ## Blockers
@@ -1521,6 +1710,115 @@ No legacy requirement is removed by this reorganization.
 12. A commit that changes code or requirements without updating `/PROJECT_STATUS.md` breaks external continuity and must be blocked by QA/process.
 
 # 8. Changelog
+
+## 2026-06-07 — Repair V7: partial-package recovery, tall walls, camera stop, BBH circle, and Mother Dodge specification
+
+- Recorded the failed V6 installer truth: payload files were copied, then the minimap preflight stopped before core-file edits.
+- Built an idempotent continuation package for the actual partial state; no reset, stash, checkout, pull, clean, commit, or push is performed.
+- Completed the authored entrance/exit, mounted-versus-death restart, existing Pause/menu, movement guard, and rigid minimap contracts.
+- Raised prototype room-boundary walls to a 22-unit minimum while preserving their bases and added closed-room camera position/look-point clamping plus real wall collision stopping.
+- Added explicit positive-scale, non-mirrored, per-segment facing/quarter-turn/UV metadata for future asymmetric natural wall textures.
+- Confirmed that C10.16–C10.21 already define inaccessible 1–4-room macro-regions and explicitly added rocks/boulder fields to the allowed formations.
+- Added the filled BBH circle behind the completed letters: zero-to-full growth, interior fill plus rim, exact 0.50-second final hold, and end-of-hold completion.
+- Expanded the already-approved Mother Dodge into exact phase charge, recharge, rolling-window, follow-up, cancellation, and fairness rules; implementation remains ordered later with the Mother Boss.
+
+
+## 2026-06-07 — Repair rigid-unit minimap installer and implement the single rotation root
+
+- Corrected the V1 installer failure caused by an indentation-sensitive `DrawRotatedRoomsClipped` method anchor.
+- The V2 installer uses whitespace-tolerant matching and a safe fallback insertion point.
+- Replaced active per-room and per-marker drawing calls with one `DrawRigidRotatedMapContent` call.
+- The full map drawing is transformed once through `GUIUtility.RotateAroundPivot`.
+- Rooms, outlines, walls/openings, player marker, and horse marker preserve exact relative coordinates.
+- The minimap frame, title, footer, and clipping group remain fixed.
+- The original `GUI.matrix` is restored in a `finally` block.
+- Preserved four cardinal targets, diagonal boundary hold, shortest-angle `SmoothDampAngle`, mid-turn retargeting, maximum speed, and exact completion snap.
+- Added `BDMinimapRigidRotationQA` to the existing `TEST EVERYTHING` flow.
+- Added the focused canonical design contract `MINIMAP_RIGID_UNIT_ROTATION.md`.
+- No scene, camera setting, movement, combat, damage, portal, hazard, or procedural-generation value was changed.
+- The next ordered item after real acceptance remains `C03.23A`.
+
+
+## 2026-06-07 — Remove false Pet marker requirement from mounted-intro QA
+
+- Recorded the exact `TEST EVERYTHING` blocker from `2026-06-06T21:47:46.9476910Z`.
+- The blocker was not a runtime failure: `BDMountedRunIntroQA` required the internal marker `PET_RUN_INTRO_CANCEL_CONTRACT` inside the Pet runtime file.
+- Removed the synthetic marker from the QA contract.
+- Kept validation of the real mounted-intro Pet behavior: input lock gate, `CancelPetInteractionForRunIntro`, hold cleanup, and emergency coroutine cancellation.
+- Confirmed the undefined `CancelInteraction()` call remains removed.
+- No runtime behavior, Pet timing, key binding, horse movement, scene, portal, combat value, minimap, hazard, or requirement was changed.
+- `TEST EVERYTHING` must be rerun before Play Mode acceptance or commit.
+
+
+## 2026-06-07 — Make player projectiles AoE against enemies and destructible blockers
+
+- Replaced the previous rule that bullets could not damage destructible blockers.
+- Every normal player shot is now specified as one logical AoE event with multiplier `1`.
+- Every charged shot uses multiplier `N`, where `N` is the exact number of bullets actually consumed at fire time.
+- Each unique enemy in the valid AoE receives base ranged damage × `N`.
+- Each unique destructible in the valid AoE receives `N` structural hits; a normal shot therefore deals exactly one structural hit.
+- Direct collision and AoE overlap use one logical-shot identifier, preventing duplicate damage to targets with several colliders.
+- One shot may damage every different enemy and destructible reached by its AoE, each once.
+- Closed walls and closed doors block AoE propagation.
+- Charged-shot damage numbers show one final total per enemy rather than one number per consumed bullet.
+- Updated blocker-family examples, legal doorway reachability, the deterministic blocker test matrix, ranged-combat requirements, snapshot note, and latest compilation-blocked QA truth.
+- This is a future combat/destructible requirement and does not interrupt the current compilation and mounted-run-intro verification gate.
+
+
+## 2026-06-07 — Repair undefined Pet cancellation call in mounted intro
+
+- Recorded the exact Unity compiler error: `BDHorseExhaustedFollowAndPetInteraction.cs(169,17): CS0103`.
+- Confirmed the mounted-intro Pet gate called `CancelInteraction()`, but that method does not exist.
+- Replaced it with `CancelPetInteractionForRunIntro()`.
+- Pending Pet hold state is cleared immediately.
+- An active Pet coroutine uses the existing emergency-cancel path, preserving its established restoration of visual rotations, player controls, horse external control, and flee components.
+- Added regression coverage to `BDMountedRunIntroQA`.
+- No Pet timing, key binding, horse movement, combat value, portal behavior, scene content, or unrelated local change was modified.
+- Compilation and `TEST EVERYTHING` remain the acceptance gate.
+
+
+## 2026-06-07 — Split mounted run intro by fresh/victory versus death restart
+
+- Corrected the mounted entrance rule: it plays only for a fresh New Game or a non-death victory/cinematic restart.
+- For the current progression definition, any new-run return after a cinematic beyond the doorway following the first boss counts as victory/cinematic and receives the mounted entrance.
+- Death always takes precedence over a death cutscene or presentation.
+- Death -> New Game now skips mounting, doorway repositioning, ride animation, and cinematic camera zoom.
+- On death restart, the freshly loaded player remains unmounted at the authored start-room spawn point with the normal gameplay camera.
+- Held input during death-restart loading is still discarded until release, but there is no arbitrary timer.
+- The pending death reason is consumed only by a real gameplay scene containing player, horse, and minimap-room metadata; menus and cinematics cannot consume it.
+- Updated mounted-intro QA contracts, the focused design document, the current snapshot, and blocker truth.
+- The supplied automated report remains compilation-blocked and still does not include the underlying Console compiler lines.
+
+
+## 2026-06-07 — Add destructible path blockers and rigid-unit minimap correction
+
+- Added a future C10 destructible path/doorway blocker system with exact structural-hit rules, staged destruction, collision/nav cleanup, horse/enemy path behavior, procedural safety, and deterministic QA.
+- Approved eight initial biome-authentic blocker families: pots/urns, tall grass/reeds, thorn bramble, vines/roots, wooden barricades, sand/rubble piles, cracked boulders, and crystal/ice/mineral growth.
+- Added a comfortable normalized-depth ramp that increases both the chance of blocker rooms and the number of blocker groups per room while protecting the start, mounted entrance, bosses, rewards, hazards, and required routes.
+- Added the required near-spawn isolated test room/harness and post-approval cleanup rule.
+- Recorded that the existing minimap direction animation failed visual acceptance because its nodes/elements deform and flicker.
+- Added C11.13B: all minimap content rotates under one stable parent/root as a rigid unit; no independent node/corridor/icon transforms are animated.
+- C11.13B is queued as an immediate cross-cutting regression after the current compilation and mounted-run-intro acceptance gate, before returning to C03.23A.
+- Updated the single QA truth: the latest supplied TEST EVERYTHING report is blocked by `UNITY_SCRIPT_COMPILATION_FAILED`; the supplied report does not include the actual Console compiler error lines.
+
+
+## 2026-06-07 — Implement mounted run intro and doorway portals
+
+- Added the persistent `BDMountedRunIntro` scene-load coordinator.
+- The child begins already mounted and the horse is externally driven through the start room's legal entrance over `2.25s`.
+- Added a modest `0.48s` camera zoom-in and `0.72s` return to the original gameplay projection.
+- Existing camera follow/orbit drivers are temporarily disabled and restored without replacing their authored configuration.
+- Gameplay input is discarded throughout loading and the cinematic; after the animation, control opens immediately when all held gameplay inputs are physically released.
+- Added explicit mounted-intro APIs to `BDHorseController` so the rider remains mounted when external cinematic control ends.
+- Player movement, melee, ranged/charged state, landing-attack classification, horse input, and Pet interaction are gated during the intro.
+- Player damage and enemy proximity/attack telegraph spawning are blocked during the intro.
+- Existing red/orange transient floor telegraphs are removed on scene load and throughout the cinematic.
+- Added animated opaque two-sided entrance/exit light portals with luminous frames and moving light bands; portal objects have no colliders.
+- Portal placement uses `BDMinimapRoom` open-side metadata and prefers external openings rather than creating passages through closed walls.
+- Added `BDMountedRunIntroQA` to the existing single `TEST EVERYTHING` flow and added the focused design contract.
+- No attack damage, cooldown, horse health, hazard damage, quicksand requirement, or unrelated gameplay value was changed.
+- The next ordered item remains `C03.23A` only after real Play Mode acceptance.
+
 
 ## 2026-06-06 — Clarify horse and mounted quicksand behavior
 
@@ -2229,3 +2527,28 @@ No legacy requirement is removed by this reorganization.
 - Every hit receives outward knockback, stagger, flash, and impact feedback.
 - Added `BDSpinAttackVisual` for a short rotating three-arc animation; the standard melee slash visual is not spawned.
 - Added design documentation and TEST EVERYTHING contracts.
+
+<!-- B&D DOC GOVERNANCE V8 CHANGELOG START -->
+## 2026-06-07 — Permanent documentation governance and one-click QA conflict repair V8
+
+- Made request capture and implementation timing a permanent repository rule that the user does not need to repeat.
+- Added `START_HERE.md` as the unmistakable mandatory entry point.
+- Added `DOCUMENTATION_INDEX.md` with maintained-document ownership and update triggers.
+- Added `ARCHITECTURE.md` with runtime/editor/QA ownership and Mermaid flow diagrams.
+- Added `QA_CHECKLIST.md`, `TECHNICAL_DECISIONS.md`, and `PERFORMANCE_GUIDELINES.md` without creating a second status source.
+- Added `BDDocumentationGovernanceQA` and integrated it into the existing `TEST EVERYTHING` entry point.
+- Added a non-destructive repair for a conflicted `BDOneClickQAWindow.cs`: restore only that tracked file from `HEAD`, preserve all other local work, then reconnect every discovered modular `BD*QA.Scan` check and required manual checks.
+- Static/package validation is required before Unity. Unity compilation, `TEST EVERYTHING`, and focused Play Mode remain unverified until run locally.
+<!-- B&D DOC GOVERNANCE V8 CHANGELOG END -->
+
+<!-- B&D QA CONTRACT DRIFT V9 CHANGELOG START -->
+## 2026-06-07 — Line-aware conflict scan and stale QA contract repair V9
+
+- Recorded the real four-blocker `TEST EVERYTHING` result supplied by the user.
+- Corrected `BDDocumentationGovernanceQA` so only standalone conflict-marker lines block QA; inline examples in `QA_CHECKLIST.md` and quoted strings in QA source no longer create false blockers.
+- Updated the stale minimap QA requirement from the failed V1 marker to the active V7 rigid clipped-map contract.
+- Updated the stale START GAME highlight QA requirement from the removed `startGamePressed` local variable to the current action-aware `MenuActionVisual.Progress` path.
+- Preserved runtime minimap and menu implementations; no obsolete compatibility code was reintroduced.
+- Updated `QA_CHECKLIST.md` and `TECHNICAL_DECISIONS.md` so future checks follow active behavior rather than fragile implementation trivia.
+- Static/package validation is required before Unity. Unity compilation, automated QA, and Play Mode remain unverified until rerun locally.
+<!-- B&D QA CONTRACT DRIFT V9 CHANGELOG END -->

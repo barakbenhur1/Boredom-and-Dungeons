@@ -46,7 +46,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "RuntimeInitializeLoadType.SubsystemRegistration",
                 "RuntimeInitializeLoadType.BeforeSceneLoad",
                 "SceneManager.sceneLoaded",
-                "SuppressionDuration = 0.45f",
+                "SuppressionDuration = 1.50f",
                 "IsFeedbackSuppressed",
                 "RunStartFeedbackResetRequested",
                 "Time.timeScale = 1f",

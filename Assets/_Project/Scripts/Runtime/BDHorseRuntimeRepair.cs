@@ -43,6 +43,10 @@ namespace BoredomAndDungeons
                         horse
                     );
                 }
+
+                BDHorseCleanRunStartGuard.RegisterHorse(
+                    horseHealth
+                );
             }
         }
 

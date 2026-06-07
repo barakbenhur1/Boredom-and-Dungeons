@@ -20,6 +20,15 @@ namespace BoredomAndDungeons
             Loading
         }
 
+        // BD ACTION-AWARE MENU BUTTONS V7
+        private enum MenuActionVisual
+        {
+            Progress,
+            Settings,
+            Leave,
+            Neutral
+        }
+
         private static bool autoStartAfterReload;
 
         private static readonly Color StartGameHighlightTint =
@@ -142,7 +151,8 @@ namespace BoredomAndDungeons
 
             if (!enableEscapePause ||
                 !runActive ||
-                resultSequenceActive)
+                resultSequenceActive ||
+                BDRunPresentationCoordinator.InputLocked)
             {
                 return;
             }
@@ -174,6 +184,8 @@ namespace BoredomAndDungeons
             if (resultSequenceActive)
                 return true;
 
+            BDRunPresentationCoordinator.MarkDeathRestartWithoutIntro();
+
             ShowPlainMainMenu(
                 needsReload: true
             );
@@ -193,6 +205,7 @@ namespace BoredomAndDungeons
 
         public void ReturnToMainMenuAfterSequence()
         {
+            BDRunPresentationCoordinator.MarkCinematicSeen();
             resultSequenceActive = false;
 
             ShowPlainMainMenu(
@@ -202,6 +215,7 @@ namespace BoredomAndDungeons
 
         public void CompleteMotherVictorySequence()
         {
+            BDRunPresentationCoordinator.MarkCinematicSeen();
             BDGameProgress.MarkMotherDefeated();
             resultSequenceActive = false;
 
@@ -223,6 +237,9 @@ namespace BoredomAndDungeons
 
         public void ReturnToMainMenu()
         {
+            if (runActive)
+                BDRunPresentationCoordinator.MarkNextRunAsFreshOrVictoryIntro();
+
             resultSequenceActive = false;
 
             ShowPlainMainMenu(
@@ -246,7 +263,8 @@ namespace BoredomAndDungeons
 
             RestoreTimeScale();
             RefreshRuntimeBindings();
-            SetPlayerControlEnabled(true);
+            if (!BDRunPresentationCoordinator.HoldGameplayControlOnRunStart)
+                SetPlayerControlEnabled(true);
         }
 
         private void StartGamePressed()
@@ -330,6 +348,7 @@ namespace BoredomAndDungeons
             pausedFromGameplay = true;
             mode = OverlayMode.Pause;
             Time.timeScale = 0f;
+            AudioListener.pause = true;
             SetPlayerControlEnabled(false);
 
             Cursor.visible = true;
@@ -585,33 +604,20 @@ namespace BoredomAndDungeons
             {
                 GUILayout.Space(34f);
             }
-
-
-
-            Color previousButtonTint =
-                GUI.backgroundColor;
-
-            GUI.backgroundColor =
-                StartGameHighlightTint;
-
-            bool startGamePressed =
-                GUILayout.Button(
+            if (DrawActionButton(
                     "START GAME",
-                    buttonStyle,
-                    GUILayout.Height(60f));
-
-            GUI.backgroundColor =
-                previousButtonTint;
-
-            if (startGamePressed)
+                    MenuActionVisual.Progress,
+                    60f))
+            {
                 StartGamePressed();
+            }
 
             GUILayout.Space(14f);
 
-            if (GUILayout.Button(
+            if (DrawActionButton(
                     "SETTINGS",
-                    buttonStyle,
-                    GUILayout.Height(52f)))
+                    MenuActionVisual.Settings,
+                    52f))
             {
                 OpenSettings(
                     fromPause: false
@@ -623,10 +629,10 @@ namespace BoredomAndDungeons
             {
                 GUILayout.Space(14f);
 
-                if (GUILayout.Button(
+                if (DrawActionButton(
                         "QUIT",
-                        buttonStyle,
-                        GUILayout.Height(46f)))
+                        MenuActionVisual.Leave,
+                        46f))
                 {
                     BDGameSettings.Save();
                     Application.Quit();
@@ -647,6 +653,64 @@ namespace BoredomAndDungeons
 
             GUILayout.Space(12f);
         }
+        public void ReleaseControlAfterRunPresentation(
+            bool playerIsMounted)
+        {
+            if (!runActive || pausedFromGameplay || resultSequenceActive)
+                return;
+
+            if (!playerIsMounted)
+                SetPlayerControlEnabled(true);
+        }
+
+        private bool DrawActionButton(
+            string label,
+            MenuActionVisual visual,
+            float height)
+        {
+            Color previousTint = GUI.backgroundColor;
+            GUI.backgroundColor = ResolveActionTint(visual);
+            bool pressed = GUILayout.Button(
+                ResolveActionPrefix(visual) + "  " + label,
+                buttonStyle,
+                GUILayout.Height(height)
+            );
+            GUI.backgroundColor = previousTint;
+            return pressed;
+        }
+
+        private static Color ResolveActionTint(
+            MenuActionVisual visual)
+        {
+            switch (visual)
+            {
+                case MenuActionVisual.Progress:
+                    return StartGameHighlightTint;
+                case MenuActionVisual.Settings:
+                    return new Color(0.66f, 0.72f, 1.00f, 1f);
+                case MenuActionVisual.Leave:
+                    return new Color(1.00f, 0.48f, 0.38f, 1f);
+                default:
+                    return new Color(0.72f, 0.80f, 0.92f, 1f);
+            }
+        }
+
+        private static string ResolveActionPrefix(
+            MenuActionVisual visual)
+        {
+            switch (visual)
+            {
+                case MenuActionVisual.Progress:
+                    return "[>]";
+                case MenuActionVisual.Settings:
+                    return "[*]";
+                case MenuActionVisual.Leave:
+                    return "[!]";
+                default:
+                    return "[-]";
+            }
+        }
+
 
         private void DrawCompletedGameBoyRelic()
         {
@@ -921,45 +985,36 @@ namespace BoredomAndDungeons
 
             GUI.color = previous;
         }
-
-
         private void DrawPause()
         {
             GUILayout.Space(30f);
-
-            GUILayout.Label(
-                "PAUSED",
-                titleStyle
-            );
-
+            GUILayout.Label("GAME PAUSED", titleStyle);
             GUILayout.FlexibleSpace();
 
-            if (GUILayout.Button(
+            if (DrawActionButton(
                     "RESUME",
-                    buttonStyle,
-                    GUILayout.Height(58f)))
+                    MenuActionVisual.Progress,
+                    58f))
             {
                 ResumeGame();
             }
 
             GUILayout.Space(14f);
 
-            if (GUILayout.Button(
+            if (DrawActionButton(
                     "SETTINGS",
-                    buttonStyle,
-                    GUILayout.Height(52f)))
+                    MenuActionVisual.Settings,
+                    52f))
             {
-                OpenSettings(
-                    fromPause: true
-                );
+                OpenSettings(fromPause: true);
             }
 
             GUILayout.Space(14f);
 
-            if (GUILayout.Button(
-                    "MAIN MENU",
-                    buttonStyle,
-                    GUILayout.Height(52f)))
+            if (DrawActionButton(
+                    "MAIN MENU / ABANDON RUN",
+                    MenuActionVisual.Leave,
+                    52f))
             {
                 ReturnToMainMenu();
             }
@@ -967,6 +1022,7 @@ namespace BoredomAndDungeons
             GUILayout.FlexibleSpace();
             GUILayout.Space(24f);
         }
+
 
         private void DrawLoading()
         {

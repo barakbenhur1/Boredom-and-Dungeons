@@ -167,12 +167,14 @@ namespace BoredomAndDungeons
             else
                 currentHealth = Mathf.Min(currentHealth, maxHealth);
 
-            RequestDamageCameraShake();
             HealthChanged?.Invoke(this, currentHealth, maxHealth);
         }
 
         public void ApplyDamage(float amount)
         {
+            if (ShouldIgnorePlayerDamageDuringRunIntro())
+                return;
+
             if (IsDead)
                 return;
 
@@ -230,6 +232,13 @@ namespace BoredomAndDungeons
         }
 
 
+        private bool ShouldIgnorePlayerDamageDuringRunIntro()
+        {
+            return
+                BDMountedRunIntro.IsGameplayInputLocked &&
+                GetComponent<BDPlayerMarker>() != null;
+        }
+
         private bool TryCancelPlayerDamageWithParry()
         {
             if (GetComponent<BDPlayerMarker>() == null)
@@ -242,6 +251,9 @@ namespace BoredomAndDungeons
         private void RequestDamageCameraShake()
         {
             if (!Application.isPlaying)
+                return;
+
+            if (BDNewRunFeedbackReset.IsFeedbackSuppressed)
                 return;
             if (GetComponent<BDPlayerMarker>() != null)
             {

@@ -1,5 +1,14 @@
 # Boredom & Dungeons
 
+<!-- B&D MANDATORY START HERE V8 START -->
+> [!IMPORTANT]
+> **Mandatory first read for every human contributor and AI assistant:**
+> [`START_HERE.md`](START_HERE.md)
+>
+> Then read `DEVELOPMENT_WORKFLOW.md`, `PROJECT_STATUS.md`, and
+> `DOCUMENTATION_INDEX.md` before proposing or applying a material change.
+<!-- B&D MANDATORY START HERE V8 END -->
+
 **Boredom & Dungeons** is a Unity / C# top-down 2.5D action-adventure project about exploration, melee and ranged combat, horse traversal, hidden collectibles, protected encounters, mini-bosses, bosses, and multiple ending paths.
 
 ## Authoritative project state

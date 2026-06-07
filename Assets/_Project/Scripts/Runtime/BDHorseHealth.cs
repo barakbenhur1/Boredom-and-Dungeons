@@ -129,7 +129,8 @@ namespace BoredomAndDungeons
 
         public void ApplyDamage(float amount)
         {
-            if (IsStartupProtected)
+            if (BDHorseCleanRunStartGuard.IsActive ||
+                IsStartupProtected)
             {
                 if (logDamage)
                 {

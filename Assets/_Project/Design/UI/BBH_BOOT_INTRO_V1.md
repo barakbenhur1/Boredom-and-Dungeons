@@ -79,3 +79,18 @@ scene dirty and allow the top-level TEST EVERYTHING flow to own scene saving.
 - The visual center of `BBH` is exactly `45%` of screen height measured from the top and therefore `55%` from the bottom.
 - The runtime uses a non-serialized constant. Scene or Inspector values cannot override this position.
 - This places the logo more in the upper half than in the lower half.
+
+
+<!-- B&D BBH FILLED CIRCLE V7 START -->
+## Completed filled-circle badge
+
+After all three letters have fully settled, a circular badge begins behind the completed `BBH` text:
+
+- it starts at zero size;
+- it grows smoothly to its final diameter behind the letters;
+- it contains a full opaque/tinted interior fill and a visible outer rim, not an empty outline;
+- the already-settled letters remain drawn above it;
+- after the circle reaches full size, the completed mark remains for exactly `0.50s`;
+- the final fade is contained inside that half-second hold, and the intro ends when the hold ends;
+- all timing remains based on unscaled real time.
+<!-- B&D BBH FILLED CIRCLE V7 END -->

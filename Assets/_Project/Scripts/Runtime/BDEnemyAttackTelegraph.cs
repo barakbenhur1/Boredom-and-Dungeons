@@ -15,6 +15,9 @@ namespace BoredomAndDungeons
 
         public void ShowMelee(Vector3 direction, float duration = 0.18f)
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+                return;
+
             // Every direct physical attack reports through the same shared path.
             // This includes swords, charges, jumps, bites, stomps, hands, tails,
             // rolling body attacks and future physical boss attacks.

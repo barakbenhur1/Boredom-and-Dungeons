@@ -4,13 +4,19 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
 namespace BoredomAndDungeons
 {
     [DefaultExecutionOrder(-10000)]
     [DisallowMultipleComponent]
     public sealed class BDNewRunFeedbackReset : MonoBehaviour
     {
-        private const float SuppressionDuration = 0.45f;
+        private const float SuppressionDuration = 1.50f;
+        private const float CombatInputQuarantineMinimumDuration = 0.20f;
+        private const float CombatInputQuarantineMaximumDuration = 1.50f;
 
         private static readonly string[] FeedbackKeywords =
         {
@@ -45,9 +51,38 @@ namespace BoredomAndDungeons
         };
 
         private static BDNewRunFeedbackReset instance;
+        private static bool combatInputQuarantineActive;
+        private static float combatInputMinimumUntilRealtime;
+        private static float combatInputMaximumUntilRealtime;
         private Coroutine resetRoutine;
 
         public static bool IsFeedbackSuppressed { get; private set; }
+
+        public static bool IsCombatInputSuppressed
+        {
+            get
+            {
+                if (!combatInputQuarantineActive)
+                    return false;
+
+                float now = Time.realtimeSinceStartup;
+
+                if (now >= combatInputMaximumUntilRealtime)
+                {
+                    combatInputQuarantineActive = false;
+                    return false;
+                }
+
+                if (now < combatInputMinimumUntilRealtime)
+                    return true;
+
+                if (IsAttackInputHeld())
+                    return true;
+
+                combatInputQuarantineActive = false;
+                return false;
+            }
+        }
 
         public static event Action RunStartFeedbackResetRequested;
 
@@ -57,6 +92,9 @@ namespace BoredomAndDungeons
         {
             instance = null;
             IsFeedbackSuppressed = false;
+            combatInputQuarantineActive = false;
+            combatInputMinimumUntilRealtime = 0f;
+            combatInputMaximumUntilRealtime = 0f;
             RunStartFeedbackResetRequested = null;
 
             RestoreGlobalPlaybackState();
@@ -68,6 +106,7 @@ namespace BoredomAndDungeons
         private static void BootstrapBeforeSceneLoad()
         {
             EnsureInstance();
+            BeginCombatInputQuarantine();
             RestoreGlobalPlaybackState();
             ResetKnownStaticFeedbackSystems();
         }
@@ -123,6 +162,8 @@ namespace BoredomAndDungeons
             if (!Application.isPlaying)
                 return;
 
+            BeginCombatInputQuarantine();
+
             if (resetRoutine != null)
                 StopCoroutine(resetRoutine);
 
@@ -156,6 +197,66 @@ namespace BoredomAndDungeons
 
             IsFeedbackSuppressed = false;
             resetRoutine = null;
+        }
+
+        private static void BeginCombatInputQuarantine()
+        {
+            float now = Time.realtimeSinceStartup;
+
+            combatInputQuarantineActive = true;
+            combatInputMinimumUntilRealtime =
+                Mathf.Max(
+                    combatInputMinimumUntilRealtime,
+                    now +
+                    CombatInputQuarantineMinimumDuration
+                );
+            combatInputMaximumUntilRealtime =
+                Mathf.Max(
+                    combatInputMaximumUntilRealtime,
+                    now +
+                    CombatInputQuarantineMaximumDuration
+                );
+        }
+
+        private static bool IsAttackInputHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Mouse mouse = Mouse.current;
+
+            if (mouse != null &&
+                (
+                    mouse.leftButton.isPressed ||
+                    mouse.rightButton.isPressed ||
+                    mouse.middleButton.isPressed
+                ))
+            {
+                return true;
+            }
+
+            Keyboard keyboard = Keyboard.current;
+
+            if (keyboard != null &&
+                (
+                    keyboard.jKey.isPressed ||
+                    keyboard.kKey.isPressed
+                ))
+            {
+                return true;
+            }
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetMouseButton(0) ||
+                Input.GetMouseButton(1) ||
+                Input.GetMouseButton(2) ||
+                Input.GetKey(KeyCode.J) ||
+                Input.GetKey(KeyCode.K))
+            {
+                return true;
+            }
+#endif
+
+            return false;
         }
 
         private static void NotifyExplicitResetListeners()

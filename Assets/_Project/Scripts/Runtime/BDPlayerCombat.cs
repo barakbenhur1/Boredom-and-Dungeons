@@ -176,6 +176,15 @@ namespace BoredomAndDungeons
                 Mathf.Max(0.02f, maximumWaitSeconds);
         }
 
+        public void ResetTransientCombatInputState()
+        {
+            ClearPendingLightPress();
+            ClearPendingRangedPress();
+            CancelChargedShot();
+            suppressStandardMeleeVisualUntilUnscaled = -999f;
+            lastCombatAction = "new run input quarantined";
+        }
+
         private void Awake()
         {
             rangedAmmo = RangedMagazineSize;
@@ -188,6 +197,18 @@ namespace BoredomAndDungeons
         }
         private void Update()
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+            {
+                ResetTransientCombatInputState();
+                return;
+            }
+
+            if (BDNewRunFeedbackReset.IsCombatInputSuppressed)
+            {
+                ResetTransientCombatInputState();
+                return;
+            }
+
             TickReload();
 
             bool mounted = IsMountedOnHorse();

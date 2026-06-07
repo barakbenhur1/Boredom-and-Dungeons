@@ -15,8 +15,11 @@ namespace BoredomAndDungeons
 
         public static void RequestCameraShake(float strength, float duration)
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying ||
+                BDNewRunFeedbackReset.IsFeedbackSuppressed)
+            {
                 return;
+            }
 
             strength *=
                 BDGameSettings.CameraShakeIntensity;
@@ -39,8 +42,11 @@ namespace BoredomAndDungeons
 
         public static Vector3 SampleCameraShakeOffset()
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying ||
+                BDNewRunFeedbackReset.IsFeedbackSuppressed)
+            {
                 return Vector3.zero;
+            }
 
             if (!HasCameraShake)
                 return Vector3.zero;
@@ -55,6 +61,11 @@ namespace BoredomAndDungeons
             float y = (Mathf.PerlinNoise(shakeSeed.y, t + 7.3f) - 0.5f) * 2f;
 
             return new Vector3(x, y * 0.55f, 0f) * shakeStrength * fade;
+        }
+
+        public static void ResetTransientFeedback()
+        {
+            Reset();
         }
 
         public static void Reset()

@@ -15,7 +15,13 @@ namespace BoredomAndDungeons
         [SerializeField] private float letterDuration = 0.72f;
         [SerializeField] private float gapAfterLetter = 0.08f;
         [SerializeField] private float completedHold = 0.82f;
-        [SerializeField] private float fadeOutDuration = 0.48f;
+        [SerializeField] private float fadeOutDuration = 0.18f;
+
+        [Header("Completed BBH Circle")]
+        // BD FILLED CIRCLE BADGE V7
+        [SerializeField] private float circleGrowthDuration = 0.52f;
+        [SerializeField] private float circleFinalHold = 0.50f;
+        [SerializeField] private float circleDiameterMultiplier = 3.55f;
 
         [Header("Composition")]
 [SerializeField, Range(0.50f, 1.20f)]
@@ -46,6 +52,8 @@ namespace BoredomAndDungeons
         private bool active;
         private GUIStyle letterStyle;
         private Texture2D solidTexture;
+        private Texture2D filledCircleTexture;
+        private Texture2D circleRimTexture;
         public static bool IsPlaying => currentlyPlaying;
         public static bool HasPlayedThisSession =>
             playedThisApplicationSession;
@@ -94,6 +102,16 @@ namespace BoredomAndDungeons
             // by Unity for the play session. Explicitly destroying the font
             // while GUIStyle still references it can produce
             // "Deleting invalid font reference" during script reload.
+            if (filledCircleTexture != null)
+            {
+                Destroy(filledCircleTexture);
+                filledCircleTexture = null;
+            }
+            if (circleRimTexture != null)
+            {
+                Destroy(circleRimTexture);
+                circleRimTexture = null;
+            }
             letterStyle = null;
         }
 
@@ -120,13 +138,19 @@ namespace BoredomAndDungeons
             PerLetterWindow * LetterCount -
             Mathf.Max(0f, gapAfterLetter);
 
+        private float CircleGrowthEndTime =>
+            LettersEndTime + Mathf.Max(0.05f, circleGrowthDuration);
+
         private float FadeStartTime =>
-            LettersEndTime +
-            Mathf.Max(0f, completedHold);
+            CircleGrowthEndTime +
+            Mathf.Max(
+                0f,
+                Mathf.Max(0.05f, circleFinalHold) -
+                Mathf.Max(0.05f, fadeOutDuration)
+            );
 
         private float TotalDuration =>
-            FadeStartTime +
-            Mathf.Max(0.05f, fadeOutDuration);
+            CircleGrowthEndTime + Mathf.Max(0.05f, circleFinalHold);
 
         private void CompleteIntro()
         {
@@ -194,6 +218,13 @@ namespace BoredomAndDungeons
 float shimmerProgress = Mathf.Clamp01(
                 (Elapsed - LettersEndTime) /
                 Mathf.Max(0.01f, completedHold)
+            );
+
+            DrawFilledCircleBadge(
+                compositionCenter,
+                finalFontSize,
+                spacing,
+                globalAlpha
             );
 
             for (int index = 0; index < LetterCount; index++)
@@ -492,6 +523,119 @@ float shimmerProgress = Mathf.Clamp01(
                 rotation
             );
         }
+        private void DrawFilledCircleBadge(
+            Vector2 center,
+            float finalFontSize,
+            float spacing,
+            float globalAlpha)
+        {
+            if (Elapsed < LettersEndTime ||
+                filledCircleTexture == null ||
+                circleRimTexture == null)
+            {
+                return;
+            }
+
+            float progress = Mathf.Clamp01(
+                (Elapsed - LettersEndTime) /
+                Mathf.Max(0.05f, circleGrowthDuration)
+            );
+            float eased = EaseOutBack(progress);
+            float diameter =
+                Mathf.Max(
+                    finalFontSize * 2.7f,
+                    spacing * Mathf.Max(3f, circleDiameterMultiplier)
+                ) * Mathf.Max(0f, eased);
+
+            if (diameter <= 0.5f)
+                return;
+
+            Rect rect = new Rect(
+                center.x - diameter * 0.5f,
+                center.y - diameter * 0.5f,
+                diameter,
+                diameter
+            );
+
+            Color previous = GUI.color;
+            GUI.color = new Color(
+                0.035f,
+                0.075f,
+                0.17f,
+                globalAlpha * 0.96f
+            );
+            GUI.DrawTexture(rect, filledCircleTexture);
+
+            GUI.color = new Color(
+                0.58f,
+                0.76f,
+                1f,
+                globalAlpha * 0.82f
+            );
+            GUI.DrawTexture(rect, circleRimTexture);
+            GUI.color = previous;
+        }
+
+        private static Texture2D CreateCircleTexture(
+            int size,
+            bool rimOnly)
+        {
+            int safeSize = Mathf.Max(32, size);
+            Texture2D texture = new Texture2D(
+                safeSize,
+                safeSize,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            texture.name = rimOnly
+                ? "BBH Circle Rim"
+                : "BBH Filled Circle";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Bilinear;
+
+            Color[] pixels = new Color[safeSize * safeSize];
+            float center = (safeSize - 1) * 0.5f;
+            float radius = safeSize * 0.49f;
+            float edge = Mathf.Max(1f, safeSize * 0.018f);
+            float rimWidth = Mathf.Max(2f, safeSize * 0.035f);
+
+            for (int y = 0; y < safeSize; y++)
+            {
+                for (int x = 0; x < safeSize; x++)
+                {
+                    float dx = x - center;
+                    float dy = y - center;
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float outer = 1f - Mathf.SmoothStep(
+                        radius - edge,
+                        radius + edge,
+                        distance
+                    );
+
+                    float alpha = outer;
+                    if (rimOnly)
+                    {
+                        float inner = Mathf.SmoothStep(
+                            radius - rimWidth - edge,
+                            radius - rimWidth + edge,
+                            distance
+                        );
+                        alpha *= inner;
+                    }
+
+                    pixels[y * safeSize + x] =
+                        new Color(1f, 1f, 1f, Mathf.Clamp01(alpha));
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply(
+                updateMipmaps: false,
+                makeNoLongerReadable: true
+            );
+            return texture;
+        }
+
 
         private void DrawCompletionLightSweep(
             Vector2 center,
@@ -628,6 +772,11 @@ float shimmerProgress = Mathf.Clamp01(
                     makeNoLongerReadable: true
                 );
             }
+
+            if (filledCircleTexture == null)
+                filledCircleTexture = CreateCircleTexture(256, rimOnly: false);
+            if (circleRimTexture == null)
+                circleRimTexture = CreateCircleTexture(256, rimOnly: true);
 
             if (letterStyle != null)
                 return;

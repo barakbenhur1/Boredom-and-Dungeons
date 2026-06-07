@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "horse",
                 "Horse",
-                "The horse starts safely and preserves healing, buck, mount, flee, and two-step hazard retreat behavior. At zero health it remains fainted while nearby; after the player stays beyond 14m for 1.25 seconds it follows very slowly through hazard-safe movement, stops by 8m, never heals or mounts, and exits after healing. Within 2.25m on foot, tap Pet for player-pets-horse and hold 0.65 seconds for horse-nuzzles-player; the actions are exclusive and cancel safely."),
+                "The horse starts at full health, stays calm through the startup window, and ignores remote encounters while preserving healing, buck, mount, real local-threat flee, and two-step hazard retreat behavior. At zero health it remains fainted while nearby; after the player stays beyond 14m for 1.25 seconds it follows very slowly through hazard-safe movement, stops by 8m, never heals or mounts, and exits after healing. Within 2.25m on foot, tap Pet for player-pets-horse and hold 0.65 seconds for horse-nuzzles-player; the actions are exclusive and cancel safely."),
             new ManualCheck(
                 "square_jumper",
                 "Square Jumper",
@@ -101,6 +101,18 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "hazards",
                 "Ground, holes, lava, horse, and minimap",
                 "The minimap remains clipped while its cardinal transition animates. Normal walking never leaves supported ground. A hole applies exactly 15 damage and respawns; real lava contact applies exactly 10 damage and returns the player safely. The horse performs a two-step retreat before hazards, and mounted emergency recovery returns the player on foot without horse damage."),
+            new ManualCheck(
+                "run_presentation",
+                "Run entrance, authored exit, pause, and menu",
+                "No map flash before the menu. Fresh/abandoned/post-cinematic runs use the mounted authored entrance; ordinary death restarts on foot. The authored exit continues automatically into the existing ending. Escape pauses time/audio and all actions work."),
+            new ManualCheck(
+                "room_boundaries",
+                "Tall room walls and camera stop",
+                "Closed walls are visibly tall enough that adjacent rooms cannot be seen over them. Walking or riding toward every closed side stops the camera and look point at the wall; authored open doorways still transition normally."),
+            new ManualCheck(
+                "bbh_circle",
+                "BBH completed-circle intro",
+                "After all BBH letters settle, a filled circular badge grows from zero behind the letters, reaches full size, holds for exactly 0.50 seconds, and the intro ends cleanly without replaying on a same-session New Game."),
             new ManualCheck(
                 "console",
                 "Console",
@@ -459,6 +471,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanSource(result);
             // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
             ScanCameraMinimapRegression(result);
+            BDMinimapRigidRotationQA.Scan(result);
             ScanCameraForwardViewBiasContracts(result);
             ScanHazardRecoveryContracts(result);
             ScanGroundHazardAndMinimapContracts(result);
@@ -473,6 +486,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanNaturalMovementAwarenessFacingContracts(result);
             BDHorseExhaustedFollowPetQA.Scan(result);
             BDNewRunFeedbackResetQA.Scan(result);
+            BDDocumentationGovernanceQA.Scan(result);
+            BDRunPresentationPauseQA.Scan(result);
+            BDEarlyRunRegressionRepairQA.Scan(result);
+            BDMountedRunIntroQA.Scan(result);
+            BDHorseCleanRunStartQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);
             ScanMainMenuSettingsContracts(result);
@@ -2632,7 +2650,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 new[]
                 {
                     "StartGameHighlightTint",
-                    "startGamePressed"
+                    "MenuActionVisual.Progress"
                 },
                 "START_GAME_HIGHLIGHT_CONTRACT_MISSING"
             );

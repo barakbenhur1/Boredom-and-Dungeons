@@ -65,6 +65,18 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+            {
+                ClearBuffer();
+                return;
+            }
+
+            if (BDNewRunFeedbackReset.IsCombatInputSuppressed)
+            {
+                ClearBuffer();
+                return;
+            }
+
             if (!reflectionReady || combat == null || !combat.enabled)
                 return;
 

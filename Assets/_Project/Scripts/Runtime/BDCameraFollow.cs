@@ -24,6 +24,16 @@ namespace BoredomAndDungeons
         [SerializeField] private float cameraYawDegreesPerSecond = 86f;
         [SerializeField] private float movementDirectionBlend = 7.5f;
 
+        [Header("Room Boundary Camera")]
+        // BD ROOM WALL CAMERA STOP V7
+        [SerializeField] private bool stopAtClosedRoomWalls = true;
+        [SerializeField] private float roomBoundaryInset = 0.80f;
+        [SerializeField] private float wallCollisionRadius = 0.55f;
+        [SerializeField] private float wallCollisionPadding = 0.35f;
+        [SerializeField] private float minimumCameraDistance = 2.25f;
+        [SerializeField] private float roomResolveInterval = 0.12f;
+        [SerializeField] private LayerMask roomBoundaryCollisionMask = ~0;
+
         [Header("Shake")]
         [SerializeField] private float cameraShakeMultiplier = 0.42f;
         [SerializeField] private float cameraShakeSmoothing = 18f;
@@ -45,6 +55,8 @@ namespace BoredomAndDungeons
         private Vector3 smoothedShakeOffset;
         private string cameraState = "locked behind movement";
         private float nextTargetResolveAt;
+        private BDMinimapRoom currentCameraRoom;
+        private float nextRoomResolveAt;
 
         public void SetTarget(Transform newTarget)
         {
@@ -235,7 +247,14 @@ namespace BoredomAndDungeons
                 forward = Vector3.forward;
 
             Vector3 targetPosition = target.position;
-            Vector3 desiredPosition = targetPosition - forward.normalized * distanceBehind + Vector3.up * height;
+            Vector3 desiredPosition =
+                targetPosition -
+                forward.normalized * distanceBehind +
+                Vector3.up * height;
+            desiredPosition = ResolveRoomBoundaryConstrainedPosition(
+                targetPosition,
+                desiredPosition
+            );
 
             Vector3 rawShake = BDGameFeelEvents.SampleCameraShakeOffset() * cameraShakeMultiplier;
             smoothedShakeOffset = Vector3.Lerp(smoothedShakeOffset, rawShake, 1f - Mathf.Exp(-cameraShakeSmoothing * Time.deltaTime));
@@ -250,6 +269,10 @@ namespace BoredomAndDungeons
                 targetPosition +
                 forward.normalized *
                 (lookAhead + Mathf.Max(0f, extraForwardCompositionLookAhead));
+            lookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+                targetPosition,
+                lookPoint
+            );
             Quaternion desiredRotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
 
             Vector3 euler = desiredRotation.eulerAngles;
@@ -298,10 +321,162 @@ namespace BoredomAndDungeons
             lastForward = forward.normalized;
             smoothedMoveForward = lastForward;
 
-            transform.position = target.position - lastForward * distanceBehind + Vector3.up * height;
-            Vector3 lookPoint = target.position + lastForward * lookAhead;
+            Vector3 snappedPosition =
+                target.position -
+                lastForward * distanceBehind +
+                Vector3.up * height;
+            transform.position = ResolveRoomBoundaryConstrainedPosition(
+                target.position,
+                snappedPosition
+            );
+            Vector3 lookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+                target.position,
+                target.position + lastForward * lookAhead
+            );
             transform.rotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
         }
+        private Vector3 ResolveRoomBoundaryConstrainedPosition(
+            Vector3 targetPosition,
+            Vector3 desiredPosition)
+        {
+            if (!stopAtClosedRoomWalls)
+                return desiredPosition;
+
+            ResolveCurrentCameraRoom(targetPosition);
+            desiredPosition = ClampPointToClosedRoomBounds(
+                desiredPosition,
+                roomBoundaryInset
+            );
+
+            Vector3 castOrigin =
+                targetPosition + Vector3.up * 1.65f;
+            Vector3 castDelta = desiredPosition - castOrigin;
+            float distance = castDelta.magnitude;
+            if (distance <= 0.001f)
+                return desiredPosition;
+
+            if (Physics.SphereCast(
+                    castOrigin,
+                    Mathf.Max(0.05f, wallCollisionRadius),
+                    castDelta / distance,
+                    out RaycastHit hit,
+                    distance,
+                    roomBoundaryCollisionMask,
+                    QueryTriggerInteraction.Ignore) &&
+                IsRoomBoundaryCollider(hit.collider))
+            {
+                float allowedDistance = Mathf.Max(
+                    minimumCameraDistance,
+                    hit.distance - Mathf.Max(0f, wallCollisionPadding)
+                );
+                desiredPosition =
+                    castOrigin +
+                    castDelta.normalized * allowedDistance;
+                cameraState = "stopped at closed room wall";
+            }
+
+            return desiredPosition;
+        }
+
+        private Vector3 ResolveRoomBoundaryConstrainedLookPoint(
+            Vector3 targetPosition,
+            Vector3 lookPoint)
+        {
+            if (!stopAtClosedRoomWalls)
+                return lookPoint;
+
+            ResolveCurrentCameraRoom(targetPosition);
+            return ClampPointToClosedRoomBounds(
+                lookPoint,
+                roomBoundaryInset
+            );
+        }
+
+        private void ResolveCurrentCameraRoom(
+            Vector3 targetPosition)
+        {
+            if (currentCameraRoom != null &&
+                currentCameraRoom.ContainsWorldPosition(targetPosition, 0.30f) &&
+                Time.unscaledTime < nextRoomResolveAt)
+            {
+                return;
+            }
+
+            nextRoomResolveAt =
+                Time.unscaledTime +
+                Mathf.Max(0.02f, roomResolveInterval);
+
+            BDMinimapRoom[] rooms =
+                FindObjectsByType<BDMinimapRoom>(
+                    FindObjectsSortMode.None
+                );
+
+            BDMinimapRoom nearest = null;
+            float nearestDistance = float.PositiveInfinity;
+            foreach (BDMinimapRoom room in rooms)
+            {
+                if (room == null)
+                    continue;
+
+                if (room.ContainsWorldPosition(targetPosition, 0.05f))
+                {
+                    currentCameraRoom = room;
+                    return;
+                }
+
+                float distance = room.SqrDistanceToCenter(targetPosition);
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearest = room;
+                }
+            }
+
+            currentCameraRoom = nearest;
+        }
+
+        private Vector3 ClampPointToClosedRoomBounds(
+            Vector3 point,
+            float inset)
+        {
+            if (currentCameraRoom == null)
+                return point;
+
+            float halfSize = Mathf.Max(
+                0.5f,
+                currentCameraRoom.RoomSize * 0.5f - Mathf.Max(0f, inset)
+            );
+            Vector3 center = currentCameraRoom.WorldCenter;
+
+            if (!currentCameraRoom.WestOpen)
+                point.x = Mathf.Max(point.x, center.x - halfSize);
+            if (!currentCameraRoom.EastOpen)
+                point.x = Mathf.Min(point.x, center.x + halfSize);
+            if (!currentCameraRoom.SouthOpen)
+                point.z = Mathf.Max(point.z, center.z - halfSize);
+            if (!currentCameraRoom.NorthOpen)
+                point.z = Mathf.Min(point.z, center.z + halfSize);
+
+            return point;
+        }
+
+        private static bool IsRoomBoundaryCollider(
+            Collider candidate)
+        {
+            if (candidate == null || candidate.isTrigger)
+                return false;
+
+            if (candidate.GetComponentInParent<BDWallSurfaceProfile>() != null)
+                return true;
+
+            string value = candidate.name.ToLowerInvariant();
+            return value.Contains("wall") ||
+                   value.Contains("boundary") ||
+                   value.Contains("cliff") ||
+                   value.Contains("cavewall") ||
+                   value.Contains("rockwall");
+        }
+
 
         private float NormalizePitch(float pitch)
         {

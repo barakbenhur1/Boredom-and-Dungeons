@@ -164,6 +164,12 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+            {
+                CancelPetInteractionForRunIntro();
+                return;
+            }
+
             ResolvePlayerReferences(force: false);
 
             if (petInteractionActive)
@@ -178,6 +184,18 @@ namespace BoredomAndDungeons
 
             if (!petInteractionActive)
                 TickExhaustedFollow();
+        }
+
+        private void CancelPetInteractionForRunIntro()
+        {
+            petAvailable = false;
+            ClearPetHold();
+
+            if (petInteractionActive ||
+                petRoutine != null)
+            {
+                emergencyCancelRequested = true;
+            }
         }
 
         private void TickExhaustedFollow()

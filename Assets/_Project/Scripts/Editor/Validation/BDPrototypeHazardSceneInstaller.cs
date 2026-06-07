@@ -16,8 +16,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
         public const string LavaName = "Hazard_Lava";
 
         private const float HazardHalfSize = 1.35f;
-        private const float MinimumPlayerDistance = 4.5f;
-        private const float MinimumHazardSpacing = 4.0f;
+        private const float MinimumPlayerDistance = 14.0f;
+        private const float MinimumHazardSpacing = 7.0f;
 
         public static bool TryEnsureInstalled(
             string scenePath,
@@ -81,7 +81,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 Vector3 lavaPosition = FindPlacement(
                     player.position,
                     holePosition,
-                    player.forward
+                    player.right + player.forward * 0.35f
                 );
 
                 CreateHazard(
@@ -112,6 +112,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                             out string shadowError))
                 {
                     error = shadowError;
+                    return false;
+                }
+
+                if (!BDRoomBoundarySceneInstaller
+                        .TryInstallActiveScene(
+                            out string boundaryError))
+                {
+                    error = boundaryError;
                     return false;
                 }
 
@@ -331,7 +339,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 -preferred
             };
 
-            float[] radii = { 5.5f, 7.0f, 8.5f, 10.0f, 12.0f };
+            float[] radii = { 16.0f, 19.0f, 22.0f, 25.0f, 28.0f };
 
             foreach (float radius in radii)
             {
@@ -368,7 +376,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Vector3 fallback =
                 playerPosition +
-                preferred * (avoidPosition.HasValue ? 9f : 6f);
+                preferred * (avoidPosition.HasValue ? 24f : 18f);
 
             if (TryFindGround(fallback, out Vector3 fallbackGround))
                 return fallbackGround;

@@ -78,6 +78,34 @@ Before entering a new category:
 
 ---
 
+<!-- B&D PERMANENT REQUEST CAPTURE V8 START -->
+## 2A. PERMANENT USER-REQUEST CAPTURE CONTRACT
+
+This is a standing project instruction. **The user never needs to repeat this instruction in a later chat or task.**
+
+Every user request, correction, idea, constraint, or changed priority must be recorded in the correct logical location in `PROJECT_STATUS.md` before implementation or in the same package as implementation. No material request may remain chat-only.
+
+For every new request:
+
+1. inspect the repository and relevant maintained documents;
+2. record the request in `PROJECT_STATUS.md` at its correct dependency/category position;
+3. classify it as `EARLIER/BLOCKING`, `CURRENT`, `LATER`, or `UNKNOWN/RECOVERY REQUIRED`;
+4. preserve the exact current resume point before interrupting active work;
+5. implement immediately only when the request is earlier/blocking or belongs to the current work;
+6. when the request is later, document it and continue the current item without abandoning the saved order;
+7. update every affected design, architecture, QA, technical-decision, and performance document;
+8. record real verification truth and the exact resume point.
+
+Classification rules:
+
+- `EARLIER/BLOCKING`: regression, compile/build failure, conflict marker, broken QA, corrupted scene/data, documentation/workflow failure, or missing prerequisite. Stop later feature work, repair now, validate, then return to the saved resume point.
+- `CURRENT`: part of the active category/item. Implement now in dependency order.
+- `LATER`: future work that does not block the active item. Record it in the correct future section and continue current work.
+- `UNKNOWN/RECOVERY REQUIRED`: evidence is incomplete. Preserve the request without inventing details.
+
+When a maintained document is added, renamed, superseded, or changes responsibility, update `DOCUMENTATION_INDEX.md`. When system boundaries change, update `ARCHITECTURE.md`. When a durable technical choice changes, update `TECHNICAL_DECISIONS.md`. When measurement policy or budgets change, update `PERFORMANCE_GUIDELINES.md`.
+<!-- B&D PERMANENT REQUEST CAPTURE V8 END -->
+
 ## 3. Repository inspection before editing
 
 Before creating a package:
@@ -255,6 +283,21 @@ authoritative scene.
 ---
 
 ## 9. Documentation synchronization
+
+<!-- B&D DOCUMENT DISCOVERY V8 START -->
+### Maintained-document discovery
+
+The mandatory read order and maintained-document ownership map are defined by:
+
+- `START_HERE.md`;
+- `DOCUMENTATION_INDEX.md`;
+- `ARCHITECTURE.md`;
+- `QA_CHECKLIST.md`;
+- `TECHNICAL_DECISIONS.md`;
+- `PERFORMANCE_GUIDELINES.md`.
+
+These files describe stable process and architecture. They must not become competing progress/status sources.
+<!-- B&D DOCUMENT DISCOVERY V8 END -->
 
 Every material package updates all affected truth sources.
 

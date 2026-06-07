@@ -197,6 +197,18 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            // BD RUN PRESENTATION INPUT LOCK V7
+            if (BDRunPresentationCoordinator.InputLocked)
+            {
+                lastMoveInput = Vector2.zero;
+                smoothedHorizontalVelocity = Vector3.zero;
+                dashVelocity = Vector3.zero;
+                return;
+            }
+
+            if (BDMountedRunIntro.IsGameplayInputLocked)
+                return;
+
             Vector2 moveInput = ReadMoveInput();
             lastMoveInput = moveInput;
 
@@ -239,7 +251,19 @@ namespace BoredomAndDungeons
                     HasRecentIntentionalGapEntry
                 );
 
-            characterController.Move(safeMotion);
+            // BD INACTIVE CHARACTER CONTROLLER MOVE GUARD V7
+            if (characterController != null &&
+                characterController.enabled &&
+                characterController.gameObject.activeInHierarchy)
+            {
+                characterController.Move(safeMotion);
+            }
+            else
+            {
+                lastMoveInput = Vector2.zero;
+                smoothedHorizontalVelocity = Vector3.zero;
+                dashVelocity = Vector3.zero;
+            }
             lastLookSource = wantsMove ? "mouse-clamped-60-front-cone-moving" : "mouse-clamped-60-front-cone-idle";
         }
 

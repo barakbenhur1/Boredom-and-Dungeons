@@ -62,6 +62,61 @@ namespace BoredomAndDungeons
         private float hazardRetreatRearmUntil = -999f;
 
 
+        public void ResetForCleanGameStart(
+            float protectionDuration)
+        {
+            float safeDuration =
+                Mathf.Max(
+                    0f,
+                    protectionDuration
+                );
+
+            float protectionEndsAt =
+                Time.unscaledTime +
+                safeDuration;
+
+            recovering = false;
+            hazardRetreatDirection = Vector3.zero;
+            hazardRetreatRemainingDistance = 0f;
+            hazardRetreatRearmUntil =
+                protectionEndsAt;
+
+            protectedUntil =
+                Mathf.Max(
+                    protectedUntil,
+                    protectionEndsAt
+                );
+            recoveryGraceUntil =
+                Mathf.Max(
+                    recoveryGraceUntil,
+                    protectionEndsAt
+                );
+            safePointUpdatesBlockedUntil =
+                Mathf.Max(
+                    safePointUpdatesBlockedUntil,
+                    protectionEndsAt
+                );
+            nextHazardPollAt =
+                Mathf.Max(
+                    nextHazardPollAt,
+                    protectionEndsAt
+                );
+            nextSampleAt =
+                Mathf.Max(
+                    nextSampleAt,
+                    protectionEndsAt
+                );
+
+            initialPosition = transform.position;
+            initialRotation = transform.rotation;
+            lastSafePosition = transform.position;
+            lastSafeRotation = transform.rotation;
+            previousSafePosition = transform.position;
+            previousSafeRotation = transform.rotation;
+            hasSafePosition = true;
+            hasPreviousSafePosition = true;
+        }
+
         public bool IsRecovering =>
             recovering ||
             Time.unscaledTime <
@@ -83,6 +138,8 @@ namespace BoredomAndDungeons
             previousSafePosition = initialPosition;
             previousSafeRotation = initialRotation;
             hasPreviousSafePosition = true;
+
+            ResetForCleanGameStart(2.50f);
         }
 
         private void Start()

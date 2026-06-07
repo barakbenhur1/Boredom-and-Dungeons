@@ -409,7 +409,6 @@ namespace BoredomAndDungeons
             if (rooms.Count == 0)
             {
                 refreshRetryTimer -= Time.deltaTime;
-
                 if (refreshRetryTimer <= 0f)
                 {
                     refreshRetryTimer = 0.5f;
@@ -418,9 +417,7 @@ namespace BoredomAndDungeons
             }
 
             TickPlayerDiscovery();
-
             Rect panelRect = ResolveScreenPanelRect();
-
             GUI.BeginGroup(panelRect);
 
             Rect localPanelRect = new Rect(
@@ -433,30 +430,13 @@ namespace BoredomAndDungeons
             DrawRect(localPanelRect, backgroundColor);
             GUI.Box(localPanelRect, GUIContent.none);
 
-            GUI.Label(
-                new Rect(
-                    8f,
-                    5f,
-                    localPanelRect.width - 16f,
-                    22f
-                ),
-                "Minimap / Fog of War",
-                labelStyle
-            );
-
             if (!boundsReady || rooms.Count == 0)
             {
                 GUI.Label(
-                    new Rect(
-                        8f,
-                        32f,
-                        localPanelRect.width - 16f,
-                        22f
-                    ),
+                    new Rect(8f, 32f, localPanelRect.width - 16f, 22f),
                     "No minimap rooms",
                     labelStyle
                 );
-
                 GUI.EndGroup();
                 return;
             }
@@ -465,12 +445,10 @@ namespace BoredomAndDungeons
                 24f,
                 localPanelRect.width - 24f
             );
-
             float availableMapHeight = Mathf.Max(
                 24f,
                 localPanelRect.height - 76f
             );
-
             float mapSize = Mathf.Min(
                 availableMapWidth,
                 availableMapHeight
@@ -489,60 +467,25 @@ namespace BoredomAndDungeons
                     backgroundColor.r,
                     backgroundColor.g,
                     backgroundColor.b,
-                    Mathf.Clamp01(
-                        backgroundColor.a + 0.12f
-                    )
+                    Mathf.Clamp01(backgroundColor.a + 0.12f)
                 )
             );
 
             GUI.BeginGroup(localMapRect);
+            Rect clipRect = new Rect(0f, 0f, mapSize, mapSize);
 
-            Rect clipRect = new Rect(
-                0f,
-                0f,
-                mapSize,
-                mapSize
-            );
-
-            Vector2 rotationPivot = clipRect.center;
-
-            if (TryResolveMapPoint(
-                    clipRect,
-                    player,
-                    out Vector2 playerMapPoint))
-            {
-                rotationPivot = playerMapPoint;
-            }
-
-            DrawRotatedRoomsClipped(
-                clipRect,
-                rotationPivot
-            );
-
-            DrawRotatedMarkerClipped(
-                clipRect,
-                rotationPivot,
-                horse,
-                horseColor,
-                markerSize * 0.85f
-            );
-
-            DrawRotatedMarkerClipped(
-                clipRect,
-                rotationPivot,
-                player,
-                playerColor,
-                markerSize
-            );
-
+            // BD MINIMAP RIGID CLIP MASK V7
+            DrawRigidRotatedMapContent(clipRect);
             GUI.EndGroup();
 
-            DrawRoomOutline(
-                localMapRect,
-                roomOutlineColor,
-                2f
-            );
+            DrawMapOverflowMasks(localPanelRect, localMapRect);
+            DrawRoomOutline(localMapRect, roomOutlineColor, 2f);
 
+            GUI.Label(
+                new Rect(8f, 5f, localPanelRect.width - 16f, 22f),
+                "Minimap / Fog of War",
+                labelStyle
+            );
             GUI.Label(
                 new Rect(
                     8f,
@@ -550,13 +493,84 @@ namespace BoredomAndDungeons
                     localPanelRect.width - 16f,
                     20f
                 ),
-                $"Explored {CountDiscoveredRooms()}/" +
-                $"{rooms.Count}  |  M: toggle",
+                $"Explored {CountDiscoveredRooms()}/{rooms.Count}  |  M: toggle",
                 labelStyle
             );
 
             GUI.EndGroup();
         }
+        private void DrawRigidRotatedMapContent(Rect mapRect)
+        {
+            Matrix4x4 originalMatrix = GUI.matrix;
+            try
+            {
+                Vector2 pivot = mapRect.center;
+                if (TryResolveMapPoint(
+                        mapRect,
+                        player,
+                        out Vector2 playerPoint))
+                {
+                    pivot = playerPoint;
+                }
+
+                GUIUtility.RotateAroundPivot(
+                    currentMapRotationDegrees,
+                    pivot
+                );
+
+                DrawRooms(mapRect);
+                DrawMarker(
+                    mapRect,
+                    horse,
+                    horseColor,
+                    markerSize * 0.85f
+                );
+                DrawMarker(
+                    mapRect,
+                    player,
+                    playerColor,
+                    markerSize
+                );
+            }
+            finally
+            {
+                GUI.matrix = originalMatrix;
+            }
+        }
+        private void DrawMapOverflowMasks(
+            Rect panelRect,
+            Rect mapRect)
+        {
+            DrawRect(
+                new Rect(0f, 0f, mapRect.xMin, panelRect.height),
+                backgroundColor
+            );
+            DrawRect(
+                new Rect(
+                    mapRect.xMax,
+                    0f,
+                    Mathf.Max(0f, panelRect.width - mapRect.xMax),
+                    panelRect.height
+                ),
+                backgroundColor
+            );
+            DrawRect(
+                new Rect(mapRect.xMin, 0f, mapRect.width, mapRect.yMin),
+                backgroundColor
+            );
+            DrawRect(
+                new Rect(
+                    mapRect.xMin,
+                    mapRect.yMax,
+                    mapRect.width,
+                    Mathf.Max(0f, panelRect.height - mapRect.yMax)
+                ),
+                backgroundColor
+            );
+        }
+
+
+
        private void DrawRotatedRoomsClipped(
             Rect mapRect,
             Vector2 pivot)

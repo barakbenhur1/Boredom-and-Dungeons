@@ -138,12 +138,50 @@ Mother stands in place and screams in a radius.
 
 ### Dodge
 
-Mother can dodge in all directions like the player.
+Mother uses the player's core dodge movement contract rather than a separate teleport:
 
-- controlled frequency;
-- readable recovery;
-- cannot erase every punish window;
-- cannot create permanent invulnerability.
+- distance: the player's current core dodge distance (`3.05m` unless the player contract changes globally);
+- duration: the player's current core dodge duration (`0.12s`);
+- i-frames: the same dodge duration plus the player's current extra invulnerability window (`0.14s`);
+- the same wall, obstacle, hazard, doorway, and collision validation applies;
+- no negative-scale flip, teleport, path crossing through closed geometry, or dodge into an illegal attack position;
+- Mother may start a dodge only from neutral movement or an explicitly dodge-cancellable recovery state;
+- she cannot cancel a committed broom active frame, spray release, Father call, pinning-beam fire, scream, attraction channel, anger transition, stun, or defeat state;
+- after a dodge, the scheduler re-evaluates distance and line of sight instead of blindly firing the previously selected attack;
+- every phase preserves real player punish windows and prevents permanent invulnerability.
+
+#### Phase 1 — Calm dodge budget
+
+- one stored dodge charge;
+- charge recovery: `10.0s`;
+- maximum: `1` dodge in any rolling `8.0s` window and no more than `3` total before the phase transition;
+- used mainly to evade a clearly committed heavy/charged/landing punish or to leave a corner;
+- preferred direction is lateral or backward; forward dodge is allowed only when collision-safe and never through the player;
+- after the dodge recovery, Mother cannot begin another attack for `0.65s`.
+
+#### Phase 2 — Irritated dodge budget
+
+- two stored dodge charges;
+- each charge recovers in `8.0s`;
+- maximum: `2` dodges in any rolling `14.0s` window;
+- minimum `1.10s` between dodge starts;
+- the second dodge is legal only when the first still leaves Mother cornered or the player has committed a new high-value attack;
+- after using the second dodge inside the rolling window, expose a minimum `1.00s` punish window before a new attack.
+
+#### Phase 3 — Angry dodge budget
+
+- two stored dodge charges;
+- each charge recovers in `6.0s`;
+- maximum: `3` dodges in any rolling `14.0s` window;
+- no more than two consecutive dodges, with at least `0.75s` between starts;
+- a dodge may reposition Mother into a legal follow-up angle, but the follow-up telegraph cannot start until at least `0.35s` after dodge recovery;
+- after two consecutive dodges, enforce a `1.20s` dodge lockout and a readable punish window;
+- dodge selection is disabled while the full-screen attraction/spiral channel is active.
+
+#### Phase 4 — Danger
+
+- zero combat dodges;
+- Mother follows the fixed visible route toward the Game Boy and uses only the approved task-race movement rules.
 
 ## Foreground clothing obstruction
 
@@ -169,7 +207,7 @@ Attack pool:
 - close-range three-shot cleaning spray;
 - introductory shoes/slippers patterns;
 - stationary attraction field with eight radial sectors;
-- occasional directional dodge.
+- Calm dodge budget: one charge, 10s recovery, at most 1 per 8s and 3 total in the phase.
 
 Pacing:
 
@@ -189,7 +227,7 @@ Attack pool:
 - Father charge;
 - pinning beam;
 - scream;
-- more frequent dodge.
+- Irritated dodge budget: two charges, 8s recovery each, at most 2 per 14s with 1.10s between starts.
 
 Attraction rule:
 
@@ -207,7 +245,7 @@ Attack pool:
 - stronger pull accumulation and faster spiral rotation;
 - more complex shoes/slippers bullet hell;
 - faster broom chains;
-- more frequent Father, scream, pinning beam, and dodge use.
+- more frequent Father, scream, and pinning beam use; Angry dodge budget is two charges, 6s recovery each, at most 3 per 14s and never more than two consecutively.
 
 The scheduler may create limited combinations, but never simultaneous unavoidable overlaps.
 

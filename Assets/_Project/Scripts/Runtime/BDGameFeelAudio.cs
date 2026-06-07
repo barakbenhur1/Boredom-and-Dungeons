@@ -25,6 +25,12 @@ namespace BoredomAndDungeons
                 source.pitch = Mathf.Clamp(pitch, 0.55f, 1.65f);
                 source.PlayOneShot(clip, Mathf.Clamp01(volume));
             }
+
+            public void StopTransientAudio()
+            {
+                if (source != null)
+                    source.Stop();
+            }
         }
 
         private static Runner runner;
@@ -56,8 +62,11 @@ namespace BoredomAndDungeons
 
         private static void Play(AudioClip clip, float volume, float pitch)
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying ||
+                BDNewRunFeedbackReset.IsFeedbackSuppressed)
+            {
                 return;
+            }
 
             EnsureRunner();
             EnsureClips();
@@ -69,6 +78,12 @@ namespace BoredomAndDungeons
                     BDGameSettings.SfxVolume,
                     pitch
                 );
+        }
+
+        public static void StopTransientAudio()
+        {
+            if (runner != null)
+                runner.StopTransientAudio();
         }
 
         private static void EnsureRunner()

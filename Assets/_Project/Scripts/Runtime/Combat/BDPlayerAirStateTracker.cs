@@ -20,6 +20,8 @@ namespace BoredomAndDungeons
         public float VerticalSpeed => verticalSpeed;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
         public bool IsDescendingFromJump =>
+            !BDNewRunFeedbackReset.IsCombatInputSuppressed &&
+            !BDMountedRunIntro.IsGameplayInputLocked &&
             !IsGrounded &&
             verticalSpeed <= -Mathf.Max(0.05f, minimumDescendingSpeed) &&
             Time.unscaledTime - lastAirborneAt <= 2.5f;
