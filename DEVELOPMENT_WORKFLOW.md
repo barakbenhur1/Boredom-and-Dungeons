@@ -27,9 +27,9 @@ decision may compete with these sources.
    same package as the implementation.
 6. Every material code change must update the authoritative documentation and the
    relevant QA contract in the same working tree.
-7. The assistant does not commit or push directly.
-8. The assistant delivers a ZIP package and then provides exact local Git commands.
-9. The user performs the final Unity verification and Git commit/push.
+7. By default, the assistant does not commit or push gameplay/code changes directly; the user performs final Unity verification and Git commit/push.
+8. When the user explicitly instructs the assistant to update Git documentation directly, the assistant may commit the documentation update after inspecting the current repository state and preserving current truth.
+9. Material implementation changes still require the documented Unity verification gate before they are described as verified.
 10. A task is not DONE merely because code exists.
 
 ---
@@ -78,7 +78,6 @@ Before entering a new category:
 
 ---
 
-<!-- B&D PERMANENT REQUEST CAPTURE V8 START -->
 ## 2A. PERMANENT USER-REQUEST CAPTURE CONTRACT
 
 This is a standing project instruction. **The user never needs to repeat this instruction in a later chat or task.**
@@ -104,7 +103,6 @@ Classification rules:
 - `UNKNOWN/RECOVERY REQUIRED`: evidence is incomplete. Preserve the request without inventing details.
 
 When a maintained document is added, renamed, superseded, or changes responsibility, update `DOCUMENTATION_INDEX.md`. When system boundaries change, update `ARCHITECTURE.md`. When a durable technical choice changes, update `TECHNICAL_DECISIONS.md`. When measurement policy or budgets change, update `PERFORMANCE_GUIDELINES.md`.
-<!-- B&D PERMANENT REQUEST CAPTURE V8 END -->
 
 ## 3. Repository inspection before editing
 
@@ -284,7 +282,6 @@ authoritative scene.
 
 ## 9. Documentation synchronization
 
-<!-- B&D DOCUMENT DISCOVERY V8 START -->
 ### Maintained-document discovery
 
 The mandatory read order and maintained-document ownership map are defined by:
@@ -297,7 +294,6 @@ The mandatory read order and maintained-document ownership map are defined by:
 - `PERFORMANCE_GUIDELINES.md`.
 
 These files describe stable process and architecture. They must not become competing progress/status sources.
-<!-- B&D DOCUMENT DISCOVERY V8 END -->
 
 Every material package updates all affected truth sources.
 
@@ -329,6 +325,22 @@ LATEST_STATUS.md
 ```
 
 Git history stores old states.
+
+---
+
+## 9A. Permanent repository-hygiene and current-document contract
+
+This is a standing rule and the user does not need to repeat it.
+
+1. Every material request, correction, implementation, QA result, blocker, ordering change, and resume-point change is synchronized into Git-maintained documentation.
+2. `PROJECT_STATUS.md` remains the only live source for current product status and ordering.
+3. Maintained documents describe current truth; package narratives and temporary repair notes are not permanent documentation.
+4. When a document is superseded, first merge every still-valid contract into its authoritative owner, then update `DOCUMENTATION_INDEX.md`, then remove the obsolete document in the same change.
+5. Git history stores old versions. Do not preserve stale files merely as an archive.
+6. Before every handoff and commit, remove or ignore package ZIPs, `.package_tools`, `.package_payload`, local QA exports, caches, chat exports, copied status files, stale patch scripts, and obsolete root documents.
+7. Root Markdown is limited to the canonical documents listed in `DOCUMENTATION_INDEX.md`; feature contracts belong under `Assets/_Project/Design/`.
+8. Repository-hygiene QA must fail when a prohibited duplicate status/roadmap or known obsolete document returns.
+9. A documentation-only direct Git update is allowed when the user explicitly requests it; do not claim gameplay verification as part of that documentation commit.
 
 ---
 
