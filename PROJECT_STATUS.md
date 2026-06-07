@@ -6,11 +6,11 @@
 Status date: 2026-06-07
 Classification: EARLIER / BLOCKING CAMERA TRANSITION REGRESSION
 Active work: C01/C11.RUNTIME.V23R6-DIAGNOSIS
-Current truth: V23R5 greatly improved first-frame mounted cinematic camera ownership. The brief camera view beside the entrance before the cinematic is substantially repaired. A smaller motion problem remains during ordinary walking and mounted movement: crossing procedural room or node boundaries can subtly change the camera direction, and intermittent framing changes appear as a small zoom pulse or forward/back jump of either the camera, player model, or horse model.
+Current truth: The complete local V23R2-V23R5 Runtime, scene, QA, Codex, governance, and documentation state was committed and merged with current origin/main without losing either side. The synchronized remote checkpoint is merge commit 3af374d839cd8eb917501ce8cc6f8c703cc45474. V23R5 greatly improved first-frame mounted cinematic camera ownership and removed the main entrance-adjacent camera flash. A smaller motion problem remains during ordinary walking and mounted movement: crossing procedural room or node boundaries can subtly change the camera direction, and intermittent framing changes appear as a small zoom pulse or forward/back jump of either the camera, player model, or horse model.
 Unresolved cause: it is not yet proven whether the visible motion comes from room-handoff identity changes, containment correction, camera-target switching, camera boom distance, player or horse gameplay-root movement, animation/model movement, or another transform writer. Rooms and corridors must not be enlarged until instrumentation identifies the real source.
-Verification truth: the user visually confirmed that V23R5 is much better. The remaining node-transition motion is still open. No newer TEST EVERYTHING output proving the complete post-V23R5 state has been recorded yet, so automated and focused verification remain required after remote synchronization.
-Current action: commit the complete local V23R2-V23R5 Runtime, scene, QA, Codex, governance, and documentation state; merge current origin/main without destructive reset or rebase; push the synchronized work-in-progress checkpoint; then diagnose V23R6 from the synchronized state.
-Saved feature resume point after the camera and retained regression gates pass: C03.23A -> C07.16A -> C07.16 -> C07.17.
+Verification truth: On the synchronized state, Unity 6000.0.76f1 TEST EVERYTHING passed on 2026-06-07T12:56:12.9858310Z with 0 blockers, 0 warnings, and 0 info items. The user visually confirmed that V23R5 is much better. The remaining node-transition motion is still open, so focused Play Mode diagnosis and the final V23R6 repair remain required.
+Current action: instrument and reproduce the remaining walking and mounted node-transition direction change and apparent zoom/forward-back jump, identify the actual transform or model-motion owner from measured deltas, then implement the smallest evidence-based V23R6 repair.
+Saved feature resume point after the camera and retained focused regression gates pass: C03.23A -> C07.16A -> C07.16 -> C07.17.
 Later work retained without interruption: C12.42 explicit AudioMixer routing for Master, Music, SFX, and Ambience.
 ```
 
@@ -28,10 +28,9 @@ This file is the only live source for current status, ordering, blockers, verifi
 8. Run repository hygiene on every handoff and before every commit.
 9. When remote and local both contain valid unique progress, preserve both sides and merge; never reset one side over the other.
 
-
 # Active blocking work — C01/C11.RUNTIME.V23R6-DIAGNOSIS
 
-## V23R6.1 Node-transition camera and model-motion diagnosis — BLOCKING / RECORDED
+## V23R6.1 Node-transition camera and model-motion diagnosis — BLOCKING / ACTIVE
 
 - Preserve the V23R5 first-visible-frame cinematic repair and the V23R4 containment improvements.
 - Do not enlarge rooms, corridors, openings, or regenerate the maze until measurements prove that physical dimensions remain the cause.
@@ -45,17 +44,18 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R6 acceptance gate
 
-1. Local and remote histories are synchronized without losing either side.
-2. Unity compiles and TEST EVERYTHING passes on the synchronized state.
+1. **PASS:** local and remote histories were synchronized without losing either side; remote main contains merge commit `3af374d839cd8eb917501ce8cc6f8c703cc45474`.
+2. **AUTOMATED PASS:** Unity compiled and TEST EVERYTHING passed on the synchronized state with 0 blockers, 0 warnings, and 0 info items.
 3. Diagnostics reproduce at least one problematic walking transition and one mounted transition.
 4. The responsible transform owner or root/model-motion source is identified using measured deltas.
 5. Repeated node transitions produce no direction snap, zoom pulse, or forward/back screen-space jump.
 6. Closed-wall visibility and room containment remain intact.
-7. Mounted intro, death restart, hole handling, combat grounding, charged shot, AudioListener, and BBH intro remain passing.
-8. Record real verification results and resume the saved feature sequence.
+7. Mounted intro, death restart, hole handling, combat grounding, charged shot, AudioListener, and BBH intro remain passing during focused verification.
+8. Record real focused verification results and resume the saved feature sequence.
+
 # Active blocking work — C01/C11.RUNTIME.V23R5
 
-## V23R5.1 First-render mounted cinematic camera ownership — BLOCKING / PREPARED
+## V23R5.1 First-render mounted cinematic camera ownership — IMPLEMENTED / AUTOMATED PASS / FOCUSED PARTIAL
 
 - On a fresh New Game or approved cinematic/victory restart, prime the approved inside-room cinematic camera synchronously in `sceneLoaded` while the black cover is fully opaque.
 - Disable `BDCameraFollow` before its `Start` or `LateUpdate` can render the entrance-close gameplay pose.
@@ -66,20 +66,20 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R5 acceptance gate
 
-1. Installer and validator pass twice on the exact post-V23R4 state.
-2. Repository hygiene and `git diff --check` pass after package cleanup.
-3. Unity compiles without project errors or new warnings.
-4. `Boredom And Dungeons -> TEST EVERYTHING` passes with zero blockers; the two stale V20 camera blockers are absent.
-5. Launch fresh New Game repeatedly. No frame shows the camera beside the entrance or at normal follow framing before the cinematic shot.
-6. The first visible gameplay frame is already the approved higher/farther inside-room view looking at the entrance.
+1. Installer and validator passed twice on the exact post-V23R4 state.
+2. Repository hygiene and `git diff --check` passed after package cleanup.
+3. Unity compiled without project errors or new warnings in the reported synchronized TEST EVERYTHING run.
+4. `Boredom And Dungeons -> TEST EVERYTHING` passed with zero blockers; the two stale V20 camera blockers are absent.
+5. The user confirmed that the entrance-adjacent first-frame camera problem is much better; repeated focused first-frame verification remains part of the retained camera gate.
+6. The first visible gameplay frame is intended to be the approved higher/farther inside-room view looking at the entrance.
 7. The horse still enters, turns right, fully stops, and only then returns camera/control ownership.
 8. Death -> New Game still skips the mounted intro and starts on foot with normal camera framing.
-9. Re-run the retained V23R4 walking/riding wall-pressure and room-handoff tests and inspect the Console.
-10. Record real results, then continue the retained gates and saved resume point.
+9. The remaining walking/riding node-transition motion is tracked under V23R6, not treated as a V23R5 first-frame failure.
+10. Continue V23R6 focused diagnosis and the retained regression gates.
 
 # Active blocking work — C01/C11.RUNTIME.V23R4
 
-## V23R4.1 Stable camera containment without enlarging the maze — BLOCKING / PREPARED
+## V23R4.1 Stable camera containment without enlarging the maze — IMPLEMENTED / AUTOMATED PASS / FOCUSED OPEN
 
 - Preserve the current room, corridor/opening, wall, enemy, hazard, portal, minimap, and scene placement geometry.
 - Keep `BDCameraFollow` as the sole normal-gameplay camera transform owner.
@@ -91,20 +91,20 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R4 acceptance gate
 
-1. Installer and validator pass twice on the post-V23R3A or post-V23R3B local state.
-2. Repository hygiene and `git diff --check` pass after package cleanup.
-3. Unity compiles without project errors or new warnings.
-4. `Boredom And Dungeons -> TEST EVERYTHING` passes with zero blockers.
-5. Rotate through cardinal/diagonal aim at room center; no distance pulse or apparent zoom occurs.
-6. Walk and ride beside, toward, and away from walls and corners; no micro-jumps, repeated zooming, or pitch bob occurs.
-7. Cross several authored openings in both directions; handoffs remain smooth and cannot reveal/cross closed wall segments.
+1. Installer and validator passed twice on the post-V23R3A or post-V23R3B local state.
+2. Repository hygiene and `git diff --check` passed after package cleanup.
+3. Unity compiled in the synchronized TEST EVERYTHING run.
+4. `Boredom And Dungeons -> TEST EVERYTHING` passed with zero blockers.
+5. Rotate through cardinal/diagonal aim at room center; no distance pulse or apparent zoom should occur.
+6. Walking and riding are substantially improved, but residual node-transition direction/zoom/forward-back motion remains open under V23R6.
+7. Cross several authored openings in both directions; handoffs must remain smooth and cannot reveal/cross closed wall segments.
 8. Verify closed walls still hide adjacent rooms from all approved angles.
 9. Confirm normal gameplay FOV remains constant and inspect the Console; optionally confirm no recurring camera room-scan spike in the Profiler.
-10. Record real results, then continue the retained V23R3/V23R2 gate and saved resume point.
+10. Complete V23R6 diagnosis before closing the focused V23R4 camera gate.
 
 # Retained blocking work — C01/C11.DOCUMENTATION-QA.V23R3B
 
-## V23R3B.1 Closed-wall visibility-boundary contract — BLOCKING / PREPARED
+## V23R3B.1 Closed-wall visibility-boundary contract — IMPLEMENTED / AUTOMATED PASS
 
 - Preserve the existing camera and room-boundary implementation unchanged.
 - State explicitly that closed structural walls form a `visibility boundary` for camera body, look point, and adjacent-room geometry.
@@ -113,36 +113,36 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R3B acceptance gate
 
-1. Installer and validator pass twice on the post-V23R3A state.
-2. Repository hygiene and `git diff --check` pass after package cleanup.
-3. Unity compiles without project errors or new warnings.
-4. `Boredom And Dungeons -> TEST EVERYTHING` passes with zero blockers.
-5. Focused Play Mode still confirms that closed walls hide adjacent rooms from frontal, side, corner, diagonal, high, and low camera angles.
-6. Continue the retained V23R3/V23R2 gameplay acceptance gate and exact resume point.
+1. Installer and validator passed twice on the post-V23R3A state.
+2. Repository hygiene and `git diff --check` passed after package cleanup.
+3. Unity compiled in the synchronized TEST EVERYTHING run.
+4. `Boredom And Dungeons -> TEST EVERYTHING` passed with zero blockers.
+5. Focused Play Mode must continue confirming that closed walls hide adjacent rooms from frontal, side, corner, diagonal, high, and low camera angles.
+6. Continue the retained gameplay and focused camera acceptance gates.
 
 # Retained blocking work — C00/C01/C03/C10/C11.RUNTIME.V23R3
 
-## V23R3.1 Remote/local current-truth synchronization — BLOCKING / PREPARED
+## V23R3.1 Remote/local current-truth synchronization — COMPLETE
 
 - Preserve local Runtime, scene, QA, `.meta`, package, and Codex work from the uploaded working tree.
 - Preserve remote documentation commits through `40104177ee396d19f375b62a20c410e4ac63bdc8`.
-- `ARCHITECTURE.md` already matches the remote blob and is not rewritten.
-- Synchronize the remaining maintained documents with remote truth plus the V23R3 state.
+- `ARCHITECTURE.md` already matched the remote blob and was not unnecessarily rewritten.
+- Synchronize the maintained documents with remote truth plus the V23R3-V23R5 local state.
 - Do not use reset, clean, broad checkout, or an old full-project package.
-- After Unity acceptance, create a safety reference, commit the merged local content, fetch the remote, merge its history, inspect, and push.
+- Completed through checkpoint commit `4477834da3bd8bb028104e9dc8f17d6905ce61d2` and merge commit `3af374d839cd8eb917501ce8cc6f8c703cc45474`.
 
-## V23R3.2 Version-agnostic current-status QA — BLOCKING / PREPARED
+## V23R3.2 Version-agnostic current-status QA — IMPLEMENTED / PASS
 
 - Current-status QA requires the semantic snapshot, active-work line, active-blocking heading, Runtime version marker, saved resume point, and retained C12.42 work.
 - It must not freeze `C03/C11/C12.RUNTIME.V*` when the approved current categories are `C00/C01/C03/C10/C11`.
 
-## V23R3.3 Semantic camera QA compatibility — BLOCKING / PREPARED
+## V23R3.3 Semantic camera QA compatibility — IMPLEMENTED / PASS
 
 - The V23 camera intentionally removed `movementDirectionBlend`.
 - QA validates `BD SINGLE CAMERA TRANSFORM OWNER V23`, `BD STABLE SINGLE-STAGE CAMERA YAW V23`, `ResolveCameraIntentDirection`, `Vector3.RotateTowards`, `ResolvePlanarCameraShake`, and final `SetPositionAndRotation`.
 - Do not reintroduce the obsolete field merely to satisfy a text scanner.
 
-## V23R3.4 Named post-recovery walk suppression — BLOCKING / PREPARED
+## V23R3.4 Named post-recovery walk suppression — IMPLEMENTED / PASS
 
 - Preserve the existing stronger `0.85s` suppression rather than downgrading to the stale `0.55s` text contract.
 - Use a named constant/property for the suppression and validate that semantic contract.
@@ -159,51 +159,50 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 ## V23R3 acceptance gate
 
-1. Installer and validator pass twice on a copy of the uploaded local state.
-2. Repository hygiene and `git diff --check` pass.
-3. The seven blockers from `ONE_CLICK_QA_latest.txt` are structurally removed without weakening active Runtime contracts.
-4. Unity compiles without project errors or new warnings.
-5. `Boredom And Dungeons -> TEST EVERYTHING` passes with zero blockers.
-6. Walk toward every hole side/corner at several speeds; walking never falls in.
-7. Dodge/jump into the hole; intentional fall still works.
-8. Respawn occurs close to the same hole and remains outside it; immediate walking back remains blocked.
-9. Repeated enemy hits never cause below-floor or embedded recovery.
-10. Recheck camera/wall/room-transition behavior, charged shot, AudioListener, mounted intro, BBH first frame, and Console cleanliness.
-11. Create a safety branch/tag, commit the verified merged state, fetch `origin`, merge current `origin/main`, rerun diff/hygiene checks, inspect, and push.
-12. Record real results here, then resume C03.23A.
+1. Installer and validator passed twice on a copy of the uploaded local state.
+2. Repository hygiene and `git diff --check` passed.
+3. The seven stale static blockers were structurally removed without weakening active Runtime contracts.
+4. Unity compiled in the synchronized TEST EVERYTHING run.
+5. `Boredom And Dungeons -> TEST EVERYTHING` passed with zero blockers.
+6. Focused hole-side and corner walking verification remains part of the retained Play Mode gate.
+7. Intentional dodge/jump hole entry remains part of the retained Play Mode gate.
+8. Near-hole recovery and immediate post-recovery walking remain part of the retained Play Mode gate.
+9. Repeated enemy-hit grounding remains part of the retained Play Mode gate.
+10. Camera/wall/room-transition behavior, charged shot, AudioListener, mounted intro, BBH first frame, and Console cleanliness remain in focused verification.
+11. Safety checkpoint, remote fetch, merge, inspection, and push are complete.
+12. Complete V23R6 focused diagnosis, then resume C03.23A.
 
 # Ordered project categories
 
 - **C00 Governance:** one authoritative status, current-only documentation, request capture, repository hygiene, and lossless remote/local synchronization.
-- **C01 Stability/QA:** one TEST EVERYTHING entry point and truthful semantic Runtime/Console regression coverage.
+- **C01 Stability/QA:** automated QA currently passes; focused Runtime/Console regression verification remains active under V23R6.
 - **C02 Platform/architecture:** Unity 6000.0.76f1, runtime/editor separation, mobile-landscape target.
-- **C03 Player/combat:** finish V23R3/V23R2 verification, then resume C03.23A.
+- **C03 Player/combat:** complete V23R6 and retained focused regression verification, then resume C03.23A.
 - **C04 Horse:** mounted hit routing, buck logic, healing, flee, hazard safety, and restart grounding.
 - **C05 Enemies:** sword, patrol, charger, trap, ranged, and exit-interference roles.
 - **C06 Collectibles/rewards:** secret Game Boy, Batteries, Cartridge, guardians, chests, ammo, and run boosts.
 - **C07 Boss framework:** after C03.23A continue C07.16A -> C07.16 -> C07.17.
 - **C08 Mini-bosses:** Square Jumper, Roller, Serpent, Quad Gunners; choose three per run.
 - **C09 Narrative bosses:** preserve final-boss and complete Mother-boss contracts, including phase-specific Dodge budgets.
-- **C10 Map/hazards:** close walking-proof hole boundary and local recovery first, then continue map/hazard work.
-- **C11 Camera/UI:** close camera/QA compatibility first, then minimap/HUD/settings/accessibility/mobile readability.
+- **C10 Map/hazards:** retain focused walking-proof hole-boundary and local-recovery verification, then continue map/hazard work.
+- **C11 Camera/UI:** diagnose and close V23R6 node-transition motion first, then minimap/HUD/settings/accessibility/mobile readability.
 - **C12 Art/audio:** visual/audio production; C12.42 AudioMixer routing remains later.
 - **C13 Story/endings:** incomplete-set endings, secret continuation, Mother loss/victory, state isolation.
 - **C14 Balance/release:** profiling, pooling, persistence, cleanup, target build, clean-clone verification, release tag.
 
 # Exact current sequence
 
-1. Commit the exact current local V23R2-V23R5 Runtime, scene, QA, documentation, Codex, and repository-hygiene state as an explicit work-in-progress checkpoint.
-2. Create a local safety branch pointing to that checkpoint.
-3. Fetch current origin/main and merge its history without reset, rebase, clean, or broad checkout.
-4. Resolve only known maintained-document conflicts using the newer locally reconciled current-truth documents; stop on any unexpected source, scene, package, or asset conflict.
-5. Run repository hygiene and Git diff checks, then push the merged main branch.
-6. Reopen Unity, wait for compilation, and run TEST EVERYTHING.
-7. Instrument the remaining walking and mounted node-transition direction change and apparent zoom or forward/back jump.
-8. Identify whether the source is room handoff, containment, camera-target switching, camera boom distance, gameplay-root movement, model animation, or another transform owner.
-9. Implement the smallest evidence-based V23R6 repair without enlarging or regenerating the maze unless measurements prove geometry is the source.
-10. Re-run walking, riding, wall, corner, room-transition, first-frame cinematic, hole, combat, and Console gates.
-11. Record real results, then resume C03.23A -> C07.16A -> C07.16 -> C07.17.
-12. Keep C12.42 ordered later.
+1. Preserve the synchronized `main` checkpoint at merge commit `3af374d839cd8eb917501ce8cc6f8c703cc45474`.
+2. Use the recorded TEST EVERYTHING PASS as the current automated baseline: 0 blockers, 0 warnings, 0 info items on Unity 6000.0.76f1.
+3. Add temporary V23R6 diagnostics for room/node identity, handoff state, desired/contained/final camera pose, camera target, distance, yaw, pitch, FOV, player/horse gameplay roots, and visual-model offsets.
+4. Reproduce at least one problematic transition on foot and one while mounted.
+5. Identify whether the source is room handoff, containment, camera-target switching, camera boom distance, gameplay-root movement, model animation, or another transform owner.
+6. Implement the smallest evidence-based V23R6 repair without enlarging or regenerating the maze unless measurements prove geometry is the source.
+7. Re-run TEST EVERYTHING and the walking, riding, wall, corner, room-transition, first-frame cinematic, hole, combat, and Console gates.
+8. Remove or deliberately retain any diagnostic tooling according to the test-harness cleanup contract.
+9. Record real focused results, then resume C03.23A -> C07.16A -> C07.16 -> C07.17.
+10. Keep C12.42 ordered later.
+
 # Current risks
 
 - Camera boom distance plus safety inset can exceed available room half-size and create orientation-dependent compression.
@@ -220,21 +219,30 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 # Current changelog
 
+## 2026-06-07 — Synchronized checkpoint and automated QA baseline recorded
+
+- Local V23R2-V23R5 Runtime, scene, QA, Codex, governance, and documentation work was committed as `4477834da3bd8bb028104e9dc8f17d6905ce61d2`.
+- Current origin/main history was merged without losing either side in `3af374d839cd8eb917501ce8cc6f8c703cc45474` and pushed to remote main.
+- Unity 6000.0.76f1 TEST EVERYTHING passed at `2026-06-07T12:56:12.9858310Z` with 0 blockers, 0 warnings, and 0 info items.
+- This automated PASS does not close the remaining visual node-transition camera/model-motion regression.
+- V23R6 diagnosis is now the active next implementation step.
+
 ## 2026-06-07 — V23R6 remaining node-transition camera motion
 
 - V23R5 substantially improved the first visible mounted-cinematic frame and removed the main entrance-adjacent camera flash.
 - A smaller issue remains while walking or riding: crossing procedural nodes can slightly change the camera direction.
 - Intermittently the framing appears to zoom in or out, or jump forward and backward.
 - It is not yet proven whether the moving element is the camera transform, player or horse gameplay root, animated model, or more than one system.
-- The complete current local state is being synchronized to remote main as an explicit work-in-progress checkpoint.
-- Synchronization does not mark the remaining camera regression as solved or the post-V23R5 Unity gates as passed.
+- Remote/local synchronization is complete; the remaining camera regression is explicitly preserved as open work.
+- TEST EVERYTHING now passes on the synchronized state, but focused visual diagnosis remains required.
 - V23R6 begins with instrumentation and evidence-based isolation before another geometry or camera redesign.
 
 ## 2026-06-07 — V23R5 first-frame mounted camera leak
 
 - User reported one visible entrance-close camera frame before the mounted intro camera reaches its approved pose.
-- Latest TEST EVERYTHING remained blocked only by two obsolete V20 camera text contracts after V23R4.
+- TEST EVERYTHING had remained blocked only by two obsolete V20 camera text contracts after V23R4.
 - V23R5 primes cinematic ownership in `sceneLoaded`, removes the initial frame yield, and aligns V20 QA to the active V23R4 implementation.
+- The user subsequently confirmed that the result is much better; the separate node-transition motion is tracked under V23R6.
 
 ## 2026-06-07 — V23R4 walking and mounted camera micro-jitter
 
@@ -242,14 +250,14 @@ This file is the only live source for current status, ordering, blockers, verifi
 - Static inspection found the scene inset left 14.75 usable room units for a 15.25 camera boom, so normal framing was already compressed at room center.
 - Normal follow also recast against structural walls and reconstrained the look point with the same large inset; room resolution could be requested repeatedly in one frame.
 - V23R4 keeps authored maze geometry unchanged and repairs camera containment, look-point smoothing, room caching, and handoff-only wall casting instead.
-- Unity and Play Mode results remain unverified until run on the user's machine.
+- Automated QA now passes; residual node-transition visual motion remains open under V23R6.
 
 ## 2026-06-07 — V23R3B room-boundary documentation QA compatibility
 
 - V23R3 and V23R3A installed and validated successfully; repository hygiene passed after cleanup.
 - Unity TEST EVERYTHING then reported one blocker only: `ROOM_BOUNDARY_DESIGN_MISSING` for the missing token `visibility boundary`.
-- The maintained design already described the behavior, so V23R3B adds the explicit durable term without changing Runtime or scene behavior.
-- Unity TEST EVERYTHING and focused closed-wall Play Mode verification remain required.
+- The maintained design already described the behavior, so V23R3B added the explicit durable term without changing Runtime or scene behavior.
+- The later synchronized TEST EVERYTHING run passed with zero blockers.
 
 ## 2026-06-07 — V23R3A Codex instruction and repository-hygiene repair
 
@@ -263,7 +271,7 @@ This file is the only live source for current status, ordering, blockers, verifi
 
 - User supplied the full local repository ZIP and required reconciliation with current GitHub without losing either side.
 - Actual remote main was verified at `40104177ee396d19f375b62a20c410e4ac63bdc8`, 33 documentation-only commits ahead of the stale local `origin/main` reference.
-- Local HEAD `99daaee` and the dirty working tree contain unique Runtime, scene, QA, package, and Codex progress.
-- Latest TEST EVERYTHING report contains seven static blockers: one obsolete camera field, two missing permanent-document tokens, two obsolete post-recovery text anchors, and two frozen status-category strings.
-- V23R3 supersedes the proposed text-only compatibility repair: it preserves the stronger active Runtime contracts, synchronizes documentation, and makes QA semantic/version-agnostic.
-- Unity compilation and Play Mode remain unverified until run on the user's machine.
+- Local HEAD `99daaee` and the dirty working tree contained unique Runtime, scene, QA, package, and Codex progress.
+- The reported static blockers were one obsolete camera field, two missing permanent-document tokens, two obsolete post-recovery text anchors, and two frozen status-category strings.
+- V23R3 preserved the stronger active Runtime contracts, synchronized documentation, and made QA semantic/version-agnostic.
+- Synchronization and automated Unity QA are now complete; focused V23R6 diagnosis remains active.
