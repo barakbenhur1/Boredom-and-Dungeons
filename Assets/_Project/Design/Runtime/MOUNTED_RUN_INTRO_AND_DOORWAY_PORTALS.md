@@ -23,12 +23,16 @@ The death reason is consumed only when a real gameplay scene containing player, 
 2. Resolve the player, horse, entrance room, exact doorway center/plane, opposite rear wall, and normal gameplay camera owner.
 3. Keep the existing Main Camera and its only `AudioListener` active; disable only the follow driver while the cinematic owns the transform.
 4. Place the child mounted on the horse outside the authored entrance.
-5. Place the cinematic camera inside the room, higher and farther from the entrance, approximately `30%` of room depth measured from the opposite rear wall toward the entrance, with safe wall inset.
+5. Place the cinematic camera inside the room, noticeably higher and farther from the entrance, approximately `30%` of room depth measured from the opposite rear wall toward the entrance, with safe wall inset.
 6. Aim the cinematic camera at the center of the entrance opening; it is not the rider viewpoint.
 7. Ride straight through the entrance.
 8. At the approved turn point, rotate the horse approximately `90°` to the right with eased movement.
 9. Decelerate to a full stop and hold the stopped pose for `0.15–0.30s`.
 10. Only after the stop, restore the normal `BDCameraFollow` framing and release input after all held and buffered actions are discarded.
+
+## Camera-height refinement
+
+The approved depth remains `30%` from the opposite rear wall toward the entrance. The V21 elevation is approximately `72%` of room depth, clamped to `17–21.5` world units, while the look point remains the doorway center.
 
 ## Death restart sequence
 
@@ -41,44 +45,19 @@ The death reason is consumed only when a real gameplay scene containing player, 
 
 ## Input contract
 
-During the entire mounted cinematic, the central presentation lock blocks:
-
-- movement and horse steering;
-- mouse/touch aim, player facing, and mounted facing;
-- light, heavy, ranged, and charged attacks;
-- jump, dodge, mount/dismount, Pet, and interactions;
-- buffered and pending actions;
-- updates to look/aim direction state.
+During the entire mounted cinematic, the central presentation lock blocks movement, horse steering, mouse/touch aim, facing, every attack, jump, dodge, mount/dismount, Pet, interactions, buffered actions, and look/aim-state updates.
 
 Nothing pressed or held during loading or the cinematic may replay when control returns. The lock ends only after the horse finishes the right turn, reaches a full stop, completes the short stop hold, and normal camera ownership is restored.
 
-## Red floor artifact
-
-Enemy proximity and attack telegraphs are blocked during the intro. Existing transient floor objects are removed during scene startup and throughout the cinematic. The player is protected from incoming damage during the locked transition.
-
 ## Portals
 
-Open external entrance and exit doorways receive an opaque animated light portal that hides the entire area behind the doorway. The cover must align to the real doorway plane and fill the full opening from left to right and floor to top, with no visibility leak from frontal, side, diagonal, high, or low viewing angles. It has no gameplay collider, so legal passage remains possible.
-
-## Camera
-
-The cinematic camera is a room-authored establishing shot, not a rider-follow shot:
-
-- inside the entrance room;
-- farther from the entrance and higher than the previous implementation;
-- positioned at approximately `30%` of room depth from the opposite rear wall toward the entrance;
-- centered safely inside room bounds;
-- aimed at the doorway center;
-- held through the straight entrance and right-turn setup;
-- returned smoothly to `BDCameraFollow` after the horse fully stops.
-
-The camera GameObject and its sole `AudioListener` remain enabled throughout.
+Open external entrance and exit doorways receive an opaque animated light portal that hides the entire area behind the doorway. The cover aligns to the real doorway plane and fills the opening from left to right and floor to top, with no visibility leak from frontal, side, diagonal, high, or low viewing angles. It has no gameplay collider, so legal passage remains possible.
 
 ## Verification
 
 1. Start a fresh New Game.
-2. Confirm the camera is inside the room, farther and higher, and looks at the entrance rather than from the rider viewpoint.
-3. Move the mouse and press every gameplay input throughout the cinematic; no direction, movement, attack, dodge, jump, Pet, mount, or buffered action changes state.
+2. Confirm the camera is inside the room, farther and visibly higher, looking at the entrance rather than from the rider viewpoint.
+3. Move the mouse and press every gameplay input throughout the cinematic; no gameplay state changes.
 4. Confirm the horse enters, turns about `90°` right, fully stops, and holds briefly.
 5. Confirm control and normal camera return only after the stop.
 6. Confirm exactly one active `AudioListener` before, during, and after the cinematic.
