@@ -28,6 +28,25 @@ On every fresh gameplay scene load, including death -> `New Game`:
 - flee begins only when a living combatant is actually within the horse/player
   combat-awareness radius after the calm window.
 
+## Death-restart ground alignment
+
+After player death, `New Game` reloads the gameplay scene and the horse is placed
+beside the on-foot player. The ground raycast returns a surface point, but the
+horse root is the center of a `CharacterController`, not the feet.
+
+The start placement must therefore:
+
+- keep clearance and hazard checks based on the real ground surface;
+- convert the accepted surface point into a root position using
+  `CharacterController.center`, `CharacterController.height`, and
+  `CharacterController.skinWidth`;
+- leave the controller bottom slightly above the surface instead of placing the
+  root directly on the surface;
+- work with non-default controller centers/heights rather than relying on a
+  hard-coded one-unit lift;
+- never alter mounted-intro positioning, hazard recovery, normal riding, or the
+  authored player spawn.
+
 ## Preservation
 
 This change does not remove combat flee. Once startup calm ends, a real nearby
@@ -54,4 +73,7 @@ It does not change:
 5. Wait beyond `2.50s`, approach a real enemy, and confirm the horse can flee.
 6. Damage and heal the horse normally.
 7. Die, choose `New Game`, and repeat the clean-start checks twice.
-8. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+8. On both death restarts, confirm the child starts on foot and the horse stands
+   fully above the floor beside the player: not sunken, not floating, and not
+   intersecting the player.
+9. Run `Boredom And Dungeons -> TEST EVERYTHING`.

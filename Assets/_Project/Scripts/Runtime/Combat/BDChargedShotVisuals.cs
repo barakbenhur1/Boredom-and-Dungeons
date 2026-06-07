@@ -283,18 +283,19 @@ namespace BoredomAndDungeons
         }
     }
 
+
     [DisallowMultipleComponent]
     public sealed class BDChargedProjectileVisual : MonoBehaviour
     {
+        // BD CHARGED PROJECTILE IDEMPOTENT BUILD V20
         private Transform orbitRoot;
         private Transform secondOrbitRoot;
+        private TrailRenderer chargedTrail;
         private Vector3 baseScale;
         private int ammoCount;
         private bool configured;
 
-        public static void Attach(
-            GameObject projectile,
-            int ammoCount)
+        public static void Attach(GameObject projectile, int ammoCount)
         {
             if (projectile == null)
                 return;
@@ -303,10 +304,7 @@ namespace BoredomAndDungeons
                 projectile.GetComponent<BDChargedProjectileVisual>();
 
             if (visual == null)
-            {
-                visual =
-                    projectile.AddComponent<BDChargedProjectileVisual>();
-            }
+                visual = projectile.AddComponent<BDChargedProjectileVisual>();
 
             visual.Configure(ammoCount);
         }
@@ -314,8 +312,11 @@ namespace BoredomAndDungeons
         public void Configure(int consumedAmmo)
         {
             ammoCount = Mathf.Max(2, consumedAmmo);
-            baseScale = transform.localScale;
-            Build();
+
+            if (!configured)
+                baseScale = transform.localScale;
+
+            BuildOrRefresh();
             configured = true;
         }
 
@@ -362,35 +363,14 @@ namespace BoredomAndDungeons
             );
         }
 
-        private void Build()
+        private void BuildOrRefresh()
         {
             Color color =
                 BDChargedShotVisualUtility.ResolvePowerColor(ammoCount);
 
-            Renderer renderer = GetComponent<Renderer>();
+            RefreshRenderer(GetComponent<Renderer>(), color, 3.2f + ammoCount * 0.42f);
 
-            if (renderer != null)
-            {
-                Material material = renderer.material;
-                material.color = color;
-
-                if (material.HasProperty("_BaseColor"))
-                    material.SetColor("_BaseColor", color);
-
-                if (material.HasProperty("_Color"))
-                    material.SetColor("_Color", color);
-
-                if (material.HasProperty("_EmissionColor"))
-                {
-                    material.EnableKeyword("_EMISSION");
-                    material.SetColor(
-                        "_EmissionColor",
-                        color * (3.2f + ammoCount * 0.42f)
-                    );
-                }
-            }
-
-            orbitRoot = BuildProjectileOrbit(
+            orbitRoot = BuildOrRefreshProjectileOrbit(
                 "Charged_Projectile_Orbit_A",
                 8,
                 0.72f,
@@ -398,7 +378,7 @@ namespace BoredomAndDungeons
                 color
             );
 
-            secondOrbitRoot = BuildProjectileOrbit(
+            secondOrbitRoot = BuildOrRefreshProjectileOrbit(
                 "Charged_Projectile_Orbit_B",
                 6,
                 0.49f,
@@ -406,23 +386,84 @@ namespace BoredomAndDungeons
                 Color.Lerp(color, Color.white, 0.55f)
             );
 
-            secondOrbitRoot.localRotation =
-                Quaternion.Euler(90f, 0f, 0f);
+            if (secondOrbitRoot != null)
+                secondOrbitRoot.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
-            TrailRenderer chargedTrail =
-                gameObject.AddComponent<TrailRenderer>();
+            chargedTrail = GetComponent<TrailRenderer>();
+            if (chargedTrail == null)
+                chargedTrail = gameObject.AddComponent<TrailRenderer>();
 
-            chargedTrail.time =
+            ConfigureTrail(chargedTrail, color);
+        }
+
+        private Transform BuildOrRefreshProjectileOrbit(
+            string orbitName,
+            int count,
+            float radius,
+            float scale,
+            Color color)
+        {
+            Transform orbit = transform.Find(orbitName);
+            if (orbit == null)
+            {
+                GameObject root = new GameObject(orbitName);
+                orbit = root.transform;
+                orbit.SetParent(transform, false);
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                string moteName = $"{orbitName}_Mote_{i}";
+                Transform mote = orbit.Find(moteName);
+                if (mote == null)
+                {
+                    GameObject moteObject =
+                        GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    moteObject.name = moteName;
+                    mote = moteObject.transform;
+                    mote.SetParent(orbit, false);
+                }
+
+                float angle = i * (360f / count);
+                mote.localPosition =
+                    Quaternion.Euler(0f, 0f, angle) *
+                    Vector3.up *
+                    radius;
+                mote.localScale = Vector3.one * scale;
+
+                Collider collider = mote.GetComponent<Collider>();
+                if (collider != null)
+                    Destroy(collider);
+
+                RefreshRenderer(mote.GetComponent<Renderer>(), color, 3.1f);
+            }
+
+            return orbit;
+        }
+
+        private void ConfigureTrail(TrailRenderer trail, Color color)
+        {
+            if (trail == null)
+                return;
+
+            trail.time =
                 Mathf.Clamp(0.18f + ammoCount * 0.045f, 0.22f, 0.55f);
-            chargedTrail.startWidth =
-                0.20f + ammoCount * 0.035f;
-            chargedTrail.endWidth = 0f;
-            chargedTrail.minVertexDistance = 0.035f;
-            chargedTrail.material =
-                BDChargedShotVisualUtility.CreateVisualMaterial(
-                    color,
-                    3.4f
-                );
+            trail.startWidth = 0.20f + ammoCount * 0.035f;
+            trail.endWidth = 0f;
+            trail.minVertexDistance = 0.035f;
+
+            if (trail.sharedMaterial == null)
+            {
+                trail.sharedMaterial =
+                    BDChargedShotVisualUtility.CreateVisualMaterial(
+                        color,
+                        3.4f
+                    );
+            }
+            else
+            {
+                RefreshMaterial(trail.material, color, 3.4f);
+            }
 
             Gradient gradient = new Gradient();
             gradient.SetKeys(
@@ -442,48 +483,56 @@ namespace BoredomAndDungeons
                     new GradientAlphaKey(0f, 1f)
                 }
             );
-
-            chargedTrail.colorGradient = gradient;
+            trail.colorGradient = gradient;
         }
 
-        private Transform BuildProjectileOrbit(
-            string orbitName,
-            int count,
-            float radius,
-            float scale,
-            Color color)
+        private static void RefreshRenderer(
+            Renderer renderer,
+            Color color,
+            float emissionMultiplier)
         {
-            GameObject root = new GameObject(orbitName);
-            Transform orbit = root.transform;
-            orbit.SetParent(transform, false);
+            if (renderer == null)
+                return;
 
-            for (int i = 0; i < count; i++)
+            Material material = renderer.material;
+            if (material == null)
             {
-                float angle = i * (360f / count);
-
-                GameObject mote =
-                    GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-                mote.name = $"{orbitName}_Mote_{i}";
-                mote.transform.SetParent(orbit, false);
-                mote.transform.localPosition =
-                    Quaternion.Euler(0f, 0f, angle) *
-                    Vector3.up *
-                    radius;
-                mote.transform.localScale =
-                    Vector3.one * scale;
-
-                BDChargedShotVisualUtility.ConfigureRenderer(
-                    mote,
-                    color,
-                    emissionMultiplier: 3.1f
-                );
+                material =
+                    BDChargedShotVisualUtility.CreateVisualMaterial(
+                        color,
+                        emissionMultiplier
+                    );
+                if (material != null)
+                    renderer.material = material;
+                return;
             }
 
-            return orbit;
+            RefreshMaterial(material, color, emissionMultiplier);
+        }
+
+        private static void RefreshMaterial(
+            Material material,
+            Color color,
+            float emissionMultiplier)
+        {
+            if (material == null)
+                return;
+
+            material.color = color;
+            if (material.HasProperty("_BaseColor"))
+                material.SetColor("_BaseColor", color);
+            if (material.HasProperty("_Color"))
+                material.SetColor("_Color", color);
+            if (material.HasProperty("_EmissionColor"))
+            {
+                material.EnableKeyword("_EMISSION");
+                material.SetColor(
+                    "_EmissionColor",
+                    color * Mathf.Max(1f, emissionMultiplier)
+                );
+            }
         }
     }
-
     public static class BDChargedShotVisualUtility
     {
         public static Color ResolvePowerColor(int ammoCount)

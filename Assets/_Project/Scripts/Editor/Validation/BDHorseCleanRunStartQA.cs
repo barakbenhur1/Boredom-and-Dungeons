@@ -70,7 +70,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "public void ResetForCleanGameStart(",
                 "startup calm - ignored safe spot request",
                 "BDHorseLocalThreatUtility.HasLivingThreatNear",
-                "HasLivingEnemyNearHorseOrPlayer"
+                "HasLivingEnemyNearHorseOrPlayer",
+                "BD DEATH RESTART HORSE ROOT GROUNDING V15",
+                "ResolveHorseRootPositionFromGroundAnchor",
+                "controller.center.y",
+                "controller.height * 0.5f",
+                "controller.skinWidth * 0.625f",
+                "grounded = hit.point;"
             });
 
             ValidateTokens(result, root, HealthRelative, new[]

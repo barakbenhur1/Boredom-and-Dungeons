@@ -169,6 +169,56 @@ namespace BoredomAndDungeons
                    worldPoint.z <= bounds.max.z + safeClearance;
         }
 
+        // BD NEAREST HOLE EXIT POINT V23R2
+        public bool TryResolveNearestHorizontalExitPoint(
+            Vector3 worldPoint,
+            float clearance,
+            out Vector3 exitPoint)
+        {
+            EnsureVolumeCollider();
+            exitPoint = worldPoint;
+
+            if (volumeCollider == null ||
+                !volumeCollider.enabled)
+            {
+                return false;
+            }
+
+            Bounds bounds = volumeCollider.bounds;
+            float safeClearance = Mathf.Max(0.05f, clearance);
+
+            float toMinX = Mathf.Abs(worldPoint.x - bounds.min.x);
+            float toMaxX = Mathf.Abs(bounds.max.x - worldPoint.x);
+            float toMinZ = Mathf.Abs(worldPoint.z - bounds.min.z);
+            float toMaxZ = Mathf.Abs(bounds.max.z - worldPoint.z);
+            float nearest = Mathf.Min(toMinX, toMaxX, toMinZ, toMaxZ);
+
+            exitPoint.y = worldPoint.y;
+
+            if (nearest == toMinX)
+            {
+                exitPoint.x = bounds.min.x - safeClearance;
+                exitPoint.z = Mathf.Clamp(worldPoint.z, bounds.min.z, bounds.max.z);
+            }
+            else if (nearest == toMaxX)
+            {
+                exitPoint.x = bounds.max.x + safeClearance;
+                exitPoint.z = Mathf.Clamp(worldPoint.z, bounds.min.z, bounds.max.z);
+            }
+            else if (nearest == toMinZ)
+            {
+                exitPoint.z = bounds.min.z - safeClearance;
+                exitPoint.x = Mathf.Clamp(worldPoint.x, bounds.min.x, bounds.max.x);
+            }
+            else
+            {
+                exitPoint.z = bounds.max.z + safeClearance;
+                exitPoint.x = Mathf.Clamp(worldPoint.x, bounds.min.x, bounds.max.x);
+            }
+
+            return true;
+        }
+
         public bool IsPointWithin(
             Vector3 worldPoint,
             float extraClearance)
@@ -208,16 +258,17 @@ namespace BoredomAndDungeons
 
             Vector3 currentCenter = actor.bounds.center;
             float clearance = Mathf.Max(
-                0.06f,
-                actor.radius * 0.82f
+                0.08f,
+                actor.radius * 0.98f + actor.skinWidth
             );
-            Vector3 targetCenter = currentCenter + horizontal;
 
+            // BD SWEPT HOLE FOOTPRINT GUARD V23R2
             if (!allowIntentionalGroundExit &&
-                IsInsideHoleHorizontal(
-                    targetCenter,
-                    clearance,
-                    out _))
+                WouldSweepIntoHole(
+                    actor,
+                    currentCenter,
+                    horizontal,
+                    clearance))
             {
                 horizontal = ResolveSafeAxes(
                     actor,
@@ -236,6 +287,7 @@ namespace BoredomAndDungeons
                 return requestedMotion;
             }
 
+            Vector3 targetCenter = currentCenter + horizontal;
             Vector3 leadingDirection = horizontal.normalized;
             Vector3 leadingPoint =
                 targetCenter +
@@ -258,6 +310,71 @@ namespace BoredomAndDungeons
                    Vector3.up * requestedMotion.y;
         }
 
+
+        private static bool WouldSweepIntoHole(
+            CharacterController actor,
+            Vector3 currentCenter,
+            Vector3 horizontal,
+            float clearance)
+        {
+            float distance = horizontal.magnitude;
+            if (distance < 0.0001f)
+                return false;
+
+            float stepLength = Mathf.Max(
+                0.035f,
+                actor.radius * 0.28f
+            );
+            int samples = Mathf.Clamp(
+                Mathf.CeilToInt(distance / stepLength),
+                1,
+                16
+            );
+
+            Vector3 direction = horizontal / distance;
+            Vector3 side = Vector3.Cross(Vector3.up, direction);
+            if (side.sqrMagnitude > 0.0001f)
+                side.Normalize();
+
+            float leadingOffset = Mathf.Max(
+                0.05f,
+                actor.radius * 0.68f
+            );
+            float sideOffset = Mathf.Max(
+                0.04f,
+                actor.radius * 0.58f
+            );
+            float edgeClearance = Mathf.Max(
+                0.02f,
+                clearance * 0.30f
+            );
+
+            for (int sample = 1; sample <= samples; sample++)
+            {
+                float t = sample / (float)samples;
+                Vector3 center = currentCenter + horizontal * t;
+
+                if (IsInsideHoleHorizontal(center, clearance, out _) ||
+                    IsInsideHoleHorizontal(
+                        center + direction * leadingOffset,
+                        edgeClearance,
+                        out _) ||
+                    IsInsideHoleHorizontal(
+                        center + side * sideOffset,
+                        edgeClearance,
+                        out _) ||
+                    IsInsideHoleHorizontal(
+                        center - side * sideOffset,
+                        edgeClearance,
+                        out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static Vector3 ResolveSafeAxes(
             CharacterController actor,
             Vector3 currentCenter,
@@ -273,10 +390,11 @@ namespace BoredomAndDungeons
             );
 
             if (xOnly.sqrMagnitude > 0.000001f &&
-                !IsInsideHoleHorizontal(
-                    currentCenter + xOnly,
-                    clearance,
-                    out _) &&
+                !WouldSweepIntoHole(
+                    actor,
+                    currentCenter,
+                    xOnly,
+                    clearance) &&
                 HasGroundSupport(actor, currentCenter + xOnly))
             {
                 safe += xOnly;
@@ -289,10 +407,11 @@ namespace BoredomAndDungeons
             );
 
             if (zOnly.sqrMagnitude > 0.000001f &&
-                !IsInsideHoleHorizontal(
-                    currentCenter + safe + zOnly,
-                    clearance,
-                    out _) &&
+                !WouldSweepIntoHole(
+                    actor,
+                    currentCenter + safe,
+                    zOnly,
+                    clearance) &&
                 HasGroundSupport(
                     actor,
                     currentCenter + safe + zOnly))
@@ -302,6 +421,7 @@ namespace BoredomAndDungeons
 
             return safe;
         }
+
 
         private static Vector3 ResolveGroundedAxes(
             CharacterController actor,

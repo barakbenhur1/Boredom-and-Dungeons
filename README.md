@@ -2,8 +2,10 @@
 
 <!-- B&D MANDATORY START HERE V8 START -->
 > [!IMPORTANT]
-> **Mandatory first read for every human contributor and AI assistant:**
-> [`START_HERE.md`](START_HERE.md)
+> **Codex and AI assistants:** read [`AGENTS.md`](AGENTS.md) first, then
+> [`START_HERE.md`](START_HERE.md).
+>
+> **Human contributors:** begin with [`START_HERE.md`](START_HERE.md).
 >
 > Then read `DEVELOPMENT_WORKFLOW.md`, `PROJECT_STATUS.md`, and
 > `DOCUMENTATION_INDEX.md` before proposing or applying a material change.
@@ -44,6 +46,19 @@ Language: C#
 Current development controls: keyboard and mouse
 Final product target: mobile landscape
 ```
+
+## Codex project configuration
+
+```text
+AGENTS.md
+.codex/config.toml
+.codex/agents/*.toml
+```
+
+`AGENTS.md` is the canonical project-wide Codex/AI operating contract. The
+`.codex/` directory contains the maintained project configuration and specialist
+agent profiles. Local rich-text copies such as `AGENTS.rtf` are not repository
+documents.
 
 ## Main project locations
 

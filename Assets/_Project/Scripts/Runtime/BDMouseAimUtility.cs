@@ -8,10 +8,14 @@ namespace BoredomAndDungeons
 {
     public static class BDMouseAimUtility
     {
+        // BD CINEMATIC MOUSE AIM HARD LOCK V20
         private static readonly RaycastHit[] AimHits = new RaycastHit[64];
 
         public static bool IsMouseInsideScreenCenterDeadZone(Transform source, float screenRadiusPixels)
         {
+            if (BDRunPresentationCoordinator.InputLocked)
+                return true;
+
             if (source == null || screenRadiusPixels <= 0f)
                 return false;
 
@@ -40,6 +44,9 @@ namespace BoredomAndDungeons
         public static bool TryGetMouseAimDirection(Transform source, float minWorldDistance, out Vector3 direction)
         {
             direction = Vector3.zero;
+
+            if (BDRunPresentationCoordinator.InputLocked)
+                return false;
 
             if (source == null)
                 return false;
@@ -72,6 +79,9 @@ namespace BoredomAndDungeons
         public static bool TryGetMouseWorldPoint(Transform source, out Vector3 worldPoint)
         {
             worldPoint = Vector3.zero;
+
+            if (BDRunPresentationCoordinator.InputLocked)
+                return false;
 
             Camera camera = Camera.main;
             if (camera == null)

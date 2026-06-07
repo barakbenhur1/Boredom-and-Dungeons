@@ -19,7 +19,7 @@ This file records long-lived choices and rationale. Current implementation statu
 
 - Preserve existing functionality and assets by default.
 - Partial-package failures are repaired on top of the real local state.
-- Broad reset/clean/checkout is not an accepted repair strategy without explicit user approval.
+- Broad reset, clean, or checkout is not an accepted repair strategy without explicit user approval.
 
 ### TD-004 — Existing system owner before new system
 
@@ -33,8 +33,8 @@ This file records long-lived choices and rationale. Current implementation statu
 
 ### TD-006 — Structural patching over fragile text matching
 
-- Installers prefer method/block/token-aware edits.
-- Whitespace-sensitive replacement is acceptable only when the preflight uniquely proves the expected state.
+- Installers prefer method, block, or token-aware edits.
+- Whitespace-sensitive replacement is acceptable only when preflight uniquely proves the expected state.
 - Installers must be idempotent and support partial previous application.
 
 ### TD-007 — Documentation changes are part of implementation
@@ -43,37 +43,96 @@ This file records long-lived choices and rationale. Current implementation statu
 - Architecture, design, QA, technical decisions, and performance documents are updated when their truth changes.
 - Chat-only decisions are not accepted project state.
 
-<!-- B&D QA CONTRACT DRIFT DECISIONS V9 START -->
 ### TD-008 — Conflict-marker scans are line-aware
 
 - Only standalone Git conflict-marker lines are blockers.
-- Inline examples in maintained documentation and quoted strings in validator
-  source are allowed and must not be treated as unresolved conflicts.
+- Inline examples in maintained documentation and quoted strings in validator source are allowed.
 - External package validation and Unity QA use the same interpretation.
 
 ### TD-009 — QA contracts follow the active implementation
 
 - Regression checks validate current behavior and stable ownership contracts.
-- QA must not require obsolete local-variable names or superseded version labels
-  after a structural implementation changes.
-- The V7 minimap contract is `BD MINIMAP RIGID CLIP MASK V7` plus the rigid
-  `GUI.matrix` rotation method.
-- The current START GAME highlight contract is the action-aware
-  `DrawActionButton` path with `MenuActionVisual.Progress` and
-  `StartGameHighlightTint`; the removed `startGamePressed` local variable is not
-  a product requirement.
-<!-- B&D QA CONTRACT DRIFT DECISIONS V9 END -->
+- QA must not require obsolete local-variable names or superseded package labels after a structural implementation changes.
+
+### TD-010 — Current-only maintained documentation
+
+- Maintained Git documents describe current truth, not a chronological accumulation of package repairs.
+- Git history stores historical versions.
+- When a document is superseded, merge valid requirements into its authoritative owner, update `DOCUMENTATION_INDEX.md`, and remove the obsolete file in the same change.
+- Root Markdown is restricted to the canonical allowlist. Feature contracts live under `Assets/_Project/Design/`.
+
+### TD-011 — Cinematic camera and input ownership
+
+- `BDRunPresentationCoordinator` may temporarily own camera transform and input lock during the mounted entrance.
+- `BDCameraFollow` is restored only after the horse completes the approved right turn and full stop.
+- The Main Camera GameObject and its sole `AudioListener` remain active.
+- All gameplay input readers, including mouse-facing state, respect the central presentation lock.
+
+### TD-012 — Semantic documentation QA
+
+- Stable IDs and implementation anchors remain strict.
+- Human documentation wording is validated semantically when equivalent phrases describe the same approved behavior.
+- Semantic wording tolerance must not weaken Runtime, scene, ownership, or Play Mode verification.
+
+### TD-013 — One normal-gameplay camera transform owner
+
+- `BDCameraFollow` owns every normal-gameplay Main Camera position and rotation write.
+- Composition, room containment, smoothing, collision, and shake are resolved inside that owner before one final transform assignment.
+- A second post-follow offset component is not allowed because it can bypass wall containment and produce transition or combat camera drift.
+- Mouse yaw uses one rate-limited stage. Wall proximity does not change sensitivity, and combat shake does not change vertical position or pitch.
+
+### TD-014 — CharacterController-root-safe recovery
+
+- Ground recovery computes root height from `CharacterController.center`, `height`, and `skinWidth`; a fixed world-space offset is insufficient.
+- Safe-ground probes reject dynamic actors, hazards, structural walls, and moving bodies.
+- Successful player damage starts a short grounding guard that freezes safe-point updates and recovers only unexpected floor loss, while intentional jump/dodge/gap motion remains valid.
+
+### TD-015 — Swept hole boundary and active-intent entry
+
+- Ordinary movement is evaluated as a swept CharacterController footprint, not a single endpoint test.
+- Walking cannot enter holes through diagonal tunnelling or corner overlap.
+- Hole entry permission is state-based and frame-current: active dodge, actively ascending jump, or explicit forced-gap movement only.
+- Historical dodge/jump timestamps never authorize later walking movement.
+- Recovery clears gap-entry state before control returns.
+
+### TD-016 — Local hole recovery before historical safe points
+
+- Hole falls capture a nearby valid recovery anchor beside the same hazard.
+- Local recovery uses a small dedicated edge clearance and CharacterController-root-safe placement.
+- The local anchor is preferred before older safe points or spawn, while loop-breaking and global fallbacks remain available only when the local point is invalid.
+
+### TD-017 — Preserve both sides of remote/local divergence
+
+- When remote and local contain unique valid progress, synchronization is a merge task, not a replacement task.
+- Inspect the real remote head and local dirty tree before changing history.
+- Build and validate the combined working state first, then create a safety reference, commit the verified local result, fetch the remote, and merge its history.
+- Never use reset, clean, broad checkout, or an automatic conflict preference unless the merged file content was already reviewed and validated.
+
+### TD-018 — Codex operating contract and project configuration are first-class repository content
+
+- `AGENTS.md` is the canonical project-wide Codex/AI game-development operating contract and belongs in the root Markdown allowlist.
+- `.codex/config.toml` and `.codex/agents/*.toml` are maintained project configuration, not caches or temporary assistant output.
+- `AGENTS.rtf` is a local editing/export duplicate of `AGENTS.md`; it is ignored and must not be committed as a competing instruction source.
+- Repository-hygiene and Unity documentation-governance QA must recognize this ownership without weakening the prohibition on duplicate status or roadmap documents.
+
+### TD-019 — Stable room-bound camera pressure without map regeneration
+
+- Do not enlarge or regenerate the whole maze merely to hide camera jitter when the root cause is camera containment.
+- The normal camera boom must fit at room center with a bounded safety inset; room geometry remains authoritative and unchanged.
+- Closed-room bounds own ordinary containment. Physical wall casts run only during a legal two-room handoff.
+- Camera-body containment and look-point containment are separate: the look point uses a smaller inset and smoothing so wall proximity and actor-height movement do not create apparent zoom or pitch pulses.
+- Room lookup is cached and resolved at most once per frame to avoid repeated scene-wide scans during camera follow.
+
+### TD-017 — First-render cinematic camera priming
+
+- Fresh/victory mounted introductions acquire the existing Main Camera synchronously from `sceneLoaded`, before `BDCameraFollow.Start` or `LateUpdate` can render normal follow framing.
+- The black transition cover remains opaque while the cinematic pose and FOV are primed.
+- The follow driver's prior enabled state and the camera's original projection values are preserved and restored only after the approved stop/return sequence.
+- QA validates ordering and active semantic contracts rather than obsolete numeric/text anchors.
 
 ## Decision lifecycle
 
-A decision may be:
-
-- `ACTIVE`
-- `SUPERSEDED` with a link/name of the replacing decision
-- `REJECTED` with rationale
-- `RECOVERY REQUIRED` when evidence is incomplete
-
-Do not silently delete superseded decisions.
+A decision may be `ACTIVE`, `SUPERSEDED`, `REJECTED`, or `RECOVERY REQUIRED`. Do not silently delete superseded decisions.
 
 ## Template for future decisions
 

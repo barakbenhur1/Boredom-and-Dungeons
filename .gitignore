@@ -202,3 +202,9 @@ releases/
 
 # Authoritative progress tracker hygiene
 /PROJECT_STATUS_CURRENT_V*.md
+.ai/
+
+# -----------------------------------------------------------------------------
+# Local rich-text duplicate of the canonical Codex operating contract
+# -----------------------------------------------------------------------------
+/AGENTS.rtf

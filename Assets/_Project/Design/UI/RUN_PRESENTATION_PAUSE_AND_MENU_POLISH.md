@@ -41,9 +41,9 @@ This repair is a cross-cutting C03/C11 regression fix. It preserves the authored
 
 ### Room walls and camera
 
-- Prototype room walls are raised to a minimum visual/collision height of 22 world units so the angled camera cannot see over them into another room.
-- The camera is constrained by the current `BDMinimapRoom` closed sides and by real profiled wall colliders. Approaching a closed wall stops the camera and its look point at the boundary instead of revealing the next room.
-- Open doorway sides remain eligible for normal room transition.
+- Prototype room walls are raised to a minimum visual/collision height of 64 world units so the angled camera cannot see over them into another room.
+- The camera is constrained by real profiled wall colliders and the current room or legal two-room handoff union. Structural walls stay permanently opaque. Approaching a closed wall constrains outward camera intent and uses a more top-down pitch instead of revealing the next room.
+- Open doorway sides remain eligible for normal room transition. Room/node handoff preserves camera distance and produces neither backward snap nor zoom-in.
 - Wall segments receive explicit non-mirrored texture-facing metadata for future asymmetric natural textures.
 
 ## Verification

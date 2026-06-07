@@ -47,3 +47,7 @@ independent animated transform.
 
 `PROJECT_STATUS.md` remains the only complete authoritative plan and progress
 record. This file is the focused contract for `C11.13B`.
+
+## V13 superseding implementation
+
+The GUI-matrix implementation failed visual acceptance and is superseded. The complete map content is now rendered into one fixed off-screen raster, rotated around the resolved player pivot, and drawn once inside the clipped square. The fixed frame never rotates and no map pixel can be emitted outside the raster bounds.

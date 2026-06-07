@@ -6,6 +6,8 @@ namespace BoredomAndDungeons
     [DisallowMultipleComponent]
     public sealed class BDCameraOccluderFader : MonoBehaviour
     {
+        // BD STRUCTURAL WALLS NEVER FADE V20
+        // BD STRUCTURAL WALL FORCE-OPAQUE V22
         [SerializeField] private Transform target;
         [SerializeField] private float targetHeight = 0.9f;
         [SerializeField] private float sphereCastRadius = 0.42f;
@@ -79,6 +81,14 @@ namespace BoredomAndDungeons
                 if (wall == null)
                     continue;
 
+                if (IsStructuralRoomBoundary(wall))
+                {
+                    wall.ForceOpaqueImmediateAndDisableFading();
+                    currentlyFaded.Remove(wall);
+                    toRestore.Remove(wall);
+                    continue;
+                }
+
                 wall.SetFaded(true);
                 currentlyFaded.Add(wall);
                 toRestore.Remove(wall);
@@ -108,6 +118,21 @@ namespace BoredomAndDungeons
             Transform found = BDTargetFinder.FindPlayer();
             if (found != null)
                 target = found;
+        }
+
+        private static bool IsStructuralRoomBoundary(BDOccludingWall wall)
+        {
+            if (wall == null)
+                return false;
+
+            if (wall.GetComponentInParent<BDWallSurfaceProfile>() != null)
+                return true;
+
+            string value = wall.name.ToLowerInvariant();
+            return value.Contains("roomwall") ||
+                   value.Contains("boundary") ||
+                   value.Contains("cavewall") ||
+                   value.Contains("rockwall");
         }
 
         private static void SortHitsByDistance(RaycastHit[] hits, int count)

@@ -2,9 +2,12 @@ using UnityEngine;
 
 namespace BoredomAndDungeons
 {
+    [DefaultExecutionOrder(5000)]
     [DisallowMultipleComponent]
     public sealed class BDCameraFollow : MonoBehaviour
     {
+        // BD SINGLE CAMERA TRANSFORM OWNER V23
+        // BDCameraFollow is the only normal-gameplay writer of the Main Camera transform.
         [Header("Target")]
         [SerializeField] private Transform target;
         [SerializeField] private bool preferMountedHorseTarget = true;
@@ -22,16 +25,24 @@ namespace BoredomAndDungeons
         [Header("Mouse / Player Intent Rotation")]
         // BD OBSOLETE CAMERA FIELDS REMOVED V2
         [SerializeField] private float cameraYawDegreesPerSecond = 86f;
-        [SerializeField] private float movementDirectionBlend = 7.5f;
 
         [Header("Room Boundary Camera")]
         // BD ROOM WALL CAMERA STOP V7
+        // BD CLOSED-WALL FRUSTUM CONTAINMENT V20
+        // BD CLOSED-WALL HEIGHT + SMOOTH ROOM HANDOFF V21
+        // BD DISTANCE-PRESERVING UNION ROOM HANDOFF V22
+        // BD STABLE WALL PRESSURE CAMERA V23R4
         [SerializeField] private bool stopAtClosedRoomWalls = true;
         [SerializeField] private float roomBoundaryInset = 0.80f;
+        [SerializeField] private float cameraFrustumSafetyInset = 1.20f;
+        [SerializeField] private float constrainedLookPointSmooth = 12f;
         [SerializeField] private float wallCollisionRadius = 0.55f;
         [SerializeField] private float wallCollisionPadding = 0.35f;
-        [SerializeField] private float minimumCameraDistance = 2.25f;
+        // BD UNUSED CAMERA DISTANCE FIELD REMOVED V22R2
         [SerializeField] private float roomResolveInterval = 0.12f;
+        [SerializeField] private float roomCacheRefreshInterval = 1.0f;
+        [SerializeField] private float roomSwitchInteriorMargin = 1.25f;
+        [SerializeField] private float roomHandoffReleaseMargin = 2.25f;
         [SerializeField] private LayerMask roomBoundaryCollisionMask = ~0;
 
         [Header("Shake")]
@@ -51,12 +62,18 @@ namespace BoredomAndDungeons
         private BDHorseHealth horseHealth;
 
         private Vector3 lastForward = Vector3.forward;
-        private Vector3 smoothedMoveForward = Vector3.forward;
         private Vector3 smoothedShakeOffset;
+        private Vector3 smoothedLookPoint;
+        private bool smoothedLookPointReady;
         private string cameraState = "locked behind movement";
         private float nextTargetResolveAt;
         private BDMinimapRoom currentCameraRoom;
+        private BDMinimapRoom previousCameraRoom;
+        private bool roomHandoffActive;
         private float nextRoomResolveAt;
+        private float nextRoomCacheRefreshAt;
+        private int lastRoomResolveFrame = -1;
+        private BDMinimapRoom[] cachedRooms = new BDMinimapRoom[0];
 
         public void SetTarget(Transform newTarget)
         {
@@ -83,6 +100,14 @@ namespace BoredomAndDungeons
             SnapToTarget();
         }
 
+        private void OnEnable()
+        {
+            smoothedLookPointReady = false;
+            lastRoomResolveFrame = -1;
+            nextRoomResolveAt = 0f;
+            nextRoomCacheRefreshAt = 0f;
+        }
+
         private void Start()
         {
             ResolveTargets();
@@ -92,12 +117,19 @@ namespace BoredomAndDungeons
                 SnapToTarget();
         }
 
+
         private void LateUpdate()
         {
             ResolveTargets();
 
             if (target == null)
                 return;
+
+            if (BDRunPresentationCoordinator.InputLocked)
+            {
+                cameraState = "run presentation camera lock";
+                return;
+            }
 
             UpdateCameraForwardFromPlayerIntent();
 
@@ -109,6 +141,7 @@ namespace BoredomAndDungeons
 
             FollowLockedBehind(lastForward);
         }
+
 
         private void ResolveTargets()
         {
@@ -160,10 +193,10 @@ namespace BoredomAndDungeons
                 forward = lastForward.sqrMagnitude > 0.001f ? lastForward : Vector3.forward;
 
             lastForward = forward.normalized;
-            smoothedMoveForward = lastForward;
         }
 
         // BD CAMERA FOLLOWS MOUSE INTENT, NOT MOVEMENT
+        // BD STABLE SINGLE-STAGE CAMERA YAW V23
         private void UpdateCameraForwardFromPlayerIntent()
         {
             Vector3 intent = ResolveCameraIntentDirection();
@@ -177,42 +210,34 @@ namespace BoredomAndDungeons
 
             intent.Normalize();
 
-            float blend =
-                1f - Mathf.Exp(-movementDirectionBlend * Time.deltaTime);
-
-            smoothedMoveForward = Vector3.Slerp(
-                smoothedMoveForward,
-                intent,
-                blend
+            float sensitivity = Mathf.Clamp(
+                BDGameSettings.MouseSensitivityMultiplier,
+                0.55f,
+                1.45f
             );
-
-            smoothedMoveForward.y = 0f;
-
-            if (smoothedMoveForward.sqrMagnitude < 0.001f)
-                smoothedMoveForward = intent;
-
-            smoothedMoveForward.Normalize();
-
             float maximumRadians =
                 Mathf.Deg2Rad *
                 Mathf.Max(1f, cameraYawDegreesPerSecond) *
+                sensitivity *
                 Time.deltaTime;
 
             lastForward = Vector3.RotateTowards(
-                lastForward,
-                smoothedMoveForward,
+                lastForward.sqrMagnitude > 0.001f
+                    ? lastForward.normalized
+                    : intent,
+                intent,
                 maximumRadians,
                 0f
             );
-
             lastForward.y = 0f;
 
             if (lastForward.sqrMagnitude < 0.001f)
                 lastForward = intent;
 
             lastForward.Normalize();
-            cameraState = "locked behind mouse/player aim intent";
+            cameraState = "single-owner stable mouse/player aim";
         }
+
 
         private Vector3 ResolveCameraIntentDirection()
         {
@@ -241,67 +266,162 @@ namespace BoredomAndDungeons
                 : Vector3.zero;
         }
 
+
         private void FollowLockedBehind(Vector3 forward)
         {
             if (forward.sqrMagnitude < 0.001f)
                 forward = Vector3.forward;
 
+            forward.y = 0f;
+            forward.Normalize();
+
             Vector3 targetPosition = target.position;
+            ResolveCurrentCameraRoom(targetPosition);
+            Vector3 shakeOffset = ResolvePlanarCameraShake();
+
             Vector3 desiredPosition =
                 targetPosition -
-                forward.normalized * distanceBehind +
-                Vector3.up * height;
+                forward * distanceBehind +
+                Vector3.up * height +
+                shakeOffset;
             desiredPosition = ResolveRoomBoundaryConstrainedPosition(
                 targetPosition,
-                desiredPosition
+                desiredPosition,
+                true
             );
 
-            Vector3 rawShake = BDGameFeelEvents.SampleCameraShakeOffset() * cameraShakeMultiplier;
-            smoothedShakeOffset = Vector3.Lerp(smoothedShakeOffset, rawShake, 1f - Mathf.Exp(-cameraShakeSmoothing * Time.deltaTime));
-
-            transform.position = Vector3.Lerp(
+            Vector3 blendedPosition = Vector3.Lerp(
                 transform.position,
-                desiredPosition + smoothedShakeOffset,
+                desiredPosition,
                 1f - Mathf.Exp(-followSmooth * Time.deltaTime)
             );
-
-            Vector3 lookPoint =
-                targetPosition +
-                forward.normalized *
-                (lookAhead + Mathf.Max(0f, extraForwardCompositionLookAhead));
-            lookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+            Vector3 finalPosition = ResolveRoomBoundaryConstrainedPosition(
                 targetPosition,
-                lookPoint
+                blendedPosition,
+                false
             );
-            Quaternion desiredRotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
 
+            Vector3 desiredLookPoint =
+                targetPosition +
+                forward *
+                (lookAhead + Mathf.Max(0f, extraForwardCompositionLookAhead));
+            desiredLookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+                targetPosition,
+                desiredLookPoint
+            );
+            Vector3 lookPoint = ResolveSmoothedLookPoint(
+                targetPosition,
+                desiredLookPoint
+            );
+
+            Quaternion desiredRotation = Quaternion.LookRotation(
+                lookPoint - finalPosition,
+                Vector3.up
+            );
             Vector3 euler = desiredRotation.eulerAngles;
-            float pitch = NormalizePitch(euler.x);
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-            euler.x = pitch;
+            euler.x = Mathf.Clamp(
+                NormalizePitch(euler.x),
+                minPitch,
+                maxPitch
+            );
             euler.z = 0f;
             desiredRotation = Quaternion.Euler(euler);
 
-            transform.rotation = Quaternion.Slerp(
+            Quaternion finalRotation = Quaternion.Slerp(
                 transform.rotation,
                 desiredRotation,
                 1f - Mathf.Exp(-rotationSmooth * Time.deltaTime)
             );
+
+            // Apply one final room-safe pose after all smoothing and shake.
+            transform.SetPositionAndRotation(finalPosition, finalRotation);
         }
+
+
 
         private void FollowFixedOffset()
         {
+            Vector3 targetPosition = target.position;
+            ResolveCurrentCameraRoom(targetPosition);
             Vector3 offset = new Vector3(0f, height, -distanceBehind);
-            Vector3 rawShake = BDGameFeelEvents.SampleCameraShakeOffset() * cameraShakeMultiplier;
-            smoothedShakeOffset = Vector3.Lerp(smoothedShakeOffset, rawShake, 1f - Mathf.Exp(-cameraShakeSmoothing * Time.deltaTime));
+            Vector3 desiredPosition =
+                targetPosition + offset + ResolvePlanarCameraShake();
+            desiredPosition = ResolveRoomBoundaryConstrainedPosition(
+                targetPosition,
+                desiredPosition,
+                true
+            );
+            Vector3 blended = Vector3.Lerp(
+                transform.position,
+                desiredPosition,
+                1f - Mathf.Exp(-followSmooth * Time.deltaTime)
+            );
+            Vector3 finalPosition = ResolveRoomBoundaryConstrainedPosition(
+                targetPosition,
+                blended,
+                false
+            );
 
-            Vector3 desiredPosition = target.position + offset + smoothedShakeOffset;
-            transform.position = Vector3.Lerp(transform.position, desiredPosition, 1f - Mathf.Exp(-followSmooth * Time.deltaTime));
-
-            Quaternion desiredRotation = Quaternion.LookRotation(target.position + Vector3.up * 0.5f - transform.position, Vector3.up);
-            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, 1f - Mathf.Exp(-rotationSmooth * Time.deltaTime));
-            cameraState = "fixed fallback";
+            Vector3 desiredLookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+                targetPosition,
+                targetPosition + Vector3.up * 0.5f
+            );
+            Vector3 lookPoint = ResolveSmoothedLookPoint(
+                targetPosition,
+                desiredLookPoint
+            );
+            Quaternion desiredRotation = Quaternion.LookRotation(
+                lookPoint - finalPosition,
+                Vector3.up
+            );
+            transform.SetPositionAndRotation(
+                finalPosition,
+                Quaternion.Slerp(
+                    transform.rotation,
+                    desiredRotation,
+                    1f - Mathf.Exp(-rotationSmooth * Time.deltaTime)
+                )
+            );
+            cameraState = "fixed room-contained fallback";
         }
+
+        // BD PLANAR COMBAT SHAKE V23
+        private Vector3 ResolvePlanarCameraShake()
+        {
+            Vector3 sample =
+                BDGameFeelEvents.SampleCameraShakeOffset() *
+                cameraShakeMultiplier;
+
+            Vector3 cameraRight = transform.right;
+            cameraRight.y = 0f;
+            if (cameraRight.sqrMagnitude < 0.001f)
+                cameraRight = Vector3.right;
+            cameraRight.Normalize();
+
+            Vector3 cameraForward = transform.forward;
+            cameraForward.y = 0f;
+            if (cameraForward.sqrMagnitude < 0.001f)
+                cameraForward = lastForward;
+            if (cameraForward.sqrMagnitude < 0.001f)
+                cameraForward = Vector3.forward;
+            cameraForward.Normalize();
+
+            // Camera shake stays on the gameplay plane. Enemy hits must not
+            // make the camera bob vertically or change its pitch/sensitivity.
+            Vector3 planar =
+                cameraRight * sample.x +
+                cameraForward * sample.y * 0.35f;
+            planar.y = 0f;
+
+            smoothedShakeOffset = Vector3.Lerp(
+                smoothedShakeOffset,
+                planar,
+                1f - Mathf.Exp(-cameraShakeSmoothing * Time.deltaTime)
+            );
+            smoothedShakeOffset.y = 0f;
+            return smoothedShakeOffset;
+        }
+
 
         private void SnapToTarget()
         {
@@ -319,65 +439,89 @@ namespace BoredomAndDungeons
                 forward = Vector3.forward;
 
             lastForward = forward.normalized;
-            smoothedMoveForward = lastForward;
 
             Vector3 snappedPosition =
                 target.position -
                 lastForward * distanceBehind +
                 Vector3.up * height;
+            ResolveCurrentCameraRoom(target.position);
             transform.position = ResolveRoomBoundaryConstrainedPosition(
                 target.position,
-                snappedPosition
+                snappedPosition,
+                true
             );
             Vector3 lookPoint = ResolveRoomBoundaryConstrainedLookPoint(
                 target.position,
                 target.position + lastForward * lookAhead
             );
+            smoothedLookPoint = lookPoint;
+            smoothedLookPointReady = true;
             transform.rotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
         }
+
         private Vector3 ResolveRoomBoundaryConstrainedPosition(
             Vector3 targetPosition,
-            Vector3 desiredPosition)
+            Vector3 desiredPosition,
+            bool allowHandoffWallCast)
         {
             if (!stopAtClosedRoomWalls)
                 return desiredPosition;
 
             ResolveCurrentCameraRoom(targetPosition);
+            float safeInset = ResolveStableCameraSafetyInset();
+            TryCompleteRoomHandoff(
+                targetPosition,
+                desiredPosition,
+                safeInset
+            );
             desiredPosition = ClampPointToClosedRoomBounds(
                 desiredPosition,
-                roomBoundaryInset
+                safeInset
             );
 
-            Vector3 castOrigin =
-                targetPosition + Vector3.up * 1.65f;
-            Vector3 castDelta = desiredPosition - castOrigin;
-            float distance = castDelta.magnitude;
-            if (distance <= 0.001f)
-                return desiredPosition;
-
-            if (Physics.SphereCast(
-                    castOrigin,
-                    Mathf.Max(0.05f, wallCollisionRadius),
-                    castDelta / distance,
-                    out RaycastHit hit,
-                    distance,
-                    roomBoundaryCollisionMask,
-                    QueryTriggerInteraction.Ignore) &&
-                IsRoomBoundaryCollider(hit.collider))
+            // BD ROOM WALL CAST ONLY DURING HANDOFF V23R4
+            // Room bounds already keep the camera inside a stable room. Recasting
+            // against tall wall colliders during every ordinary follow frame made
+            // tiny hit-distance changes look like zoom pulses. The physical cast is
+            // retained only while two room bounds are temporarily joined.
+            if (allowHandoffWallCast &&
+                roomHandoffActive &&
+                previousCameraRoom != null)
             {
-                float allowedDistance = Mathf.Max(
-                    minimumCameraDistance,
-                    hit.distance - Mathf.Max(0f, wallCollisionPadding)
-                );
-                desiredPosition =
-                    castOrigin +
-                    castDelta.normalized * allowedDistance;
-                cameraState = "stopped at closed room wall";
+                Vector3 castOrigin = targetPosition + Vector3.up * 1.65f;
+                Vector3 castDelta = desiredPosition - castOrigin;
+                float distance = castDelta.magnitude;
+                if (distance > 0.001f &&
+                    Physics.SphereCast(
+                        castOrigin,
+                        Mathf.Max(0.05f, wallCollisionRadius),
+                        castDelta / distance,
+                        out RaycastHit hit,
+                        distance,
+                        roomBoundaryCollisionMask,
+                        QueryTriggerInteraction.Ignore) &&
+                    IsRoomBoundaryCollider(hit.collider))
+                {
+                    float allowedDistance = Mathf.Clamp(
+                        hit.distance - Mathf.Max(0f, wallCollisionPadding),
+                        0.35f,
+                        distance
+                    );
+                    desiredPosition =
+                        castOrigin + castDelta.normalized * allowedDistance;
+                    cameraState = "handoff wall cast containment";
+                }
             }
 
-            return desiredPosition;
+            return ClampPointToClosedRoomBounds(
+                desiredPosition,
+                safeInset
+            );
         }
 
+
+
+        // BD INDEPENDENT LOOK POINT SOFT CONSTRAINT V23R4
         private Vector3 ResolveRoomBoundaryConstrainedLookPoint(
             Vector3 targetPosition,
             Vector3 lookPoint)
@@ -388,51 +532,226 @@ namespace BoredomAndDungeons
             ResolveCurrentCameraRoom(targetPosition);
             return ClampPointToClosedRoomBounds(
                 lookPoint,
-                roomBoundaryInset
+                Mathf.Max(0.05f, roomBoundaryInset)
             );
         }
 
-        private void ResolveCurrentCameraRoom(
-            Vector3 targetPosition)
+        private Vector3 ResolveSmoothedLookPoint(
+            Vector3 targetPosition,
+            Vector3 desiredLookPoint)
         {
-            if (currentCameraRoom != null &&
-                currentCameraRoom.ContainsWorldPosition(targetPosition, 0.30f) &&
-                Time.unscaledTime < nextRoomResolveAt)
+            if (!smoothedLookPointReady || !Application.isPlaying)
+            {
+                smoothedLookPoint = desiredLookPoint;
+                smoothedLookPointReady = true;
+            }
+            else
+            {
+                float blend = 1f - Mathf.Exp(
+                    -Mathf.Max(0.1f, constrainedLookPointSmooth) *
+                    Time.deltaTime
+                );
+                smoothedLookPoint = Vector3.Lerp(
+                    smoothedLookPoint,
+                    desiredLookPoint,
+                    blend
+                );
+            }
+
+            return ResolveRoomBoundaryConstrainedLookPoint(
+                targetPosition,
+                smoothedLookPoint
+            );
+        }
+
+        private float ResolveStableCameraSafetyInset()
+        {
+            // The previous serialized 2.25-3.40 inset made the usable half-room
+            // smaller than the 15.25 camera boom even at room center. Keep enough
+            // room for the cast radius and near plane without continuously shortening
+            // the normal camera distance.
+            return Mathf.Clamp(
+                cameraFrustumSafetyInset,
+                0.90f,
+                1.35f
+            );
+        }
+
+
+
+        // BD SINGLE ROOM SCAN PER FRAME V23R4
+        private void ResolveCurrentCameraRoom(Vector3 targetPosition)
+        {
+            if (Application.isPlaying && lastRoomResolveFrame == Time.frameCount)
+                return;
+
+            lastRoomResolveFrame = Time.frameCount;
+
+            if (Application.isPlaying &&
+                currentCameraRoom != null &&
+                Time.unscaledTime < nextRoomResolveAt &&
+                currentCameraRoom.ContainsWorldPosition(targetPosition, 0.02f))
             {
                 return;
             }
 
-            nextRoomResolveAt =
-                Time.unscaledTime +
-                Mathf.Max(0.02f, roomResolveInterval);
+            BDMinimapRoom[] rooms = ResolveCachedRooms();
 
-            BDMinimapRoom[] rooms =
-                FindObjectsByType<BDMinimapRoom>(
-                    FindObjectsSortMode.None
-                );
-
+            BDMinimapRoom containing = null;
+            float containingDistance = float.PositiveInfinity;
             BDMinimapRoom nearest = null;
             float nearestDistance = float.PositiveInfinity;
+
             foreach (BDMinimapRoom room in rooms)
             {
                 if (room == null)
                     continue;
 
-                if (room.ContainsWorldPosition(targetPosition, 0.05f))
+                float distance = room.SqrDistanceToCenter(targetPosition);
+                if (room.ContainsWorldPosition(targetPosition, 0.02f) &&
+                    distance < containingDistance)
                 {
-                    currentCameraRoom = room;
-                    return;
+                    containing = room;
+                    containingDistance = distance;
                 }
 
-                float distance = room.SqrDistanceToCenter(targetPosition);
                 if (distance < nearestDistance)
                 {
-                    nearestDistance = distance;
                     nearest = room;
+                    nearestDistance = distance;
                 }
             }
 
-            currentCameraRoom = nearest;
+            if (currentCameraRoom == null)
+            {
+                currentCameraRoom = containing != null ? containing : nearest;
+                previousCameraRoom = null;
+                roomHandoffActive = false;
+            }
+            else if (containing != null && containing != currentCameraRoom &&
+                     IsInsideRoomInterior(
+                         containing,
+                         targetPosition,
+                         Mathf.Max(0.05f, roomSwitchInteriorMargin)))
+            {
+                if (roomHandoffActive && containing == previousCameraRoom)
+                {
+                    BDMinimapRoom oldCurrent = currentCameraRoom;
+                    currentCameraRoom = previousCameraRoom;
+                    previousCameraRoom = oldCurrent;
+                    cameraState = "reversed union room handoff";
+                }
+                else
+                {
+                    previousCameraRoom = currentCameraRoom;
+                    currentCameraRoom = containing;
+                    roomHandoffActive = previousCameraRoom != null;
+                    cameraState = "union room boundary handoff";
+                }
+            }
+            else if (containing == null && nearest != null &&
+                     !currentCameraRoom.ContainsWorldPosition(
+                         targetPosition,
+                         Mathf.Max(0.10f, roomSwitchInteriorMargin)))
+            {
+                previousCameraRoom = currentCameraRoom;
+                currentCameraRoom = nearest;
+                roomHandoffActive = previousCameraRoom != null;
+                cameraState = "recovered union room boundary";
+            }
+
+            nextRoomResolveAt = Time.unscaledTime +
+                Mathf.Max(0.01f, roomResolveInterval);
+        }
+
+        private BDMinimapRoom[] ResolveCachedRooms()
+        {
+            bool refresh =
+                cachedRooms == null ||
+                cachedRooms.Length == 0 ||
+                !Application.isPlaying ||
+                Time.unscaledTime >= nextRoomCacheRefreshAt;
+
+            if (refresh)
+            {
+                cachedRooms = FindObjectsByType<BDMinimapRoom>(
+                    FindObjectsSortMode.None
+                );
+                nextRoomCacheRefreshAt = Application.isPlaying
+                    ? Time.unscaledTime +
+                      Mathf.Max(0.10f, roomCacheRefreshInterval)
+                    : 0f;
+            }
+
+            return cachedRooms;
+        }
+
+
+        private void TryCompleteRoomHandoff(
+            Vector3 targetPosition,
+            Vector3 desiredCameraPosition,
+            float inset)
+        {
+            if (!roomHandoffActive || currentCameraRoom == null)
+                return;
+
+            float targetMargin = Mathf.Max(
+                roomSwitchInteriorMargin,
+                roomHandoffReleaseMargin
+            );
+            if (!IsInsideRoomInterior(
+                    currentCameraRoom,
+                    targetPosition,
+                    targetMargin))
+            {
+                return;
+            }
+
+            if (!IsPointInsideRoomBounds(
+                    currentCameraRoom,
+                    desiredCameraPosition,
+                    inset))
+            {
+                return;
+            }
+
+            roomHandoffActive = false;
+            previousCameraRoom = null;
+            cameraState = "completed union room handoff";
+        }
+
+        private static bool IsInsideRoomInterior(
+            BDMinimapRoom room,
+            Vector3 worldPosition,
+            float interiorMargin)
+        {
+            if (room == null)
+                return false;
+
+            float halfSize = Mathf.Max(
+                0.25f,
+                room.RoomSize * 0.5f - Mathf.Max(0f, interiorMargin)
+            );
+            Vector3 delta = worldPosition - room.WorldCenter;
+            return Mathf.Abs(delta.x) <= halfSize &&
+                   Mathf.Abs(delta.z) <= halfSize;
+        }
+
+        private static bool IsPointInsideRoomBounds(
+            BDMinimapRoom room,
+            Vector3 point,
+            float inset)
+        {
+            if (room == null)
+                return false;
+
+            float halfSize = Mathf.Max(
+                0.5f,
+                room.RoomSize * 0.5f - Mathf.Max(0f, inset)
+            );
+            Vector3 delta = point - room.WorldCenter;
+            return Mathf.Abs(delta.x) <= halfSize &&
+                   Mathf.Abs(delta.z) <= halfSize;
         }
 
         private Vector3 ClampPointToClosedRoomBounds(
@@ -442,23 +761,83 @@ namespace BoredomAndDungeons
             if (currentCameraRoom == null)
                 return point;
 
-            float halfSize = Mathf.Max(
-                0.5f,
-                currentCameraRoom.RoomSize * 0.5f - Mathf.Max(0f, inset)
+            ResolveCameraClampBounds(
+                inset,
+                out float minX,
+                out float maxX,
+                out float minZ,
+                out float maxZ
             );
-            Vector3 center = currentCameraRoom.WorldCenter;
 
-            if (!currentCameraRoom.WestOpen)
-                point.x = Mathf.Max(point.x, center.x - halfSize);
-            if (!currentCameraRoom.EastOpen)
-                point.x = Mathf.Min(point.x, center.x + halfSize);
-            if (!currentCameraRoom.SouthOpen)
-                point.z = Mathf.Max(point.z, center.z - halfSize);
-            if (!currentCameraRoom.NorthOpen)
-                point.z = Mathf.Min(point.z, center.z + halfSize);
-
+            point.x = Mathf.Clamp(point.x, minX, maxX);
+            point.z = Mathf.Clamp(point.z, minZ, maxZ);
             return point;
         }
+
+        private void ResolveCameraClampBounds(
+            float inset,
+            out float minX,
+            out float maxX,
+            out float minZ,
+            out float maxZ)
+        {
+            float currentHalf = Mathf.Max(
+                0.5f,
+                currentCameraRoom.RoomSize * 0.5f
+            );
+            minX = currentCameraRoom.WorldCenter.x - currentHalf;
+            maxX = currentCameraRoom.WorldCenter.x + currentHalf;
+            minZ = currentCameraRoom.WorldCenter.z - currentHalf;
+            maxZ = currentCameraRoom.WorldCenter.z + currentHalf;
+
+            if (roomHandoffActive && previousCameraRoom != null)
+            {
+                float previousHalf = Mathf.Max(
+                    0.5f,
+                    previousCameraRoom.RoomSize * 0.5f
+                );
+                minX = Mathf.Min(
+                    minX,
+                    previousCameraRoom.WorldCenter.x - previousHalf
+                );
+                maxX = Mathf.Max(
+                    maxX,
+                    previousCameraRoom.WorldCenter.x + previousHalf
+                );
+                minZ = Mathf.Min(
+                    minZ,
+                    previousCameraRoom.WorldCenter.z - previousHalf
+                );
+                maxZ = Mathf.Max(
+                    maxZ,
+                    previousCameraRoom.WorldCenter.z + previousHalf
+                );
+            }
+
+            float safeInset = Mathf.Max(0f, inset);
+            minX += safeInset;
+            maxX -= safeInset;
+            minZ += safeInset;
+            maxZ -= safeInset;
+
+            if (minX > maxX)
+            {
+                float center = (minX + maxX) * 0.5f;
+                minX = center;
+                maxX = center;
+            }
+            if (minZ > maxZ)
+            {
+                float center = (minZ + maxZ) * 0.5f;
+                minZ = center;
+                maxZ = center;
+            }
+        }
+
+
+
+
+
 
         private static bool IsRoomBoundaryCollider(
             Collider candidate)

@@ -37,11 +37,26 @@ namespace BoredomAndDungeons
         [SerializeField] private float forcedDisplacementMinDistance = 0.10f;
         [SerializeField] private float forcedDisplacementSpeedMultiplier = 1.35f;
 
+        [Header("Combat Grounding Guard")]
+        // BD COMBAT FLOOR LOSS GUARD V23
+        [SerializeField] private float combatImpactGuardDuration = 0.75f;
+        [SerializeField] private float combatImpactGroundGrace = 0.10f;
+        [SerializeField] private float combatImpactRecoveryDepth = 0.22f;
+        [SerializeField] private float combatGroundSupportDistance = 0.85f;
+        [SerializeField] private float combatSafePointFreeze = 1.10f;
+
         [Header("Recovery")]
         [SerializeField] private float recoveryProtectionSeconds = 1.0f;
         [SerializeField] private float postRecoverySafePointLock = 1.65f;
         [SerializeField] private float rapidRecoveryLoopWindow = 3.25f;
         [SerializeField] private float recoveryVerticalOffset = 0.38f;
+
+        [Header("Hole Local Recovery")]
+        // BD NEAR-HOLE LOCAL RECOVERY V23R2
+        [SerializeField] private float holeRespawnEdgeClearance = 0.82f;
+        [SerializeField] private float holeRespawnSearchStep = 0.32f;
+        [SerializeField] private int holeRespawnSearchRings = 3;
+
         [Header("Mounted Hazard Recovery")]
         [SerializeField] private float mountedRecoverySeparation = 1.65f;
         [SerializeField] private float mountedRecoveryAnchorLifetime = 4.0f;
@@ -72,6 +87,12 @@ namespace BoredomAndDungeons
         private bool hasPreviousSafePosition;
         private float safePointUpdatesBlockedUntil;
         private float lastRecoveryCompletedAt = -999f;
+        private Vector3 localHoleRecoveryPosition;
+        private Quaternion localHoleRecoveryRotation;
+        private bool hasLocalHoleRecovery;
+        private float combatImpactStartedAt = -999f;
+        private float combatImpactGuardUntil = -999f;
+        private float combatImpactStartY;
 
         private Vector3 mountedRecoveryAnchor;
         private float mountedRecoveryAnchorUntil = -999f;
@@ -171,6 +192,7 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            CheckCombatGroundingGuard();
             CheckGroundExit();
 
             if (characterController != null &&
@@ -188,6 +210,100 @@ namespace BoredomAndDungeons
                 Mathf.Max(0.05f, sampleInterval);
 
             TickSafePointTracking();
+        }
+
+        public void NotifyCombatImpact()
+        {
+            if (!Application.isPlaying ||
+                characterController == null ||
+                health == null ||
+                health.IsDead)
+            {
+                return;
+            }
+
+            combatImpactStartedAt = Time.unscaledTime;
+            combatImpactGuardUntil =
+                combatImpactStartedAt +
+                Mathf.Max(0.15f, combatImpactGuardDuration);
+            combatImpactStartY = transform.position.y;
+            groundedSafeSince = -1f;
+            safePointUpdatesBlockedUntil = Mathf.Max(
+                safePointUpdatesBlockedUntil,
+                combatImpactStartedAt +
+                Mathf.Max(0.25f, combatSafePointFreeze)
+            );
+        }
+
+        private void CheckCombatGroundingGuard()
+        {
+            if (Time.unscaledTime > combatImpactGuardUntil ||
+                characterController == null ||
+                !characterController.enabled ||
+                characterController.isGrounded ||
+                IsRecoveryProtected ||
+                (playerController != null &&
+                 playerController.HasRecentIntentionalGapEntry))
+            {
+                return;
+            }
+
+            if (Time.unscaledTime - combatImpactStartedAt <
+                Mathf.Max(0.02f, combatImpactGroundGrace))
+            {
+                return;
+            }
+
+            bool droppedBelowImpact =
+                transform.position.y <
+                combatImpactStartY -
+                Mathf.Max(0.05f, combatImpactRecoveryDepth);
+            bool hasSupport = HasWalkableGroundSupport(
+                Mathf.Max(0.25f, combatGroundSupportDistance)
+            );
+
+            if (!droppedBelowImpact && hasSupport)
+                return;
+
+            combatImpactGuardUntil = -999f;
+            RecoverImmediatelyWithoutDamage();
+        }
+
+        private bool HasWalkableGroundSupport(float extraDistance)
+        {
+            Vector3 origin = characterController.bounds.center;
+            float radius = Mathf.Max(
+                0.08f,
+                characterController.radius * 0.72f
+            );
+            float distance =
+                characterController.height * 0.5f +
+                Mathf.Max(0.05f, extraDistance);
+
+            int hitCount = Physics.SphereCastNonAlloc(
+                origin,
+                radius,
+                Vector3.down,
+                groundHits,
+                distance,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit hit = groundHits[i];
+                if (!IsValidRecoveryGroundCollider(hit.collider))
+                    continue;
+
+                if (Vector3.Angle(hit.normal, Vector3.up) <=
+                    Mathf.Clamp(maximumGroundAngle, 0f, 89f))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void PrepareMountedHazardRecovery(
@@ -254,9 +370,127 @@ namespace BoredomAndDungeons
             return true;
         }
 
+        private void CaptureLocalHoleRecoveryAnchor(
+            BDHazardVolume volume)
+        {
+            hasLocalHoleRecovery = false;
+
+            if (volume == null)
+                return;
+
+            float controllerClearance =
+                characterController != null
+                    ? characterController.radius +
+                      characterController.skinWidth + 0.12f
+                    : 0.62f;
+            float edgeClearance = Mathf.Max(
+                0.55f,
+                holeRespawnEdgeClearance,
+                controllerClearance
+            );
+
+            if (!volume.TryResolveNearestHorizontalExitPoint(
+                    transform.position,
+                    edgeClearance,
+                    out Vector3 nearestExit))
+            {
+                return;
+            }
+
+            float bestDistance = float.PositiveInfinity;
+            Vector3 bestPosition = default;
+            bool found = false;
+            int rings = Mathf.Max(1, holeRespawnSearchRings);
+            float step = Mathf.Max(0.15f, holeRespawnSearchStep);
+
+            for (int ring = 0; ring <= rings; ring++)
+            {
+                int samples = ring == 0 ? 1 : Mathf.Max(8, ring * 8);
+                float radius = ring * step;
+
+                for (int sample = 0; sample < samples; sample++)
+                {
+                    float angle = samples == 1
+                        ? 0f
+                        : sample * (360f / samples) * Mathf.Deg2Rad;
+                    Vector3 requested = nearestExit + new Vector3(
+                        Mathf.Cos(angle),
+                        0f,
+                        Mathf.Sin(angle)
+                    ) * radius;
+
+                    if (!TryResolveGroundedCandidate(
+                            requested,
+                            out Vector3 candidate))
+                    {
+                        continue;
+                    }
+
+                    float localHazardClearance = Mathf.Max(
+                        0.20f,
+                        edgeClearance * 0.34f
+                    );
+                    if (!IsCandidateSafe(
+                            candidate,
+                            localHazardClearance) ||
+                        volume.ContainsHorizontalPoint(
+                            candidate,
+                            Mathf.Max(0.05f, controllerClearance * 0.20f)))
+                    {
+                        continue;
+                    }
+
+                    Vector3 delta = candidate - transform.position;
+                    delta.y = 0f;
+                    float distance = delta.sqrMagnitude;
+                    if (distance >= bestDistance)
+                        continue;
+
+                    bestDistance = distance;
+                    bestPosition = candidate;
+                    found = true;
+                }
+            }
+
+            if (!found)
+                return;
+
+            localHoleRecoveryPosition = bestPosition;
+            localHoleRecoveryRotation = Quaternion.Euler(
+                0f,
+                transform.rotation.eulerAngles.y,
+                0f
+            );
+            hasLocalHoleRecovery = true;
+        }
+
+        private bool TryResolveLocalHoleRecoveryAnchor(
+            out Vector3 position,
+            out Quaternion rotation)
+        {
+            position = default;
+            rotation = Quaternion.identity;
+
+            if (!hasLocalHoleRecovery ||
+                !TryResolveGroundedCandidate(
+                    localHoleRecoveryPosition,
+                    out Vector3 candidate) ||
+                !IsCandidateSafe(
+                    candidate,
+                    Mathf.Max(0.20f, holeRespawnEdgeClearance * 0.34f)))
+            {
+                return false;
+            }
+
+            position = candidate;
+            rotation = localHoleRecoveryRotation;
+            return true;
+        }
+
         private void BeginHoleFall(
             BDHazardVolume volume)
         {
+            CaptureLocalHoleRecoveryAnchor(volume);
             FreezeSafePointUpdates();
             holeFallInProgress = true;
             holeFallVolume = volume;
@@ -855,14 +1089,22 @@ namespace BoredomAndDungeons
             previousTrackedPosition =
                 transform.position;
             hasPreviousTrackedPosition = true;
-                    hasMountedRecoveryAnchor = false;
+            hasLocalHoleRecovery = false;
+            hasMountedRecoveryAnchor = false;
             mountedRecoveryAnchorUntil = -999f;
-}
+        }
 
         private bool TryResolveLoopBreakerPoint(
             out Vector3 position,
             out Quaternion rotation)
         {
+            if (TryResolveLocalHoleRecoveryAnchor(
+                    out position,
+                    out rotation))
+            {
+                return true;
+            }
+
             if (hasPreviousSafePosition &&
                 TryResolveGroundedCandidate(
                     previousSafePosition,
@@ -952,22 +1194,17 @@ namespace BoredomAndDungeons
             out Vector3 position,
             out Quaternion rotation)
         {
-            if (TryResolveMountedRecoveryAnchor(
+            if (TryResolveLocalHoleRecoveryAnchor(
                     out position,
                     out rotation))
             {
                 return true;
             }
 
-
-            if (hasPreviousSafePosition &&
-                TryResolveGroundedCandidate(
-                    previousSafePosition,
-                    out Vector3 previousCandidate) &&
-                IsCandidateSafe(previousCandidate))
+            if (TryResolveMountedRecoveryAnchor(
+                    out position,
+                    out rotation))
             {
-                position = previousCandidate;
-                rotation = previousSafeRotation;
                 return true;
             }
 
@@ -979,6 +1216,17 @@ namespace BoredomAndDungeons
             {
                 position = latestCandidate;
                 rotation = lastSafeRotation;
+                return true;
+            }
+
+            if (hasPreviousSafePosition &&
+                TryResolveGroundedCandidate(
+                    previousSafePosition,
+                    out Vector3 previousCandidate) &&
+                IsCandidateSafe(previousCandidate))
+            {
+                position = previousCandidate;
+                rotation = previousSafeRotation;
                 return true;
             }
 
@@ -1057,87 +1305,104 @@ namespace BoredomAndDungeons
             Vector3 origin =
                 requestedPosition +
                 Vector3.up *
-                Mathf.Max(
-                    0.5f,
-                    groundProbeHeight
-                );
+                Mathf.Max(0.5f, groundProbeHeight);
 
             int hitCount = Physics.RaycastNonAlloc(
                 origin,
                 Vector3.down,
                 groundHits,
-                Mathf.Max(
-                    1f,
-                    groundProbeDistance
-                ),
+                Mathf.Max(1f, groundProbeDistance),
                 ~0,
                 QueryTriggerInteraction.Ignore
             );
 
-            float bestDistance =
-                float.PositiveInfinity;
+            float bestDistance = float.PositiveInfinity;
             bool found = false;
             groundedPosition = requestedPosition;
 
-            for (int i = 0;
-                 i < hitCount;
-                 i++)
+            for (int i = 0; i < hitCount; i++)
             {
                 RaycastHit hit = groundHits[i];
 
-                if (hit.collider == null ||
-                    IsOwnCollider(hit.collider))
-                {
+                if (!IsValidRecoveryGroundCollider(hit.collider))
                     continue;
-                }
 
-                float groundAngle =
-                    Vector3.Angle(
-                        hit.normal,
-                        Vector3.up
-                    );
-
-                if (groundAngle >
-                    Mathf.Clamp(
-                        maximumGroundAngle,
-                        0f,
-                        89f
-                    ))
-                {
+                float groundAngle = Vector3.Angle(hit.normal, Vector3.up);
+                if (groundAngle > Mathf.Clamp(maximumGroundAngle, 0f, 89f))
                     continue;
-                }
 
                 if (hit.distance >= bestDistance)
                     continue;
 
                 bestDistance = hit.distance;
-                float controllerLift =
-                    characterController != null
-                        ? characterController.skinWidth + 0.22f
-                        : 0.22f;
-
+                float rootHeight = ResolveCharacterControllerRootHeightAboveGround();
                 groundedPosition =
                     hit.point +
-                    Vector3.up *
-                    Mathf.Max(
-                        controllerLift,
-                        recoveryVerticalOffset
-                    );
+                    Vector3.up * Mathf.Max(rootHeight, recoveryVerticalOffset);
                 found = true;
             }
 
             return found;
         }
 
+        // BD CHARACTER CONTROLLER ROOT-SAFE RECOVERY V23
+        private float ResolveCharacterControllerRootHeightAboveGround()
+        {
+            if (characterController == null)
+                return Mathf.Max(0.22f, recoveryVerticalOffset);
+
+            float capsuleBottomFromRoot =
+                characterController.center.y -
+                characterController.height * 0.5f;
+            return
+                -capsuleBottomFromRoot +
+                Mathf.Max(0.02f, characterController.skinWidth) +
+                0.03f;
+        }
+
+        private bool IsValidRecoveryGroundCollider(Collider candidate)
+        {
+            if (candidate == null ||
+                !candidate.enabled ||
+                candidate.isTrigger ||
+                IsOwnCollider(candidate))
+            {
+                return false;
+            }
+
+            if (candidate.GetComponentInParent<BDHazardVolume>() != null ||
+                candidate.GetComponentInParent<BDHealth>() != null ||
+                candidate.GetComponentInParent<BDHorseHealth>() != null ||
+                candidate.GetComponentInParent<CharacterController>() != null ||
+                candidate.GetComponentInParent<BDWallSurfaceProfile>() != null)
+            {
+                return false;
+            }
+
+            Rigidbody body = candidate.attachedRigidbody;
+            if (body != null && !body.isKinematic)
+                return false;
+
+            return true;
+        }
+
+
         private bool IsCandidateSafe(
             Vector3 candidate)
         {
+            return IsCandidateSafe(
+                candidate,
+                Mathf.Max(0f, hazardEdgeClearance)
+            );
+        }
+
+        private bool IsCandidateSafe(
+            Vector3 candidate,
+            float hazardClearance)
+        {
             if (BDHazardVolume.IsRecoveryPointUnsafe(
                     candidate,
-                    Mathf.Max(
-                        0f,
-                        hazardEdgeClearance
-                    )))
+                    Mathf.Max(0f, hazardClearance)))
             {
                 return false;
             }

@@ -1,18 +1,23 @@
 # START HERE — Mandatory First Read
 
-This file is the permanent entry point for every human contributor and every AI assistant working on this repository.
+This file is the permanent repository entry point. `AGENTS.md` is the canonical
+project-wide operating contract that Codex and other AI assistants read before
+this file. The maintained `.codex/` directory contains project configuration and
+specialist agent profiles; it does not replace the product status or workflow
+documents.
 
 ## Required reading order
 
 Before proposing, editing, generating, or validating a material change, read these files in order:
 
-1. `START_HERE.md` — repository entry point and non-negotiable rules.
-2. `DEVELOPMENT_WORKFLOW.md` — authoritative working method.
-3. `PROJECT_STATUS.md` — only authoritative source for requirements, ordering, current state, QA truth, blockers, and the exact resume point.
-4. `DOCUMENTATION_INDEX.md` — map of maintained documentation and update responsibilities.
-5. `ARCHITECTURE.md` — stable system boundaries and integration map.
-6. `QA_CHECKLIST.md` — validation and release gates.
-7. The design/specification files relevant to the requested feature.
+1. `AGENTS.md` — mandatory project-wide Codex/AI operating contract.
+2. `START_HERE.md` — repository entry point and non-negotiable rules.
+3. `DEVELOPMENT_WORKFLOW.md` — authoritative working method.
+4. `PROJECT_STATUS.md` — only authoritative source for requirements, ordering, current state, QA truth, blockers, and the exact resume point.
+5. `DOCUMENTATION_INDEX.md` — map of maintained documentation and update responsibilities.
+6. `ARCHITECTURE.md` — stable system boundaries and integration map.
+7. `QA_CHECKLIST.md` — validation and release gates.
+8. The design/specification files relevant to the requested feature.
 
 `README.md` is the public orientation page. It points here and must not become a competing status document.
 
@@ -41,6 +46,8 @@ This is a standing instruction. The user does not need to explain or repeat it i
 
 | Subject | Authoritative file |
 |---|---|
+| Codex/AI project-wide operating contract | `AGENTS.md` |
+| Codex project configuration and specialist profiles | `.codex/config.toml`, `.codex/agents/*.toml` |
 | Requirements, ordering, current/next work, blockers, QA truth | `PROJECT_STATUS.md` |
 | How work is performed and delivered | `DEVELOPMENT_WORKFLOW.md` |
 | Documentation map and maintenance ownership | `DOCUMENTATION_INDEX.md` |
@@ -70,3 +77,16 @@ flowchart TD
     J --> K[Unity compile, TEST EVERYTHING, focused Play Mode]
     K --> L[Record real result in PROJECT_STATUS]
 ```
+
+## Permanent current-document and repository-hygiene rule
+
+Git must always contain the current, accurate project truth. Every material request, correction, implementation, QA result, blocker, and resume-point change is synchronized into the maintained repository documents in the same change.
+
+- Do not leave material requirements only in chat, a downloaded TXT, a package README, or an untracked local note.
+- Do not keep obsolete roadmaps, superseded repair reports, duplicate status files, temporary package documents, or stale instructions as live repository documentation.
+- Before removing a superseded document, merge every still-valid requirement into its authoritative owner and update `DOCUMENTATION_INDEX.md`.
+- Use Git history for old versions. Maintained files describe current truth.
+- `AGENTS.md` is canonical root Markdown; `.codex/` is maintained project configuration.
+- `AGENTS.rtf` is only a local rich-text duplicate and must remain ignored/untracked.
+- Run repository-hygiene checks on every handoff and before every commit.
+- When the user explicitly requests a direct Git update, the assistant may update the repository directly; otherwise follow the normal reviewed local verification/commit flow.

@@ -9,7 +9,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
     public static class BDRoomBoundarySceneInstaller
     {
         // BD TALL ROOM BOUNDARY INSTALLER V7
-        public const float MinimumWallWorldHeight = 22f;
+        // BD NO OVER-WALL CAMERA VISIBILITY HEIGHT V21
+        // BD PERMANENT OPAQUE TALL WALLS V22
+        public const float MinimumWallWorldHeight = 64f;
         private const float MinimumWallLength = 4f;
         private const float MaximumWallThickness = 3.75f;
 
@@ -40,6 +42,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
                     wallCount++;
                     RaiseWallWithoutMovingItsBase(renderer);
+
+                    BDOccludingWall legacyFader =
+                        renderer.GetComponent<BDOccludingWall>();
+                    if (legacyFader != null)
+                    {
+                        legacyFader.ForceOpaqueImmediateAndDisableFading();
+                        Undo.DestroyObjectImmediate(legacyFader);
+                    }
 
                     BDWallSurfaceProfile profile =
                         renderer.GetComponent<BDWallSurfaceProfile>();

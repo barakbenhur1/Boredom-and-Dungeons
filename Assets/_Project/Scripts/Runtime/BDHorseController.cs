@@ -450,7 +450,7 @@ namespace BoredomAndDungeons
                 playerController.enabled = false;
 
             if (playerCharacterController != null)
-                playerCharacterController.enabled = false;
+                playerCharacterController.enabled = true; // BD MOUNTED RIDER HURTBOX ENABLED V10
 
             PlaceRiderOnMountPoint();
             lastAction =
@@ -688,7 +688,14 @@ namespace BoredomAndDungeons
                     if (!HasHorseStartClearance(grounded))
                         continue;
 
-                    resolved = grounded;
+                    // BD DEATH RESTART HORSE ROOT GROUNDING V15
+                    // Clearance is validated against the real surface point.
+                    // The CharacterController root is then lifted so its
+                    // capsule bottom, not its transform pivot, rests on ground.
+                    resolved =
+                        ResolveHorseRootPositionFromGroundAnchor(
+                            grounded
+                        );
                     return true;
                 }
             }
@@ -761,15 +768,45 @@ namespace BoredomAndDungeons
                     continue;
                 }
 
-                grounded =
-                    hit.point +
-                    Vector3.up * 0.08f;
-
+                // Return the actual ground surface. Root-height conversion
+                // happens only after hazard and clearance validation.
+                grounded = hit.point;
                 return true;
             }
 
             grounded = requested;
             return false;
+        }
+
+        private Vector3 ResolveHorseRootPositionFromGroundAnchor(
+            Vector3 groundPoint)
+        {
+            // BD DEATH RESTART HORSE ROOT GROUNDING V15
+            // CharacterController.position is the object root. With a centered
+            // two-unit capsule, placing that root at the raycast hit sinks half
+            // the horse below the floor. Convert surface -> root generically.
+            float rootLift = 0.08f;
+
+            if (controller != null)
+            {
+                float capsuleBottomFromRoot =
+                    controller.center.y -
+                    controller.height * 0.5f;
+
+                float groundClearance = Mathf.Clamp(
+                    controller.skinWidth * 0.625f,
+                    0.03f,
+                    0.08f
+                );
+
+                rootLift =
+                    -capsuleBottomFromRoot +
+                    groundClearance;
+            }
+
+            Vector3 resolved = groundPoint;
+            resolved.y += Mathf.Max(0.02f, rootLift);
+            return resolved;
         }
 
         private bool HasHorseStartClearance(
@@ -864,6 +901,17 @@ namespace BoredomAndDungeons
 
             CachePlayerComponents();
             ResolveSafeSpotIfNeeded();
+
+            // BD PRESENTATION HORSE INPUT HARD LOCK V20
+            if (BDRunPresentationCoordinator.InputLocked)
+            {
+                lastRideInput = Vector2.zero;
+                pointerDragging = false;
+                smoothedMountedHorizontalVelocity = Vector3.zero;
+                verticalVelocity = groundedStickVelocity;
+                lastAction = "run presentation input lock";
+                return;
+            }
 
             if (hazardSafety != null &&
                 hazardSafety.IsRecovering)
@@ -1208,6 +1256,31 @@ namespace BoredomAndDungeons
                 PlaceRiderOnMountPoint();
         }
 
+        // BD POST-CINEMATIC MOUNTED INPUT RESET V20
+        public void PrepareMountedGameplayAfterCinematic(
+            Vector3 finalFacingDirection)
+        {
+            finalFacingDirection.y = 0f;
+            if (finalFacingDirection.sqrMagnitude < 0.001f)
+                finalFacingDirection = transform.forward;
+            finalFacingDirection.Normalize();
+
+            transform.rotation = Quaternion.LookRotation(
+                finalFacingDirection,
+                Vector3.up
+            );
+            lastRideInput = Vector2.zero;
+            pointerDragging = false;
+            smoothedMountedHorizontalVelocity = Vector3.zero;
+            smoothedMountedTravelDirection = finalFacingDirection;
+            lastMountedAimDirection = finalFacingDirection;
+            targetMountedAimDirection = finalFacingDirection;
+            mountedYawInitialized = false;
+            InitializeMountedYawFromTransform();
+            verticalVelocity = groundedStickVelocity;
+            SnapCinematicRiderToMountPoint();
+        }
+
 
         private void Mount()
         {
@@ -1237,7 +1310,7 @@ namespace BoredomAndDungeons
                 playerController.enabled = false;
 
             if (playerCharacterController != null)
-                playerCharacterController.enabled = false;
+                playerCharacterController.enabled = true; // BD MOUNTED RIDER HURTBOX ENABLED V10
 
             // Important:
             // Do NOT parent the player to the horse.

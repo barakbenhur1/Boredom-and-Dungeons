@@ -33,32 +33,35 @@ flowchart TB
 
 - `BDPlayerController` owns player movement/input-facing runtime behavior.
 - Combat behavior is split into dedicated combat components rather than accumulated into menu or scene-builder classes.
-- Health, hazard recovery, attack feedback, and state reset must remain explicit and independently testable.
+- `BDHealth` reports successful player damage to `BDPlayerHazardRecovery` for short combat-grounding protection.
+- `BDPlayerHazardRecovery` owns safe-point sampling, ground validation, fall detection, and CharacterController-root-safe recovery placement.
 
 ### Horse
 
 - `BDHorseController` owns the real mounted/unmounted state and rider placement contract.
 - Horse health, hazard safety, flee behavior, recovery, and interactions remain separate components where practical.
-- Cinematic or run-presentation systems must call explicit horse APIs rather than duplicating mount state.
+- Cinematic or run-presentation systems call explicit horse APIs rather than duplicating mount state.
 
 ### Camera and minimap
 
-- `BDCameraFollow` owns runtime camera target selection, follow composition, and camera collision/boundary behavior.
-- `BDMazeMinimap` owns map presentation, discovery, cardinal rotation, clipping, and map markers.
-- Camera and minimap may consume player/horse state but must not own gameplay state.
+- `BDCameraFollow` is the sole normal-gameplay Main Camera transform owner. It owns target selection, yaw, composition, smoothing, shake, collision, and room containment.
+- Stable room bounds are the primary normal-gameplay camera constraint. Wall casts are reserved for active room handoffs, constrained look-point smoothing is independent from camera-body containment, and room discovery is cached/resolved no more than once per frame.
+- No second Runtime component applies a post-follow camera position offset.
+- `BDRunPresentationCoordinator` may temporarily own the camera only during the approved cinematic. For fresh/victory mounted starts it primes that ownership synchronously from `sceneLoaded` before the first rendered gameplay frame, then returns ownership to `BDCameraFollow` only after the approved stop and camera-return sequence.
+- `BDMazeMinimap` owns map presentation, discovery, cardinal rotation, clipping, and markers; it never repositions gameplay actors or camera.
 
 ### Run, menu, pause, and result flow
 
 - `BDMainMenuFlow` remains the single UI owner for main-menu, settings, pause, and loading overlays.
 - `BDGameFlowSignals` and completion markers route death/result/cinematic transitions without creating parallel menu controllers.
-- Run-presentation components may coordinate temporary locks and authored entrance/exit presentation, but must release control back to existing gameplay owners.
+- Run-presentation components coordinate temporary locks and authored entrance/exit presentation, then release control back to existing gameplay owners.
 
 ## Editor ownership
 
-- Runtime code under `Assets/_Project/Scripts/Runtime` must not depend on `UnityEditor`.
-- Editor installers/builders under `Assets/_Project/Scripts/Editor` may configure authoritative scenes and components.
+- Runtime code under `Assets/_Project/Scripts/Runtime` does not depend on `UnityEditor`.
+- Editor installers/builders under `Assets/_Project/Scripts/Editor` configure authoritative scenes and components.
 - Nested installers mark scenes dirty; the top-level QA/install flow owns final saving when documented.
-- Unity `.meta` GUIDs are stable project data and must remain synchronized.
+- Unity `.meta` GUIDs remain synchronized.
 
 ## QA ownership
 
@@ -68,7 +71,7 @@ There is one required entry point:
 Boredom And Dungeons -> TEST EVERYTHING
 ```
 
-`BDOneClickQAWindow` orchestrates the checks. Domain-specific QA belongs in focused `BD*QA.cs` classes exposing `Scan(BDOneClickQAResult result)` and is integrated into the single entry point.
+`BDOneClickQAWindow` orchestrates the checks. Domain-specific QA belongs in focused `BD*QA.cs` classes exposing `Scan(BDOneClickQAResult result)` and integrates into the single entry point.
 
 ## Run-flow diagram
 
@@ -90,14 +93,6 @@ stateDiagram-v2
 
 ## Change rules
 
-Update this document when any of the following changes:
+Update this document when ownership moves, a new major layer appears, scene-generation ownership changes, a persistent data boundary is introduced, a parallel controller is consolidated, or run/menu/result flow changes structurally.
 
-- ownership moves between systems;
-- a new major runtime/editor layer is introduced;
-- scene generation or installer ownership changes;
-- a new persistent data boundary is introduced;
-- a parallel controller is consolidated or removed;
-- run/menu/result flow changes structurally;
-- performance strategy changes system boundaries.
-
-Minor tuning values and current progress remain in design files and `PROJECT_STATUS.md`, not here.
+Minor tuning values and current progress remain in design files and `PROJECT_STATUS.md`.

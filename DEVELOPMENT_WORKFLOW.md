@@ -5,10 +5,13 @@ This document defines **how work must be performed** on the project.
 It is a permanent process contract. It does not duplicate the current feature
 status or the complete requirement list.
 
+- `AGENTS.md` is the canonical project-wide Codex/AI operating contract.
+- `.codex/config.toml` and `.codex/agents/*.toml` are maintained project
+  configuration and specialist-agent profiles.
 - `PROJECT_STATUS.md` is the only authoritative source for product requirements,
   current progress, QA truth, blockers, ordering, and the exact resume point.
 - `DEVELOPMENT_WORKFLOW.md` is the authoritative source for the working method.
-- `README.md` points contributors to both documents.
+- `README.md` points contributors to these entry points.
 
 No parallel status document, copied roadmap, temporary progress file, or chat-only
 decision may compete with these sources.
@@ -289,6 +292,7 @@ authoritative scene.
 
 The mandatory read order and maintained-document ownership map are defined by:
 
+- `AGENTS.md` for Codex and AI assistants;
 - `START_HERE.md`;
 - `DOCUMENTATION_INDEX.md`;
 - `ARCHITECTURE.md`;
@@ -332,6 +336,35 @@ Git history stores old states.
 
 ---
 
+## 9A. PERMANENT REPOSITORY HYGIENE CONTRACT — current-document rule
+
+This is a standing rule and the user does not need to repeat it.
+
+1. Every material request, correction, implementation, QA result, blocker, ordering change, resume-point change, and synchronization state is recorded in Git-maintained documentation.
+2. `PROJECT_STATUS.md` remains the only live source for current product status and ordering.
+3. Maintained documents describe current truth; package narratives and temporary repair notes are not permanent documentation.
+4. When a document is superseded, first merge every still-valid contract into its authoritative owner, then update `DOCUMENTATION_INDEX.md`, then remove the obsolete document in the same change.
+5. Git history stores old versions. Do not preserve stale files merely as an archive.
+6. Before every handoff and commit, remove or ignore package ZIPs, `.package_tools`, `.package_payload`, local QA exports, caches, chat exports, copied status files, stale patch scripts, and obsolete root documents.
+7. Root Markdown is limited to the canonical documents listed in `DOCUMENTATION_INDEX.md`; `AGENTS.md` is the sole project-wide AI operating contract and feature contracts belong under `Assets/_Project/Design/`.
+8. `.codex/` is maintained repository configuration and must remain available to Codex; local rich-text copies such as `AGENTS.rtf` are ignored rather than committed.
+9. Repository-hygiene QA must fail when a prohibited duplicate status/roadmap or known obsolete document returns.
+10. Run `python3 tools/check_repository_hygiene.py` on every handoff and before every commit.
+
+## 9B. Remote/local divergence contract
+
+When the remote branch and the local working tree both contain unique valid progress:
+
+1. inspect the actual remote head, local `HEAD`, merge base, dirty files, and untracked files;
+2. classify which files are remote-only, local-only, or changed on both sides;
+3. build the reviewed merged content before changing Git history;
+4. preserve a safety branch/tag and commit the verified merged local state;
+5. fetch the remote and merge its history; do not use reset, clean, broad checkout, or a blind conflict preference;
+6. rerun repository hygiene, diff checks, Unity QA, and any focused checks affected by conflict resolution;
+7. push only after the merged tree still contains both sides' valid progress.
+
+---
+
 ## 10. Failure and repair handling
 
 When installation or validation fails:
@@ -355,6 +388,9 @@ Only after clean compilation, `TEST EVERYTHING`, and focused Play Mode acceptanc
 provide commands equivalent to:
 
 ```bash
+# Preserve the pre-sync history pointer before recording the verified local tree.
+git branch safety/pre-remote-sync
+
 git add -A
 git diff --cached --check
 git diff --cached --stat
@@ -362,13 +398,24 @@ git status --short
 
 git commit -m "<accurate change summary>"
 
-git pull --rebase origin main
+# Preserve the complete verified local implementation before merging remote history.
+git branch safety/verified-local-before-remote-merge
+
+git fetch origin
+git merge --no-ff origin/main
+
+python3 tools/check_repository_hygiene.py
+git diff --check
+git status --short
+
 git push origin main
 ```
 
 Before commit, verify package ZIPs, extracted `.package_tools`,
 `.package_payload`, temporary manifests, local QA reports, caches, and unrelated
-debug artifacts are not staged.
+debug artifacts are not staged. When remote and local both contain valid unique
+progress, resolve the merged content deliberately; never use a blind `ours`/`theirs`
+choice, destructive reset, or `pull --rebase` over an unrecorded dirty tree.
 
 The commit includes all real changed source, assets, `.meta` files, scenes,
 documentation, and QA contracts.

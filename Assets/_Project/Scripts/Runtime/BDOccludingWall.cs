@@ -58,6 +58,25 @@ namespace BoredomAndDungeons
                 ConfigureOpaque(runtimeMaterial);
         }
 
+
+        // BD STRUCTURAL WALL PERMANENT OPAQUE V22
+        public void ForceOpaqueImmediateAndDisableFading()
+        {
+            Initialize();
+
+            faded = false;
+            targetAlpha = originalColor.a;
+            currentAlpha = originalColor.a;
+
+            if (runtimeMaterial != null)
+            {
+                ApplyAlpha(originalColor.a);
+                ConfigureOpaque(runtimeMaterial);
+            }
+
+            enabled = false;
+        }
+
         private void Initialize()
         {
             if (initialized)
@@ -69,7 +88,10 @@ namespace BoredomAndDungeons
             if (cachedRenderer == null)
                 return;
 
-            runtimeMaterial = cachedRenderer.material;
+            // BD EDIT-MODE SHARED MATERIAL SAFETY V22R2
+            runtimeMaterial = Application.isPlaying
+                ? cachedRenderer.material
+                : cachedRenderer.sharedMaterial;
             originalColor = runtimeMaterial.color;
             currentAlpha = originalColor.a;
             targetAlpha = originalColor.a;

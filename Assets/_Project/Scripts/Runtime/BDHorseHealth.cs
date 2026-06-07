@@ -54,6 +54,7 @@ namespace BoredomAndDungeons
                     startupDamageProtectionSeconds
                 );
             EnsureHealAvailabilityIndicator();
+            EnsureMountedDamageBridge();
         }
 
         private void EnsureHealAvailabilityIndicator()
@@ -65,6 +66,32 @@ namespace BoredomAndDungeons
                 return;
 
             gameObject.AddComponent<BDHorseHealAvailabilityIndicator>();
+        }
+
+
+        // BD MOUNTED DAMAGE BRIDGE V10
+        private void EnsureMountedDamageBridge()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (GetComponent<BDHealth>() == null)
+                gameObject.AddComponent<BDHealth>();
+        }
+
+        public void RegisterMountedRiderHitForBuck()
+        {
+            if (BDHorseCleanRunStartGuard.IsActive || IsStartupProtected)
+                return;
+
+            RegisterRecentHit();
+
+            if (logDamage)
+            {
+                Debug.Log(
+                    $"{name} counted mounted rider hit for buck. Recent hits: {recentHits}"
+                );
+            }
         }
 
         public void SetMaxHealth(float value, bool refill)

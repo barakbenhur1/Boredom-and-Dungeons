@@ -172,10 +172,19 @@ namespace BoredomAndDungeons
 
         public void ApplyDamage(float amount)
         {
-            if (ShouldIgnorePlayerDamageDuringRunIntro())
+            // BD ACTUAL COLLIDER DAMAGE ROUTING V13
+            // A generic BDHealth attached to the horse delegates only to the
+            // horse. A player BDHealth damages only the player. The attack does
+            // not automatically damage both mounted actors.
+            BDHorseHealth bridgedHorseHealth =
+                GetComponent<BDHorseHealth>();
+            if (bridgedHorseHealth != null)
+            {
+                bridgedHorseHealth.ApplyDamage(amount);
                 return;
+            }
 
-            if (IsDead)
+            if (ShouldIgnorePlayerDamageDuringRunIntro() || IsDead)
                 return;
 
             if (TryCancelPlayerDamageWithParry())
@@ -184,36 +193,52 @@ namespace BoredomAndDungeons
             if (ShouldIgnoreDamageDuringDodge())
                 return;
 
-            float damage = Mathf.Abs(amount);
-            currentHealth = Mathf.Max(0f, currentHealth - damage);
-
-            if (logDamage)
-                Debug.Log($"{name} took {damage:0.0} damage. HP {currentHealth:0.0}/{maxHealth:0.0}");
-
-            RequestDamageCameraShake();
-            HealthChanged?.Invoke(this, currentHealth, maxHealth);
-
-            if (currentHealth <= 0f)
-            {
-                if (!BDGameFlowSignals.TryHandleDeath(this))
-                    Died?.Invoke(this);
-
-                if (destroyOnDeath)
-                    Destroy(gameObject);
-            }
+            ApplyResolvedDamage(
+                amount,
+                unavoidable: false
+            );
         }
+
         public void ApplyUnavoidableDamage(float amount)
         {
+            BDHorseHealth bridgedHorseHealth =
+                GetComponent<BDHorseHealth>();
+            if (bridgedHorseHealth != null)
+            {
+                bridgedHorseHealth.ApplyDamage(amount);
+                return;
+            }
+
             if (IsDead)
                 return;
 
+            ApplyResolvedDamage(
+                amount,
+                unavoidable: true
+            );
+        }
+
+        private void ApplyResolvedDamage(
+            float amount,
+            bool unavoidable)
+        {
             float damage = Mathf.Abs(amount);
+            if (damage <= 0f)
+                return;
+
+            float before = currentHealth;
             currentHealth = Mathf.Max(0f, currentHealth - damage);
+            float appliedDamage = before - currentHealth;
+            if (appliedDamage <= 0f)
+                return;
 
             if (logDamage)
             {
+                string kind = unavoidable
+                    ? " unavoidable"
+                    : string.Empty;
                 Debug.Log(
-                    $"{name} took {damage:0.0} unavoidable damage. " +
+                    $"{name} took {appliedDamage:0.0}{kind} damage. " +
                     $"HP {currentHealth:0.0}/{maxHealth:0.0}"
                 );
             }
@@ -221,16 +246,61 @@ namespace BoredomAndDungeons
             RequestDamageCameraShake();
             HealthChanged?.Invoke(this, currentHealth, maxHealth);
 
-            if (currentHealth <= 0f)
-            {
-                if (!BDGameFlowSignals.TryHandleDeath(this))
-                    Died?.Invoke(this);
+            // A successful hit on the actual rider collider while mounted
+            // participates in the same two-hit buck burst as a horse hit.
+            NotifyMountedRiderHitForBuck();
+            NotifyPlayerCombatImpactForGrounding();
 
-                if (destroyOnDeath)
-                    Destroy(gameObject);
-            }
+            if (currentHealth > 0f)
+                return;
+
+            if (!BDGameFlowSignals.TryHandleDeath(this))
+                Died?.Invoke(this);
+
+            if (destroyOnDeath)
+                Destroy(gameObject);
         }
 
+        private void NotifyMountedRiderHitForBuck()
+        {
+            if (GetComponent<BDPlayerMarker>() == null)
+                return;
+
+            BDHorseController horse =
+                FindFirstObjectByType<BDHorseController>();
+            if (horse == null ||
+                !horse.IsMounted ||
+                horse.Rider == null)
+            {
+                return;
+            }
+
+            Transform riderTransform = horse.Rider;
+            bool sameRider =
+                riderTransform == transform ||
+                transform.IsChildOf(riderTransform) ||
+                riderTransform.IsChildOf(transform);
+
+            if (!sameRider)
+                return;
+
+            BDHorseHealth horseHealth =
+                horse.GetComponent<BDHorseHealth>();
+            if (horseHealth != null)
+                horseHealth.RegisterMountedRiderHitForBuck();
+        }
+
+        // BD PLAYER COMBAT IMPACT GROUNDING NOTIFY V23
+        private void NotifyPlayerCombatImpactForGrounding()
+        {
+            if (GetComponent<BDPlayerMarker>() == null)
+                return;
+
+            BDPlayerHazardRecovery recovery =
+                GetComponent<BDPlayerHazardRecovery>();
+            if (recovery != null)
+                recovery.NotifyCombatImpact();
+        }
 
         private bool ShouldIgnorePlayerDamageDuringRunIntro()
         {

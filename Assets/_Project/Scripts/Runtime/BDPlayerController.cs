@@ -72,6 +72,8 @@ namespace BoredomAndDungeons
         private float lastDodgeStartedAt;
         private float lastJumpStartedAt = -999f;
         private float forcedGapEntryUntil = -999f;
+        // BD POST-RECOVERY WALK REENTRY SUPPRESSION V23R3
+        private const float PostRecoveryGapEntrySuppressionSeconds = 0.85f;
         private float postRecoveryGapEntrySuppressedUntil = -999f;
         private float nextDodgeAfterimageAt;
 
@@ -120,14 +122,31 @@ namespace BoredomAndDungeons
             }
         }
         public bool IsDashing => dashTimer > 0f;
+        // BD ACTIVE GAP ENTRY ONLY V23R2
+        public bool IsPostRecoveryGapEntrySuppressed =>
+            Time.time < postRecoveryGapEntrySuppressedUntil;
+
+        public bool HasActiveIntentionalGapEntry
+        {
+            get
+            {
+                if (IsPostRecoveryGapEntrySuppressed)
+                    return false;
+
+                bool activeAscendingJump =
+                    characterController != null &&
+                    verticalVelocity > 0.05f &&
+                    Time.time - lastJumpStartedAt <= 0.45f;
+
+                return IsDashing ||
+                       activeAscendingJump ||
+                       Time.time <= forcedGapEntryUntil;
+            }
+        }
+
+        // Compatibility name retained for existing hazard callers.
         public bool HasRecentIntentionalGapEntry =>
-            Time.time >= postRecoveryGapEntrySuppressedUntil &&
-            (
-                IsDashing ||
-                Time.time <= forcedGapEntryUntil ||
-                Time.time - lastDodgeStartedAt <= 0.40f ||
-                Time.time - lastJumpStartedAt <= 0.75f
-            );
+            HasActiveIntentionalGapEntry;
         public float EffectiveMoveSpeed =>
             Mathf.Max(0.1f, moveSpeed * boostMoveSpeedMultiplier);
 
@@ -138,7 +157,7 @@ namespace BoredomAndDungeons
         public void NotifyForcedGapEntry(
             float windowSeconds = 0.85f)
         {
-            if (Time.time < postRecoveryGapEntrySuppressedUntil)
+            if (IsPostRecoveryGapEntrySuppressed)
                 return;
 
             forcedGapEntryUntil = Mathf.Max(
@@ -159,7 +178,8 @@ namespace BoredomAndDungeons
             lastDodgeStartedAt = -999f;
             lastJumpStartedAt = -999f;
             forcedGapEntryUntil = -999f;
-            postRecoveryGapEntrySuppressedUntil = Time.time + 0.55f;
+            postRecoveryGapEntrySuppressedUntil =
+                Time.time + PostRecoveryGapEntrySuppressionSeconds;
         }
         private void ApplyNaturalMovementProfile()
         {
@@ -198,11 +218,22 @@ namespace BoredomAndDungeons
         private void Update()
         {
             // BD RUN PRESENTATION INPUT LOCK V7
+            // BD PRESENTATION BUFFERED AIM RESET V20
             if (BDRunPresentationCoordinator.InputLocked)
             {
                 lastMoveInput = Vector2.zero;
                 smoothedHorizontalVelocity = Vector3.zero;
                 dashVelocity = Vector3.zero;
+                hasMouseIntentPosition = false;
+
+                Vector3 lockedForward = transform.forward;
+                lockedForward.y = 0f;
+                if (lockedForward.sqrMagnitude > 0.001f)
+                {
+                    lastLookDirection = lockedForward.normalized;
+                    targetLookDirection = lastLookDirection;
+                    smoothedTargetLookDirection = lastLookDirection;
+                }
                 return;
             }
 

@@ -62,6 +62,12 @@ namespace BoredomAndDungeons
         private bool boundsReady;
         private float refreshRetryTimer;
 
+        // BD MINIMAP OFFSCREEN RASTER CLIP V13
+        private const int RasterSize = 256;
+        private Texture2D minimapRasterTexture;
+        private Color32[] minimapSourcePixels;
+        private Color32[] minimapRotatedPixels;
+
         private void Awake()
         {
             whiteTexture = Texture2D.whiteTexture;
@@ -471,14 +477,27 @@ namespace BoredomAndDungeons
                 )
             );
 
-            GUI.BeginGroup(localMapRect);
-            Rect clipRect = new Rect(0f, 0f, mapSize, mapSize);
+            // One pre-clipped texture is drawn inside one fixed square. Rotation
+            // happens in the pixel buffer, so no GUI matrix can escape the frame.
+            EnsureMinimapRaster();
+            if (Event.current == null ||
+                Event.current.type == EventType.Repaint)
+            {
+                RebuildRotatedMinimapRaster();
+            }
 
-            // BD MINIMAP RIGID CLIP MASK V7
-            DrawRigidRotatedMapContent(clipRect);
+            GUI.BeginGroup(localMapRect);
+            if (minimapRasterTexture != null)
+            {
+                GUI.DrawTexture(
+                    new Rect(0f, 0f, mapSize, mapSize),
+                    minimapRasterTexture,
+                    ScaleMode.StretchToFill,
+                    true
+                );
+            }
             GUI.EndGroup();
 
-            DrawMapOverflowMasks(localPanelRect, localMapRect);
             DrawRoomOutline(localMapRect, roomOutlineColor, 2f);
 
             GUI.Label(
@@ -499,77 +518,280 @@ namespace BoredomAndDungeons
 
             GUI.EndGroup();
         }
-        private void DrawRigidRotatedMapContent(Rect mapRect)
+
+        private void EnsureMinimapRaster()
         {
-            Matrix4x4 originalMatrix = GUI.matrix;
-            try
+            int pixelCount = RasterSize * RasterSize;
+            if (minimapSourcePixels == null ||
+                minimapSourcePixels.Length != pixelCount)
             {
-                Vector2 pivot = mapRect.center;
-                if (TryResolveMapPoint(
-                        mapRect,
-                        player,
-                        out Vector2 playerPoint))
-                {
-                    pivot = playerPoint;
-                }
+                minimapSourcePixels = new Color32[pixelCount];
+                minimapRotatedPixels = new Color32[pixelCount];
+            }
 
-                GUIUtility.RotateAroundPivot(
-                    currentMapRotationDegrees,
-                    pivot
-                );
+            if (minimapRasterTexture != null)
+                return;
 
-                DrawRooms(mapRect);
-                DrawMarker(
-                    mapRect,
-                    horse,
-                    horseColor,
-                    markerSize * 0.85f
+            minimapRasterTexture = new Texture2D(
+                RasterSize,
+                RasterSize,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            minimapRasterTexture.name = "BD Minimap Clipped Raster V13";
+            minimapRasterTexture.wrapMode = TextureWrapMode.Clamp;
+            minimapRasterTexture.filterMode = FilterMode.Bilinear;
+        }
+
+        private void RebuildRotatedMinimapRaster()
+        {
+            if (minimapRasterTexture == null ||
+                minimapSourcePixels == null ||
+                minimapRotatedPixels == null)
+            {
+                return;
+            }
+
+            System.Array.Clear(
+                minimapSourcePixels,
+                0,
+                minimapSourcePixels.Length
+            );
+            System.Array.Clear(
+                minimapRotatedPixels,
+                0,
+                minimapRotatedPixels.Length
+            );
+
+            Rect rasterRect = new Rect(
+                0f,
+                0f,
+                RasterSize,
+                RasterSize
+            );
+
+            int widthCells = Mathf.Max(1, maxX - minX + 1);
+            int heightCells = Mathf.Max(1, maxY - minY + 1);
+            float cellSize = Mathf.Min(
+                rasterRect.width / widthCells,
+                rasterRect.height / heightCells
+            );
+            float rasterGap = Mathf.Max(
+                1f,
+                roomGap * RasterSize /
+                Mathf.Max(1f, panel.width)
+            );
+
+            BDMinimapRoom currentRoom = player != null
+                ? FindRoomContainingWorldPosition(player.position)
+                : null;
+
+            foreach (BDMinimapRoom room in rooms)
+            {
+                if (room == null || !room.Discovered)
+                    continue;
+
+                Rect roomRect = CellToRect(
+                    rasterRect,
+                    room.Cell,
+                    cellSize
                 );
-                DrawMarker(
-                    mapRect,
+                roomRect.x += rasterGap * 0.5f;
+                roomRect.y += rasterGap * 0.5f;
+                roomRect.width = Mathf.Max(1f, roomRect.width - rasterGap);
+                roomRect.height = Mathf.Max(1f, roomRect.height - rasterGap);
+
+                FillRasterRect(
+                    minimapSourcePixels,
+                    roomRect,
+                    discoveredRoomColor
+                );
+                DrawRasterOutline(
+                    minimapSourcePixels,
+                    roomRect,
+                    room == currentRoom
+                        ? currentRoomColor
+                        : roomOutlineColor,
+                    room == currentRoom ? 3 : 1
+                );
+                DrawRasterRoomWalls(
+                    minimapSourcePixels,
+                    room,
+                    roomRect
+                );
+            }
+
+            Vector2 pivot = rasterRect.center;
+            if (TryResolveMapPoint(
+                    rasterRect,
                     player,
-                    playerColor,
-                    markerSize
-                );
-            }
-            finally
+                    out Vector2 playerPoint))
             {
-                GUI.matrix = originalMatrix;
+                pivot = playerPoint;
+            }
+
+            DrawRasterMarker(
+                minimapSourcePixels,
+                rasterRect,
+                horse,
+                horseColor,
+                markerSize * RasterSize /
+                Mathf.Max(1f, panel.width) * 0.85f
+            );
+            DrawRasterMarker(
+                minimapSourcePixels,
+                rasterRect,
+                player,
+                playerColor,
+                markerSize * RasterSize /
+                Mathf.Max(1f, panel.width)
+            );
+
+            RotateRasterAsSingleUnit(
+                minimapSourcePixels,
+                minimapRotatedPixels,
+                pivot,
+                currentMapRotationDegrees
+            );
+
+            minimapRasterTexture.SetPixels32(minimapRotatedPixels);
+            minimapRasterTexture.Apply(
+                updateMipmaps: false,
+                makeNoLongerReadable: false
+            );
+        }
+
+        private static void RotateRasterAsSingleUnit(
+            Color32[] source,
+            Color32[] destination,
+            Vector2 pivot,
+            float degrees)
+        {
+            float radians = -degrees * Mathf.Deg2Rad;
+            float cosine = Mathf.Cos(radians);
+            float sine = Mathf.Sin(radians);
+
+            for (int y = 0; y < RasterSize; y++)
+            {
+                for (int x = 0; x < RasterSize; x++)
+                {
+                    float dx = x + 0.5f - pivot.x;
+                    float dy = y + 0.5f - pivot.y;
+                    float sourceX =
+                        pivot.x + dx * cosine - dy * sine;
+                    float sourceY =
+                        pivot.y + dx * sine + dy * cosine;
+
+                    int sx = Mathf.FloorToInt(sourceX);
+                    int sy = Mathf.FloorToInt(sourceY);
+                    int destinationIndex =
+                        ToRasterIndex(x, y);
+
+                    if (sx < 0 || sx >= RasterSize ||
+                        sy < 0 || sy >= RasterSize)
+                    {
+                        destination[destinationIndex] =
+                            new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    destination[destinationIndex] =
+                        source[ToRasterIndex(sx, sy)];
+                }
             }
         }
-        private void DrawMapOverflowMasks(
-            Rect panelRect,
-            Rect mapRect)
+
+        private void DrawRasterMarker(
+            Color32[] pixels,
+            Rect mapRect,
+            Transform target,
+            Color color,
+            float size)
         {
-            DrawRect(
-                new Rect(0f, 0f, mapRect.xMin, panelRect.height),
-                backgroundColor
-            );
-            DrawRect(
+            if (!TryResolveMapPoint(
+                    mapRect,
+                    target,
+                    out Vector2 point))
+            {
+                return;
+            }
+
+            float safeSize = Mathf.Max(3f, size);
+            FillRasterRect(
+                pixels,
                 new Rect(
-                    mapRect.xMax,
-                    0f,
-                    Mathf.Max(0f, panelRect.width - mapRect.xMax),
-                    panelRect.height
+                    point.x - safeSize * 0.5f,
+                    point.y - safeSize * 0.5f,
+                    safeSize,
+                    safeSize
                 ),
-                backgroundColor
-            );
-            DrawRect(
-                new Rect(mapRect.xMin, 0f, mapRect.width, mapRect.yMin),
-                backgroundColor
-            );
-            DrawRect(
-                new Rect(
-                    mapRect.xMin,
-                    mapRect.yMax,
-                    mapRect.width,
-                    Mathf.Max(0f, panelRect.height - mapRect.yMax)
-                ),
-                backgroundColor
+                color
             );
         }
 
+        private static void DrawRasterRoomWalls(
+            Color32[] pixels,
+            BDMinimapRoom room,
+            Rect roomRect)
+        {
+            const int thickness = 3;
+            Color color = new Color(0.08f, 0.10f, 0.13f, 0.95f);
 
+            if (!room.NorthOpen)
+                FillRasterRect(pixels, new Rect(roomRect.x, roomRect.y, roomRect.width, thickness), color);
+            if (!room.SouthOpen)
+                FillRasterRect(pixels, new Rect(roomRect.x, roomRect.yMax - thickness, roomRect.width, thickness), color);
+            if (!room.WestOpen)
+                FillRasterRect(pixels, new Rect(roomRect.x, roomRect.y, thickness, roomRect.height), color);
+            if (!room.EastOpen)
+                FillRasterRect(pixels, new Rect(roomRect.xMax - thickness, roomRect.y, thickness, roomRect.height), color);
+        }
+
+        private static void DrawRasterOutline(
+            Color32[] pixels,
+            Rect rect,
+            Color color,
+            int thickness)
+        {
+            int safeThickness = Mathf.Max(1, thickness);
+            FillRasterRect(pixels, new Rect(rect.x, rect.y, rect.width, safeThickness), color);
+            FillRasterRect(pixels, new Rect(rect.x, rect.yMax - safeThickness, rect.width, safeThickness), color);
+            FillRasterRect(pixels, new Rect(rect.x, rect.y, safeThickness, rect.height), color);
+            FillRasterRect(pixels, new Rect(rect.xMax - safeThickness, rect.y, safeThickness, rect.height), color);
+        }
+
+        private static void FillRasterRect(
+            Color32[] pixels,
+            Rect rect,
+            Color color)
+        {
+            int xMin = Mathf.Clamp(Mathf.FloorToInt(rect.xMin), 0, RasterSize);
+            int xMax = Mathf.Clamp(Mathf.CeilToInt(rect.xMax), 0, RasterSize);
+            int yMin = Mathf.Clamp(Mathf.FloorToInt(rect.yMin), 0, RasterSize);
+            int yMax = Mathf.Clamp(Mathf.CeilToInt(rect.yMax), 0, RasterSize);
+            Color32 packed = color;
+
+            for (int y = yMin; y < yMax; y++)
+            {
+                for (int x = xMin; x < xMax; x++)
+                    pixels[ToRasterIndex(x, y)] = packed;
+            }
+        }
+
+        private static int ToRasterIndex(int x, int guiY)
+        {
+            int textureY = RasterSize - 1 - guiY;
+            return textureY * RasterSize + x;
+        }
+
+        private void OnDestroy()
+        {
+            if (minimapRasterTexture != null)
+            {
+                Destroy(minimapRasterTexture);
+                minimapRasterTexture = null;
+            }
+        }
 
        private void DrawRotatedRoomsClipped(
             Rect mapRect,

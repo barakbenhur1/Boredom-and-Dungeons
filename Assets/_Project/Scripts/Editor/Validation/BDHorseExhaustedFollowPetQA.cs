@@ -138,12 +138,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 playerControllerRelative,
                 new[]
                 {
-                    "postRecoveryGapEntrySuppressedUntil",
-                    "Time.time >=",
-                    "if (Time.time <",
+                    "BD POST-RECOVERY WALK REENTRY SUPPRESSION V23R3",
+                    "PostRecoveryGapEntrySuppressionSeconds = 0.85f",
+                    "IsPostRecoveryGapEntrySuppressed",
+                    "postRecoveryGapEntrySuppressedUntil =",
+                    "Time.time + PostRecoveryGapEntrySuppressionSeconds",
                     "lastDodgeStartedAt = -999f",
-                    "forcedGapEntryUntil = -999f",
-                    "Time.time + 0.55f"
+                    "lastJumpStartedAt = -999f",
+                    "forcedGapEntryUntil = -999f"
                 },
                 "PLAYER_POST_RECOVERY_WALK_GUARD_MISSING"
             );

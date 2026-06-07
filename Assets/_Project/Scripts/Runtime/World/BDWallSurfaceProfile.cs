@@ -20,7 +20,7 @@ namespace BoredomAndDungeons
         [SerializeField, Range(0, 3)] private int textureQuarterTurns;
         [SerializeField] private Vector2 uvScale = Vector2.one;
         [SerializeField] private Vector2 uvOffset = Vector2.zero;
-        [SerializeField] private float minimumOcclusionHeight = 22f;
+        [SerializeField] private float minimumOcclusionHeight = 36f;
 
         public bool PreserveAsymmetricTextureOrientation =>
             preserveAsymmetricTextureOrientation;

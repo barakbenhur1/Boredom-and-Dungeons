@@ -11,11 +11,16 @@ namespace BoredomAndDungeons
     [DisallowMultipleComponent]
     public sealed class BDRunPresentationCoordinator : MonoBehaviour
     {
-        // BD RUN PRESENTATION COORDINATOR V7
+        // BD AUTHORED ENTRY SINGLE-OWNER + PORTAL SELF-HEAL V14
+        // BD EXACT ROOM CAMERA + DOORWAY GEOMETRY V18
+        // BD V14 COORDINATOR RESTORE + INSIDE CAMERA V17B
+        // BD V20 CINEMATIC INPUT TURN STOP + AUDIO LISTENER
         private const string RootName = "BD_RunPresentationCoordinator";
         private const string EntranceEffectName = "BD_AuthoredEntrance_PortalEffectOnly";
         private const string ExitEffectName = "BD_AuthoredExit_PortalEffectOnly";
         private const string ExitApproachName = "BD_Exit_Cinematic_ApproachTrigger";
+        private const string EntranceBlockerName = "BD_AuthoredEntrance_ReturnBlocker_Invisible";
+        // BD AUTHORED ENTRANCE MOUTH ONLY V10
 
         private static BDRunPresentationCoordinator instance;
         private static bool introPlayedThisSession;
@@ -29,6 +34,16 @@ namespace BoredomAndDungeons
         private bool awaitingRunStart = true;
         private bool mainMenuWasVisible;
         private Coroutine activeSequence;
+        private float nextPortalRepairAt;
+        private float nextAudioListenerRepairAt;
+
+        // BD FIRST-FRAME CINEMATIC CAMERA PRIME V23R5
+        private bool mountedEntranceCameraPrimed;
+        private Camera primedCinematicCamera;
+        private BDCameraFollow primedCameraFollow;
+        private bool primedCameraFollowWasEnabled;
+        private float primedOriginalFov;
+        private float primedOriginalOrtho;
 
         public static bool InputLocked => instance != null && instance.inputLocked;
         public static bool HoldGameplayControlOnRunStart =>
@@ -100,6 +115,7 @@ namespace BoredomAndDungeons
 
         private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            EnsureExactlyOneActiveAudioListener(Camera.main);
             coverAlpha = 1f;
             coverTarget = 1f;
             inputLocked = true;
@@ -109,19 +125,103 @@ namespace BoredomAndDungeons
             if (activeSequence != null)
                 StopCoroutine(activeSequence);
 
+            ClearPrimedMountedEntranceCamera(false);
+            if (!introPlayedThisSession || forceNextIntro)
+                PrimeMountedEntranceCameraBeforeRender();
+
             activeSequence = StartCoroutine(PrepareLoadedScene());
+        }
+
+        // BD FIRST-FRAME CINEMATIC CAMERA PRIME V23R5
+        // sceneLoaded runs before Start. Take cinematic camera ownership here so
+        // BDCameraFollow cannot render one entrance-close frame before the
+        // mounted introduction establishes its approved inside-room shot.
+        private bool PrimeMountedEntranceCameraBeforeRender()
+        {
+            Transform entrance = FindAuthoredDoor(true);
+            Transform player =
+                FindGameplayTransform("BDPlayerController", "Player");
+            Transform horse =
+                FindGameplayTransform("BDHorseController", "Horse");
+            Camera camera = Camera.main;
+
+            if (entrance == null ||
+                player == null ||
+                horse == null ||
+                camera == null)
+            {
+                return false;
+            }
+
+            Vector3 inwardDirection = player.position - entrance.position;
+            inwardDirection.y = 0f;
+            if (inwardDirection.sqrMagnitude < 0.01f)
+                inwardDirection = ResolveEntranceInwardDirection(entrance);
+            inwardDirection.Normalize();
+
+            ResolveRoomEntranceCameraPose(
+                entrance,
+                inwardDirection,
+                out Vector3 cameraPosition,
+                out Vector3 lookPoint,
+                out _
+            );
+            Quaternion cameraRotation = Quaternion.LookRotation(
+                lookPoint - cameraPosition,
+                Vector3.up
+            );
+
+            primedCinematicCamera = camera;
+            primedCameraFollow = camera.GetComponent<BDCameraFollow>();
+            primedCameraFollowWasEnabled =
+                primedCameraFollow != null && primedCameraFollow.enabled;
+            primedOriginalFov = camera.fieldOfView;
+            primedOriginalOrtho = camera.orthographicSize;
+
+            if (primedCameraFollow != null)
+                primedCameraFollow.enabled = false;
+
+            HoldCinematicCamera(
+                camera,
+                cameraPosition,
+                cameraRotation,
+                primedOriginalFov,
+                primedOriginalOrtho
+            );
+            EnsureExactlyOneActiveAudioListener(camera);
+            mountedEntranceCameraPrimed = true;
+            return true;
+        }
+
+        private void ClearPrimedMountedEntranceCamera(bool restoreFollow)
+        {
+            if (restoreFollow &&
+                primedCameraFollow != null &&
+                primedCameraFollowWasEnabled)
+            {
+                primedCameraFollow.enabled = true;
+            }
+
+            mountedEntranceCameraPrimed = false;
+            primedCinematicCamera = null;
+            primedCameraFollow = null;
+            primedCameraFollowWasEnabled = false;
+            primedOriginalFov = 0f;
+            primedOriginalOrtho = 0f;
         }
 
         private IEnumerator PrepareLoadedScene()
         {
-            yield return null;
-
+            // Deliberately no initial frame yield: the scene is covered and the
+            // mounted camera is primed before any gameplay camera can render.
             DestroyObsoleteGeneratedPortals();
             Transform entrance = FindAuthoredDoor(true);
             Transform exit = FindAuthoredDoor(false);
-            AttachEffectOnly(entrance, EntranceEffectName);
-            AttachEffectOnly(exit, ExitEffectName);
-            AttachExitApproachTrigger(exit);
+            EnsureAuthoredPortalEffects();
+            BDEntranceReturnBlocker entranceBlocker =
+                AttachEntranceReturnBlocker(entrance);
+            if (entranceBlocker != null)
+                entranceBlocker.SetBlocking(false);
 
             float deadline = Time.realtimeSinceStartup + 3f;
             while (Time.realtimeSinceStartup < deadline &&
@@ -150,14 +250,17 @@ namespace BoredomAndDungeons
                 forceNextIntro = false;
                 yield return PlayMountedEntrance(entrance);
                 introPlayedThisSession = true;
+                SetEntranceReturnBlocking(true);
             }
             else
             {
                 // Ordinary death -> New Game: no mounted doorway replay.
+                ClearPrimedMountedEntranceCamera(true);
                 yield return FadeCoverTo(0f, 9f);
                 awaitingRunStart = false;
                 inputLocked = false;
                 ReleaseOnFootGameplayControl();
+                SetEntranceReturnBlocking(true);
             }
 
             activeSequence = null;
@@ -165,6 +268,22 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            // BD AUTHORED PORTAL EFFECT SELF-HEAL V14
+            // Enter Play Mode/domain reload timing can otherwise create the
+            // coordinator after the sceneLoaded callback. Re-assert only the
+            // two effect-only surfaces; no doorway geometry or trigger is made.
+            if (Time.unscaledTime >= nextPortalRepairAt)
+            {
+                nextPortalRepairAt = Time.unscaledTime + 1f;
+                EnsureAuthoredPortalEffects();
+            }
+
+            if (Time.unscaledTime >= nextAudioListenerRepairAt)
+            {
+                nextAudioListenerRepairAt = Time.unscaledTime + 0.50f;
+                EnsureExactlyOneActiveAudioListener(Camera.main);
+            }
+
             coverAlpha = Mathf.MoveTowards(
                 coverAlpha,
                 coverTarget,
@@ -205,17 +324,24 @@ namespace BoredomAndDungeons
             GUI.depth = oldDepth;
         }
 
+
         private IEnumerator PlayMountedEntrance(Transform entrance)
         {
-            Transform player = FindGameplayTransform("BDPlayerController", "Player");
-            Transform horse = FindGameplayTransform("BDHorseController", "Horse");
-            Transform spawn = FindBestSpawnPoint();
+            Transform player =
+                FindGameplayTransform("BDPlayerController", "Player");
+            Transform horse =
+                FindGameplayTransform("BDHorseController", "Horse");
             BDHorseController horseController =
-                horse != null ? horse.GetComponent<BDHorseController>() : null;
+                horse != null
+                    ? horse.GetComponent<BDHorseController>()
+                    : null;
 
-            if (player == null || horse == null || entrance == null || horseController == null ||
-                !horseController.ForceMountForCinematic(player))
+            if (player == null ||
+                horse == null ||
+                entrance == null ||
+                horseController == null)
             {
+                ClearPrimedMountedEntranceCamera(true);
                 yield return FadeCoverTo(0f, 8f);
                 awaitingRunStart = false;
                 inputLocked = false;
@@ -223,59 +349,228 @@ namespace BoredomAndDungeons
                 yield break;
             }
 
-            // Capture after mounting: the rider controller/CharacterController are
-            // already disabled and remain disabled when the horse regains control.
-            List<ComponentState> states = CaptureAndDisableControls(player, horse);
+            Vector3 straightEnd = player.position;
+            float horseGroundOffset = ResolveHorseGroundOffset(horse);
+            Vector3 inwardDirection = straightEnd - entrance.position;
+            inwardDirection.y = 0f;
+            if (inwardDirection.sqrMagnitude < 0.01f)
+                inwardDirection = ResolveEntranceInwardDirection(entrance);
+            inwardDirection.Normalize();
+
+            Vector3 start = ResolveAuthoredEntranceMouthStart(
+                entrance,
+                inwardDirection,
+                horseGroundOffset
+            );
+            EnsureEntranceApproachGround(
+                entrance,
+                start,
+                inwardDirection
+            );
+
+            if (!horseController.ForceMountForCinematic(player))
+            {
+                ClearPrimedMountedEntranceCamera(true);
+                yield return FadeCoverTo(0f, 8f);
+                awaitingRunStart = false;
+                inputLocked = false;
+                ReleaseOnFootGameplayControl();
+                yield break;
+            }
+
+            List<ComponentState> states =
+                CaptureAndDisableControls(player, horse);
             Camera camera = Camera.main;
-            float originalFov = camera != null ? camera.fieldOfView : 60f;
-            float originalOrtho = camera != null ? camera.orthographicSize : 5f;
+            EnsureExactlyOneActiveAudioListener(camera);
+            bool usePrimedCamera =
+                mountedEntranceCameraPrimed &&
+                primedCinematicCamera == camera;
+            BDCameraFollow cameraFollow = usePrimedCamera
+                ? primedCameraFollow
+                : camera != null
+                    ? camera.GetComponent<BDCameraFollow>()
+                    : null;
+            bool restoreCameraFollow = usePrimedCamera
+                ? primedCameraFollowWasEnabled
+                : cameraFollow != null && cameraFollow.enabled;
+            if (!usePrimedCamera && restoreCameraFollow)
+                cameraFollow.enabled = false;
 
-            Vector3 end = spawn != null
-                ? spawn.position
-                : entrance.position + entrance.forward * 6f;
-            Vector3 direction = end - entrance.position;
-            direction.y = 0f;
-            if (direction.sqrMagnitude < 0.01f)
-                direction = entrance.forward;
-            direction.Normalize();
-
-            Vector3 start = entrance.position - direction * 4.25f;
-            start.y = horse.position.y;
-            end.y = horse.position.y;
+            float originalFov = usePrimedCamera
+                ? primedOriginalFov
+                : camera != null ? camera.fieldOfView : 60f;
+            float originalOrtho = usePrimedCamera
+                ? primedOriginalOrtho
+                : camera != null ? camera.orthographicSize : 5f;
 
             horse.position = start;
-            horse.rotation = Quaternion.LookRotation(direction, Vector3.up);
+            horse.rotation =
+                Quaternion.LookRotation(inwardDirection, Vector3.up);
             horseController.SnapCinematicRiderToMountPoint();
             Physics.SyncTransforms();
 
+            ResolveRoomEntranceCameraPose(
+                entrance,
+                inwardDirection,
+                out Vector3 cinematicCameraPosition,
+                out Vector3 cinematicLookPoint,
+                out BDMinimapRoom entranceRoom
+            );
+            Quaternion cinematicCameraRotation =
+                Quaternion.LookRotation(
+                    cinematicLookPoint - cinematicCameraPosition,
+                    Vector3.up
+                );
+
+            HoldCinematicCamera(
+                camera,
+                cinematicCameraPosition,
+                cinematicCameraRotation,
+                originalFov,
+                originalOrtho
+            );
+
             yield return FadeCoverTo(0f, 7f);
 
-            const float duration = 2.45f;
+            const float straightDuration = 2.35f;
             float elapsed = 0f;
-            while (elapsed < duration)
+            while (elapsed < straightDuration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
+                float t = Mathf.Clamp01(elapsed / straightDuration);
                 float eased = t * t * (3f - 2f * t);
-                horse.position = Vector3.Lerp(start, end, eased);
-                horse.rotation = Quaternion.LookRotation(direction, Vector3.up);
+                horse.position = Vector3.Lerp(start, straightEnd, eased);
+                horse.rotation =
+                    Quaternion.LookRotation(inwardDirection, Vector3.up);
                 horseController.SnapCinematicRiderToMountPoint();
-
-                if (camera != null)
-                {
-                    if (camera.orthographic)
-                        camera.orthographicSize = Mathf.Lerp(originalOrtho * 0.84f, originalOrtho, eased);
-                    else
-                        camera.fieldOfView = Mathf.Lerp(originalFov * 0.86f, originalFov, eased);
-                }
-
+                HoldCinematicCamera(
+                    camera,
+                    cinematicCameraPosition,
+                    cinematicCameraRotation,
+                    originalFov,
+                    originalOrtho
+                );
                 Physics.SyncTransforms();
                 yield return null;
             }
 
-            horse.position = end;
+            Vector3 rightDirection =
+                Quaternion.AngleAxis(90f, Vector3.up) * inwardDirection;
+            Quaternion turnStartRotation =
+                Quaternion.LookRotation(inwardDirection, Vector3.up);
+            Quaternion turnEndRotation =
+                Quaternion.LookRotation(rightDirection, Vector3.up);
+
+            const float turnDuration = 0.78f;
+            elapsed = 0f;
+            while (elapsed < turnDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / turnDuration);
+                float eased = t * t * (3f - 2f * t);
+                horse.position = straightEnd;
+                horse.rotation = Quaternion.Slerp(
+                    turnStartRotation,
+                    turnEndRotation,
+                    eased
+                );
+                horseController.SnapCinematicRiderToMountPoint();
+                HoldCinematicCamera(
+                    camera,
+                    cinematicCameraPosition,
+                    cinematicCameraRotation,
+                    originalFov,
+                    originalOrtho
+                );
+                Physics.SyncTransforms();
+                yield return null;
+            }
+
+            horse.position = straightEnd;
+            horse.rotation = turnEndRotation;
             horseController.SnapCinematicRiderToMountPoint();
             Physics.SyncTransforms();
+
+            const float fullStopHoldDuration = 0.24f;
+            elapsed = 0f;
+            while (elapsed < fullStopHoldDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                HoldCinematicCamera(
+                    camera,
+                    cinematicCameraPosition,
+                    cinematicCameraRotation,
+                    originalFov,
+                    originalOrtho
+                );
+                horseController.SnapCinematicRiderToMountPoint();
+                yield return null;
+            }
+
+            const float gameplayDistanceBehind = 15.25f;
+            const float gameplayHeight = 17.75f;
+            const float gameplayLookAhead = 10.60f;
+            Vector3 gameplayCameraPosition =
+                horse.position -
+                rightDirection * gameplayDistanceBehind +
+                Vector3.up * gameplayHeight;
+            gameplayCameraPosition = ClampPointInsideRoom(
+                entranceRoom,
+                gameplayCameraPosition,
+                1.65f
+            );
+            Vector3 gameplayLookPoint =
+                horse.position + rightDirection * gameplayLookAhead;
+            gameplayLookPoint = ClampPointInsideRoom(
+                entranceRoom,
+                gameplayLookPoint,
+                1.65f
+            );
+            Quaternion gameplayCameraRotation =
+                Quaternion.LookRotation(
+                    gameplayLookPoint - gameplayCameraPosition,
+                    Vector3.up
+                );
+
+            const float cameraReturnDuration = 0.60f;
+            elapsed = 0f;
+            while (elapsed < cameraReturnDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / cameraReturnDuration);
+                float eased = t * t * (3f - 2f * t);
+                if (camera != null)
+                {
+                    camera.transform.position = Vector3.Lerp(
+                        cinematicCameraPosition,
+                        gameplayCameraPosition,
+                        eased
+                    );
+                    camera.transform.rotation = Quaternion.Slerp(
+                        cinematicCameraRotation,
+                        gameplayCameraRotation,
+                        eased
+                    );
+                    if (camera.orthographic)
+                    {
+                        camera.orthographicSize = Mathf.Lerp(
+                            originalOrtho * 0.92f,
+                            originalOrtho,
+                            eased
+                        );
+                    }
+                    else
+                    {
+                        camera.fieldOfView = Mathf.Lerp(
+                            originalFov * 0.94f,
+                            originalFov,
+                            eased
+                        );
+                    }
+                }
+                horseController.SnapCinematicRiderToMountPoint();
+                yield return null;
+            }
 
             if (camera != null)
             {
@@ -283,12 +578,282 @@ namespace BoredomAndDungeons
                 camera.orthographicSize = originalOrtho;
             }
 
+            horseController.PrepareMountedGameplayAfterCinematic(
+                rightDirection
+            );
+            if (restoreCameraFollow && cameraFollow != null)
+            {
+                cameraFollow.SetTarget(horse);
+                cameraFollow.enabled = true;
+            }
             RestoreControls(states);
             horseController.SnapCinematicRiderToMountPoint();
+            EnsureExactlyOneActiveAudioListener(camera);
+            ClearPrimedMountedEntranceCamera(false);
+
             awaitingRunStart = false;
             inputLocked = false;
         }
 
+
+
+
+
+        private static void ResolveRoomEntranceCameraPose(
+            Transform entrance,
+            Vector3 inwardDirection,
+            out Vector3 cameraPosition,
+            out Vector3 lookPoint,
+            out BDMinimapRoom entranceRoom)
+        {
+            Vector3 inward = inwardDirection;
+            inward.y = 0f;
+            if (inward.sqrMagnitude < 0.001f)
+                inward = ResolveEntranceInwardDirection(entrance);
+            inward.Normalize();
+
+            if (TryResolveAdjacentRoom(
+                    entrance,
+                    inward,
+                    out entranceRoom))
+            {
+                Vector3 center = entranceRoom.WorldCenter;
+                float roomDepth = Mathf.Max(12f, entranceRoom.RoomSize);
+                float halfDepth = roomDepth * 0.5f;
+                float rearWallCoordinate =
+                    Vector3.Dot(center, inward) + halfDepth;
+
+                // BD HIGHER ENTRANCE ESTABLISHING CAMERA V21
+                // Exactly 30% of room depth from the rear wall toward the
+                // entrance: this is farther from the entrance than the failed
+                // marker/renderer-bounds calculation and remains room-authored.
+                float cameraCoordinate =
+                    rearWallCoordinate - roomDepth * 0.30f;
+                Vector3 horizontal = center;
+                horizontal += inward * (
+                    cameraCoordinate - Vector3.Dot(horizontal, inward)
+                );
+                horizontal = ClampPointInsideRoom(
+                    entranceRoom,
+                    horizontal,
+                    2.0f
+                );
+
+                float cameraHeight = Mathf.Clamp(
+                    roomDepth * 0.72f,
+                    17.0f,
+                    21.5f
+                );
+                cameraPosition = new Vector3(
+                    horizontal.x,
+                    center.y + cameraHeight,
+                    horizontal.z
+                );
+                lookPoint = new Vector3(
+                    entrance.position.x,
+                    center.y + 3.8f,
+                    entrance.position.z
+                );
+                return;
+            }
+
+            entranceRoom = null;
+            cameraPosition =
+                entrance.position +
+                inward * 14.0f +
+                Vector3.up * 17.0f;
+            lookPoint = entrance.position + Vector3.up * 3.8f;
+        }
+
+        private static Vector3 ResolveEntranceInwardDirection(
+            Transform entrance)
+        {
+            if (entrance == null)
+                return Vector3.forward;
+
+            Renderer[] renderers =
+                Resources.FindObjectsOfTypeAll<Renderer>();
+            Renderer nearestRoom = null;
+            float nearestDistance = float.PositiveInfinity;
+
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer == null ||
+                    !renderer.gameObject.scene.IsValid() ||
+                    renderer.name.IndexOf(
+                        "BD_MinimapRoom_",
+                        StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    continue;
+                }
+
+                Vector3 delta =
+                    renderer.bounds.center - entrance.position;
+                delta.y = 0f;
+                float distance = delta.sqrMagnitude;
+                if (distance < nearestDistance)
+                {
+                    nearestDistance = distance;
+                    nearestRoom = renderer;
+                }
+            }
+
+            if (nearestRoom != null)
+            {
+                Vector3 direction =
+                    nearestRoom.bounds.center - entrance.position;
+                direction.y = 0f;
+                if (direction.sqrMagnitude > 0.001f)
+                    return direction.normalized;
+            }
+
+            Vector3 fallback = entrance.forward;
+            fallback.y = 0f;
+            return fallback.sqrMagnitude > 0.001f
+                ? fallback.normalized
+                : Vector3.forward;
+        }
+
+
+        private static bool TryResolveAdjacentRoom(
+            Transform entrance,
+            Vector3 inwardDirection,
+            out BDMinimapRoom room)
+        {
+            room = null;
+            if (entrance == null)
+                return false;
+
+            BDMinimapRoom[] rooms =
+                UnityEngine.Object.FindObjectsByType<BDMinimapRoom>(
+                    FindObjectsSortMode.None
+                );
+            Vector3 probe =
+                entrance.position + inwardDirection.normalized * 2.0f;
+            float bestScore = float.PositiveInfinity;
+
+            foreach (BDMinimapRoom candidate in rooms)
+            {
+                if (candidate == null)
+                    continue;
+
+                float score = candidate.SqrDistanceToCenter(probe);
+                if (!candidate.ContainsWorldPosition(probe, 0.35f))
+                    score += 10000f;
+
+                Vector3 towardRoom =
+                    candidate.WorldCenter - entrance.position;
+                towardRoom.y = 0f;
+                if (towardRoom.sqrMagnitude > 0.001f &&
+                    Vector3.Dot(
+                        towardRoom.normalized,
+                        inwardDirection.normalized
+                    ) < 0.25f)
+                {
+                    score += 10000f;
+                }
+
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    room = candidate;
+                }
+            }
+
+            return room != null;
+        }
+
+        private static Vector3 ClampPointInsideRoom(
+            BDMinimapRoom room,
+            Vector3 point,
+            float inset)
+        {
+            if (room == null)
+                return point;
+
+            float halfSize = Mathf.Max(
+                0.5f,
+                room.RoomSize * 0.5f - Mathf.Max(0f, inset)
+            );
+            Vector3 center = room.WorldCenter;
+            point.x = Mathf.Clamp(
+                point.x,
+                center.x - halfSize,
+                center.x + halfSize
+            );
+            point.z = Mathf.Clamp(
+                point.z,
+                center.z - halfSize,
+                center.z + halfSize
+            );
+            return point;
+        }
+
+        private static void HoldCinematicCamera(
+            Camera camera,
+            Vector3 position,
+            Quaternion rotation,
+            float originalFov,
+            float originalOrtho)
+        {
+            if (camera == null)
+                return;
+
+            camera.transform.position = position;
+            camera.transform.rotation = rotation;
+            if (camera.orthographic)
+                camera.orthographicSize = originalOrtho * 0.92f;
+            else
+                camera.fieldOfView = originalFov * 0.94f;
+        }
+
+        // BD EXACTLY ONE ACTIVE AUDIO LISTENER V20
+        private static void EnsureExactlyOneActiveAudioListener(
+            Camera preferredCamera)
+        {
+            Camera ownerCamera = preferredCamera != null
+                ? preferredCamera
+                : Camera.main;
+
+            if (ownerCamera == null)
+            {
+                Camera[] cameras =
+                    Resources.FindObjectsOfTypeAll<Camera>();
+                foreach (Camera candidate in cameras)
+                {
+                    if (candidate == null ||
+                        !candidate.gameObject.scene.IsValid() ||
+                        !candidate.gameObject.activeInHierarchy)
+                    {
+                        continue;
+                    }
+                    ownerCamera = candidate;
+                    break;
+                }
+            }
+
+            if (ownerCamera == null)
+                return;
+
+            AudioListener primary =
+                ownerCamera.GetComponent<AudioListener>();
+            if (primary == null)
+                primary = ownerCamera.gameObject.AddComponent<AudioListener>();
+
+            AudioListener[] listeners =
+                Resources.FindObjectsOfTypeAll<AudioListener>();
+            foreach (AudioListener listener in listeners)
+            {
+                if (listener == null ||
+                    !listener.gameObject.scene.IsValid())
+                {
+                    continue;
+                }
+
+                listener.enabled = listener == primary;
+            }
+            primary.enabled = true;
+        }
         public static void BeginExitTransition(Transform actor, Transform authoredExit)
         {
             if (instance == null || instance.activeSequence != null)
@@ -402,6 +967,169 @@ namespace BoredomAndDungeons
             if (BDMainMenuFlow.Instance != null)
                 BDMainMenuFlow.Instance.ReleaseControlAfterRunPresentation(false);
         }
+        private static Vector3 ResolveAuthoredEntranceMouthStart(
+            Transform entrance,
+            Vector3 inwardDirection,
+            float horseGroundOffset)
+        {
+            Vector3 direction = inwardDirection;
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.001f)
+            {
+                direction = entrance != null
+                    ? entrance.forward
+                    : Vector3.forward;
+            }
+            direction.Normalize();
+
+            Vector3 start = entrance != null
+                ? entrance.position - direction * 2.20f
+                : Vector3.zero;
+
+            if (TryResolveGroundPoint(start, out Vector3 ground))
+                return ground + Vector3.up * horseGroundOffset;
+
+            return new Vector3(
+                start.x,
+                entrance != null
+                    ? entrance.position.y + horseGroundOffset
+                    : horseGroundOffset,
+                start.z
+            );
+        }
+
+        private static float ResolveHorseGroundOffset(Transform horse)
+        {
+            if (horse != null &&
+                TryResolveGroundPoint(horse.position, out Vector3 ground))
+            {
+                return Mathf.Clamp(
+                    horse.position.y - ground.y,
+                    0.04f,
+                    2.5f
+                );
+            }
+
+            CharacterController controller =
+                horse != null
+                    ? horse.GetComponent<CharacterController>()
+                    : null;
+
+            if (controller == null)
+                return 1.05f;
+
+            return Mathf.Max(
+                0.05f,
+                controller.height * 0.5f - controller.center.y
+            );
+        }
+
+        private static bool TryResolveGroundPoint(
+            Vector3 requested,
+            out Vector3 ground)
+        {
+            Vector3 origin = requested + Vector3.up * 5f;
+            RaycastHit[] hits = Physics.RaycastAll(
+                origin,
+                Vector3.down,
+                12f,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+            Array.Sort(
+                hits,
+                (left, right) =>
+                    left.distance.CompareTo(right.distance)
+            );
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == null || hit.collider.isTrigger)
+                    continue;
+                if (hit.collider.GetComponentInParent<BDPlayerMarker>() != null)
+                    continue;
+                if (hit.collider.GetComponentInParent<BDHorseController>() != null)
+                    continue;
+
+                ground = hit.point;
+                return true;
+            }
+
+            ground = requested;
+            return false;
+        }
+
+        private static void EnsureEntranceApproachGround(
+            Transform entrance,
+            Vector3 start,
+            Vector3 inwardDirection)
+        {
+            if (entrance == null ||
+                TryResolveGroundPoint(start, out _))
+            {
+                return;
+            }
+
+            const string supportName =
+                "BD_Entrance_ApproachGround_SupportOnly";
+            Transform existing = entrance.parent != null
+                ? entrance.parent.Find(supportName)
+                : null;
+            if (existing != null)
+                return;
+
+            GameObject support =
+                GameObject.CreatePrimitive(PrimitiveType.Cube);
+            support.name = supportName;
+            support.transform.SetParent(
+                entrance.parent,
+                worldPositionStays: true
+            );
+
+            Vector3 direction = inwardDirection;
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.001f)
+                direction = entrance.forward;
+            direction.Normalize();
+
+            Vector3 midpoint =
+                (start + entrance.position) * 0.5f;
+            support.transform.position = new Vector3(
+                midpoint.x,
+                entrance.position.y - 0.10f,
+                midpoint.z
+            );
+            support.transform.rotation =
+                Quaternion.LookRotation(direction, Vector3.up);
+
+            Renderer entranceRenderer =
+                entrance.GetComponentInChildren<Renderer>();
+            float width = entranceRenderer != null
+                ? Mathf.Clamp(
+                    Mathf.Max(
+                        entranceRenderer.bounds.size.x,
+                        entranceRenderer.bounds.size.z
+                    ) * 0.55f,
+                    2.4f,
+                    5.5f
+                )
+                : 3.2f;
+
+            float length = Mathf.Max(
+                2.8f,
+                Vector3.Distance(start, entrance.position) + 1.2f
+            );
+            support.transform.localScale =
+                new Vector3(width, 0.20f, length);
+
+            Renderer supportRenderer =
+                support.GetComponent<Renderer>();
+            if (supportRenderer != null && entranceRenderer != null)
+            {
+                supportRenderer.sharedMaterial =
+                    entranceRenderer.sharedMaterial;
+            }
+        }
 
         private static Transform FindGameplayTransform(string componentTypeName, string nameHint)
         {
@@ -456,93 +1184,193 @@ namespace BoredomAndDungeons
 
         private static Transform FindAuthoredDoor(bool entrance)
         {
-            string[] preferred = entrance
-                ? new[]
-                {
-                    "Entrance", "Entry", "StartGate", "StartDoor", "MapEntrance",
-                    "MazeEntrance", "SideEntrance"
-                }
-                : new[]
-                {
-                    "Exit", "Finish", "EndGate", "EndDoor", "MapExit",
-                    "MazeExit", "BossExit"
-                };
+            string exactName = entrance
+                ? "BD_Maze_Entrance_Marker"
+                : "BD_Maze_Exit_Marker";
 
-            Transform[] all = Resources.FindObjectsOfTypeAll<Transform>();
+            GameObject exact = GameObject.Find(exactName);
+            if (exact != null)
+                return exact.transform;
+
+            // Conservative fallback for older scenes. Exit-pressure props are
+            // explicitly excluded so the original exit marker remains owner.
+            string requiredWord = entrance ? "entrance" : "exit";
+            Transform[] all =
+                Resources.FindObjectsOfTypeAll<Transform>();
             Transform best = null;
             int bestScore = int.MinValue;
+
             foreach (Transform item in all)
             {
                 if (item == null || !item.gameObject.scene.IsValid())
                     continue;
 
                 string lower = item.name.ToLowerInvariant();
-                if (lower.Contains("bd_entrance_portal") ||
-                    lower.Contains("bd_exit_portal") ||
-                    lower.Contains("cinematic_approachtrigger") ||
-                    lower.Contains("portaleffectonly"))
+                if (!lower.Contains(requiredWord) ||
+                    lower.Contains("pressure") ||
+                    lower.Contains("portal") ||
+                    lower.Contains("effect") ||
+                    lower.Contains("approachtrigger") ||
+                    lower.Contains("returnblocker"))
                 {
                     continue;
                 }
 
-                int score = 0;
-                foreach (string hint in preferred)
-                {
-                    if (item.name.IndexOf(hint, StringComparison.OrdinalIgnoreCase) >= 0)
-                        score += 10;
-                }
-
-                if (item.GetComponent<Collider>() != null)
-                    score += 3;
+                int score = 10;
+                if (lower.Contains("marker"))
+                    score += 10;
+                if (lower.Contains("maze"))
+                    score += 5;
                 if (item.GetComponent<Renderer>() != null)
-                    score += 1;
-                if (item.parent != null)
-                    score += 1;
+                    score += 3;
 
-                if (score > bestScore && score >= 10)
+                if (score > bestScore)
                 {
-                    best = item;
                     bestScore = score;
+                    best = item;
                 }
             }
+
             return best;
         }
 
         private static void DestroyObsoleteGeneratedPortals()
         {
-            string[] names = { "BD_Entrance_Portal", "BD_Exit_Portal" };
-            foreach (string name in names)
+            string[] names =
             {
-                GameObject obsolete = GameObject.Find(name);
-                if (obsolete != null)
-                    Destroy(obsolete);
+                "BD_Entrance_Portal",
+                "BD_Exit_Portal",
+                "BD_GeneratedEntranceBox",
+                "BD_GeneratedExitBox",
+                "BD_RunIntroEntranceBox",
+                "BD_RunIntroExitBox",
+                ExitApproachName
+            };
+
+            Transform[] all =
+                Resources.FindObjectsOfTypeAll<Transform>();
+            foreach (Transform item in all)
+            {
+                if (item == null || !item.gameObject.scene.IsValid())
+                    continue;
+
+                bool remove = false;
+                foreach (string name in names)
+                {
+                    if (item.name == name)
+                    {
+                        remove = true;
+                        break;
+                    }
+                }
+
+                if (!remove &&
+                    item.GetComponent<BDDoorwayPortalVisual>() != null)
+                {
+                    remove = true;
+                }
+
+                if (remove)
+                    Destroy(item.gameObject);
             }
         }
 
-        private static void AttachEffectOnly(Transform authoredDoor, string effectName)
+        private static BDEntranceReturnBlocker AttachEntranceReturnBlocker(
+            Transform authoredEntrance)
         {
-            if (authoredDoor == null || authoredDoor.Find(effectName) != null)
-                return;
+            if (authoredEntrance == null)
+                return null;
 
-            GameObject effect = new GameObject(effectName);
-            effect.transform.SetParent(authoredDoor, false);
-            effect.AddComponent<BDPortalSurfaceEffect>();
+            Transform parent = authoredEntrance.parent;
+            Transform existing = authoredEntrance.Find(EntranceBlockerName);
+            if (existing == null && parent != null)
+                existing = parent.Find(EntranceBlockerName);
+            if (existing == null)
+            {
+                GameObject found = GameObject.Find(EntranceBlockerName);
+                existing = found != null ? found.transform : null;
+            }
+
+            GameObject blockerObject = existing != null
+                ? existing.gameObject
+                : new GameObject(EntranceBlockerName);
+
+            blockerObject.transform.SetParent(
+                parent,
+                worldPositionStays: true
+            );
+
+            BDEntranceReturnBlocker blocker =
+                blockerObject.GetComponent<BDEntranceReturnBlocker>();
+            if (blocker == null)
+            {
+                blocker = blockerObject.AddComponent<
+                    BDEntranceReturnBlocker>();
+            }
+
+            blocker.ConfigureFromAuthoredEntrance(authoredEntrance);
+            return blocker;
         }
 
-        private static void AttachExitApproachTrigger(Transform authoredExit)
+        private static void SetEntranceReturnBlocking(bool blocking)
         {
-            if (authoredExit == null || authoredExit.Find(ExitApproachName) != null)
+            Transform entrance = FindAuthoredDoor(true);
+            if (entrance == null)
                 return;
 
-            GameObject trigger = new GameObject(ExitApproachName);
-            trigger.transform.SetParent(authoredExit, false);
-            trigger.transform.localPosition = new Vector3(0f, 1f, -2.25f);
-            BoxCollider collider = trigger.AddComponent<BoxCollider>();
-            collider.isTrigger = true;
-            collider.size = new Vector3(4.5f, 3f, 1.25f);
-            BDExitCinematicApproachTrigger component =
-                trigger.AddComponent<BDExitCinematicApproachTrigger>();
-            component.Configure(authoredExit);
+            BDEntranceReturnBlocker blocker =
+                AttachEntranceReturnBlocker(entrance);
+            if (blocker != null)
+                blocker.SetBlocking(blocking);
+        }
+
+        private static void EnsureAuthoredPortalEffects()
+        {
+            AttachEffectOnly(
+                FindAuthoredDoor(true),
+                EntranceEffectName
+            );
+            AttachEffectOnly(
+                FindAuthoredDoor(false),
+                ExitEffectName
+            );
+        }
+
+        private static void AttachEffectOnly(
+            Transform authoredDoor,
+            string effectName)
+        {
+            if (authoredDoor == null)
+                return;
+
+            Transform parent = authoredDoor.parent;
+            Transform existing = authoredDoor.Find(effectName);
+            if (existing == null && parent != null)
+                existing = parent.Find(effectName);
+            if (existing == null)
+            {
+                GameObject found = GameObject.Find(effectName);
+                existing = found != null ? found.transform : null;
+            }
+
+            GameObject effect = existing != null
+                ? existing.gameObject
+                : new GameObject(effectName);
+
+            effect.SetActive(true);
+            effect.transform.SetParent(
+                parent,
+                worldPositionStays: true
+            );
+            effect.transform.localScale = Vector3.one;
+
+            BDPortalSurfaceEffect portal =
+                effect.GetComponent<BDPortalSurfaceEffect>();
+            if (portal == null)
+                portal = effect.AddComponent<BDPortalSurfaceEffect>();
+
+            portal.enabled = true;
+            portal.Configure(authoredDoor);
         }
 
         private static List<ComponentState> CaptureAndDisableControls(

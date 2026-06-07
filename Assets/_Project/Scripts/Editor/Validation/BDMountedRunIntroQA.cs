@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -8,248 +7,116 @@ namespace BoredomAndDungeons.EditorTools.Validation
 {
     internal static class BDMountedRunIntroQA
     {
-        private const string IntroRelative =
-            "Assets/_Project/Scripts/Runtime/RunIntro/" +
-            "BDMountedRunIntro.cs";
-
-        private const string PortalRelative =
-            "Assets/_Project/Scripts/Runtime/RunIntro/" +
-            "BDDoorwayPortalVisual.cs";
-
-        public static void Scan(
-            BDOneClickQAResult result)
+        public static void Scan(BDOneClickQAResult result)
         {
             if (result == null)
                 return;
 
-            string root =
-                ResolveProjectRoot();
-
-            ValidateTokens(
+            string root = ResolveProjectRoot();
+            Require(
                 result,
                 root,
-                IntroRelative,
-                new[]
-                {
-                    "RuntimeInitializeLoadType.BeforeSceneLoad",
-                    "IsGameplayInputLocked",
-                    "BeginMountedRunIntro",
-                    "CompleteMountedRunIntro",
-                    "MoveByExternalControl",
-                    "RideDurationSeconds = 2.25f",
-                    "ZoomInDurationSeconds = 0.48f",
-                    "ZoomOutDurationSeconds = 0.72f",
-                    "while (IsAnyGameplayInputHeld())",
-                    "CleanupTransientFloorArtifacts",
-                    "BD_Enemy_Ranged_Telegraph",
-                    "BD_Enemy_Melee_Telegraph",
-                    "EnsureDoorwayPortals",
-                    "BD_Entrance_Portal",
-                    "BD_Exit_Portal",
-                    "deathRestartPending",
-                    "playerHealth.IsDead",
-                    "RunDeathRestartAtSpawn",
-                    "if (deathRestartPending)",
-                    "rooms.Length == 0"
-                }
+                "Assets/_Project/Scripts/Runtime/RunIntro/BDMountedRunIntro.cs",
+                "MOUNTED_INTRO_SINGLE_OWNER_MISSING",
+                "BD SINGLE RUN-PRESENTATION OWNER V13",
+                "BDRunPresentationCoordinator.InputLocked"
             );
 
-            ValidateTokens(
-                result,
+            string compatibility = Read(
                 root,
-                PortalRelative,
-                new[]
-                {
-                    "class BDDoorwayPortalVisual",
-                    "EnsurePortal",
-                    "Portal_Surface_Front",
-                    "Portal_Surface_Back",
-                    "Portal_Light_Band_",
-                    "EmissionColorId",
-                    "HideFlags.DontSave"
-                }
+                "Assets/_Project/Scripts/Runtime/RunIntro/BDMountedRunIntro.cs"
+            );
+            Forbid(
+                result,
+                compatibility,
+                "MOUNTED_INTRO_DUPLICATE_BOOTSTRAP",
+                "RuntimeInitializeLoadType.BeforeSceneLoad"
+            );
+            Forbid(
+                result,
+                compatibility,
+                "MOUNTED_INTRO_DUPLICATE_PORTAL_OWNER",
+                "EnsureDoorwayPortals"
             );
 
-            ValidateTokens(
+            Require(
                 result,
                 root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDHorseController.cs",
-                new[]
-                {
-                    "public bool BeginMountedRunIntro(",
-                    "public void CompleteMountedRunIntro()",
-                    "mounted run intro",
-                    "PlaceRiderOnMountPoint();"
-                }
+                "Assets/_Project/Scripts/Runtime/RunPresentation/BDRunPresentationCoordinator.cs",
+                "RUN_PRESENTATION_COORDINATOR_V13_MISSING",
+                "BD AUTHORED ENTRY SINGLE-OWNER + PORTAL SELF-HEAL V14",
+                "BD_Maze_Entrance_Marker",
+                "BD_Maze_Exit_Marker",
+                "EnsureEntranceApproachGround",
+                "SetEntranceReturnBlocking(true)",
+                "EnsureAuthoredPortalEffects",
+                "AttachEffectOnly(",
+                "EntranceEffectName",
+                "ExitEffectName"
             );
 
-            ValidateTokens(
-                result,
+            string coordinator = Read(
                 root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDPlayerCombat.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked",
-                    "ResetTransientCombatInputState",
-                    "ClearPendingLightPress();",
-                    "ClearPendingRangedPress();",
-                    "CancelChargedShot();"
-                }
+                "Assets/_Project/Scripts/Runtime/RunPresentation/BDRunPresentationCoordinator.cs"
             );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/Combat/" +
-                    "BDPlayerMeleeEnhancer.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked",
-                    "ClearBuffer();"
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/Combat/" +
-                    "BDPlayerAirStateTracker.cs",
-                new[]
-                {
-                    "!BDMountedRunIntro.IsGameplayInputLocked",
-                    "IsDescendingFromJump"
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDEnemyProximityTelegraph.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked"
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDEnemyAttackTelegraph.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked"
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDEnemyAttackTelegraphVisual.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked"
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/Horse/" +
-                    "BDHorseExhaustedFollowAndPetInteraction.cs",
-                new[]
-                {
-                    "BDMountedRunIntro.IsGameplayInputLocked",
-                    "CancelPetInteractionForRunIntro",
-                    "emergencyCancelRequested = true",
-                    "ClearPetHold();",
-                }
-            );
-
-            ValidateTokens(
-                result,
-                root,
-                "Assets/_Project/Scripts/Runtime/" +
-                    "BDHealth.cs",
-                new[]
-                {
-                    "ShouldIgnorePlayerDamageDuringRunIntro",
-                    "BDMountedRunIntro.IsGameplayInputLocked"
-                }
-            );
+            if (coordinator.IndexOf(
+                    "AttachExitApproachTrigger(exit)",
+                    StringComparison.Ordinal) >= 0)
+            {
+                Add(
+                    result,
+                    "GENERATED_EXIT_TRIGGER_STILL_ACTIVE",
+                    "The authored exit must keep its original trigger/flow; " +
+                    "the generated cinematic trigger call must remain absent."
+                );
+            }
         }
 
-        private static void ValidateTokens(
+        private static string Read(string root, string relative)
+        {
+            string absolute = Path.Combine(root, relative);
+            return File.Exists(absolute)
+                ? File.ReadAllText(absolute)
+                : string.Empty;
+        }
+
+        private static void Require(
             BDOneClickQAResult result,
             string root,
             string relative,
-            IEnumerable<string> required)
+            string code,
+            params string[] tokens)
         {
-            string absolute =
-                Path.Combine(
-                    root,
-                    relative
-                );
-
+            string absolute = Path.Combine(root, relative);
             if (!File.Exists(absolute))
             {
-                Add(
-                    result,
-                    "MOUNTED_RUN_INTRO_FILE_MISSING",
-                    relative,
-                    "Required mounted-run-intro file is missing."
-                );
+                Add(result, code, "Required run-presentation file is missing: " + relative);
                 return;
             }
 
-            string source =
-                File.ReadAllText(absolute);
-
-            if (source.IndexOf(
-                    "using UnityEditor",
-                    StringComparison.Ordinal) >= 0 &&
-                relative.Contains(
-                    "/Scripts/Runtime/"))
+            string source = File.ReadAllText(absolute);
+            foreach (string token in tokens)
             {
-                Add(
-                    result,
-                    "MOUNTED_RUN_INTRO_EDITOR_DEPENDENCY",
-                    relative,
-                    "Runtime mounted-intro code must not depend on UnityEditor."
-                );
-            }
-
-            foreach (string token in required)
-            {
-                if (source.IndexOf(
-                        token,
-                        StringComparison.Ordinal) >= 0)
-                {
+                if (source.IndexOf(token, StringComparison.Ordinal) >= 0)
                     continue;
-                }
-
-                Add(
-                    result,
-                    "MOUNTED_RUN_INTRO_CONTRACT_MISSING",
-                    relative,
-                    "Missing mounted-run-intro contract: " +
-                    token +
-                    "."
-                );
+                Add(result, code, "Missing run-presentation contract: " + token);
             }
+        }
+
+        private static void Forbid(
+            BDOneClickQAResult result,
+            string source,
+            string code,
+            string token)
+        {
+            if (source.IndexOf(token, StringComparison.Ordinal) < 0)
+                return;
+            Add(result, code, "Obsolete duplicate intro contract returned: " + token);
         }
 
         private static string ResolveProjectRoot()
         {
-            DirectoryInfo assets =
-                new DirectoryInfo(
-                    Application.dataPath
-                );
-
+            DirectoryInfo assets = new DirectoryInfo(Application.dataPath);
             return assets.Parent != null
                 ? assets.Parent.FullName
                 : Application.dataPath;
@@ -258,14 +125,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
         private static void Add(
             BDOneClickQAResult result,
             string code,
-            string assetPath,
             string message)
         {
             result.findings.Add(
                 new BDOneClickQAFinding(
                     BDOneClickQASeverity.Blocker,
                     code,
-                    assetPath,
+                    string.Empty,
                     string.Empty,
                     message
                 )

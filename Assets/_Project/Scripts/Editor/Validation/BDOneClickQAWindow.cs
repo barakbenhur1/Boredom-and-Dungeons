@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "horse",
                 "Horse",
-                "The horse starts at full health, stays calm through the startup window, and ignores remote encounters while preserving healing, buck, mount, real local-threat flee, and two-step hazard retreat behavior. At zero health it remains fainted while nearby; after the player stays beyond 14m for 1.25 seconds it follows very slowly through hazard-safe movement, stops by 8m, never heals or mounts, and exits after healing. Within 2.25m on foot, tap Pet for player-pets-horse and hold 0.65 seconds for horse-nuzzles-player; the actions are exclusive and cancel safely."),
+                "The horse starts at full health, stays calm through the startup window, and ignores remote encounters while preserving healing, buck, mount, real local-threat flee, and two-step hazard retreat behavior. After death -> New Game, the child starts on foot and the horse stands fully above the floor beside the player, neither sunken nor floating. At zero health it remains fainted while nearby; after the player stays beyond 14m for 1.25 seconds it follows very slowly through hazard-safe movement, stops by 8m, never heals or mounts, and exits after healing. Within 2.25m on foot, tap Pet for player-pets-horse and hold 0.65 seconds for horse-nuzzles-player; the actions are exclusive and cancel safely."),
             new ManualCheck(
                 "square_jumper",
                 "Square Jumper",
@@ -104,19 +104,19 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "run_presentation",
                 "Run entrance, authored exit, pause, and menu",
-                "No map flash before the menu. Fresh/abandoned/post-cinematic runs use the mounted authored entrance; ordinary death restarts on foot. The authored exit continues automatically into the existing ending. Escape pauses time/audio and all actions work."),
+                "The mounted entrance uses a farther/higher room camera, locks every input including mouse aim, then the horse turns right, fully stops, and only then returns camera/control. Death restarts stay on foot and the authored exit remains authoritative."),
             new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
-                "Closed walls are visibly tall enough that adjacent rooms cannot be seen over them. Walking or riding toward every closed side stops the camera and look point at the wall; authored open doorways still transition normally."),
+                "Closed walls remain complete visibility boundaries. Standing beside any wall and rotating through diagonal angles, on foot or mounted, never reveals the adjacent room."),
             new ManualCheck(
                 "bbh_circle",
                 "BBH completed-circle intro",
-                "After all BBH letters settle, a filled circular badge grows from zero behind the letters, reaches full size, holds for exactly 0.50 seconds, and the intro ends cleanly without replaying on a same-session New Game."),
+                "The intro begins black and reveals B, B, H strictly one at a time. Only after all three settle, a filled circle with a visible rim grows from zero behind the complete text, stays fully visible for exactly 0.50 seconds, then fades without replaying on a same-session New Game."),
             new ManualCheck(
                 "console",
                 "Console",
-                "No red errors and no edit-mode material or Destroy warnings appear while creating or testing Square Jumper.")
+                "No red project errors. Charged shots never create duplicate TrailRenderers or throw null exceptions, and exactly one AudioListener stays active.")
         };
 
         private static BDOneClickQAResult latestResult;
@@ -472,7 +472,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             // BD UNIFIED CAMERA/MINIMAP + REPOSITORY HYGIENE QA V1
             ScanCameraMinimapRegression(result);
             BDMinimapRigidRotationQA.Scan(result);
-            ScanCameraForwardViewBiasContracts(result);
+            ScanSingleCameraOwnerContracts(result);
             ScanHazardRecoveryContracts(result);
             ScanGroundHazardAndMinimapContracts(result);
             ScanCameraMinimapSceneRepairContracts(result);
@@ -487,9 +487,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDHorseExhaustedFollowPetQA.Scan(result);
             BDNewRunFeedbackResetQA.Scan(result);
             BDDocumentationGovernanceQA.Scan(result);
+            BDVisualEntryMinimapMountedCombatQA.Scan(result);
             BDRunPresentationPauseQA.Scan(result);
             BDEarlyRunRegressionRepairQA.Scan(result);
             BDMountedRunIntroQA.Scan(result);
+            BDV20ActiveRegressionQA.Scan(result);
+            BDV23CameraGroundingQA.Scan(result);
             BDHorseCleanRunStartQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);
@@ -691,48 +694,58 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
 
         // BD UNIFIED QA METHODS V1
-        private static void ScanCameraForwardViewBiasContracts(
+        private static void ScanSingleCameraOwnerContracts(
             BDOneClickQAResult result)
         {
-            const string relativePath =
+            string root = ResolveProjectRoot();
+            string legacyRelative =
                 "Assets/_Project/Scripts/Runtime/Camera/" +
                 "BDCameraForwardViewBias.cs";
 
-            string absolutePath = Path.Combine(
-                ResolveProjectRoot(),
-                relativePath
-            );
-
-            if (!File.Exists(absolutePath))
+            if (File.Exists(Path.Combine(root, legacyRelative)))
             {
                 Add(
                     result,
                     BDOneClickQASeverity.Blocker,
-                    "CAMERA_VIEWPORT_FRAMING_SOURCE_MISSING",
-                    relativePath,
+                    "SECONDARY_CAMERA_TRANSFORM_OWNER_PRESENT",
+                    legacyRelative,
                     string.Empty,
-                    "The viewport-framing camera source is missing."
+                    "BDCameraFollow must remain the sole normal-gameplay camera transform owner."
                 );
+            }
 
+            const string cameraRelative =
+                "Assets/_Project/Scripts/Runtime/BDCameraFollow.cs";
+            string cameraPath = Path.Combine(root, cameraRelative);
+            if (!File.Exists(cameraPath))
+            {
+                Add(
+                    result,
+                    BDOneClickQASeverity.Blocker,
+                    "SINGLE_CAMERA_OWNER_SOURCE_MISSING",
+                    cameraRelative,
+                    string.Empty,
+                    "The sole gameplay camera owner source is missing."
+                );
                 return;
             }
 
             ValidateRequiredSourceTokens(
                 result,
-                relativePath,
-                File.ReadAllText(absolutePath),
+                cameraRelative,
+                File.ReadAllText(cameraPath),
                 new[]
                 {
-                    "desiredPlayerViewport",
-                    "new Vector2(0.50f, 0.40f)",
-                    "WorldToViewportPoint",
-                    "targetCamera.transform.right",
-                    "targetCamera.transform.up",
-                    "RemovePreviouslyAppliedOffset"
+                    "BD SINGLE CAMERA TRANSFORM OWNER V23",
+                    "BD STABLE SINGLE-STAGE CAMERA YAW V23",
+                    "BD PLANAR COMBAT SHAKE V23",
+                    "ResolvePlanarCameraShake",
+                    "ResolveRoomBoundaryConstrainedPosition"
                 },
-                "CAMERA_VIEWPORT_FRAMING_CONTRACT_MISSING"
+                "SINGLE_CAMERA_OWNER_CONTRACT_MISSING"
             );
         }
+
 
         private static void ScanCameraMinimapRegression(
             BDOneClickQAResult result)
@@ -797,10 +810,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 camera,
                 new[]
                 {
+                    "BD SINGLE CAMERA TRANSFORM OWNER V23",
+                    "BD STABLE SINGLE-STAGE CAMERA YAW V23",
                     "cameraYawDegreesPerSecond",
-                    "movementDirectionBlend",
                     "ResolveCameraIntentDirection",
                     "Vector3.RotateTowards",
+                    "ResolvePlanarCameraShake",
+                    "transform.SetPositionAndRotation",
                     "LastMountedAimDirection",
                     "LastLookDirection"
                 },
@@ -1445,9 +1461,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
                         "VerticalScreenPositionFromTop = 0.45f",
                         "playedThisApplicationSession",
                         "PerLetterWindow",
-                        "DrawDepthTrail",
-                        "EaseOutBack",
-                        "DrawCompletionLightSweep",
+                        "LetterStartTime(int index)",
+                        "DrawCompactDepth",
+                        "DrawGrowingFilledCircleBehindText",
+                        "CircleFullHoldDuration = 0.50f",
+                        "CircleHoldEndTime",
                         "Time.realtimeSinceStartup"
                     },
                     "BBH_BOOT_INTRO_RUNTIME_MISSING"

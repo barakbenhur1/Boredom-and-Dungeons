@@ -4,9 +4,25 @@ namespace BoredomAndDungeons
 {
     public static class BDOccludingWallAutoAttach
     {
+        // BD DO NOT ATTACH FADER TO STRUCTURAL WALLS V20
+        // BD SANITIZE LEGACY STRUCTURAL WALL FADERS V22
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Attach()
         {
+            BDOccludingWall[] existingWalls =
+                Object.FindObjectsByType<BDOccludingWall>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+            for (int i = 0; i < existingWalls.Length; i++)
+            {
+                BDOccludingWall existing = existingWalls[i];
+                if (existing == null || !IsStructuralRoomBoundary(existing.transform))
+                    continue;
+
+                existing.ForceOpaqueImmediateAndDisableFading();
+            }
+
             Renderer[] renderers = Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
             for (int i = 0; i < renderers.Length; i++)
@@ -20,6 +36,9 @@ namespace BoredomAndDungeons
                     continue;
 
                 if (go.GetComponent<BDOccludingWall>() != null)
+                    continue;
+
+                if (go.GetComponentInParent<BDWallSurfaceProfile>() != null)
                     continue;
 
                 string name = go.name;
@@ -47,6 +66,22 @@ namespace BoredomAndDungeons
 
                 go.AddComponent<BDOccludingWall>();
             }
+        }
+
+        private static bool IsStructuralRoomBoundary(Transform value)
+        {
+            if (value == null)
+                return false;
+
+            if (value.GetComponentInParent<BDWallSurfaceProfile>() != null)
+                return true;
+
+            string name = value.name.ToLowerInvariant();
+            return name.Contains("roomwall") ||
+                   name.Contains("boundary") ||
+                   name.Contains("cavewall") ||
+                   name.Contains("rockwall") ||
+                   name.StartsWith("wall_");
         }
     }
 }

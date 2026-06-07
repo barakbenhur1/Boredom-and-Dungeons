@@ -5,7 +5,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
 {
     public static class BDRunPresentationPauseQA
     {
-        // BD RUN PRESENTATION ROOM BOUNDARY QA V7
+        // BD RUN PRESENTATION ROOM BOUNDARY + ACTIVE VISUAL CONTRACT QA V15
         public static void Scan(BDOneClickQAResult result)
         {
             string root = Directory.GetParent(
@@ -15,12 +15,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Check(result, root,
                 "Assets/_Project/Scripts/Runtime/RunPresentation/BDRunPresentationCoordinator.cs",
                 new[] {
-                    "BD RUN PRESENTATION COORDINATOR V7",
+                    "BD AUTHORED ENTRY SINGLE-OWNER + PORTAL SELF-HEAL V14",
                     "ResetStaticState",
                     "DestroyObsoleteGeneratedPortals",
-                    "FindAuthoredDoor",
+                    "BD_Maze_Entrance_Marker",
+                    "BD_Maze_Exit_Marker",
                     "PlayMountedEntrance",
-                    "PlayExitTransition",
                     "HoldGameplayControlOnRunStart"
                 },
                 "RUN_PRESENTATION_CONTRACT_MISSING");
@@ -50,11 +50,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Check(result, root,
                 "Assets/_Project/Scripts/Runtime/BDMazeMinimap.cs",
                 new[] {
-                    "BD MINIMAP RIGID CLIP MASK V7",
-                    "DrawRigidRotatedMapContent",
-                    "DrawMapOverflowMasks",
-                    "GUIUtility.RotateAroundPivot",
-                    "GUI.matrix = originalMatrix"
+                    "BD MINIMAP OFFSCREEN RASTER CLIP V13",
+                    "RebuildRotatedMinimapRaster",
+                    "RotateRasterAsSingleUnit",
+                    "GUI.BeginGroup(localMapRect)",
+                    "minimapRasterTexture"
                 },
                 "MINIMAP_RIGID_CLIP_CONTRACT_MISSING");
 
@@ -80,10 +80,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Check(result, root,
                 "Assets/_Project/Scripts/Runtime/UI/BDBBHBootIntro.cs",
                 new[] {
-                    "BD FILLED CIRCLE BADGE V7",
-                    "circleGrowthDuration",
-                    "circleFinalHold = 0.50f",
-                    "DrawFilledCircleBadge",
+                    "BD BBH SINGLE-LETTER SEQUENCE + VISIBLE GROWING FILLED CIRCLE V14",
+                    "CircleGrowthDuration",
+                    "CircleFullHoldDuration = 0.50f",
+                    "DrawGrowingFilledCircleBehindText",
                     "CreateCircleTexture"
                 },
                 "BBH_FILLED_CIRCLE_CONTRACT_MISSING");
@@ -102,7 +102,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Editor/Validation/BDRoomBoundarySceneInstaller.cs",
                 new[] {
                     "BD TALL ROOM BOUNDARY INSTALLER V7",
-                    "MinimumWallWorldHeight = 22f",
+                    "MinimumWallWorldHeight = 64f",
                     "RaiseWallWithoutMovingItsBase",
                     "ValidateActiveScene"
                 },
@@ -121,9 +121,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Check(result, root,
                 "Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md",
                 new[] {
-                    "22 world units",
-                    "closed room wall",
-                    "asymmetric textures",
+                    "64 world units",
+                    "visibility boundary",
+                    "asymmetric texture",
                     "negative scale"
                 },
                 "ROOM_BOUNDARY_DESIGN_MISSING");
