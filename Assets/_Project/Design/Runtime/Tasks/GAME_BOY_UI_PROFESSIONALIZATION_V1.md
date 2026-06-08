@@ -219,3 +219,47 @@ V23R19R changes QA only. It does not alter the professional shell presentation.
 
 After TEST EVERYTHING passes, this UI task remains open for full visual, responsive, interaction and performance confirmation listed in this document and in `MASTER_ACTIVE_WORK_SEQUENCE_V1.md`.
 <!-- B&D V23R19R UI QA INTERRUPTION END -->
+
+<!-- B&D MODERN 3D HANDHELD REDESIGN START -->
+## User-approved V2 redesign — real upright 3D device
+
+**Status:** `DESIGN APPROVED / ASSET SPEC COMPLETE / RUNTIME IMPLEMENTATION REQUIRED`
+
+The earlier V23R19Q flat/procedural professional-memory shell is not the final acceptance target. The user approved a stronger physical-device direction that must be implemented before returning to the previously saved repair/feature queue unless explicitly deferred.
+
+### Approved changes
+
+- upright portrait handheld, screen above controls;
+- blue-left/orange-right molded-plastic gradient;
+- real 3D shell with volume, bevels and speaker perforations;
+- separate glass/transparent-plastic cover over a recessed lit display;
+- separate tactile D-pad, A/B/X/Y and center shortcut buttons;
+- left center button is Settings;
+- right center button is Progression;
+- A selects, B returns, X opens Settings, Y opens Progression;
+- mouse and D-pad navigation both work;
+- physical device controls may be clicked directly;
+- `Progression` replaces user-facing `Meta Progression` and remains on one line;
+- Main and Escape/Pause use the same device system;
+- every Boy image has a matched Girl version with identical layout metadata.
+
+### Canonical implementation contract
+
+`Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`
+
+### Approved references
+
+`Assets/_Project/Design/Visual/References/ModernHandheld3D/`
+
+The references define form/material/screen-depth direction. They are not flat production textures and do not authorize a one-piece image-based shell.
+
+### Preserved owners
+
+- `BDMainMenuFlow` remains state/input/action owner.
+- The 3D device presenter remains presentation-only.
+- Existing pause, abandon confirmation, settings, run-flow and UI visibility rules remain.
+
+### Exact next step
+
+Before Runtime edits, audit the current local `BDMainMenuFlow`, `BDGameBoyMenuShell`, input and visibility implementation. Record conflicts between the current one-pass IMGUI rendering and the approved 3D screen target. Then build a testable 3D vertical slice without inventing unsupported menu data.
+<!-- B&D MODERN 3D HANDHELD REDESIGN END -->

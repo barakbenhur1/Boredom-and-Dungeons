@@ -32,3 +32,17 @@
 - The true-victory awakened state keeps its cyan/gold transformation.
 - Boot and menu textures are generated once and cached; no per-frame texture or material allocation is allowed.
 - Professional finish is required on all menu pages, not only the main page.
+
+<!-- B&D MODERN 3D HANDHELD OWNERSHIP START -->
+## Approved 3D device ownership target
+
+- The final shell is a real upright 3D device, not a flat frame.
+- `BDMainMenuFlow` remains the only semantic owner of page, selection, legal action, pause/resume, settings, progression and abandon state.
+- The 3D device presenter owns only device model visibility, screen/glass/body materials, camera framing, physical hit targets and tactile button animation.
+- The screen-content view renders real menu data and reports semantic actions to `BDMainMenuFlow`; it does not create a second menu state machine.
+- Mouse, D-pad/arrows, A/B/X/Y and clickable physical controls resolve through the same action map.
+- The physical Settings and Progression center buttons invoke the same actions as X and Y.
+- The user-facing page/shortcut label is `Progression`.
+- Every Boy image has a matched Girl variant selected from active-character identity.
+- The exact asset/render/input contract is owned by `MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`.
+<!-- B&D MODERN 3D HANDHELD OWNERSHIP END -->

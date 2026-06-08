@@ -125,3 +125,13 @@ A gameplay change is not marked DONE until Unity compiles cleanly, TEST EVERYTHI
 Commit source, assets, required Unity `.meta` files, and the synchronized authoritative documentation.
 
 Do not commit Unity caches, builds, ZIP packages, extracted package tools, local QA output, chat exports, copied status files, accidental terminal output, or duplicate progress documents.
+
+<!-- B&D MODERN HANDHELD SPEC ENTRY START -->
+## Current approved menu-device specification
+
+The approved upright 3D handheld asset and interaction contract is documented at:
+
+`Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`
+
+Visual references are under `Assets/_Project/Design/Visual/References/ModernHandheld3D/`. Current implementation/status truth remains in `PROJECT_STATUS.md`.
+<!-- B&D MODERN HANDHELD SPEC ENTRY END -->

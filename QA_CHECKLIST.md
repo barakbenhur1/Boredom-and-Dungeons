@@ -622,3 +622,57 @@ Visual/interaction:
 5. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
 6. A clean result starts Enemy Attack Animations; it does not verify gameplay or visual work.
 <!-- B&D V23R19T PHASE-AGNOSTIC STATUS QA END -->
+
+<!-- B&D MODERN 3D HANDHELD QA START -->
+## Approved upright 3D handheld Main/Pause gate
+
+Documentation/static:
+
+1. canonical 3D asset/UI specification exists and is indexed;
+2. approved reference manifest and all referenced images exist with stable `.meta` files;
+3. `Progression` replaces user-facing `Meta Progression` in the new design contract;
+4. Boy/Girl image parity is explicit and paired assets use matched dimensions/import settings;
+5. no document claims the 3D Runtime implementation is complete before it exists.
+
+3D presentation:
+
+6. device is an upright real 3D model with screen above controls;
+7. shell has real depth, bevels and blue-to-orange material continuity;
+8. glass/transparent cover is separate from bezel and display and visibly has thickness;
+9. reflection/Fresnel never obscures text;
+10. D-pad, A/B/X/Y, Settings and Progression are separate physical parts;
+11. all physical buttons show tactile press and release;
+12. screen content remains aligned behind glass during every approved device movement/transition.
+
+Interaction:
+
+13. mouse hover/click works on screen controls;
+14. clickable physical controls work;
+15. D-pad/arrows navigate deterministically;
+16. A confirms/selects once;
+17. B returns once;
+18. X and physical Settings open Settings;
+19. Y and physical Progression open Progression;
+20. changing between mouse and controller updates one shared focus without duplicate activation;
+21. Pause opens quickly, Resume is safe/default and abandon still requires confirmation.
+
+Content and parity:
+
+22. Main and Pause/Escape use the same device system;
+23. unsupported concept-art values/pages are omitted rather than fabricated;
+24. active Boy uses Boy artwork and active Girl uses the exact matched Girl artwork;
+25. every newly added Boy image has its Girl pair in the same change;
+26. `Progression` remains on one line at supported resolutions;
+27. all existing real menu options/settings/true-victory behavior remain.
+
+Performance and release:
+
+28. no per-frame mesh/material/texture/RenderTexture/native-object allocation;
+29. no first-open shader/material hitch after warm-up;
+30. hidden device rendering is disabled or appropriately released;
+31. desktop and representative mobile-like profiling is recorded;
+32. Unity compiles without new errors;
+33. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info;
+34. repeated open/close, restart, abandon, death-menu and scene-transition tests pass;
+35. final user visual/tactile acceptance is recorded.
+<!-- B&D MODERN 3D HANDHELD QA END -->

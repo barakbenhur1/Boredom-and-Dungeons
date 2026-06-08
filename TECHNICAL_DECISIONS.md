@@ -434,3 +434,16 @@ For the current grounded arc mesh, local X is the visible left-to-right long axi
 - Tiled scanlines use one cached texture draw.
 - Rounded body/screen elements reuse one cached alpha texture.
 - No Texture2D or Material is created in OnGUI.
+
+<!-- B&D TD-053 MODERN 3D HANDHELD START -->
+### TD-053 — One semantic menu owner behind a real 3D handheld view
+
+- The approved final menu device is a true upright 3D object with separate shell, glass, display and tactile controls.
+- The visual upgrade does not authorize a parallel menu controller: `BDMainMenuFlow` remains the semantic state/action owner.
+- Menu content should render to the physical screen through a dedicated view/RenderTexture architecture that can remain aligned under depth and approved device motion.
+- Physical controls, mouse, keyboard and controller map to the same semantic commands.
+- Settings and Progression center buttons are direct shortcuts; X opens Settings and Y opens Progression; A confirms and B returns.
+- The user-facing label is `Progression`.
+- Character-bearing UI art is paired Boy/Girl content with deterministic active-character selection.
+- Flat one-piece screenshot projection is rejected as the final implementation because it cannot provide tactile depth, true glass layering or physical button interaction.
+<!-- B&D TD-053 MODERN 3D HANDHELD END -->

@@ -67,3 +67,18 @@ Each measured optimization should record in `PROJECT_STATUS.md`:
 - The professional shell should add only a small fixed number of IMGUI draws independent of resolution.
 - Mode transitions use `Time.unscaledTime` and do not allocate coroutines or per-transition textures.
 - Verify no recurring GC allocation attributable to the new polish while the menu is idle.
+
+<!-- B&D MODERN 3D HANDHELD PERFORMANCE START -->
+## 3D handheld menu performance contract
+
+- Keep one active device instance and one active screen RenderTexture per visible menu.
+- Do not allocate meshes, materials, Texture2D, RenderTexture, event handlers or Unity native objects per frame.
+- Button press feedback uses cached transforms/material properties and creates no temporary GameObjects.
+- Reuse shared shell/control/glass/display materials; avoid one material per button unless a measured requirement justifies it.
+- Keep transparent layers minimal: glass, optional reflection layer and the display.
+- Profile glass/screen overdraw and disable hidden menu rendering.
+- Select RenderTexture resolution by readability and target-device profiling; use tiered desktop/mobile resolution rather than the concept-art source size.
+- Prewarm menu shaders/material variants so first Pause open does not hitch.
+- Menu close/reload cleans listeners, RenderTextures and presenter references deterministically.
+- Import visual reference images as documentation assets only; they are not loaded by Runtime.
+<!-- B&D MODERN 3D HANDHELD PERFORMANCE END -->

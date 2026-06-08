@@ -95,6 +95,13 @@ Every active task record is updated in the same change as its implementation/ver
 
 ### Current visual-direction contracts
 
+#### Approved modern 3D handheld contract
+
+- `Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md` — canonical full asset breakdown, 3D hierarchy, screen/glass/material contract, tactile interaction, mouse/D-pad/A/B/X/Y/shortcut input behavior, Main/Pause page requirements, Boy/Girl image-parity rule, target architecture, performance constraints and acceptance gate for the approved upright handheld redesign.
+- `Assets/_Project/Design/Visual/References/ModernHandheld3D/REFERENCE_MANIFEST.md` — ownership and usage manifest for the approved front, three-quarter, close-up, Boy and Girl visual references.
+- `Assets/_Project/Design/Visual/References/ModernHandheld3D/*.png` — visual direction only; not production textures and not proof of implementation.
+
+
 - `Assets/_Project/Design/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md` — mandatory production-animation coverage, timing ownership, root-motion policy, interruption rules, placeholder-debt policy, and release acceptance gate.
 - `Assets/_Project/Design/Animation/DEATH_PRESENTATION_V1.md` — player death-before-menu timing, regular-enemy death-before-loot/despawn behavior, and production-animation follow-up.
 - `ART_DIRECTION.md` — canonical art direction, 65/35 color/mystery balance, stylized 3D language, materials/textures, lighting, HUD, Game Boy menu shell, typography, iconography, effects, animation feel, horse-prompt visibility, and desktop/mobile adaptation.

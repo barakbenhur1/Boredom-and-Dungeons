@@ -4,13 +4,14 @@
 
 ```text
 Status date: 2026-06-09
-Classification: CURRENT / V23R19T PHASE-AGNOSTIC STATUS-QA REPAIR
-Active work: C01.QA.V23R19T
-Current truth: Unity TEST EVERYTHING at 2026-06-08T21:26:24.0618690Z reported 1 blocker, 0 warnings and 0 info. The only blocker is V23R19R_PROJECT_STATUS_MISSING because the V23R19R scanner still requires the historical phase identifier `C01.QA.V23R19R` after PROJECT_STATUS correctly advanced to V23R19S.
-Implementation truth: V23R19T removes phase-specific and historical-bug dependencies from both V23R19R and V23R19S scanners. They now validate stable current truth: a CURRENT status, the canonical master work sequence, Enemy Attack Animations next, Professional Opening Cinematic after it, and the permanent bug-tracker update discipline. A V23R19T regression scanner prevents exact historical phase and bug IDs from returning to those scanners. No Runtime, Gameplay, UI, Scene, Prefab, animation or balance change.
-Verification truth: Package/static checks can run here. Unity compilation and TEST EVERYTHING must be rerun. No gameplay or visual behavior is marked verified by this QA-only repair.
-Current action: install V23R19T and run TEST EVERYTHING. After and only after 0 blockers / 0 warnings / 0 info, begin Priority 1 — Enemy Attack Animations.
-Saved resume point: Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md.
+Classification: CURRENT / USER-APPROVED 3D HANDHELD MENU SPECIFICATION
+Active work: C11.UI.MODERN_HANDHELD_3D.V1
+Current truth: The user explicitly reprioritized the main menu and Escape/Pause presentation before returning to the previously saved Runtime/QA repair sequence. The approved direction is an original upright portrait handheld with a real 3D shell, blue-to-orange molded-plastic gradient, separate tactile 3D controls, and a lit display recessed behind clear glass/transparent plastic with visible depth. Mouse and D-pad navigation are both required. A selects, B returns, X and the physical Settings shortcut open Settings, and Y and the physical Progression shortcut open Progression. The user-facing label is `Progression`, not `Meta Progression`.
+Implementation truth: This change package documents the complete asset breakdown, interaction contract, target architecture, performance constraints, QA gate and approved reference images. It does not claim that the 3D prefab, screen RenderTexture view, tactile button animations or redesigned Runtime menus are already implemented.
+Character-art truth: Every UI/reference image that depicts the Boy requires a matched Girl version with identical dimensions, crop, composition, lighting, horse/background placement, safe areas and import settings. A Boy image without its Girl pair is incomplete.
+Verification truth: Documentation and reference-asset validation can run in this package. Unity compilation, TEST EVERYTHING, Play Mode, target-device performance and user acceptance remain required after Runtime implementation.
+Current action: review/install this specification package, then inspect the exact local menu/input/presentation implementation before building the 3D vertical slice. Do not return to enemy animation or the prior repair queue until this user-prioritized UI stage is completed or explicitly deferred.
+Saved interrupted resume point: Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md retains the previous QA/target-outline/animation order for later return.
 ```
 
 
@@ -45,12 +46,66 @@ This file is the only live source for current status, ordering, blockers, verifi
 Canonical contract: `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md`.
 <!-- B&D DURABLE TASK CONTINUITY CONTRACT END -->
 
+<!-- B&D MODERN 3D HANDHELD CURRENT REQUIREMENT START -->
+# Current approved UI redesign — C11.UI.MODERN_HANDHELD_3D.V1
+
+## Classification and priority
+
+- Classification: `CURRENT / USER-PRIORITIZED BEFORE PREVIOUS REPAIR QUEUE`.
+- This does not mark prior Runtime/QA defects resolved.
+- Their exact resume point remains preserved in `MASTER_ACTIVE_WORK_SEQUENCE_V1.md`.
+
+## Required result
+
+The Main and Escape/Pause menus must be presented through one original upright 3D handheld device:
+
+- portrait/classic standing handheld silhouette;
+- screen in the upper half;
+- controls in the lower half;
+- continuous blue-left to orange-right shell gradient;
+- real modeled thickness and bevels;
+- real separate D-pad, A/B/X/Y, Settings and Progression controls;
+- tactile press/release interaction;
+- display recessed behind separate clear glass/transparent plastic with visible thickness and controlled reflections;
+- professional dark-fantasy screen design;
+- same physical device and interaction system across Main, Settings, Progression, Pause, Abandon and Loading where applicable.
+
+## Exact interaction contract
+
+- mouse hover/click is supported;
+- D-pad/arrows navigate;
+- A selects/confirms;
+- B goes back;
+- X opens Settings;
+- Y opens Progression;
+- physical center `SETTINGS` opens Settings;
+- physical center `PROGRESSION` opens Progression;
+- all paths call the same semantic menu actions and cannot double-activate.
+
+## Text and character-art correction
+
+- Use `Progression`, on one line.
+- Do not show `Meta Progression` in the redesigned UI.
+- Every image containing the Boy requires an equivalent Girl image in the same change and asset version.
+- Runtime uses the variant matching the active playable character.
+
+## Canonical specification and references
+
+- `Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`
+- `Assets/_Project/Design/Visual/References/ModernHandheld3D/`
+
+## Verification truth
+
+This package captures design/spec/reference truth only. It does not prove Runtime implementation, Unity compilation, TEST EVERYTHING, tactile interaction, performance or final visual acceptance.
+<!-- B&D MODERN 3D HANDHELD CURRENT REQUIREMENT END -->
 
 
 
 
 
-# Active visual work — C11.UI.V23R19Q
+
+
+# Previous implemented visual baseline — C11.UI.V23R19Q (superseded as final target)
 
 ## Reason
 

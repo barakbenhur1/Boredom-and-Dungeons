@@ -1,5 +1,36 @@
 # Master Active Work Sequence V1
 
+<!-- B&D USER-PRIORITIZED MODERN 3D HANDHELD START -->
+## User priority override — upright 3D Main/Pause device before Priority 0
+
+**Status:** `CURRENT / SPECIFICATION COMPLETE / IMPLEMENTATION REQUIRED`
+
+The user explicitly requested this stage before returning to the prior repair and enemy-animation sequence.
+
+Required order:
+
+1. install/review the complete asset and interaction specification;
+2. inspect current local menu/input/presentation ownership;
+3. build a testable real-3D vertical slice of the upright device;
+4. implement screen depth/glass and tactile physical controls;
+5. implement mouse + D-pad + A/B/X/Y + Settings/Progression shortcuts;
+6. adapt Main and Escape/Pause without inventing unsupported pages/data;
+7. implement deterministic Boy/Girl paired art selection;
+8. run static, compilation, TEST EVERYTHING, focused Play Mode, performance and user acceptance gates;
+9. only then return to the saved prior blocker/repair sequence below unless the user reprioritizes again.
+
+Canonical specification:
+
+`Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`
+
+Important:
+
+- The existing target-outline/ring and QA/runtime issues remain open; this priority change does not verify or close them.
+- `Progression` is the final user-facing label.
+- Every Boy image requires a matched Girl image.
+<!-- B&D USER-PRIORITIZED MODERN 3D HANDHELD END -->
+
+
 ## Purpose
 
 This is the canonical cross-session execution queue for the current Boredom & Dungeons work.

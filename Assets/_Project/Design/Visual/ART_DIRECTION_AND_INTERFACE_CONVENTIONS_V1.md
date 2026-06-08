@@ -131,3 +131,27 @@ The menu device should evoke the emotional memory of a classic handheld rather t
 - The BBH boot sequence keeps its content and timing but may gain restrained screen-surface depth, scanlines, glow and vignette.
 - Nostalgia must not reduce readability, resolution, touch-target size or accessibility.
 - Professional finish means consistent hierarchy, aligned spacing, controlled color, subtle motion, cached rendering resources and no prototype-looking flat rectangles.
+
+<!-- B&D MODERN 3D HANDHELD ART DIRECTION START -->
+## Approved upright 3D handheld menu device
+
+The approved Main and Escape/Pause presentation is no longer satisfied by a flat illustrated frame. The device must be a real three-dimensional upright handheld with a screen in the upper half and physical controls below.
+
+- Use an original portrait handheld silhouette inspired by remembered retro hardware, not a commercial replica.
+- The molded-plastic shell transitions from rich blue on the left through violet/indigo to warm orange on the right.
+- Model real thickness, rounded edges, screen recess, bezel, speaker perforations and material separation.
+- The display sits behind a separate glossy glass/transparent-plastic cover with visible edge thickness, controlled reflection and a shallow physical gap.
+- D-pad, A/B/X/Y, Settings and Progression are separate tactile 3D parts with visible press/release response.
+- Left center shortcut: `SETTINGS`. Right center shortcut: `PROGRESSION`.
+- A = Select/Confirm; B = Back; X = Settings; Y = Progression.
+- Mouse and D-pad navigation share one visual focus language.
+- Use the single-line label `Progression`; do not use `Meta Progression` in this redesigned interface.
+- Main, Settings, Progression, Pause, Abandon and Loading share the same device, screen-material and interaction language.
+- Concept-art data that is not supported by real game systems must be omitted rather than fabricated.
+
+### Boy/Girl image parity
+
+Every interface/reference/promotional image that depicts the Boy must ship with a matched Girl version in the same asset change. The pair keeps identical dimensions, crop, camera, background, lighting, horse pose, safe areas, grading and import settings. Runtime shows the variant matching the active playable character. A Boy image without its Girl pair fails the visual acceptance gate.
+
+Full specification: `Assets/_Project/Design/UI/MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`.
+<!-- B&D MODERN 3D HANDHELD ART DIRECTION END -->

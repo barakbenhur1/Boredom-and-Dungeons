@@ -259,3 +259,21 @@ VOC_Boss_Stab_Run_01
 This document is **complete and active as direction**. - Full SFX asset coverage and event routing are part of the same retained C12.42 implementation scope; this document now defines the required coverage rather than a small example subset.
 
 Full dynamic music, stem scheduling, snapshots, mixer routing, and mastering implementation remains ordered under `C12.42`; it is not falsely marked implemented by this document alone.
+
+<!-- B&D MODERN 3D HANDHELD AUDIO START -->
+## Upright 3D handheld tactile UI audio
+
+The approved physical menu device requires restrained tactile audio synchronized to the visible 3D control response.
+
+- D-pad navigation uses one short, clean device click with controlled repeat behavior.
+- A/Confirm uses a slightly firmer press sound.
+- B/Back uses a softer return/cancel sound.
+- X/Settings and the physical Settings shortcut may share one recognizable settings-page cue.
+- Y/Progression and the physical Progression shortcut may share one recognizable progression-page cue.
+- Mouse clicks on screen items or physical-device controls use the same semantic action sound as the equivalent hardware input.
+- Button press animation and sound begin together; no delayed double-click layer.
+- Held navigation must not create uncontrolled sound spam.
+- Haptics, when supported, respect user settings and are supplementary rather than required for meaning.
+- Route all sounds through the existing UI/SFX mixer ownership; do not create a second audio system for the device.
+- The visual reference package is not evidence that final sound assets exist.
+<!-- B&D MODERN 3D HANDHELD AUDIO END -->

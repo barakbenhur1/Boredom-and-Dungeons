@@ -227,3 +227,18 @@ When implemented:
 - `BDGameBoyMenuShell` owns the physical handheld body, screen housing, glass overlay, controls and persistent original/awakened palette.
 - `BDMainMenuFlow` owns screen content, interaction, mode transitions and menu behavior.
 - Shell and content remain in one ordered IMGUI composition; no second competing menu canvas or OnGUI owner is introduced.
+
+<!-- B&D MODERN 3D HANDHELD TARGET ARCHITECTURE START -->
+## Approved target architecture — upright 3D handheld (not yet implemented)
+
+The approved final menu presentation requires a real 3D device while preserving one semantic menu owner.
+
+- `BDMainMenuFlow` remains the sole state, focus, input-semantic, mode-transition, settings/progression, pause/resume and abandon owner.
+- The existing shell responsibility evolves into one presentation-only 3D handheld presenter. It owns the prefab, device camera, body/glass/display materials, physical hit targets, tactile button transforms and original/awakened palette.
+- A menu-screen view renders content onto the physical display, preferably through one dedicated Canvas/UI camera and one RenderTexture displayed behind the glass.
+- The screen view submits semantic commands to `BDMainMenuFlow`; it does not own navigation state.
+- One input adapter merges pointer, keyboard/controller and physical-device hit targets into Navigate/Confirm/Back/OpenSettings/OpenProgression commands.
+- Main, Settings, Progression, Pause, Abandon and Loading reuse the same device instance/system.
+- Runtime character identity selects matched Boy/Girl screen art.
+- Until implemented, the current one-pass IMGUI shell remains current Runtime truth; documentation must not claim the 3D presenter exists.
+<!-- B&D MODERN 3D HANDHELD TARGET ARCHITECTURE END -->
