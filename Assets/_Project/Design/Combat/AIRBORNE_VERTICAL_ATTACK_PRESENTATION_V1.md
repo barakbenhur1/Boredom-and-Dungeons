@@ -63,3 +63,12 @@
 - Its mesh, arc angle, thickness, range identity, color, and heavy/light distinction match the grounded attack.
 - The airborne variant is produced by rotating that same attack exactly 90 degrees so it is perpendicular to the player model, placing it in front, and moving it toward the floor.
 - Do not substitute a narrow custom vertical arc and do not spawn the grounded horizontal slash at the same time.
+
+## V23R19M exact long-axis orientation
+
+- The grounded attack reads as a line whose long axis runs left-to-right, parallel to the floor.
+- The airborne attack uses the same Light/Heavy geometry, but rotates the **long axis itself** from left-to-right into top-to-bottom.
+- In the current mesh coordinate system, the long axis is local X and forward/depth is local Z. Therefore the correct conversion is a 90-degree rotation around the **local Z axis**, not local X.
+- Local Z remains pointed in the player's attack direction while local X becomes world up/down.
+- The result must read as one vertical top-to-bottom attack line, perpendicular to the floor, directly in front of the player.
+- Rotating only the plane while leaving the long axis horizontal does not satisfy this contract.

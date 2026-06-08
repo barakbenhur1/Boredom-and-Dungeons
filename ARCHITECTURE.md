@@ -199,3 +199,31 @@ The menu flow owns whether gameplay presentation is visible. The shell is presen
 - `BDQuicksandStatus` owns active/residual quicksand state and prevents generic `BDPlayerHazardRecovery` floor-loss recovery until it releases ownership or deliberately requests failure recovery.
 - `BDPlayerController` owns controlled jump reach, dodge distance and solid vertical wall-jump surface resolution; the bounded probe runs only when Jump is requested while airborne.
 - `BDPlayerMeleeEnhancer` resolves committed airborne identity and body motion; `BDPlayerCombat` owns the single explicit vertical-versus-horizontal slash branch.
+
+## V23R19O focused ownership clarification
+
+- `BDRunPresentationCoordinator` temporarily owns mounted-intro rider-renderer visibility and skinned offscreen-update policy while it owns cinematic camera/control. `BDHorseController` continues to own rider Transform placement and calls the coordinator's visibility reassertion from its authoritative mounted-intro binding.
+- `BDTargetOutlineVisual` outlines only eligible visible geometry intersecting the selected `BDHealth` damageable non-trigger collider envelope.
+- `BDAuxiliaryEnemyRingTransparency` owns the reduced alpha of broad flat enemy support rings. Those rings remain presentation-only and are excluded from outline geometry.
+- `BDPlayerController` owns Wall Jump impulse, retained speed, bounded air steering and trajectory-facing intent.
+- `BDCameraFollow` remains the sole gameplay camera writer and only accelerates yaw response while consuming the player's active Wall Jump direction.
+
+## Future Caterpillar gambling NPC ownership
+
+When implemented:
+
+- run/room content placement owns which rooms are Caterpillar-eligible;
+- room encounter state owns clear/unsafe notifications;
+- the Caterpillar presentation state machine owns animated appearance, visible idle, interaction and disappearance;
+- the gambling-session coordinator owns one active transaction, temporary player-safety state and deterministic cleanup;
+- individual game modules own game-specific rules and presentation through a configurable game interface;
+- the Caterpillar bankroll owner applies atomic stake/payout/refill mutations and anti-duplication guards;
+- no enemy archetype receives ad-hoc Caterpillar exceptions; enemies consume one explicit session-safety/room-access policy.
+
+## V23R19Q professional menu ownership
+
+- `BDBBHBootIntro` remains the sole BBH boot owner and now also owns its cached screen-surface textures.
+- `BDDreamyMainMenuBackdrop` remains the menu-world backdrop owner.
+- `BDGameBoyMenuShell` owns the physical handheld body, screen housing, glass overlay, controls and persistent original/awakened palette.
+- `BDMainMenuFlow` owns screen content, interaction, mode transitions and menu behavior.
+- Shell and content remain in one ordered IMGUI composition; no second competing menu canvas or OnGUI owner is introduced.

@@ -119,3 +119,15 @@ Desktop and landscape mobile share palette, typography hierarchy, symbols, icon 
 ## Quality gate
 
 A visual element is approved only when it reads from the real camera, has one purpose, belongs to the shared palette/material language, is impressive without clutter, feels cool and understandable to a child, works in bright and dark biomes, does not duplicate another owner, adapts to desktop/mobile, avoids literal copying, and supports gameplay truth.
+
+## V23R19Q professional memory-handheld finish
+
+The menu device should evoke the emotional memory of a classic handheld rather than reproduce exact old hardware.
+
+- Preserve the chunky, tactile, screen-centered silhouette.
+- Modernize proportions, spacing, glass depth, material separation, status lighting and interaction response.
+- Keep the device original: no copied logo, exact commercial shell, button layout measurement or branded industrial detail.
+- All menu pages remain inside one screen.
+- The BBH boot sequence keeps its content and timing but may gain restrained screen-surface depth, scanlines, glow and vignette.
+- Nostalgia must not reduce readability, resolution, touch-target size or accessibility.
+- Professional finish means consistent hierarchy, aligned spacing, controlled color, subtle motion, cached rendering resources and no prototype-looking flat rectangles.

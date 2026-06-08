@@ -8,7 +8,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float lifetime = 0.18f;
         [SerializeField] private float startScale = 0.25f;
         [SerializeField] private float endScale = 1.25f;
-        [SerializeField] private Color color = new Color(1f, 0.26f, 0.08f, 0.72f);
+        [SerializeField] private Color color = new Color(1f, 0.26f, 0.08f, 0.52f);
 
         private float timer;
         private Renderer cachedRenderer;
@@ -66,8 +66,8 @@ namespace BoredomAndDungeons
             startScale = 0.65f;
             endScale = ranged ? 1.45f : 1.18f;
             color = ranged
-                ? new Color(1f, 0.55f, 0.12f, 0.62f)
-                : new Color(1f, 0.18f, 0.08f, 0.70f);
+                ? new Color(1f, 0.55f, 0.12f, 0.45f)
+                : new Color(1f, 0.18f, 0.08f, 0.50f);
         }
 
         private void Awake()

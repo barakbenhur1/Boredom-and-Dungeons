@@ -3,16 +3,16 @@
 ## Current development snapshot
 
 ```text
-Status date: 2026-06-08
-Classification: EARLIER / BLOCKING AIRBORNE BRANCH + QA REALIGNMENT
-Active work: C01/C03.RUNTIME.V23R19K
-Current truth: Unity compilation succeeds, but the post-V23R19J TEST EVERYTHING run at 2026-06-08T17:07:43.5483780Z reported 10 blockers, 0 warnings and 0 info. Six blockers still require obsolete airborne suppression ownership, one requires outdated Girl wording, and two incorrectly require a resolved compile bug to remain in the open-bug table. Inspection also found one real Runtime defect: `BDPlayerMeleeEnhancer` returns explicit airborne identity, but `BDPlayerCombat` ignored it and always spawned the grounded horizontal arc.
-Implementation truth: V23R19K consumes the explicit identity in the committed combat path and selects exactly one vertical or grounded visual. It realigns the remaining scanners to the active branch, preserves the Boy mounted-hook restriction and future Girl permission, keeps resolved bugs out of the open table, and captures the approved wordless opening-dialogue specification as required future work.
-Verification truth: Package/static checks can run here. Unity compilation, TEST EVERYTHING and focused airborne Play Mode verification must be rerun before V23R19K is closed.
-Current action: install V23R19K, rerun TEST EVERYTHING, then verify airborne Light/Heavy orientation and continue the retained V23R19G/V23R19H Play Mode gates.
-Saved feature resume point after V23R19K and retained gates pass: C03.23A completion review -> C07.16A -> C07.16 -> C07.17.
-Later approved work: C06 merchant shop/run economy, temporary and final C06.META progression, Girl/Father content, reusable wordless character-dialogue and opening “I’m bored.” sequence, gameplay/abilities/map/ambient/UI expansion, rope swinging, climbable vegetation, quicksand swamp, final production animations, and C12.42 audio implementation.
+Status date: 2026-06-09
+Classification: CURRENT / V23R19T PHASE-AGNOSTIC STATUS-QA REPAIR
+Active work: C01.QA.V23R19T
+Current truth: Unity TEST EVERYTHING at 2026-06-08T21:26:24.0618690Z reported 1 blocker, 0 warnings and 0 info. The only blocker is V23R19R_PROJECT_STATUS_MISSING because the V23R19R scanner still requires the historical phase identifier `C01.QA.V23R19R` after PROJECT_STATUS correctly advanced to V23R19S.
+Implementation truth: V23R19T removes phase-specific and historical-bug dependencies from both V23R19R and V23R19S scanners. They now validate stable current truth: a CURRENT status, the canonical master work sequence, Enemy Attack Animations next, Professional Opening Cinematic after it, and the permanent bug-tracker update discipline. A V23R19T regression scanner prevents exact historical phase and bug IDs from returning to those scanners. No Runtime, Gameplay, UI, Scene, Prefab, animation or balance change.
+Verification truth: Package/static checks can run here. Unity compilation and TEST EVERYTHING must be rerun. No gameplay or visual behavior is marked verified by this QA-only repair.
+Current action: install V23R19T and run TEST EVERYTHING. After and only after 0 blockers / 0 warnings / 0 info, begin Priority 1 — Enemy Attack Animations.
+Saved resume point: Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md.
 ```
+
 
 This file is the only live source for current status, ordering, blockers, verification truth, and the resume point. Durable behavior belongs in the maintained files under `Assets/_Project/Design/`. Git history stores previous states; stale package narratives and duplicate roadmaps are not live documentation.
 
@@ -28,10 +28,250 @@ This file is the only live source for current status, ordering, blockers, verifi
 8. Run repository hygiene on every handoff and before every commit.
 9. When remote and local both contain valid unique progress, preserve both sides and merge; never reset one side over the other.
 
+<!-- B&D DURABLE TASK CONTINUITY CONTRACT START -->
+## Permanent task continuity and cross-session handoff rule
+
+1. Every material task is summarized in this file with its reason, scope, current phase, implementation truth, verification truth, blockers, next action and exact resume point.
+2. Every large, multi-step, cross-system or multi-session task also has a detailed active record under `Assets/_Project/Design/Runtime/Tasks/`.
+3. The detailed task record contains the originating request, why the task exists, protected behavior, decomposition, dependencies, decisions, file/system ownership, work completed, evidence, failures, unverified areas and the exact Codex/chat handoff point.
+4. The task record and this global status are updated immediately whenever requirements, status, implementation, QA, bugs, blockers, ordering, deferral or the resume point changes.
+5. Every relevant canonical domain document is updated in the same change. Important truth may not live only in this file, only in a task record, only in chat, or only in a package README.
+6. Bug changes also update `Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md`.
+7. Ownership changes update `ARCHITECTURE.md`; durable choices update `TECHNICAL_DECISIONS.md`; QA changes update `QA_CHECKLIST.md`; performance policy changes update `PERFORMANCE_GUIDELINES.md`; maintained-document changes update `DOCUMENTATION_INDEX.md`.
+8. No task may be described as complete or verified without the evidence required by its acceptance gate.
+9. Before handoff to Codex, another chat or another contributor, the repository must explain why the task exists, what was approved, what was done, what was verified, what remains open and exactly where to continue.
+10. Before every commit, perform a documentation relevance sweep: merge still-valid content into canonical owners, remove completed/superseded/duplicate/temporary documents, update references and `DOCUMENTATION_INDEX.md`, and block the commit if ownership is unclear or valid truth would be lost.
+
+Canonical contract: `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md`.
+<!-- B&D DURABLE TASK CONTINUITY CONTRACT END -->
 
 
 
 
+
+
+# Active visual work — C11.UI.V23R19Q
+
+## Reason
+
+The intro and menu already contain the approved identity, but their composition and rendering still read as prototype IMGUI. The goal is not to replace the design. The goal is to preserve it and make it feel authored, cohesive and production-ready.
+
+The requested memory is a Game Boy-like handheld as people remember it: chunky, tactile, friendly and screen-centered, but cleaner, richer and more modern than the literal old hardware.
+
+## Preserved
+
+- BBH sequence and timing;
+- growing circle and light sweep;
+- dreamy backdrop;
+- title/subtitle;
+- Start, Settings and Quit;
+- Pause/Resume;
+- Abandon confirmation;
+- Loading;
+- all settings;
+- true-victory awakened state;
+- current run/input behavior.
+
+## V23R19Q implementation
+
+- professional cached boot surface;
+- rounded original handheld shell;
+- inset glass screen and subtle scanlines;
+- refined D-pad, A/B, Start/Select, speaker and status light;
+- limited readable screen palette;
+- modern list-action hover/focus treatment;
+- 180 ms page slide/fade;
+- restrained device focus halo;
+- no per-frame Texture2D or Material creation;
+- no scene/prefab replacement;
+- no gameplay behavior change.
+
+## V23R19Q acceptance gate
+
+1. Unity compiles.
+2. TEST EVERYTHING: 0 blockers, 0 warnings, 0 info.
+3. BBH content/order/timing/circle/sweep remain.
+4. The intro looks more professional without becoming busy.
+5. Main, Settings, Pause, Abandon and Loading all appear inside one coherent handheld screen.
+6. Every existing option still works.
+7. Hover and page transitions are smooth.
+8. The shell evokes remembered handheld language without copying a commercial model.
+9. The device and text remain readable at desktop and landscape-mobile-like resolutions.
+10. No recurring GC spike or visible frame hitch is introduced by the new presentation.
+11. V23R19O gameplay-focused verification remains unchanged.
+
+# Active blocking work — C01.QA.V23R19P
+
+## Why this repair exists
+
+The V23R19O automated run compiled and executed, but three old string-based QA expectations no longer match the active project truth:
+
+1. V23R19 traversal QA still requires `wallJumpHorizontalDuration = 0.48f`, although V23R19O intentionally raised the active minimum to `0.62f` and added steering/retained-speed policy.
+2. V23R19G QA requires `BUG-V23R19G-001` to remain in the current open-bug table, although that visual bug was verified and removed under the repository's documentation relevance policy.
+3. V23R19O QA requires the exact single-line text `BDRunPresentationCoordinator.EnsureMountedIntroRiderVisible(rider)`, while the valid compiled call is formatted across several lines.
+
+These are QA semantic defects. Restoring the old duration, reopening a verified bug, or reformatting Runtime only to satisfy brittle text matching would make the repository less accurate.
+
+## V23R19P implementation
+
+- V23R19 traversal QA now requires the active 0.62-second Wall Jump duration plus steering and retained-speed fields.
+- Its scene contract keeps only stable scene-owned traversal values; active Wall Jump minimum migration remains Runtime-owned.
+- V23R19G bug-ledger QA requires current open defects (`BUG-V23R19G-005`, `BUG-V23R19H-001`, `BUG-V23R19O-001`) rather than a verified/removed bug.
+- V23R19O mounted-visibility QA requires the stable qualified method symbol instead of whitespace-sensitive argument formatting.
+- A V23R19P scanner prevents those three semantic regressions.
+- No Runtime behavior is changed.
+
+## Caterpillar gambling NPC capture
+
+The new canonical future specification records:
+
+- only rooms selected to host the NPC are eligible;
+- it does not appear in every room;
+- in an eligible room it appears through animation only after the room is clear;
+- enemy presence triggers an animated disappearance;
+- an active gambling session has explicit temporary safety preventing enemy approach and attacks;
+- each Caterpillar offers one configurable game;
+- the current game candidates are not final;
+- bankroll is finite;
+- passive refill uses time and room progression and stops at a normal threshold;
+- player-derived winnings can exceed that threshold and are never clipped;
+- all missing formulas, odds, rules, frequencies, visuals and values remain open.
+
+The Caterpillar remains `REQUIRED / FUTURE / NOT IMPLEMENTED`.
+
+## V23R19P acceptance gate
+
+1. Unity compiles without errors.
+2. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+3. No scanner requires the 0.48-second Wall Jump duration.
+4. No scanner requires verified `BUG-V23R19G-001` to return to the open ledger.
+5. Mounted-rider QA accepts the active multi-line method call.
+6. Caterpillar requirements are present in the canonical economy document, global status, documentation index, architecture/decision context and active task record.
+7. V23R19O focused Play Mode remains open and unchanged.
+
+# Active blocking work — C03/C04/C11.RUNTIME.V23R19O
+
+## Why this task exists
+
+The latest automated run is clean and the corrected airborne attack plus enemy-death presentation were accepted in focused Play Mode. Testing then exposed one serious retained regression and two requested presentation/traversal refinements.
+
+1. After confirmed abandon and Start Game, the horse performs the mounted opening while the Boy is not rendered; the Boy becomes visible only when the cinematic finishes.
+2. The red target silhouette includes the broad non-damageable circle/ring around an enemy instead of following only the enemy model that can actually receive damage.
+3. Wall Jump must be higher and farther, allow directional steering during the push-off arc, rotate the player toward the changing direction, and make the gameplay camera yaw follow that direction.
+
+The mounted-intro issue is a blocker because it breaks the first visible narrative/gameplay frame after a common run-flow action.
+
+## V23R19O implementation
+
+- Capture the active-scene rider's eligible visible Mesh/Skinned renderer baseline on scene load.
+- Before the cinematic cover opens and on every mounted-intro rider rebind, force those renderer branches active/enabled and clear `forceRenderingOff`.
+- Keep `SkinnedMeshRenderer.updateWhenOffscreen` enabled during the teleported cinematic so stale bounds cannot cull the Boy, then restore the original policy after control handoff.
+- Preserve the existing authoritative horse/rider Transform binding.
+- Resolve the enemy's actual enabled non-trigger colliders owned by the same `BDHealth`.
+- Build outline shells only for non-auxiliary renderers intersecting that damageable envelope.
+- Never outline thin ground rings/circles, range/selection indicators, telegraphs or target-outline shells.
+- Apply a 0.62 alpha multiplier to auxiliary enemy rings and reduce temporary enemy attack-circle alpha modestly.
+- Raise the Wall Jump minimum height/speed/duration, retain more launch speed through the arc, and rotate launch velocity toward held movement input at a bounded rate.
+- Update player facing and `LastLookDirection` from the steered wall-jump trajectory.
+- Increase camera yaw response only while `IsWallJumping`, preserving normal camera behavior outside the move.
+
+## Protected behavior
+
+- Grounded jump values and behavior remain unchanged.
+- Wall Jump still requires a valid mostly vertical enabled non-trigger solid surface and keeps its cooldown.
+- Player, horse, enemies, hazards, map generation and combat damage are not redesigned.
+- Target selection range, blocker truth and one-target-only ownership remain unchanged.
+- The auxiliary ring remains visible; it is only made subtler.
+- No scene or prefab replacement is included.
+
+## V23R19O acceptance gate
+
+1. Unity compiles without errors.
+2. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+3. Abandon -> clean main menu -> Start Game:
+   - the exact active-scene Boy is already on the horse before the cover reveals the cinematic;
+   - he remains visible from the first visible frame through the entire entrance and control release;
+   - no late pop-in occurs.
+4. Target highlighting:
+   - the red outline follows only the vulnerable enemy model;
+   - no outline appears on the non-damageable broad ring/circle;
+   - the ring remains visible but is noticeably more transparent;
+   - one target, range and wall blocking remain correct.
+5. Wall Jump:
+   - reaches visibly higher and farther than the previous accepted version;
+   - begins away from the contacted valid vertical surface;
+   - held directional input can curve/change the travel direction during the launch;
+   - the player model turns with the trajectory;
+   - the camera yaw follows the changed direction smoothly;
+   - normal grounded jump remains unchanged.
+6. Update `PROJECT_STATUS.md`, the open-bug ledger, task record and canonical domain documents with actual results.
+7. Resume Phase 1 of `C01.ARCH.AUDIT.V1` only after the focused gates pass.
+
+# Active blocking work — C01.QA.V23R19N
+
+## Why this repair exists
+
+The V23R19M Runtime correctly replaced the superseded local-X conversion with the approved local-Z conversion. The next Unity automated run compiled and executed, but three older regression scanners still required the removed marker and rotation expression. Each scanner emitted two findings, producing six blockers for one semantic drift.
+
+The repair exists to make automated QA validate the active implementation rather than force restoration of the known-wrong rotation.
+
+## Evidence
+
+`TEST EVERYTHING` at `2026-06-08T19:10:30.7997940Z` reported:
+
+- 2 findings from V23R19D;
+- 2 findings from V23R19E;
+- 2 findings from V23R19G;
+- every finding requested either `BD CORRECT LOCAL-X AIRBORNE ROTATION V23R19G` or `Quaternion.AngleAxis(-90f, Vector3.right)`;
+- 0 compiler errors, 0 warnings and 0 info.
+
+## V23R19N implementation
+
+- `BDV23R19DFocusedRegressionQA` now requires the V23R19M local-Z marker and `Quaternion.AngleAxis(90f, Vector3.forward)`.
+- `BDV23R19EDeathGuardianIntroQA` now requires the same active contract.
+- `BDV23R19GFocusedRegressionQA` now requires the same active contract.
+- No Runtime, animation, scene, prefab, balance or content file changes.
+- The V23R19M scanner remains the newest strict regression owner.
+
+## V23R19N acceptance gate
+
+1. Unity compiles without errors.
+2. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+3. No legacy scanner requests the local-X marker or `-90°` local-X expression.
+4. Automated PASS is recorded in `PROJECT_STATUS.md`, the bug ledger and the active audit interruption.
+5. V23R19M focused Play Mode still verifies grounded/airborne Light and Heavy plus small/large enemy death.
+
+# Active blocking work — C03/C11.RUNTIME.V23R19M
+
+## Why this repair exists
+
+Focused Play Mode showed that the airborne attack still did not match the user's simple geometric requirement: the normal attack line is horizontal/parallel to the floor, while the jumping attack must turn that same long line upright so it is top-to-bottom/perpendicular to the floor. Code inspection proved the previous repair rotated around local X, which stood up the plane but left the mesh's long local-X axis horizontal.
+
+The user also confirmed that small regular-enemy death does not look good. The shared procedural path compresses enemy Y scale to 34%, producing a flat/rubber collapse instead of a readable death fall.
+
+The V23R19L TEST EVERYTHING run at `2026-06-08T18:53:41.7256860Z` additionally reported two documentation-QA blockers because historical V23R19J/V23R19K scanners required resolved bug rows to remain in the current open ledger.
+
+## V23R19M implementation
+
+- Airborne Light/Heavy rotate the existing grounded mesh exactly 90 degrees around local Z.
+- The long left-to-right local-X line becomes world up/down; local Z continues to face forward.
+- Grounded attacks are unchanged.
+- Small regular enemies use a short recoil, intact-body fall and subtle settle with only minimal scale compression.
+- Player, large, Elite, guardian, mini-boss and boss death paths remain unchanged.
+- Historical V23R19J/V23R19K QA no longer forces obsolete bug/status history to remain in current documents.
+- A V23R19M regression scanner is integrated into TEST EVERYTHING.
+
+## V23R19M acceptance gate
+
+1. Unity compiles without errors.
+2. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+3. Grounded Light/Heavy remain horizontal and parallel to the floor.
+4. Airborne Light/Heavy long axis is top-to-bottom and perpendicular to the floor, directly in front of the player.
+5. No horizontal duplicate appears while airborne.
+6. At least two small regular enemy archetypes recoil and fall as intact bodies without flattening before loot/despawn.
+7. One large/Elite enemy confirms its existing death path was not changed.
+8. Update `PROJECT_STATUS.md`, this task interruption, canonical design docs, QA, technical decisions and open bugs with real results.
+9. After verification, resume `C01.ARCH.AUDIT.V1` Phase 1 exactly where it was paused.
 
 # Active blocking work — C01/C03.RUNTIME.V23R19K
 
@@ -1330,3 +1570,58 @@ This file is the only live source for current status, ordering, blockers, verifi
 - The reported static blockers were one obsolete camera field, two missing permanent-document tokens, two obsolete post-recovery text anchors, and two frozen status-category strings.
 - V23R3 preserved the stronger active Runtime contracts, synchronized documentation, and made QA semantic/version-agnostic.
 - Synchronization and automated Unity QA are now complete; focused V23R6 diagnosis remains active.
+
+<!-- B&D V23R19R CURRENT EXECUTION ORDER START -->
+# Current mandatory execution order — V23R19R
+
+1. **Blocker repair:** remove the stale `B&D POCKET ADVENTURE` QA expectation and obtain TEST EVERYTHING 0/0/0.
+2. **Enemy Attack Animations:** implement and verify visible windup, commit, impact/release, follow-through, recovery and interruption for every active attack-capable enemy archetype.
+3. **Professional Opening Cinematic:** high hidden-map start, controlled dive, slightly farther final framing, mounted entrance, visible Boy from first frame, stop, `I'm bored.` bubble and reusable nonverbal speech sound.
+4. **Retained verification:** complete every implemented-but-unconfirmed V23R19O/V23R19Q visual, gameplay, responsive and performance gate.
+5. **Resume remaining queue:** architecture audit and future systems in the canonical master sequence.
+
+Canonical detailed queue:
+
+`Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md`
+
+Nothing is considered verified merely because it was installed, compiled, or passed automated QA. Bug, Play Mode, performance, device, visual, audio and user-confirmation states remain separate.
+<!-- B&D V23R19R CURRENT EXECUTION ORDER END -->
+
+<!-- B&D V23R19S CONTINUITY QA REPAIR START -->
+# Current automated repair — V23R19S
+
+The V23R19R master work sequence and continuity contract are present.
+
+The remaining blocker is caused by a brittle sentence-level string check, not by missing continuity information.
+
+V23R19S requires the six verification levels independently:
+
+1. installer/static validation;
+2. compilation;
+3. TEST EVERYTHING;
+4. focused Play Mode;
+5. target-device/performance verification;
+6. user acceptance.
+
+No earlier level implies a later level.
+
+After a clean automated rerun, the next implementation remains **Enemy Attack Animations**. The opening cinematic remains immediately after enemy attack animations.
+<!-- B&D V23R19S CONTINUITY QA REPAIR END -->
+
+<!-- B&D V23R19T PHASE-AGNOSTIC QA REPAIR START -->
+# Current automated repair — V23R19T
+
+Historical validation stages must not require their own phase identifier to remain the current phase forever.
+
+V23R19T converts V23R19R and V23R19S status checks to stable project truth:
+
+- `PROJECT_STATUS.md` has a `CURRENT` classification;
+- it references `MASTER_ACTIVE_WORK_SEQUENCE_V1.md`;
+- Enemy Attack Animations are next;
+- Professional Opening Cinematic follows;
+- the open-bug tracker retains its permanent update discipline.
+
+Historical bug IDs remain available in Git and status history, but old QA scanners no longer require them to remain open indefinitely.
+
+After a clean 0/0/0 automated result, begin Enemy Attack Animations.
+<!-- B&D V23R19T PHASE-AGNOSTIC QA REPAIR END -->

@@ -67,6 +67,7 @@ namespace BoredomAndDungeons
             DrawMoon();
             DrawStars();
             DrawCloudHaze();
+            DrawDeviceFocusHalo();
             DrawStorybookHorizon();
             DrawGoldenPath();
 
@@ -244,6 +245,35 @@ namespace BoredomAndDungeons
                     glowTexture
                 );
             }
+        }
+
+        // BD PROFESSIONAL DEVICE FOCUS HALO V23R19Q
+        private void DrawDeviceFocusHalo()
+        {
+            Color previousColor = GUI.color;
+            float width = Screen.width * 0.62f;
+            float height = Screen.height * 0.86f;
+
+            GUI.color = new Color(
+                0.18f,
+                0.46f,
+                0.58f,
+                0.085f
+            );
+
+            GUI.DrawTexture(
+                new Rect(
+                    Screen.width * 0.50f - width * 0.50f,
+                    Screen.height * 0.50f - height * 0.48f,
+                    width,
+                    height
+                ),
+                glowTexture,
+                ScaleMode.StretchToFill,
+                alphaBlend: true
+            );
+
+            GUI.color = previousColor;
         }
 
         private void DrawStorybookHorizon()

@@ -513,6 +513,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDV23R19ICombatantForcedMovementCompatibilityQA.Scan(result);
             BDV23R19JQaSemanticRealignmentQA.Scan(result);
             BDV23R19KAirborneDialogueQA.Scan(result);
+            BDV23R19MAirborneAxisSmallEnemyDeathQA.Scan(result);
+            BDV23R19OCriticalIntroOutlineWallJumpQA.Scan(result);
+            BDV23R19PQaSemanticCaterpillarSpecQA.Scan(result);
+            BDV23R19QProfessionalMemoryHandheldUiQA.Scan(result);
+            BDV23R19RMenuContractAndWorkLedgerQA.Scan(result);
+            BDV23R19SContinuitySemanticQA.Scan(result);
+            BDV23R19TPhaseAgnosticStatusQA.Scan(result);
             BDHorseCleanRunStartQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);

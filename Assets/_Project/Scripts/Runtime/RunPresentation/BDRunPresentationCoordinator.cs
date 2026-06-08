@@ -37,6 +37,17 @@ namespace BoredomAndDungeons
         private float nextPortalRepairAt;
         private float nextAudioListenerRepairAt;
 
+        // BD MOUNTED INTRO RIDER FIRST-VISIBLE-FRAME V23R19O
+        private readonly List<Renderer> mountedIntroRiderRenderers =
+            new List<Renderer>(16);
+        private readonly List<SkinnedMeshRenderer>
+            mountedIntroRiderSkinnedRenderers =
+                new List<SkinnedMeshRenderer>(8);
+        private readonly List<bool>
+            mountedIntroRiderOriginalOffscreenPolicy =
+                new List<bool>(8);
+        private Transform mountedIntroRiderRoot;
+
         // BD FIRST-FRAME CINEMATIC CAMERA PRIME V23R5
         private bool mountedEntranceCameraPrimed;
         private Camera primedCinematicCamera;
@@ -117,6 +128,10 @@ namespace BoredomAndDungeons
         {
             // BD FRESH-SCENE PLAYER CACHE FOR MOUNTED INTRO V23R19E
             BDTargetFinder.ClearCache();
+            ClearMountedIntroRiderPresentationBaseline();
+            CaptureMountedIntroRiderPresentationBaseline(
+                ResolveCurrentPlayerTransform()
+            );
             EnsureExactlyOneActiveAudioListener(Camera.main);
             coverAlpha = 1f;
             coverTarget = 1f;
@@ -351,6 +366,9 @@ namespace BoredomAndDungeons
                 yield break;
             }
 
+            CaptureMountedIntroRiderPresentationBaseline(player);
+            ForceMountedIntroRiderPresentationVisible(player);
+
             Vector3 straightEnd = player.position;
             float horseGroundOffset = ResolveHorseGroundOffset(horse);
             Vector3 inwardDirection = straightEnd - entrance.position;
@@ -443,6 +461,12 @@ namespace BoredomAndDungeons
                 originalFov,
                 originalOrtho
             );
+
+            // The rider must already be rendered before the first uncovered
+            // cinematic frame. Transform binding alone does not update stale
+            // skinned bounds after a scene reload/teleport.
+            ForceMountedIntroRiderPresentationVisible(player);
+            Physics.SyncTransforms();
 
             yield return FadeCoverTo(0f, 7f);
 
@@ -618,6 +642,7 @@ namespace BoredomAndDungeons
 
             awaitingRunStart = false;
             inputLocked = false;
+            RestoreMountedIntroRiderOffscreenPolicy(player);
         }
 
 
@@ -1346,6 +1371,235 @@ namespace BoredomAndDungeons
             }
 
             return best;
+        }
+
+        public static bool EnsureMountedIntroRiderVisible(
+            Transform rider)
+        {
+            return instance != null &&
+                   instance.ForceMountedIntroRiderPresentationVisible(
+                       rider
+                   );
+        }
+
+        private void ClearMountedIntroRiderPresentationBaseline()
+        {
+            RestoreMountedIntroRiderOffscreenPolicy(
+                mountedIntroRiderRoot
+            );
+
+            mountedIntroRiderRenderers.Clear();
+            mountedIntroRiderSkinnedRenderers.Clear();
+            mountedIntroRiderOriginalOffscreenPolicy.Clear();
+            mountedIntroRiderRoot = null;
+        }
+
+        private void CaptureMountedIntroRiderPresentationBaseline(
+            Transform rider)
+        {
+            if (rider == null)
+                return;
+
+            if (mountedIntroRiderRoot == rider &&
+                mountedIntroRiderRenderers.Count > 0)
+            {
+                return;
+            }
+
+            ClearMountedIntroRiderPresentationBaseline();
+            mountedIntroRiderRoot = rider;
+
+            Renderer[] candidates =
+                rider.GetComponentsInChildren<Renderer>(
+                    includeInactive: true
+                );
+
+            for (int pass = 0; pass < 2; pass++)
+            {
+                for (int index = 0;
+                     index < candidates.Length;
+                     index++)
+                {
+                    Renderer candidate = candidates[index];
+
+                    if (!IsMountedIntroRiderBodyRenderer(candidate))
+                        continue;
+
+                    bool baselineVisible =
+                        candidate.gameObject.activeInHierarchy &&
+                        candidate.enabled &&
+                        !candidate.forceRenderingOff;
+
+                    bool fallbackEligible =
+                        candidate.gameObject.activeSelf &&
+                        candidate.enabled;
+
+                    if ((pass == 0 && !baselineVisible) ||
+                        (pass == 1 &&
+                         mountedIntroRiderRenderers.Count > 0) ||
+                        (pass == 1 && !fallbackEligible))
+                    {
+                        continue;
+                    }
+
+                    if (mountedIntroRiderRenderers.Contains(candidate))
+                        continue;
+
+                    mountedIntroRiderRenderers.Add(candidate);
+
+                    if (candidate is SkinnedMeshRenderer skinned)
+                    {
+                        mountedIntroRiderSkinnedRenderers.Add(skinned);
+                        mountedIntroRiderOriginalOffscreenPolicy.Add(
+                            skinned.updateWhenOffscreen
+                        );
+                    }
+                }
+
+                if (mountedIntroRiderRenderers.Count > 0)
+                    break;
+            }
+        }
+
+        private bool ForceMountedIntroRiderPresentationVisible(
+            Transform rider)
+        {
+            if (rider == null)
+                return false;
+
+            if (mountedIntroRiderRoot != rider ||
+                mountedIntroRiderRenderers.Count == 0)
+            {
+                CaptureMountedIntroRiderPresentationBaseline(rider);
+            }
+
+            if (!rider.gameObject.activeSelf)
+                rider.gameObject.SetActive(true);
+
+            bool visibleRendererFound = false;
+
+            for (int index = 0;
+                 index < mountedIntroRiderRenderers.Count;
+                 index++)
+            {
+                Renderer renderer =
+                    mountedIntroRiderRenderers[index];
+
+                if (renderer == null)
+                    continue;
+
+                ActivateMountedIntroRendererPath(
+                    renderer.transform,
+                    rider
+                );
+
+                renderer.enabled = true;
+                renderer.forceRenderingOff = false;
+
+                if (renderer is SkinnedMeshRenderer skinned)
+                    skinned.updateWhenOffscreen = true;
+
+                visibleRendererFound = true;
+            }
+
+            return visibleRendererFound;
+        }
+
+        private void RestoreMountedIntroRiderOffscreenPolicy(
+            Transform rider)
+        {
+            if (rider != null &&
+                mountedIntroRiderRoot != null &&
+                rider != mountedIntroRiderRoot)
+            {
+                return;
+            }
+
+            int count = Mathf.Min(
+                mountedIntroRiderSkinnedRenderers.Count,
+                mountedIntroRiderOriginalOffscreenPolicy.Count
+            );
+
+            for (int index = 0; index < count; index++)
+            {
+                SkinnedMeshRenderer renderer =
+                    mountedIntroRiderSkinnedRenderers[index];
+
+                if (renderer != null)
+                {
+                    renderer.updateWhenOffscreen =
+                        mountedIntroRiderOriginalOffscreenPolicy[index];
+                }
+            }
+        }
+
+        private static void ActivateMountedIntroRendererPath(
+            Transform rendererTransform,
+            Transform riderRoot)
+        {
+            Transform current = rendererTransform;
+
+            while (current != null)
+            {
+                if (!current.gameObject.activeSelf)
+                    current.gameObject.SetActive(true);
+
+                if (current == riderRoot)
+                    break;
+
+                current = current.parent;
+            }
+        }
+
+        private static bool IsMountedIntroRiderBodyRenderer(
+            Renderer renderer)
+        {
+            if (renderer == null ||
+                renderer is LineRenderer ||
+                renderer is TrailRenderer ||
+                renderer is ParticleSystemRenderer)
+            {
+                return false;
+            }
+
+            if (!(renderer is MeshRenderer) &&
+                !(renderer is SkinnedMeshRenderer))
+            {
+                return false;
+            }
+
+            string lower =
+                renderer.gameObject.name.ToLowerInvariant();
+
+            string[] excluded =
+            {
+                "outline",
+                "afterimage",
+                "damage",
+                "hitflash",
+                "telegraph",
+                "indicator",
+                "prompt",
+                "health",
+                "worldbar",
+                "trail",
+                "particle",
+                "vfx",
+                "effect",
+                "slash",
+                "projectile",
+                "hookline"
+            };
+
+            for (int index = 0;
+                 index < excluded.Length;
+                 index++)
+            {
+                if (lower.Contains(excluded[index]))
+                    return false;
+            }
+
+            return true;
         }
 
         private static Transform FindGameplayTransform(string componentTypeName, string nameHint)

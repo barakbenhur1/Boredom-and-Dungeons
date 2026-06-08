@@ -97,3 +97,15 @@ Open external entrance and exit doorways receive an opaque animated light portal
 - `BeginMountedRunIntro` must establish the mounted state and snap the rider before the first visible horse movement frame.
 - Every cinematic movement frame snaps the authoritative `horseController.Rider`; `CompleteMountedRunIntro` finishes mounted ownership before gameplay control returns.
 - A riderless horse entrance after confirmed abandon is a blocking run-flow regression.
+
+## V23R19O first-visible-frame rider-renderer contract
+
+- Transform binding alone is insufficient. The active-scene Boy's eligible body Mesh/Skinned renderer branches must be visible before the cinematic cover begins revealing the scene.
+- The coordinator captures the fresh scene's visible rider-renderer baseline and reasserts it after cinematic control components are disabled.
+- Every mounted-intro rebind must:
+  - keep the rider root and baseline body-renderer branch active;
+  - set each baseline renderer enabled;
+  - clear `forceRenderingOff`;
+  - keep skinned renderers updating while offscreen during the teleport/entrance sequence.
+- The Boy must be visible from the first revealed frame after abandon -> main menu -> Start Game, not appear only during the final camera handoff.
+- Restore the original skinned offscreen-update policy after mounted gameplay control is released.

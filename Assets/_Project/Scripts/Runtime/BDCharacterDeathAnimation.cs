@@ -27,6 +27,7 @@ namespace BoredomAndDungeons
         private bool deathStarted;
         private bool deathCompleted;
         private float activeDuration;
+        private bool activeSmallRegularEnemy;
 
         public float PlayerDeathDuration =>
             Mathf.Max(0.45f, playerDeathDuration) +
@@ -101,6 +102,8 @@ namespace BoredomAndDungeons
             deathStarted = true;
             deathCompleted = false;
             activeDuration = requestedDuration;
+            activeSmallRegularEnemy =
+                !isPlayer && IsSmallRegularEnemy();
 
             ResolveAndCaptureVisualBranches(isPlayer);
             DisableGameplayAfterDeath(isPlayer);
@@ -117,6 +120,18 @@ namespace BoredomAndDungeons
             }
 
             return activeDuration;
+        }
+
+        private bool IsSmallRegularEnemy()
+        {
+            BDHealth health = GetComponent<BDHealth>();
+            if (health == null)
+                return false;
+
+            return
+                BDCombatantProfile.ResolveRank(health) ==
+                    BDCombatantRank.Regular &&
+                BDCombatantProfile.CanReceiveForcedMovement(health);
         }
 
         private void ResolveAndCaptureVisualBranches(bool isPlayer)
@@ -271,6 +286,16 @@ namespace BoredomAndDungeons
                     if (pose.visual == null)
                         continue;
 
+                    if (activeSmallRegularEnemy)
+                    {
+                        AnimateSmallRegularEnemyPose(
+                            pose,
+                            t,
+                            side
+                        );
+                        continue;
+                    }
+
                     Quaternion targetRotation =
                         pose.localRotation *
                         Quaternion.Euler(
@@ -327,6 +352,82 @@ namespace BoredomAndDungeons
 
             deathCompleted = true;
             routine = null;
+        }
+
+        // BD SMALL REGULAR ENEMY INTACT FALL V23R19M
+        // Small enemies recoil, lose balance and fall as a readable intact body.
+        // The old shared enemy pose compressed them to 34% height, which read as
+        // a rubber/pancake collapse rather than death from the gameplay camera.
+        private static void AnimateSmallRegularEnemyPose(
+            VisualPose pose,
+            float normalizedTime,
+            float side)
+        {
+            float recoil = Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.Clamp01(normalizedTime / 0.20f)
+            );
+            float fall = Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.Clamp01((normalizedTime - 0.12f) / 0.78f)
+            );
+            float settle = Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.Clamp01((normalizedTime - 0.82f) / 0.18f)
+            );
+
+            Quaternion recoilRotation =
+                pose.localRotation *
+                Quaternion.Euler(
+                    -10f * recoil,
+                    0f,
+                    side * 4f * recoil
+                );
+            Quaternion fallenRotation =
+                pose.localRotation *
+                Quaternion.Euler(
+                    86f,
+                    0f,
+                    side * 13f
+                );
+
+            Vector3 recoilPosition =
+                pose.localPosition +
+                Vector3.up * (0.08f * recoil) -
+                Vector3.forward * (0.04f * recoil);
+            Vector3 fallenPosition =
+                pose.localPosition +
+                Vector3.down * 0.20f +
+                Vector3.forward * 0.15f;
+
+            Vector3 targetPosition = Vector3.Lerp(
+                recoilPosition,
+                fallenPosition,
+                fall
+            );
+            targetPosition +=
+                Vector3.up *
+                (Mathf.Sin(settle * Mathf.PI) * 0.018f);
+
+            Vector3 fallenScale = Vector3.Scale(
+                pose.localScale,
+                new Vector3(1f, 0.86f, 1f)
+            );
+
+            pose.visual.localPosition = targetPosition;
+            pose.visual.localRotation = Quaternion.Slerp(
+                recoilRotation,
+                fallenRotation,
+                fall
+            );
+            pose.visual.localScale = Vector3.Lerp(
+                pose.localScale,
+                fallenScale,
+                fall
+            );
         }
 
         private readonly struct VisualPose

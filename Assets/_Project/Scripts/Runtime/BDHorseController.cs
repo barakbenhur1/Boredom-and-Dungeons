@@ -1339,6 +1339,9 @@ namespace BoredomAndDungeons
                 playerCharacterController.enabled = true;
 
             PlaceRiderOnMountPoint();
+            BDRunPresentationCoordinator.EnsureMountedIntroRiderVisible(
+                rider
+            );
             return true;
         }
 

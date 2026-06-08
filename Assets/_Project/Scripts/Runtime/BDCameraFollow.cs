@@ -28,6 +28,8 @@ namespace BoredomAndDungeons
         [Header("Mouse / Player Intent Rotation")]
         // BD OBSOLETE CAMERA FIELDS REMOVED V2
         [SerializeField] private float cameraYawDegreesPerSecond = 86f;
+        [SerializeField, Range(1f, 3f)]
+        private float wallJumpYawSpeedMultiplier = 1.85f;
 
         [Header("Room Boundary Camera")]
         // BD ROOM WALL CAMERA STOP V7
@@ -245,10 +247,20 @@ namespace BoredomAndDungeons
                 0.55f,
                 1.45f
             );
+            float actionYawMultiplier =
+                playerController != null &&
+                playerController.IsWallJumping
+                    ? Mathf.Max(
+                        1f,
+                        wallJumpYawSpeedMultiplier
+                    )
+                    : 1f;
+
             float maximumRadians =
                 Mathf.Deg2Rad *
                 Mathf.Max(1f, cameraYawDegreesPerSecond) *
                 sensitivity *
+                actionYawMultiplier *
                 Time.deltaTime;
 
             lastForward = Vector3.RotateTowards(
@@ -265,7 +277,11 @@ namespace BoredomAndDungeons
                 lastForward = intent;
 
             lastForward.Normalize();
-            cameraState = "single-owner stable mouse/player aim";
+            cameraState =
+                playerController != null &&
+                playerController.IsWallJumping
+                    ? "single-owner steerable wall-jump yaw"
+                    : "single-owner stable mouse/player aim";
         }
 
 

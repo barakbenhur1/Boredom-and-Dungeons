@@ -87,12 +87,15 @@ namespace BoredomAndDungeons
             Quaternion facingRotation =
                 Quaternion.LookRotation(direction, Vector3.up);
 
-            // BD CORRECT LOCAL-X AIRBORNE ROTATION V23R19G
-            // Airborne Light/Heavy reuse the exact selected grounded arc size,
-            // thickness and angle. The only shape change is a 90-degree local-X
-            // rotation that makes the same attack perpendicular to the player.
+            // BD LOCAL-Z AIRBORNE LINE ROTATION V23R19M
+            // The grounded arc's long left-to-right axis is local X while local Z
+            // remains the attack's forward/depth axis. Rotating around local X only
+            // stood the plane up but left the visible long axis horizontal.
+            // Rotate around local Z instead: local X becomes world up/down, local Z
+            // still points forward, so the exact grounded Light/Heavy line reads
+            // top-to-bottom and perpendicular to the floor.
             Quaternion rotation = isVertical
-                ? facingRotation * Quaternion.AngleAxis(-90f, Vector3.right)
+                ? facingRotation * Quaternion.AngleAxis(90f, Vector3.forward)
                 : facingRotation;
 
             float forwardDistance = Mathf.Clamp(

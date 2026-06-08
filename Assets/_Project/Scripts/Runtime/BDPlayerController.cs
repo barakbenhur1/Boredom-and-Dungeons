@@ -45,8 +45,12 @@ namespace BoredomAndDungeons
         [SerializeField] private float wallContactGraceSeconds = 0.22f;
         [SerializeField] private float wallJumpHeight = 1.75f;
         [SerializeField] private float wallJumpHorizontalSpeed = 8.2f;
-        [SerializeField] private float wallJumpHorizontalDuration = 0.48f;
-        [SerializeField, Range(0f, 1f)] private float wallJumpAirControl = 0.28f;
+        [SerializeField] private float wallJumpHorizontalDuration = 0.62f;
+        [SerializeField, Range(0f, 1f)] private float wallJumpAirControl = 0.58f;
+        [SerializeField] private float wallJumpSteeringDegreesPerSecond = 190f;
+        [SerializeField, Range(0.20f, 0.80f)]
+        private float wallJumpMinimumRetainedSpeed = 0.38f;
+        [SerializeField] private float wallJumpFacingDegreesPerSecond = 320f;
         [SerializeField] private float wallJumpCooldown = 0.18f;
         [SerializeField] private float wallJumpSurfaceProbeDistance = 0.38f;
         [SerializeField] private float wallJumpSurfaceProbeRadius = 0.12f;
@@ -247,9 +251,45 @@ namespace BoredomAndDungeons
 
 
 
+        // BD STEERABLE LONGER WALL JUMP V23R19O
+        private void ApplySteerableWallJumpProfile()
+        {
+            // Existing scenes serialize earlier values. Apply minimums rather
+            // than blindly replacing stronger future authored tuning.
+            wallJumpHeight = Mathf.Max(
+                wallJumpHeight,
+                2.25f
+            );
+            wallJumpHorizontalSpeed = Mathf.Max(
+                wallJumpHorizontalSpeed,
+                10.4f
+            );
+            wallJumpHorizontalDuration = Mathf.Max(
+                wallJumpHorizontalDuration,
+                0.62f
+            );
+            wallJumpAirControl = Mathf.Max(
+                wallJumpAirControl,
+                0.58f
+            );
+            wallJumpSteeringDegreesPerSecond = Mathf.Max(
+                wallJumpSteeringDegreesPerSecond,
+                190f
+            );
+            wallJumpMinimumRetainedSpeed = Mathf.Max(
+                wallJumpMinimumRetainedSpeed,
+                0.38f
+            );
+            wallJumpFacingDegreesPerSecond = Mathf.Max(
+                wallJumpFacingDegreesPerSecond,
+                320f
+            );
+        }
+
         private void Awake()
         {
             ApplyNaturalMovementProfile();
+            ApplySteerableWallJumpProfile();
             characterController = GetComponent<CharacterController>();
 
             if (GetComponent<BDPlayerHazardRecovery>() == null)
@@ -322,9 +362,9 @@ namespace BoredomAndDungeons
 
             TickGravity();
             TickDash();
-            TickWallJumpMotion();
 
             Vector3 worldMove = wantsMove ? ToPlayerRelativeMove(moveInput) : Vector3.zero;
+            TickWallJumpMotion(worldMove, wantsMove);
             Vector3 horizontalVelocity = SmoothHorizontalVelocity(worldMove, wantsMove);
 
             // BD SLIGHTLY LONGER CONTROLLED JUMP TRAVEL V23R19
@@ -946,7 +986,9 @@ namespace BoredomAndDungeons
             );
         }
 
-        private void TickWallJumpMotion()
+        private void TickWallJumpMotion(
+            Vector3 requestedAirDirection,
+            bool hasAirInput)
         {
             if (wallJumpHorizontalTimer <= 0f)
             {
@@ -954,15 +996,87 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            wallJumpHorizontalTimer -= Time.deltaTime;
-            float deceleration =
-                Mathf.Max(0.1f, wallJumpHorizontalSpeed) /
+            float duration =
                 Mathf.Max(0.08f, wallJumpHorizontalDuration);
-            wallJumpHorizontalVelocity = Vector3.MoveTowards(
-                wallJumpHorizontalVelocity,
-                Vector3.zero,
-                deceleration * Time.deltaTime
+
+            wallJumpHorizontalTimer =
+                Mathf.Max(
+                    0f,
+                    wallJumpHorizontalTimer -
+                    Time.deltaTime
+                );
+
+            Vector3 currentDirection =
+                wallJumpHorizontalVelocity;
+            currentDirection.y = 0f;
+
+            if (currentDirection.sqrMagnitude < 0.001f)
+            {
+                currentDirection =
+                    lastLookDirection.sqrMagnitude > 0.001f
+                        ? lastLookDirection
+                        : transform.forward;
+            }
+
+            currentDirection.y = 0f;
+            currentDirection.Normalize();
+
+            requestedAirDirection.y = 0f;
+            if (hasAirInput &&
+                requestedAirDirection.sqrMagnitude > 0.001f)
+            {
+                Vector3 desiredDirection =
+                    requestedAirDirection.normalized;
+
+                float maximumRadians =
+                    Mathf.Deg2Rad *
+                    Mathf.Max(
+                        1f,
+                        wallJumpSteeringDegreesPerSecond
+                    ) *
+                    Time.deltaTime;
+
+                currentDirection =
+                    Vector3.RotateTowards(
+                        currentDirection,
+                        desiredDirection,
+                        maximumRadians,
+                        0f
+                    );
+
+                currentDirection.y = 0f;
+                currentDirection.Normalize();
+            }
+
+            float remaining01 = Mathf.Clamp01(
+                wallJumpHorizontalTimer / duration
             );
+            float retainedMultiplier = Mathf.Lerp(
+                Mathf.Clamp(
+                    wallJumpMinimumRetainedSpeed,
+                    0.20f,
+                    0.80f
+                ),
+                1f,
+                remaining01
+            );
+
+            wallJumpHorizontalVelocity =
+                currentDirection *
+                Mathf.Max(0.1f, wallJumpHorizontalSpeed) *
+                retainedMultiplier;
+
+            targetLookDirection = currentDirection;
+            smoothedTargetLookDirection = currentDirection;
+            lastLookDirection = TurnAimGradually(
+                lastLookDirection,
+                currentDirection,
+                wallJumpFacingDegreesPerSecond
+            );
+            RotateToward(lastLookDirection);
+
+            if (wallJumpHorizontalTimer <= 0f)
+                wallJumpHorizontalVelocity = Vector3.zero;
         }
 
         // BD ANY SOLID VERTICAL WALL-JUMP SURFACE V23R19

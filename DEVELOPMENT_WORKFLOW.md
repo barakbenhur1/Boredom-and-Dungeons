@@ -438,3 +438,35 @@ A change is complete only when:
 - authoritative documentation is synchronized;
 - Git diff checks pass;
 - the user commits and pushes the verified state.
+
+<!-- B&D DURABLE TASK RECORD WORKFLOW START -->
+## Durable task records and cross-session handoff
+
+Every material task updates `PROJECT_STATUS.md`. In addition, create and continuously maintain a task record under `Assets/_Project/Design/Runtime/Tasks/` when the work is large, multi-step, cross-system, likely to span sessions, or likely to move to Codex/another contributor.
+
+The task record must include:
+
+- task ID and title;
+- originating request;
+- why the task exists and the risk/problem it solves;
+- approved outcome;
+- scope, non-goals and protected behavior;
+- dependencies and ordered sub-tasks;
+- relevant files, systems, scenes, assets, data and documents;
+- decisions and rationale;
+- implementation performed;
+- verification evidence and exact results;
+- unverified areas;
+- bug IDs, blockers, contradictions and remaining risks;
+- deferred work;
+- exact resume point and exact next action;
+- commit, package and QA references when available.
+
+Update the task record, `PROJECT_STATUS.md` and every relevant canonical document in the same change whenever requirements, implementation, status, QA, bugs, blockers, ordering, deferral or the resume point changes. Do not wait for final delivery.
+
+Before handing work to Codex, another chat or another developer, verify that the repository alone explains the complete context and continuation path.
+
+Before every commit, classify maintained documents as keep-current, merge-then-remove, obsolete-remove or commit-blocking. Merge valid information first, then remove completed, superseded, duplicate, temporary or irrelevant documents and update `DOCUMENTATION_INDEX.md` plus all references.
+
+Canonical policy: `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md`.
+<!-- B&D DURABLE TASK RECORD WORKFLOW END -->

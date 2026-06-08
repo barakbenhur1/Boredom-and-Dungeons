@@ -242,3 +242,13 @@ Future implementation should extend established owners rather than create duplic
 14. Aggression thresholds, transformation, forward shadow, cannon/sword exclusivity, movement while firing, dodge, escape, and re-encounter behavior match the approved contract.
 15. Defeat exposes only existing rug offers for free, permanently disables refresh/reroll, removes future merchant appearances, and enforces the one-of-two weapon reward choice.
 16. Light-sword/cannon rewards double only their approved base-damage channel and update the corresponding player weapon/projectile presentation.
+
+## Relationship to the future Caterpillar gambling NPC
+
+The merchant shop and Caterpillar gambling NPC both use run money but are separate systems.
+
+- The merchant exchanges money for shop inventory.
+- A Caterpillar offers one assigned gambling game and owns a finite bankroll.
+- Caterpillars appear only in rooms selected for them and only while those rooms are clear.
+- Their animated visibility, game-session safety, bankroll threshold/refill behavior and anti-farm rules are canonical in `CATERPILLAR_GAMBLING_NPC_V1.md`.
+- Do not reuse shop refresh, merchant hostility, inventory slots or merchant death rules unless a later approved integration explicitly requires it.

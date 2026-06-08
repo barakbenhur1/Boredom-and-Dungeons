@@ -66,6 +66,11 @@ namespace BoredomAndDungeons
         private AsyncOperation reloadOperation;
         private Coroutine playerDeathRoutine;
 
+        private OverlayMode lastPresentedMode;
+        private bool modeTransitionInitialized;
+        private float modeTransitionStartedAt;
+        private const float ModeTransitionDuration = 0.18f;
+
         private GUIStyle titleStyle;
         private GUIStyle subtitleStyle;
         private GUIStyle sectionStyle;
@@ -74,6 +79,8 @@ namespace BoredomAndDungeons
         private GUIStyle smallButtonStyle;
         private GUIStyle panelStyle;
         private GUIStyle overlayStyle;
+        private GUIStyle sliderStyle;
+        private GUIStyle sliderThumbStyle;
 
         private Texture2D dreamyTransparentTexture;
         private Texture2D dreamyPanelTexture;
@@ -649,17 +656,32 @@ namespace BoredomAndDungeons
                 600f
             );
 
-            // BD INTEGRATED GAME BOY MENU SHELL V23R12
-            // Draw the device and menu in one IMGUI pass so neither can cover
-            // or disappear behind the other.
+            // BD PROFESSIONAL HANDHELD SCREEN MENU V23R19Q
+            // The physical shell and all page content remain one ordered IMGUI
+            // composition. Only the screen content receives the short page move.
+            float transition = ResolveModeTransition();
+
             BDGameBoyMenuShell.DrawIntegrated(
                 panelRect,
                 virtualWidth,
-                virtualHeight
+                virtualHeight,
+                ResolveScreenLabel()
+            );
+
+            Rect animatedPanelRect = panelRect;
+            animatedPanelRect.y +=
+                (1f - transition) * 11f;
+
+            Color previousContentColor = GUI.color;
+            GUI.color = new Color(
+                previousContentColor.r,
+                previousContentColor.g,
+                previousContentColor.b,
+                previousContentColor.a * transition
             );
 
             GUILayout.BeginArea(
-                panelRect,
+                animatedPanelRect,
                 panelStyle
             );
 
@@ -675,9 +697,56 @@ namespace BoredomAndDungeons
                 DrawMainMenu();
 
             GUILayout.EndArea();
+            GUI.color = previousContentColor;
+
+            BDGameBoyMenuShell.DrawScreenOverlay(
+                panelRect,
+                virtualWidth,
+                virtualHeight
+            );
 
             GUI.matrix = previousMatrix;
         }
+        private float ResolveModeTransition()
+        {
+            if (!modeTransitionInitialized)
+            {
+                modeTransitionInitialized = true;
+                lastPresentedMode = mode;
+                modeTransitionStartedAt = Time.unscaledTime;
+            }
+            else if (lastPresentedMode != mode)
+            {
+                lastPresentedMode = mode;
+                modeTransitionStartedAt = Time.unscaledTime;
+            }
+
+            float raw =
+                (Time.unscaledTime - modeTransitionStartedAt) /
+                Mathf.Max(0.01f, ModeTransitionDuration);
+            float t = Mathf.Clamp01(raw);
+            return t * t * (3f - 2f * t);
+        }
+
+        private string ResolveScreenLabel()
+        {
+            switch (mode)
+            {
+                case OverlayMode.Settings:
+                    return "SYSTEM // SETTINGS";
+                case OverlayMode.Pause:
+                    return "RUN // PAUSED";
+                case OverlayMode.AbandonConfirm:
+                    return "RUN // CONFIRM";
+                case OverlayMode.Loading:
+                    return "MEMORY // LOADING";
+                default:
+                    return BDGameProgress.MotherDefeated
+                        ? "AWAKENED // MAIN"
+                        : "MEMORY // MAIN";
+            }
+        }
+
         private void DrawMainMenu()
         {
             GUILayout.Space(20f);
@@ -771,15 +840,125 @@ namespace BoredomAndDungeons
             MenuActionVisual visual,
             float height)
         {
-            Color previousTint = GUI.backgroundColor;
-            GUI.backgroundColor = ResolveActionTint(visual);
-            bool pressed = GUILayout.Button(
-                ResolveActionPrefix(visual) + "  " + label,
+            Rect rect = GUILayoutUtility.GetRect(
+                GUIContent.none,
                 buttonStyle,
-                GUILayout.Height(height)
+                GUILayout.Height(height),
+                GUILayout.ExpandWidth(true)
             );
-            GUI.backgroundColor = previousTint;
+
+            bool hovered =
+                Event.current != null &&
+                rect.Contains(Event.current.mousePosition);
+
+            Color tint = ResolveActionTint(visual);
+            Texture2D background = hovered
+                ? dreamyButtonHoverTexture
+                : dreamyButtonTexture;
+
+            Color previousColor = GUI.color;
+            GUI.color = Color.white;
+            GUI.DrawTexture(rect, background);
+
+            if (hovered)
+            {
+                float pulse =
+                    0.70f +
+                    0.30f *
+                    Mathf.Sin(Time.unscaledTime * 4.6f);
+
+                DrawMenuRect(
+                    new Rect(
+                        rect.x,
+                        rect.y + 5f,
+                        4f,
+                        rect.height - 10f
+                    ),
+                    new Color(
+                        tint.r,
+                        tint.g,
+                        tint.b,
+                        0.78f + 0.18f * pulse
+                    )
+                );
+
+                DrawMenuBorder(
+                    rect,
+                    new Color(
+                        tint.r,
+                        tint.g,
+                        tint.b,
+                        0.44f
+                    ),
+                    1f
+                );
+            }
+            else
+            {
+                DrawMenuBorder(
+                    rect,
+                    new Color(
+                        tint.r,
+                        tint.g,
+                        tint.b,
+                        0.20f
+                    ),
+                    1f
+                );
+            }
+
+            bool pressed = GUI.Button(
+                rect,
+                ResolveActionPrefix(visual) + "  " + label,
+                buttonStyle
+            );
+
+            GUI.color = previousColor;
             return pressed;
+        }
+
+        private void DrawMenuBorder(
+            Rect rect,
+            Color color,
+            float thickness)
+        {
+            DrawMenuRect(
+                new Rect(rect.x, rect.y, rect.width, thickness),
+                color
+            );
+            DrawMenuRect(
+                new Rect(
+                    rect.x,
+                    rect.yMax - thickness,
+                    rect.width,
+                    thickness
+                ),
+                color
+            );
+            DrawMenuRect(
+                new Rect(rect.x, rect.y, thickness, rect.height),
+                color
+            );
+            DrawMenuRect(
+                new Rect(
+                    rect.xMax - thickness,
+                    rect.y,
+                    thickness,
+                    rect.height
+                ),
+                color
+            );
+        }
+
+        private void DrawMenuRect(Rect rect, Color color)
+        {
+            if (rect.width <= 0f || rect.height <= 0f)
+                return;
+
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = previous;
         }
 
         private static Color ResolveActionTint(
@@ -1222,13 +1401,41 @@ namespace BoredomAndDungeons
                     )
                     : 0f;
 
-            GUILayout.HorizontalSlider(
-                progress,
-                0f,
-                1f
-            );
+            DrawMemoryProgressBar(progress);
 
             GUILayout.FlexibleSpace();
+        }
+
+        private void DrawMemoryProgressBar(float progress)
+        {
+            Rect rect = GUILayoutUtility.GetRect(
+                360f,
+                18f,
+                GUILayout.ExpandWidth(true)
+            );
+
+            DrawMenuRect(
+                rect,
+                new Color(0.015f, 0.055f, 0.058f, 0.96f)
+            );
+
+            Rect fill = new Rect(
+                rect.x + 3f,
+                rect.y + 3f,
+                Mathf.Max(0f, (rect.width - 6f) * Mathf.Clamp01(progress)),
+                rect.height - 6f
+            );
+
+            DrawMenuRect(
+                fill,
+                new Color(0.42f, 0.86f, 0.76f, 0.92f)
+            );
+
+            DrawMenuBorder(
+                rect,
+                new Color(0.66f, 0.92f, 0.82f, 0.34f),
+                1f
+            );
         }
 
         private void DrawSettings()
@@ -1434,13 +1641,20 @@ namespace BoredomAndDungeons
                 GUILayout.Width(205f)
             );
 
-            float nextValue =
-                GUILayout.HorizontalSlider(
-                    value,
-                    minimum,
-                    maximum,
-                    GUILayout.Width(220f)
-                );
+            Rect sliderRect = GUILayoutUtility.GetRect(
+                220f,
+                22f,
+                GUILayout.Width(220f)
+            );
+
+            float nextValue = GUI.HorizontalSlider(
+                sliderRect,
+                value,
+                minimum,
+                maximum,
+                sliderStyle,
+                sliderThumbStyle
+            );
 
             string valueText =
                 showPercent
@@ -1472,73 +1686,63 @@ namespace BoredomAndDungeons
 
             dreamyTransparentTexture =
                 CreateMenuTexture(
-                    new Color(
-                        0f,
-                        0f,
-                        0f,
-                        0.055f
-                    )
+                    new Color(0f, 0f, 0f, 0.035f)
                 );
 
             dreamyPanelTexture =
                 CreateMenuTexture(
                     new Color(
-                        0.035f,
-                        0.055f,
-                        0.13f,
-                        0.90f
+                        0.015f,
+                        0.060f,
+                        0.060f,
+                        0.22f
                     )
                 );
 
             dreamyButtonTexture =
                 CreateMenuTexture(
                     new Color(
-                        0.070f,
-                        0.115f,
-                        0.24f,
-                        0.98f
+                        0.045f,
+                        0.135f,
+                        0.135f,
+                        0.96f
                     )
                 );
 
             dreamyButtonHoverTexture =
                 CreateMenuTexture(
                     new Color(
-                        0.105f,
-                        0.175f,
-                        0.34f,
-                        1f
+                        0.075f,
+                        0.215f,
+                        0.205f,
+                        0.99f
                     )
                 );
 
             dreamyButtonActiveTexture =
                 CreateMenuTexture(
                     new Color(
-                        0.050f,
-                        0.085f,
-                        0.18f,
+                        0.025f,
+                        0.095f,
+                        0.095f,
                         1f
                     )
                 );
 
             titleStyle =
-                new GUIStyle(
-                    GUI.skin.label)
+                new GUIStyle(GUI.skin.label)
                 {
-                    alignment =
-                        TextAnchor.MiddleCenter,
-                    font =
-                        GUI.skin.label.font,
-                    fontSize = 39,
-                    fontStyle =
-                        FontStyle.Bold,
-                    clipping =
-                        TextClipping.Overflow,
+                    alignment = TextAnchor.MiddleCenter,
+                    font = GUI.skin.label.font,
+                    fontSize = 37,
+                    fontStyle = FontStyle.Bold,
+                    clipping = TextClipping.Overflow,
                     normal =
                     {
                         textColor =
                             new Color(
-                                1f,
                                 0.94f,
+                                0.96f,
                                 0.79f,
                                 1f
                             )
@@ -1546,147 +1750,174 @@ namespace BoredomAndDungeons
                 };
 
             subtitleStyle =
-                new GUIStyle(
-                    GUI.skin.label)
+                new GUIStyle(GUI.skin.label)
                 {
-                    alignment =
-                        TextAnchor.MiddleCenter,
-                    font =
-                        GUI.skin.label.font,
-                    fontSize = 18,
-                    fontStyle =
-                        FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter,
+                    font = GUI.skin.label.font,
+                    fontSize = 16,
+                    fontStyle = FontStyle.Bold,
+                    wordWrap = true,
                     normal =
                     {
                         textColor =
                             new Color(
-                                0.72f,
+                                0.63f,
+                                0.88f,
                                 0.82f,
-                                1f,
-                                0.94f
+                                0.92f
                             )
                     }
                 };
 
             sectionStyle =
-                new GUIStyle(
-                    GUI.skin.label)
+                new GUIStyle(GUI.skin.label)
                 {
-                    alignment =
-                        TextAnchor.MiddleLeft,
-                    font =
-                        GUI.skin.label.font,
-                    fontSize = 18,
+                    alignment = TextAnchor.MiddleLeft,
+                    font = GUI.skin.label.font,
+                    fontSize = 17,
                     normal =
                     {
                         textColor =
                             new Color(
+                                0.90f,
                                 0.94f,
-                                0.94f,
-                                0.94f,
+                                0.82f,
                                 1f
                             )
                     }
                 };
 
             valueStyle =
-                new GUIStyle(
-                    GUI.skin.label)
+                new GUIStyle(GUI.skin.label)
                 {
-                    alignment =
-                        TextAnchor.MiddleCenter,
-                    font =
-                        GUI.skin.label.font,
-                    fontSize = 15,
+                    alignment = TextAnchor.MiddleCenter,
+                    font = GUI.skin.label.font,
+                    fontSize = 14,
                     normal =
                     {
                         textColor =
                             new Color(
-                                0.66f,
-                                0.74f,
-                                0.90f,
-                                0.82f
+                                0.58f,
+                                0.84f,
+                                0.78f,
+                                0.84f
                             )
                     }
                 };
 
             buttonStyle =
-                new GUIStyle(
-                    GUI.skin.button)
+                new GUIStyle(GUI.skin.button)
                 {
-                    alignment =
-                        TextAnchor.MiddleCenter,
-                    font =
-                        GUI.skin.button.font,
-                    fontSize = 21,
-                    fontStyle =
-                        FontStyle.Bold,
+                    alignment = TextAnchor.MiddleLeft,
+                    font = GUI.skin.button.font,
+                    fontSize = 19,
+                    fontStyle = FontStyle.Bold,
+                    padding = new RectOffset(24, 18, 8, 8),
+                    margin = new RectOffset(0, 0, 0, 0),
                     normal =
                     {
-                        background =
-                            dreamyButtonTexture,
+                        background = dreamyTransparentTexture,
                         textColor =
                             new Color(
-                                1f,
                                 0.94f,
-                                0.78f,
+                                0.96f,
+                                0.80f,
                                 1f
                             )
                     },
                     hover =
                     {
-                        background =
-                            dreamyButtonHoverTexture,
-                        textColor =
-                            Color.white
+                        background = dreamyTransparentTexture,
+                        textColor = Color.white
                     },
                     active =
                     {
-                        background =
-                            dreamyButtonActiveTexture,
+                        background = dreamyTransparentTexture,
                         textColor =
                             new Color(
                                 1f,
                                 0.86f,
-                                0.56f,
+                                0.52f,
                                 1f
                             )
                     }
                 };
 
             smallButtonStyle =
-                new GUIStyle(
-                    buttonStyle)
+                new GUIStyle(buttonStyle)
                 {
-                    fontSize = 15
+                    alignment = TextAnchor.MiddleCenter,
+                    fontSize = 14,
+                    padding = new RectOffset(10, 10, 6, 6),
+                    normal =
+                    {
+                        background = dreamyButtonTexture,
+                        textColor = new Color(0.92f, 0.96f, 0.82f, 1f)
+                    },
+                    hover =
+                    {
+                        background = dreamyButtonHoverTexture,
+                        textColor = Color.white
+                    },
+                    active =
+                    {
+                        background = dreamyButtonActiveTexture,
+                        textColor = new Color(1f, 0.86f, 0.52f, 1f)
+                    }
+                };
+
+            sliderStyle =
+                new GUIStyle(GUI.skin.horizontalSlider)
+                {
+                    fixedHeight = 8f,
+                    margin = new RectOffset(0, 0, 7, 7),
+                    normal =
+                    {
+                        background = dreamyButtonTexture
+                    }
+                };
+
+            sliderThumbStyle =
+                new GUIStyle(GUI.skin.horizontalSliderThumb)
+                {
+                    fixedWidth = 18f,
+                    fixedHeight = 18f,
+                    normal =
+                    {
+                        background = dreamyButtonHoverTexture
+                    },
+                    hover =
+                    {
+                        background = dreamyButtonHoverTexture
+                    },
+                    active =
+                    {
+                        background = dreamyButtonActiveTexture
+                    }
                 };
 
             panelStyle =
-                new GUIStyle(
-                    GUI.skin.box)
+                new GUIStyle(GUI.skin.box)
                 {
                     padding =
                         new RectOffset(
-                            30,
-                            30,
-                            20,
-                            20
+                            32,
+                            32,
+                            36,
+                            22
                         ),
                     normal =
                     {
-                        background =
-                            dreamyPanelTexture
+                        background = dreamyPanelTexture
                     }
                 };
 
             overlayStyle =
-                new GUIStyle(
-                    GUI.skin.box)
+                new GUIStyle(GUI.skin.box)
                 {
                     normal =
                     {
-                        background =
-                            dreamyTransparentTexture
+                        background = dreamyTransparentTexture
                     }
                 };
         }

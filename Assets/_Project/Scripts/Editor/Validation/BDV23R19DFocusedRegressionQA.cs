@@ -62,8 +62,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(result, root,
                 "Assets/_Project/Scripts/Runtime/BDMeleeSlashArcVisual.cs",
                 "V23R19D_AIR_SLASH_DIRECTION_MISSING",
-                "BD CORRECT LOCAL-X AIRBORNE ROTATION V23R19G",
-                "Quaternion.AngleAxis(-90f, Vector3.right)",
+                "BD LOCAL-Z AIRBORNE LINE ROTATION V23R19M",
+                "Quaternion.AngleAxis(90f, Vector3.forward)",
                 "verticalPlane: false",
                 "float arcDegrees = isHeavy ? 92f : 68f"
             );

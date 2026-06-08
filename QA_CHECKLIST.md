@@ -433,3 +433,192 @@ New automated checks integrate into this command; do not create another mandator
 6. Jump then Light/Heavy: dedicated body motion plus vertical slash only; no regular horizontal attack animation/arc.
 7. Ground Light/Heavy remain unchanged.
 8. Retest hole boundaries, quicksand, mounted hazard recovery, camera and Console.
+
+<!-- B&D TASK CONTINUITY QA GATE START -->
+## Documentation continuity and handoff gate
+
+Before handoff, package delivery, commit, category transition or claimed completion, verify:
+
+- `PROJECT_STATUS.md` contains the current task's reason, stage, implementation truth, verification truth, blockers, next action and exact resume point;
+- every large/multi-session task has a current detailed record under `Assets/_Project/Design/Runtime/Tasks/`;
+- the task record includes scope, non-goals, decomposition, dependencies, affected systems/files, decisions, work completed, evidence, unverified areas and handoff point;
+- all relevant canonical domain documents were updated in the same change;
+- bug state is synchronized with `OPEN_BUG_TRACKER.md`;
+- ownership/architecture, durable decisions, QA policy, performance policy and documentation ownership are synchronized when relevant;
+- automated PASS is not presented as Play Mode, device, performance, visual, audio or user verification;
+- no material task truth exists only in chat, a local note, package README or untracked file;
+- `DOCUMENTATION_INDEX.md` lists every maintained task/contract document;
+- a per-commit documentation relevance sweep was completed;
+- valid information from completed/superseded documents was merged before removal;
+- obsolete, duplicate, temporary, package-specific or irrelevant documents and broken references do not remain.
+
+Failure of this gate blocks a handoff that depends on missing context.
+<!-- B&D TASK CONTINUITY QA GATE END -->
+
+<!-- B&D V23R19M AIRBORNE AXIS + SMALL ENEMY DEATH QA START -->
+## V23R19M airborne-axis and small-enemy-death gate
+
+Automated:
+
+1. `BDMeleeSlashArcVisual` rotates the grounded mesh around local Z by exactly 90 degrees for airborne presentation.
+2. The obsolete local-X `-90°` conversion is absent.
+3. Grounded Light/Heavy still use their existing horizontal branch.
+4. Airborne Light/Heavy still emit exactly one vertical branch.
+5. Small regular enemies use the intact-body recoil/fall branch.
+6. Historical V23R19J/V23R19K scanners do not require resolved bug rows or historical status sections to remain active documentation.
+7. `TEST EVERYTHING` reports 0 blockers, 0 warnings and 0 info.
+
+Focused Play Mode:
+
+1. View a grounded Light and Heavy: the long attack line remains left-to-right and parallel to the floor.
+2. Jump and use Light: the same long line reads top-to-bottom, perpendicular to the floor, in front of the player.
+3. Jump and use Heavy: the same orientation rule applies with Heavy identity/width/color.
+4. No horizontal duplicate appears in the airborne attack.
+5. Kill at least two small regular enemy archetypes: they recoil and fall as intact bodies, do not flatten, and loot/despawn waits.
+6. Kill one large/Elite enemy to confirm its existing death path was not changed.
+<!-- B&D V23R19M AIRBORNE AXIS + SMALL ENEMY DEATH QA END -->
+
+<!-- B&D V23R19N LEGACY AIRBORNE QA REALIGNMENT START -->
+## V23R19N legacy airborne-QA semantic gate
+
+1. V23R19D, V23R19E and V23R19G regression scanners require:
+   - `BD LOCAL-Z AIRBORNE LINE ROTATION V23R19M`;
+   - `Quaternion.AngleAxis(90f, Vector3.forward)`.
+2. Those scanners must not require:
+   - `BD CORRECT LOCAL-X AIRBORNE ROTATION V23R19G`;
+   - `Quaternion.AngleAxis(-90f, Vector3.right)`.
+3. Runtime files remain unchanged by V23R19N.
+4. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
+5. A clean automated pass does not close the V23R19M focused visual gates.
+<!-- B&D V23R19N LEGACY AIRBORNE QA REALIGNMENT END -->
+
+<!-- B&D V23R19O CRITICAL INTRO OUTLINE WALL JUMP QA START -->
+## V23R19O critical mounted-intro, outline and Wall Jump gate
+
+Automated:
+
+1. mounted-intro renderer baseline capture and first-visible-frame reassertion exist;
+2. skinned rider renderers update while offscreen during the cinematic;
+3. every horse intro binding reasserts rider visibility;
+4. target outline filters auxiliary rings and requires damageable-collider-envelope intersection;
+5. auxiliary ring transparency owner is installed on enemies;
+6. Wall Jump has explicit longer/higher tuning, retained speed and bounded steering;
+7. camera yaw has a Wall Jump-only response multiplier;
+8. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+
+Focused Play Mode:
+
+1. abandon a live run, confirm, press Start Game and record the complete opening;
+2. confirm the Boy is present on the horse on the first visible frame and never pops in late;
+3. target at least one small and one large enemy and confirm only vulnerable model geometry receives the red outline;
+4. confirm the ground ring/circle is not outlined and is more transparent;
+5. verify target range, one-target limit and wall blocking;
+6. wall-jump from a wall, enemy and horse where physically valid;
+7. verify greater height/range and steer left/right/forward during the arc;
+8. verify the model and camera yaw follow the steered trajectory;
+9. verify ordinary grounded jump is unchanged.
+<!-- B&D V23R19O CRITICAL INTRO OUTLINE WALL JUMP QA END -->
+
+<!-- B&D V23R19P QA SEMANTIC + CATERPILLAR SPEC GATE START -->
+## V23R19P QA semantic and Caterpillar specification gate
+
+1. Traversal QA follows the active V23R19O Wall Jump contract:
+   - 0.62-second minimum push window;
+   - steering field;
+   - retained-speed field.
+2. QA does not require the superseded 0.48-second Runtime duration.
+3. Current bug-ledger QA does not require verified bugs to remain open.
+4. Mounted-rider visibility QA checks the qualified method symbol without depending on source whitespace.
+5. The Caterpillar document remains `REQUIRED / FUTURE / NOT IMPLEMENTED`.
+6. The document explicitly requires:
+   - selected rooms only, not every room;
+   - clean-room-only visibility;
+   - animated appearance;
+   - animated disappearance when enemies make the room unsafe;
+   - enemy-safe active gambling sessions;
+   - one game per Caterpillar;
+   - finite bankroll;
+   - passive threshold that is not an absolute maximum;
+   - no invented rules or values.
+7. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
+<!-- B&D V23R19P QA SEMANTIC + CATERPILLAR SPEC GATE END -->
+
+<!-- B&D V23R19Q PROFESSIONAL MEMORY-HANDHELD UI GATE START -->
+## V23R19Q professional memory-handheld UI gate
+
+Automated:
+
+1. both stale V23R19P QA tokens are removed;
+2. boot gradient/glow/scanline/vignette resources are cached;
+3. shell rounded/glass/scanline resources are cached;
+4. shell/content remain integrated in one IMGUI owner;
+5. all current menu labels/actions remain;
+6. the professional UI task record and canonical art/UI contracts are synchronized;
+7. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+
+Visual/interaction:
+
+1. inspect BBH from the first black frame through fade;
+2. inspect Main, Settings, Pause, Abandon and Loading;
+3. verify no lost button, setting, text, effect or true-victory state;
+4. verify 16:9 desktop and landscape-mobile-like layouts;
+5. verify hover, click and 180 ms page transitions;
+6. verify text remains crisp and readable;
+7. observe Profiler/Stats for repeated texture creation, GC spikes or a visible rendering hitch.
+<!-- B&D V23R19Q PROFESSIONAL MEMORY-HANDHELD UI GATE END -->
+
+<!-- B&D V23R19R MENU CONTRACT + MASTER LEDGER QA START -->
+## V23R19R menu contract and work-ledger gate
+
+1. No validation source requires the removed label `B&D POCKET ADVENTURE`.
+2. The active shell retains `B&D // POCKET MEMORY`.
+3. The V23R19Q professional shell marker remains.
+4. The master work sequence contains:
+   - current blocker;
+   - enemy attack animations next;
+   - professional opening cinematic after enemy animations;
+   - all implemented-but-unconfirmed V23R19O/V23R19Q checks;
+   - future systems;
+   - exact resume point.
+5. `PROJECT_STATUS.md` and `OPEN_BUG_TRACKER.md` reflect the one current blocker.
+6. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
+7. Automated PASS does not verify enemy animations, opening cinematic, UI appearance, mounted intro, target outline, ring transparency, Wall Jump, performance or user acceptance.
+<!-- B&D V23R19R MENU CONTRACT + MASTER LEDGER QA END -->
+
+<!-- B&D V23R19S CONTINUITY SEMANTIC QA START -->
+## V23R19S continuity semantic gate
+
+1. V23R19R QA must not require one prose sentence containing every verification type.
+2. It must require each canonical verification level independently:
+   - installer/static validation;
+   - compilation;
+   - TEST EVERYTHING;
+   - focused Play Mode;
+   - target-device/performance verification;
+   - user acceptance.
+3. The continuity contract must state that an earlier stage never implies a later stage.
+4. The master execution order remains:
+   - blocker closure;
+   - Enemy Attack Animations;
+   - Professional Opening Cinematic;
+   - retained verification;
+   - remaining product queue.
+5. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
+6. A clean result authorizes the Enemy Attack Animations stage; it does not verify any visual or gameplay feature.
+<!-- B&D V23R19S CONTINUITY SEMANTIC QA END -->
+
+<!-- B&D V23R19T PHASE-AGNOSTIC STATUS QA START -->
+## V23R19T phase-agnostic status and bug-ledger gate
+
+1. V23R19R QA must not require `C01.QA.V23R19R` to remain current.
+2. V23R19S QA must not require `C01.QA.V23R19S` to remain current.
+3. Neither scanner may require its historical bug ID to remain in the open table forever.
+4. Both scanners validate:
+   - a CURRENT project status;
+   - the canonical master sequence;
+   - Enemy Attack Animations next;
+   - Professional Opening Cinematic after it;
+   - permanent open-bug update discipline.
+5. TEST EVERYTHING must report 0 blockers, 0 warnings and 0 info.
+6. A clean result starts Enemy Attack Animations; it does not verify gameplay or visual work.
+<!-- B&D V23R19T PHASE-AGNOSTIC STATUS QA END -->

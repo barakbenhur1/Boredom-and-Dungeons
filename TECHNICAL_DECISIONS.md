@@ -396,3 +396,41 @@ Affected code/docs/QA:
 - Quicksand suppresses generic nonlethal ground recovery while its state is active; only its failure path may respawn.
 - Wall-jump eligibility is based on physical solid vertical surfaces rather than wall-only object categories.
 - Airborne melee presentation is selected explicitly by the committed attack and does not rely on delayed suppression of the grounded visual.
+
+### TD-052 — Durable task continuity is repository state
+
+- Every material task updates `PROJECT_STATUS.md` with the global current truth and exact resume point.
+- Large, multi-step, cross-system or multi-session work also receives a detailed record under `Assets/_Project/Design/Runtime/Tasks/`.
+- The record owns task rationale, decomposition, implementation evidence, unverified areas, blockers and handoff context; durable system behavior remains in its canonical domain documents.
+- Task records, global status, bug ledger and relevant architecture/QA/performance/decision documents are synchronized in the same change.
+- A chat, package README or local note is never the only source for material task context.
+- Verification vocabulary remains evidence-based; automated PASS does not imply Play Mode, device, camera-feel, performance, visual, audio or user acceptance.
+
+#### V23R19M exact axis clarification
+
+For the current grounded arc mesh, local X is the visible left-to-right long axis and local Z is the forward/depth axis. Airborne presentation rotates 90 degrees around local Z so the long axis becomes world up/down while attack depth continues to face forward. Rotating around local X only stands the plane up and is insufficient because it leaves the visible long axis horizontal.
+
+#### V23R19O mounted renderer, damageable silhouette and steerable wall-jump decisions
+
+- Mounted intro owns temporary rider-renderer visibility in addition to Transform binding. A teleported skinned rider must update offscreen during the cinematic to prevent bounds culling and late pop-in.
+- Target silhouette eligibility is collider-envelope based. A renderer parented to an enemy is not automatically damageable presentation.
+- Auxiliary ground rings are presentation-only, receive reduced alpha and are never target-outline geometry.
+- Wall-jump steering rotates the launch vector at a bounded rate while retaining an outward impulse. Player facing and camera intent consume the same current trajectory so movement, model and view do not disagree.
+
+#### V23R19P Caterpillar gambling invariants
+
+- Room eligibility and room safety are different states: the run selects only some rooms for a Caterpillar; enemy presence temporarily hides an eligible Caterpillar but never creates one in an unselected room.
+- Appearance and disappearance are explicit animated state transitions.
+- A gambling session is a single owned transaction with a temporary safety state that prevents enemy approach and attacks until deterministic cleanup.
+- Each Caterpillar instance owns exactly one assigned game.
+- Passive refill is capped at the normal threshold; money won from the player may exceed it and is retained.
+- Game rules, odds, values, frequency, art, exact safety mechanism and balance remain open.
+
+#### V23R19Q remembered-handheld rendering
+
+- Use an original memory-based handheld design rather than a literal commercial-device copy.
+- Preserve one-pass IMGUI ownership because replacing the UI framework inside a focused visual polish task would create unnecessary behavior risk.
+- Improve finish through cached procedural textures, consistent screen palette, layout hierarchy and a short mode transition.
+- Tiled scanlines use one cached texture draw.
+- Rounded body/screen elements reuse one cached alpha texture.
+- No Texture2D or Material is created in OnGUI.

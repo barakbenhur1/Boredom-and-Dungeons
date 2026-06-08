@@ -55,19 +55,6 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "צליל דמוי דיבור ללא מילים"
             );
 
-            Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
-                "V23R19K_BUG_LEDGER_MISSING",
-                "BUG-V23R19K-001",
-                "explicit airborne identity was ignored"
-            );
-
-            Require(result, root,
-                "PROJECT_STATUS.md",
-                "V23R19K_STATUS_MISSING",
-                "C01/C03.RUNTIME.V23R19K",
-                "V23R19K acceptance gate"
-            );
         }
 
         private static string Read(string root, string relative)

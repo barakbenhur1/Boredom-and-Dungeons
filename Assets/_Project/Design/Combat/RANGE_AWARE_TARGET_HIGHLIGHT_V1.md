@@ -44,3 +44,12 @@ When a normal projectile is loaded and not reloading, the one primary enemy that
 ## V23R13 silhouette contract
 
 The old GUI corner box is removed. A fixed-pixel inverted-hull shader traces the enemy mesh silhouette directly, including mounted ranged targeting, without becoming larger as distance changes.
+
+## V23R19O damageable-model-only silhouette
+
+- The red silhouette represents the enemy surface that can actually receive damage, not every renderer parented under the enemy root.
+- Resolve enabled, non-trigger colliders whose nearest `BDHealth` owner is the selected enemy.
+- Create outline shells only for eligible Mesh/Skinned renderers that intersect that damageable collider envelope.
+- Exclude broad flat ground circles/rings, range or selection indicators, telegraphs, health/prompt UI, particles, trails and existing outline shells.
+- The auxiliary enemy ring remains visible but receives a 0.62 alpha multiplier so it reads as supporting information rather than the target body.
+- Target selection, range, line-of-fire blockers, attack ownership and damage are unchanged.

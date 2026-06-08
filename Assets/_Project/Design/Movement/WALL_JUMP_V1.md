@@ -22,3 +22,15 @@
 - Combat-grounding recovery must not reinterpret that temporary loss of floor support as an accidental fall.
 - Taking damage during the controlled-jump window may apply normal damage feedback but cannot teleport the player to an older safe point.
 - Real unsupported floor loss outside jump, dodge, quicksand, or explicit forced movement remains recoverable by the existing guard.
+
+## V23R19O higher, farther and steerable wall-jump arc
+
+- Minimum wall-jump height is raised to 2.25 world units.
+- Minimum initial horizontal speed is raised to 10.4 units/second.
+- Minimum authored push window is raised to 0.62 seconds.
+- At least 38% of launch speed is retained at the end of the push window instead of decaying linearly to zero.
+- Held movement input may rotate the horizontal launch direction at a bounded steering rate; the move is not an unrestricted instant reversal or dash.
+- Regular movement contribution remains reduced during the wall-jump window, but is strong enough to support intentional correction.
+- The player model turns toward the current wall-jump trajectory during the arc.
+- `LastLookDirection` follows the current trajectory, and `BDCameraFollow` temporarily increases yaw response while `IsWallJumping`, so view direction follows the player's steered course.
+- Normal grounded jump tuning and camera behavior outside Wall Jump remain unchanged.

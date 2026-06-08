@@ -65,6 +65,11 @@ namespace BoredomAndDungeons
             if (material == null)
                 return;
 
+            // BD DAMAGEABLE MODEL ONLY TARGET OUTLINE V23R19O
+            BDHealth ownerHealth = GetComponent<BDHealth>();
+            Collider[] damageableColliders =
+                ResolveDamageableColliders(ownerHealth);
+
             Renderer[] sources =
                 GetComponentsInChildren<Renderer>(
                     includeInactive: false
@@ -82,11 +87,123 @@ namespace BoredomAndDungeons
                     continue;
                 }
 
+                if (BDAuxiliaryEnemyRingTransparency
+                        .IsAuxiliaryRingRenderer(
+                            source,
+                            transform))
+                {
+                    BDAuxiliaryEnemyRingTransparency.ApplyTransparency(
+                        source,
+                        0.62f
+                    );
+                    continue;
+                }
+
+                if (!RendererIntersectsDamageableEnvelope(
+                        source,
+                        ownerHealth,
+                        damageableColliders))
+                {
+                    continue;
+                }
+
                 if (source is SkinnedMeshRenderer skinned)
                     CreateSkinnedShell(skinned, material);
                 else if (source is MeshRenderer meshRenderer)
                     CreateMeshShell(meshRenderer, material);
             }
+        }
+
+        private Collider[] ResolveDamageableColliders(
+            BDHealth ownerHealth)
+        {
+            Collider[] candidates =
+                GetComponentsInChildren<Collider>(
+                    includeInactive: true
+                );
+
+            List<Collider> resolved =
+                new List<Collider>(candidates.Length);
+
+            for (int index = 0;
+                 index < candidates.Length;
+                 index++)
+            {
+                Collider candidate = candidates[index];
+                if (candidate == null ||
+                    !candidate.enabled ||
+                    candidate.isTrigger)
+                {
+                    continue;
+                }
+
+                BDHealth nearestHealth =
+                    candidate.GetComponentInParent<BDHealth>();
+
+                if (ownerHealth != null &&
+                    nearestHealth != ownerHealth)
+                {
+                    continue;
+                }
+
+                if (BDAuxiliaryEnemyRingTransparency
+                        .IsAuxiliaryRingRenderer(
+                            candidate.GetComponent<Renderer>(),
+                            transform))
+                {
+                    continue;
+                }
+
+                resolved.Add(candidate);
+            }
+
+            return resolved.ToArray();
+        }
+
+        private static bool RendererIntersectsDamageableEnvelope(
+            Renderer source,
+            BDHealth ownerHealth,
+            Collider[] damageableColliders)
+        {
+            if (source == null)
+                return false;
+
+            BDHealth nearestHealth =
+                source.GetComponentInParent<BDHealth>();
+
+            if (ownerHealth != null &&
+                nearestHealth != null &&
+                nearestHealth != ownerHealth)
+            {
+                return false;
+            }
+
+            if (damageableColliders == null ||
+                damageableColliders.Length == 0)
+            {
+                return true;
+            }
+
+            Bounds rendererBounds = source.bounds;
+
+            for (int index = 0;
+                 index < damageableColliders.Length;
+                 index++)
+            {
+                Collider collider =
+                    damageableColliders[index];
+
+                if (collider == null)
+                    continue;
+
+                Bounds damageableBounds = collider.bounds;
+                damageableBounds.Expand(0.18f);
+
+                if (rendererBounds.Intersects(damageableBounds))
+                    return true;
+            }
+
+            return false;
         }
 
         private void CreateMeshShell(

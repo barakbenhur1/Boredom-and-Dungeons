@@ -19,3 +19,16 @@
 - The first press never destroys the run.
 - `YES, ABANDON RUN` performs the existing return-to-menu flow.
 - `CANCEL` or Escape returns to Pause with the run still intact.
+
+## V23R19Q memory rather than replica
+
+- The shell is an original fantasy handheld remembered through nostalgia, not a literal Game Boy replica.
+- Main, Settings, Pause, Abandon, Loading and future pages share one professional screen system.
+- Existing content and behavior are preserved.
+- The screen uses glass depth, restrained scanlines, a limited readable palette, consistent spacing and modern high-resolution type.
+- The body uses a rounded chunky silhouette, tactile D-pad/buttons, Start/Select pills, speaker slots and a small magical status light.
+- Hover/focus uses a short side accent, border and controlled lift.
+- Page changes use a short 180 ms slide/fade.
+- The true-victory awakened state keeps its cyan/gold transformation.
+- Boot and menu textures are generated once and cached; no per-frame texture or material allocation is allowed.
+- Professional finish is required on all menu pages, not only the main page.

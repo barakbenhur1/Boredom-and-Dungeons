@@ -18,8 +18,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(result, root,
                 "Assets/_Project/Scripts/Runtime/BDMeleeSlashArcVisual.cs",
                 "V23R19G_AIRBORNE_ROTATION_MISSING",
-                "BD CORRECT LOCAL-X AIRBORNE ROTATION V23R19G",
-                "Quaternion.AngleAxis(-90f, Vector3.right)",
+                "BD LOCAL-Z AIRBORNE LINE ROTATION V23R19M",
+                "Quaternion.AngleAxis(90f, Vector3.forward)",
                 "verticalPlane: false",
                 "Vector3.one * expand"
             );
@@ -73,9 +73,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
                 "V23R19G_BUG_TRACKER_MISSING",
                 "This document must be updated every time",
-                "BUG-V23R19G-001",
+                "BUG-V23R19G-005",
                 "BUG-V23R19H-001",
-                "IMPLEMENTED / UNITY VERIFICATION REQUIRED"
+                "BUG-V23R19O-001"
             );
 
             Require(result, root,

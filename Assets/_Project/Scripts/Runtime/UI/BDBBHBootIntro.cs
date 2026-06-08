@@ -45,6 +45,10 @@ namespace BoredomAndDungeons
         private Texture2D solidTexture;
         private Texture2D filledCircleTexture;
         private Texture2D circleRimTexture;
+        private Texture2D bootGradientTexture;
+        private Texture2D bootGlowTexture;
+        private Texture2D bootScanlineTexture;
+        private Texture2D bootVignetteTexture;
 
         public static bool IsPlaying => currentlyPlaying;
         public static bool HasPlayedThisSession => playedThisApplicationSession;
@@ -98,6 +102,10 @@ namespace BoredomAndDungeons
             DestroyTexture(ref solidTexture);
             DestroyTexture(ref filledCircleTexture);
             DestroyTexture(ref circleRimTexture);
+            DestroyTexture(ref bootGradientTexture);
+            DestroyTexture(ref bootGlowTexture);
+            DestroyTexture(ref bootScanlineTexture);
+            DestroyTexture(ref bootVignetteTexture);
             letterStyle = null;
         }
 
@@ -178,7 +186,9 @@ namespace BoredomAndDungeons
                 solidTexture
             );
 
+            DrawProfessionalBootSurface(globalAlpha);
             DrawComposition(globalAlpha);
+            DrawProfessionalBootGlass(globalAlpha);
 
             if (Event.current != null &&
                 (Event.current.isKey ||
@@ -191,6 +201,147 @@ namespace BoredomAndDungeons
             GUI.color = previousColor;
             GUI.matrix = previousMatrix;
             GUI.depth = previousDepth;
+        }
+
+        // BD PROFESSIONAL BBH BOOT SURFACE V23R19Q
+        private void DrawProfessionalBootSurface(float globalAlpha)
+        {
+            if (Elapsed < InitialBlackHold)
+                return;
+
+            Color previousColor = GUI.color;
+            Rect full = new Rect(0f, 0f, Screen.width, Screen.height);
+            float surfaceReveal = SmoothStep01(
+                Mathf.Clamp01(
+                    (Elapsed - InitialBlackHold) / 0.22f
+                )
+            );
+
+            GUI.color = new Color(
+                1f,
+                1f,
+                1f,
+                globalAlpha * surfaceReveal
+            );
+            GUI.DrawTexture(
+                full,
+                bootGradientTexture,
+                ScaleMode.StretchToFill,
+                alphaBlend: true
+            );
+
+            float reveal = surfaceReveal;
+
+            float glowSize =
+                Mathf.Min(Screen.width, Screen.height) * 0.74f;
+            Vector2 glowCenter = new Vector2(
+                Screen.width * 0.50f,
+                Screen.height * VerticalScreenPositionFromTop
+            );
+
+            GUI.color = new Color(
+                0.28f,
+                0.50f,
+                0.94f,
+                globalAlpha * reveal * 0.15f
+            );
+            GUI.DrawTexture(
+                new Rect(
+                    glowCenter.x - glowSize * 0.5f,
+                    glowCenter.y - glowSize * 0.5f,
+                    glowSize,
+                    glowSize
+                ),
+                bootGlowTexture,
+                ScaleMode.StretchToFill,
+                alphaBlend: true
+            );
+
+            GUI.color = previousColor;
+        }
+
+        private void DrawProfessionalBootGlass(float globalAlpha)
+        {
+            if (Elapsed < InitialBlackHold)
+                return;
+
+            Color previousColor = GUI.color;
+            Rect full = new Rect(0f, 0f, Screen.width, Screen.height);
+            float surfaceReveal = SmoothStep01(
+                Mathf.Clamp01(
+                    (Elapsed - InitialBlackHold) / 0.22f
+                )
+            );
+
+            GUI.color = new Color(
+                1f,
+                1f,
+                1f,
+                globalAlpha * surfaceReveal * 0.34f
+            );
+            GUI.DrawTextureWithTexCoords(
+                full,
+                bootScanlineTexture,
+                new Rect(
+                    0f,
+                    0f,
+                    Mathf.Max(1f, Screen.width / 8f),
+                    Mathf.Max(1f, Screen.height / 8f)
+                ),
+                alphaBlend: true
+            );
+
+            GUI.color = new Color(
+                1f,
+                1f,
+                1f,
+                globalAlpha * surfaceReveal
+            );
+            GUI.DrawTexture(
+                full,
+                bootVignetteTexture,
+                ScaleMode.StretchToFill,
+                alphaBlend: true
+            );
+
+            float inset = Mathf.Clamp(
+                Mathf.Min(Screen.width, Screen.height) * 0.028f,
+                12f,
+                28f
+            );
+            Color frame = new Color(
+                0.46f,
+                0.66f,
+                0.94f,
+                globalAlpha * surfaceReveal * 0.10f
+            );
+
+            DrawBootLine(
+                new Rect(inset, inset, Screen.width - inset * 2f, 1f),
+                frame
+            );
+            DrawBootLine(
+                new Rect(inset, Screen.height - inset - 1f, Screen.width - inset * 2f, 1f),
+                frame
+            );
+            DrawBootLine(
+                new Rect(inset, inset, 1f, Screen.height - inset * 2f),
+                frame
+            );
+            DrawBootLine(
+                new Rect(Screen.width - inset - 1f, inset, 1f, Screen.height - inset * 2f),
+                frame
+            );
+
+            GUI.color = previousColor;
+        }
+
+        private void DrawBootLine(Rect rect, Color color)
+        {
+            Color previous = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, solidTexture);
+            GUI.color = previous;
         }
 
         private void DrawComposition(float globalAlpha)
@@ -779,6 +930,30 @@ namespace BoredomAndDungeons
                     CreateCircleTexture(256, rimOnly: true);
             }
 
+            if (bootGradientTexture == null)
+            {
+                bootGradientTexture =
+                    CreateBootGradientTexture(128);
+            }
+
+            if (bootGlowTexture == null)
+            {
+                bootGlowTexture =
+                    CreateBootRadialGlowTexture(128);
+            }
+
+            if (bootScanlineTexture == null)
+            {
+                bootScanlineTexture =
+                    CreateBootScanlineTexture(8);
+            }
+
+            if (bootVignetteTexture == null)
+            {
+                bootVignetteTexture =
+                    CreateBootVignetteTexture(128);
+            }
+
             if (letterStyle != null)
                 return;
 
@@ -790,6 +965,149 @@ namespace BoredomAndDungeons
                 clipping = TextClipping.Overflow,
                 wordWrap = false
             };
+        }
+
+        private static Texture2D CreateBootGradientTexture(
+            int height)
+        {
+            int safeHeight = Mathf.Max(32, height);
+            Texture2D texture = new Texture2D(
+                1,
+                safeHeight,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            texture.name = "BBH Professional Boot Gradient";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Bilinear;
+
+            Color top = new Color(0.035f, 0.055f, 0.105f, 1f);
+            Color bottom = new Color(0.002f, 0.005f, 0.014f, 1f);
+
+            for (int y = 0; y < safeHeight; y++)
+            {
+                float t = y / (float)(safeHeight - 1);
+                texture.SetPixel(0, y, Color.Lerp(bottom, top, t));
+            }
+
+            texture.Apply(false, true);
+            return texture;
+        }
+
+        private static Texture2D CreateBootRadialGlowTexture(
+            int size)
+        {
+            int safeSize = Mathf.Max(32, size);
+            Texture2D texture = new Texture2D(
+                safeSize,
+                safeSize,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            texture.name = "BBH Professional Boot Glow";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Bilinear;
+
+            Vector2 center = new Vector2(
+                (safeSize - 1) * 0.5f,
+                (safeSize - 1) * 0.5f
+            );
+            float radius = Mathf.Max(1f, safeSize * 0.5f);
+
+            for (int y = 0; y < safeSize; y++)
+            {
+                for (int x = 0; x < safeSize; x++)
+                {
+                    float distance =
+                        Vector2.Distance(new Vector2(x, y), center) /
+                        radius;
+                    float alpha = Mathf.Pow(
+                        Mathf.Clamp01(1f - distance),
+                        2.6f
+                    );
+                    texture.SetPixel(
+                        x,
+                        y,
+                        new Color(1f, 1f, 1f, alpha)
+                    );
+                }
+            }
+
+            texture.Apply(false, true);
+            return texture;
+        }
+
+        private static Texture2D CreateBootScanlineTexture(
+            int size)
+        {
+            int safeSize = Mathf.Max(4, size);
+            Texture2D texture = new Texture2D(
+                safeSize,
+                safeSize,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            texture.name = "BBH Professional Boot Scanlines";
+            texture.wrapMode = TextureWrapMode.Repeat;
+            texture.filterMode = FilterMode.Point;
+
+            for (int y = 0; y < safeSize; y++)
+            {
+                float alpha = y == safeSize - 1 ? 0.13f : 0f;
+                for (int x = 0; x < safeSize; x++)
+                {
+                    texture.SetPixel(
+                        x,
+                        y,
+                        new Color(0f, 0f, 0f, alpha)
+                    );
+                }
+            }
+
+            texture.Apply(false, true);
+            return texture;
+        }
+
+        private static Texture2D CreateBootVignetteTexture(
+            int size)
+        {
+            int safeSize = Mathf.Max(32, size);
+            Texture2D texture = new Texture2D(
+                safeSize,
+                safeSize,
+                TextureFormat.RGBA32,
+                mipChain: false
+            );
+            texture.name = "BBH Professional Boot Vignette";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Bilinear;
+
+            Vector2 center = new Vector2(
+                (safeSize - 1) * 0.5f,
+                (safeSize - 1) * 0.5f
+            );
+            float radius = Mathf.Max(1f, safeSize * 0.71f);
+
+            for (int y = 0; y < safeSize; y++)
+            {
+                for (int x = 0; x < safeSize; x++)
+                {
+                    float distance =
+                        Vector2.Distance(new Vector2(x, y), center) /
+                        radius;
+                    float alpha = SmoothStep01(
+                        Mathf.InverseLerp(0.46f, 1f, distance)
+                    ) * 0.72f;
+                    texture.SetPixel(
+                        x,
+                        y,
+                        new Color(0f, 0f, 0f, alpha)
+                    );
+                }
+            }
+
+            texture.Apply(false, true);
+            return texture;
         }
 
         private static void DestroyTexture(ref Texture2D texture)

@@ -66,13 +66,6 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
-                "V23R19J_BUG_TRACKER_MISSING",
-                "BUG-V23R19J-001",
-                "BUG-V23R19H-001"
-            );
-
-            Require(result, root,
                 "Assets/_Project/Design/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
                 "V23R19J_CHARACTER_SPEC_CORRECTION_MISSING",
                 "REQUIRED / FUTURE / NOT IMPLEMENTED",
@@ -82,12 +75,6 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Meta Progression"
             );
 
-            Require(result, root,
-                "PROJECT_STATUS.md",
-                "V23R19J_STATUS_MISSING",
-                "C01.DOCUMENTATION-QA.V23R19J",
-                "V23R19J acceptance gate"
-            );
         }
 
         private static string Read(string root, string relative)

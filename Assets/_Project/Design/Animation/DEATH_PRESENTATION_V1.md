@@ -19,3 +19,14 @@ Status: V23R19E working Runtime implementation; final production-authored animat
 ## Production requirement
 
 The procedural V23R19E fall is a functional presentation and regression-safe timing owner. It is not a substitute for final authored character-specific death animations, impact reactions, audio, VFX, and animation blending.
+
+## V23R19M small regular-enemy death readability
+
+### Small regular enemies
+
+- Small regular enemies use an intact-body recoil and loss-of-balance fall.
+- The body first reacts briefly, then tips and settles toward the floor.
+- The final pose preserves almost all body proportions so the enemy still reads as the same character.
+- Do not compress a small enemy into a flat pancake, rubber blob, or sudden scale collapse.
+- Loot and despawn still wait for the death motion to complete.
+- Large enemies, Elite guardians, mini-bosses, bosses, and the player keep their existing specialized/current death paths unless separately changed.

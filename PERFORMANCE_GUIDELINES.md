@@ -58,3 +58,12 @@ Each measured optimization should record in `PROJECT_STATUS.md`:
 - visual/gameplay trade-offs;
 - remaining bottleneck;
 - whether the result is verified or still requires device testing.
+
+## V23R19Q menu presentation budget
+
+- Boot and menu procedural textures are generated once per owning component lifecycle.
+- No texture/material generation is allowed in `OnGUI`.
+- Scanlines must be tiled with one draw call rather than one call per line.
+- The professional shell should add only a small fixed number of IMGUI draws independent of resolution.
+- Mode transitions use `Time.unscaledTime` and do not allocate coroutines or per-transition textures.
+- Verify no recurring GC allocation attributable to the new polish while the menu is idle.

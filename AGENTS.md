@@ -58,6 +58,8 @@ Use configured subagents when they materially improve correctness or speed, but 
 14. Do not stop after a plan unless the user asked for planning only.
 15. Do not waste time with generic advice when a concrete implementation, patch, command, validator, or artifact can be produced safely.
 16. Maintain `Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md` in the same change whenever any bug is discovered, changes status, is repaired, is verified, is reopened, or is reclassified.
+17. For every material task, and especially any large, multi-step, cross-system or multi-session task, synchronize `PROJECT_STATUS.md`, a detailed task record, and every relevant canonical document with the reason, decomposition, implementation, verification, blockers and exact resume point.
+18. Before every commit, perform a documentation relevance sweep: merge still-valid content into canonical owners, remove completed/superseded/duplicate/temporary/irrelevant documents, update references and `DOCUMENTATION_INDEX.md`, and block the commit if safe ownership is unclear.
 
 ---
 
@@ -699,3 +701,34 @@ For every art, UI, VFX, model, material, texture, animation, menu, icon, typogra
 ## Canonical audio source
 
 For every music, SFX, ambience, vocal, mixer, snapshot, mastering, or audio-accessibility task, read root `AUDIO_DIRECTION.md` before implementation. Root `AUDIO_DIRECTION.md` is canonical; `Assets/_Project/Design/Audio/MUSIC_AND_AUDIO_DIRECTION_V1.md` is the synchronized Unity-side mirror.
+
+<!-- B&D TASK CONTINUITY OPERATING RULE START -->
+## Durable task continuity and handoff
+
+For every material task, and especially every large, multi-step, cross-system or multi-session task:
+
+1. synchronize the global summary into `PROJECT_STATUS.md`;
+2. maintain a detailed task record under `Assets/_Project/Design/Runtime/Tasks/`;
+3. record why the task exists, the approved outcome, scope, non-goals, decomposition, dependencies, files/systems, decisions, implementation, evidence, blockers and exact resume point;
+4. update every relevant canonical domain document in the same change;
+5. update the record immediately on every meaningful status or verification change;
+6. leave enough repository context for Codex, another chat or another developer to continue without the original conversation;
+7. never call work complete merely because code or a package exists;
+8. before every commit, merge still-valid content from completed/superseded documents into canonical owners and remove obsolete, duplicate, temporary or no-longer-relevant documents.
+
+The canonical policy is `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md`.
+<!-- B&D TASK CONTINUITY OPERATING RULE END -->
+
+<!-- B&D ALL BUGS AND UNCONFIRMED WORK RULE START -->
+## All bugs and unconfirmed work must remain visible
+
+For every change:
+
+- update all current bugs and reopened bugs;
+- update everything implemented but not yet user-confirmed;
+- keep automated, Play Mode, device/performance and user acceptance separate;
+- include affected future work and contradictions;
+- update the exact ordered resume point;
+- follow `MASTER_ACTIVE_WORK_SEQUENCE_V1.md`;
+- never silently drop an item because a package installed or automated QA passed.
+<!-- B&D ALL BUGS AND UNCONFIRMED WORK RULE END -->

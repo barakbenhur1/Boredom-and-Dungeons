@@ -37,6 +37,23 @@ Classify every request before implementation:
 
 This is a standing instruction. The user does not need to explain or repeat it in later conversations.
 
+
+<!-- B&D TASK CONTINUITY FIRST-READ RULE START -->
+## Permanent task-continuity and handoff rule
+
+Every material task must be recoverable from the repository without relying on the current chat.
+
+- `PROJECT_STATUS.md` always contains the global summary, current truth, ordering, verification state and exact resume point.
+- Large, multi-step, cross-system or multi-session work also receives a detailed record under `Assets/_Project/Design/Runtime/Tasks/`.
+- The record explains why the task exists, what was approved, what must not change, how the work is decomposed, what was done, what was verified, what failed, what is blocked and exactly where Codex or another contributor should continue.
+- All relevant canonical domain documents are updated in the same change.
+- The canonical policy is `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md`.
+
+Before every commit, perform a documentation relevance sweep: preserve valid truth in canonical owners, remove obsolete/duplicate/temporary documents, update all references and `DOCUMENTATION_INDEX.md`, and block the commit if safe ownership is unclear.
+
+This is a standing instruction. The user does not need to repeat it.
+<!-- B&D TASK CONTINUITY FIRST-READ RULE END -->
+
 ## Non-destructive repository rule
 
 - Preserve existing code, scenes, prefabs, assets, materials, animation, audio, documentation, colors, and behavior by default.

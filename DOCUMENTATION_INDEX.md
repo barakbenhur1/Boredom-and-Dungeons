@@ -54,6 +54,16 @@ A feature document describes durable behavior and acceptance rules. Its current 
 - It is updated in the same change whenever a bug is discovered, changes status, is repaired, is verified, is reopened, or is reclassified.
 - It does not own project ordering or the resume point; those remain exclusively in `PROJECT_STATUS.md`.
 
+<!-- B&D TASK CONTINUITY DOCUMENT OWNERSHIP START -->
+### Task continuity and active handoff records
+
+- `Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md` — permanent rule for documenting the reason, scope, decomposition, implementation, evidence, blockers and exact resume point of material tasks.
+- `Assets/_Project/Design/Runtime/Tasks/` — active detailed records for large, multi-step, cross-system or multi-session tasks. These records supplement but never replace `PROJECT_STATUS.md` or canonical domain contracts.
+- `Assets/_Project/Design/Runtime/Tasks/ARCHITECTURE_GAMEPLAY_CAMERA_AUDIT_V1.md` — current Phase 1 audit record for gameplay, camera, run systems, architecture, QA and documentation; includes rationale, phases, preliminary evidence, retained Play Mode gates and exact continuation point.
+
+Every active task record is updated in the same change as its implementation/verification truth. Before every commit, perform a documentation relevance sweep. When a completed record or any other document no longer has distinct maintained value, merge its durable content into canonical owners, update this index and all references, remove the obsolete file in the same commit, and rely on Git history for the old snapshot.
+<!-- B&D TASK CONTINUITY DOCUMENT OWNERSHIP END -->
+
 ### Current V23R8 feature contracts
 
 - `Assets/_Project/Design/Runtime/V23R13_AUDIO_QUICKSAND_TARGET_OUTLINE_REPAIR.md` — expanded audio-event coverage, playable quicksand, constant-size silhouette targeting, and compiler-warning cleanup.
@@ -217,3 +227,15 @@ Art-direction conventions are active; the earlier pending questionnaire state is
 - `Assets/_Project/Design/Hazards/QUICKSAND_AND_ENEMY_HAZARD_BEHAVIOR_V1.md`
 - `Assets/_Project/Design/Movement/WALL_JUMP_V1.md`
 - `Assets/_Project/Design/Horse/MOUNTED_ENEMY_IMPACT_V1.md`
+
+### Caterpillar gambling NPC
+
+- `Assets/_Project/Design/Economy/CATERPILLAR_GAMBLING_NPC_V1.md` — canonical future requirement for selected-room Caterpillar placement, animated clean-room visibility, one-game assignment, finite bankroll/refill semantics, anti-exploit transactions and enemy-safe gambling sessions. Status: required, not implemented.
+
+### Active professional UI task
+
+- `Assets/_Project/Design/Runtime/Tasks/GAME_BOY_UI_PROFESSIONALIZATION_V1.md` — active task record for additive BBH intro and original modern remembered-handheld menu professionalization; remove after visual verification and durable merge into canonical UI/art documents.
+
+### Master active work sequence
+
+- `Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md` — canonical ordered execution queue covering blockers, all open bugs, implemented-but-unconfirmed behavior, automated/Play Mode/user verification, next implementation stages and future work. It must remain current across ChatGPT, Codex and developer handoffs.

@@ -55,6 +55,12 @@ namespace BoredomAndDungeons
             if (GetComponent<BDEnemyProximityTelegraph>() == null)
                 gameObject.AddComponent<BDEnemyProximityTelegraph>();
 
+            if (GetComponent<BDAuxiliaryEnemyRingTransparency>() == null)
+            {
+                gameObject.AddComponent<
+                    BDAuxiliaryEnemyRingTransparency>();
+            }
+
             if (GetComponent<BDHitStaggerReceiver>() == null)
                 gameObject.AddComponent<BDHitStaggerReceiver>();
 
