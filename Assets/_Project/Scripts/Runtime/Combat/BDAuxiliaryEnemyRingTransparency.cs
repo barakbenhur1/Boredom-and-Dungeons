@@ -11,11 +11,11 @@ namespace BoredomAndDungeons
         private float alphaMultiplier = 0.62f;
 
         private bool applying;
-        private readonly MaterialPropertyBlock propertyBlock =
-            new MaterialPropertyBlock();
+        private MaterialPropertyBlock propertyBlock;
 
         private void Awake()
         {
+            EnsurePropertyBlock();
             Apply();
         }
 
@@ -40,6 +40,9 @@ namespace BoredomAndDungeons
             if (applying)
                 return;
 
+            MaterialPropertyBlock reusableBlock =
+                EnsurePropertyBlock();
+
             applying = true;
             try
             {
@@ -63,7 +66,7 @@ namespace BoredomAndDungeons
                     ApplyTransparency(
                         candidate,
                         alphaMultiplier,
-                        propertyBlock
+                        reusableBlock
                     );
                 }
             }
@@ -71,6 +74,14 @@ namespace BoredomAndDungeons
             {
                 applying = false;
             }
+        }
+
+        private MaterialPropertyBlock EnsurePropertyBlock()
+        {
+            if (propertyBlock == null)
+                propertyBlock = new MaterialPropertyBlock();
+
+            return propertyBlock;
         }
 
         public static bool IsAuxiliaryRingRenderer(
