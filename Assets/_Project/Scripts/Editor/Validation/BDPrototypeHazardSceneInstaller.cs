@@ -14,6 +14,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
         public const string RootName = "__BD_HAZARD_TEST_AREA";
         public const string HoleName = "Hazard_HoleOrChasm";
         public const string LavaName = "Hazard_Lava";
+        public const string QuicksandName = "Hazard_Quicksand";
 
         private const float HazardHalfSize = 1.35f;
         private const float MinimumPlayerDistance = 14.0f;
@@ -75,13 +76,22 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 Vector3 holePosition = FindPlacement(
                     player.position,
                     null,
+                    null,
                     player.right
                 );
 
                 Vector3 lavaPosition = FindPlacement(
                     player.position,
                     holePosition,
+                    null,
                     player.right + player.forward * 0.35f
+                );
+
+                Vector3 quicksandPosition = FindPlacement(
+                    player.position,
+                    holePosition,
+                    lavaPosition,
+                    -player.right + player.forward * 0.25f
                 );
 
                 CreateHazard(
@@ -98,6 +108,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     BDHazardType.Lava,
                     lavaPosition,
                     "LAVA\nWALK INTO IT"
+                );
+
+                CreateHazard(
+                    root.transform,
+                    QuicksandName,
+                    BDHazardType.Quicksand,
+                    quicksandPosition,
+                    "QUICKSAND\nKEEP MOVING TO ESCAPE"
                 );
 
                 if (!BDC07PlayableBossEncounterInstaller
@@ -317,6 +335,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
         private static Vector3 FindPlacement(
             Vector3 playerPosition,
             Vector3? avoidPosition,
+            Vector3? secondAvoidPosition,
             Vector3 preferredDirection)
         {
             Vector3 preferred = preferredDirection;
@@ -363,6 +382,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                         HorizontalDistance(
                             grounded,
                             avoidPosition.Value) < MinimumHazardSpacing)
+                    {
+                        continue;
+                    }
+
+                    if (secondAvoidPosition.HasValue &&
+                        HorizontalDistance(
+                            grounded,
+                            secondAvoidPosition.Value) < MinimumHazardSpacing)
                     {
                         continue;
                     }
@@ -501,6 +528,18 @@ namespace BoredomAndDungeons.EditorTools.Validation
                         2.70f
                     );
             }
+            else if (type == BDHazardType.Quicksand)
+            {
+                visual.transform.localPosition =
+                    new Vector3(0f, 0.015f, 0f);
+
+                visual.transform.localScale =
+                    new Vector3(
+                        2.85f,
+                        0.035f,
+                        2.85f
+                    );
+            }
             else
             {
                 visual.transform.localPosition =
@@ -560,6 +599,17 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     2.50f
                 );
             }
+            else if (type == BDHazardType.Quicksand)
+            {
+                trigger.transform.localPosition =
+                    new Vector3(0f, 0.20f, 0f);
+
+                box.size = new Vector3(
+                    2.65f,
+                    0.42f,
+                    2.65f
+                );
+            }
             else
             {
                 trigger.transform.localPosition =
@@ -604,6 +654,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
             text.alignment = TextAlignment.Center;
             text.characterSize = 0.20f;
             text.fontSize = 48;
+
+            BDPrototypeHazardLabelVisibility visibility =
+                label.AddComponent<
+                    BDPrototypeHazardLabelVisibility>();
+            visibility.Configure(9.0f);
         }
 
         private static void CleanSerializedYaml(

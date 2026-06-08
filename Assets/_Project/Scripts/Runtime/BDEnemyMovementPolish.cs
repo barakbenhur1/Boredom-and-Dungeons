@@ -72,6 +72,15 @@ namespace BoredomAndDungeons
             float desiredSpeed =
                 desiredVelocity.magnitude;
 
+            float maximumBrainSpeed =
+                owner is BDChargerEnemy
+                    ? 14f
+                    : 8.75f;
+            desiredSpeed = Mathf.Min(
+                desiredSpeed,
+                maximumBrainSpeed
+            );
+
             Vector3 desiredDirection =
                 desiredVelocity / desiredSpeed;
 
@@ -124,8 +133,17 @@ namespace BoredomAndDungeons
 
             CleanupIfNeeded(now);
 
-            return state.Velocity * deltaTime +
-                   vertical;
+            Vector3 resolved =
+                state.Velocity * deltaTime + vertical;
+            resolved = BDEnemyHazardNavigation.FilterBrainMotion(
+                owner,
+                resolved
+            );
+            resolved = BDQuicksandStatus.FilterMotion(
+                owner.gameObject,
+                resolved
+            );
+            return resolved;
         }
 
         private static void CleanupIfNeeded(

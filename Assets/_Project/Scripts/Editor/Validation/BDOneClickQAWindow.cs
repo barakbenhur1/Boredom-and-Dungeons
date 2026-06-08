@@ -72,7 +72,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "movement",
                 "Movement and mouse direction",
-                "W/S/A/D move in straight lines. Tiny accidental mouse movement does not rotate the player."),
+                "W/S/A/D move in straight lines. Tiny accidental mouse movement does not rotate the player. Jumping onto an attacking enemy never teleports the player to an older safe point."),
             new ManualCheck(
                 "minimap",
                 "Minimap",
@@ -100,11 +100,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "hazards",
                 "Ground, holes, lava, horse, and minimap",
-                "The minimap remains clipped while its cardinal transition animates. Normal walking never leaves supported ground. A hole applies exactly 15 damage and respawns; real lava contact applies exactly 10 damage and returns the player safely. The horse performs a two-step retreat before hazards, and mounted emergency recovery returns the player on foot without horse damage."),
+                "The minimap remains clipped while its cardinal transition animates. Normal walking never leaves supported ground. Quicksand visibly slows movement more as the player sinks, jumping does not prematurely respawn, and leaving restores normal speed. A hole applies exactly 15 damage and respawns; real lava contact applies exactly 10 damage and returns the player safely. The horse performs a two-step retreat before hazards, and mounted emergency recovery returns the player on foot without horse damage."),
             new ManualCheck(
                 "run_presentation",
                 "Run entrance, authored exit, pause, and menu",
-                "The mounted entrance uses a farther/higher room camera, locks every input including mouse aim, then the horse turns right, fully stops, and only then returns camera/control. Death restarts stay on foot and the authored exit remains authoritative."),
+                "The mounted entrance uses a farther/higher room camera, locks every input including mouse aim, then the horse turns, fully stops, and only then returns camera/control. Pause -> Abandon requires confirmation. After confirmed abandon, the next mounted entrance keeps the current player visibly attached to the horse for the full sequence. Death restarts stay on foot and the authored exit remains authoritative."),
             new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
@@ -493,6 +493,26 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDMountedRunIntroQA.Scan(result);
             BDV20ActiveRegressionQA.Scan(result);
             BDV23CameraGroundingQA.Scan(result);
+            BDV23R8CombatUxQA.Scan(result);
+            BDV23R9HorseArtDirectionQA.Scan(result);
+            BDV23R10RuntimePolishQA.Scan(result);
+            BDV23R11BombAirborneAudioQA.Scan(result);
+            BDV23R12RegressionRepairQA.Scan(result);
+            BDV23R13AudioQuicksandOutlineQA.Scan(result);
+            BDV23R14DamageNumbersLabelVisibilityQA.Scan(result);
+            BDV23R15MeleeDamageCriticalQA.Scan(result);
+            BDV23R17HazardHorseWallJumpQA.Scan(result);
+            BDV23R18AHorseHazardAnimationQA.Scan(result);
+            BDV23R18BMountedHoleAnimationTokenQA.Scan(result);
+            BDV23R19TraversalQuicksandAirborneQA.Scan(result);
+            BDV23R19BHookGuardianQA.Scan(result);
+            BDV23R19DFocusedRegressionQA.Scan(result);
+            BDV23R19EDeathGuardianIntroQA.Scan(result);
+            BDV23R19GFocusedRegressionQA.Scan(result);
+            BDV23R19HCharacterMountedHookQA.Scan(result);
+            BDV23R19ICombatantForcedMovementCompatibilityQA.Scan(result);
+            BDV23R19JQaSemanticRealignmentQA.Scan(result);
+            BDV23R19KAirborneDialogueQA.Scan(result);
             BDHorseCleanRunStartQA.Scan(result);
             ScanSpinningAoeAttackContracts(result);
             ScanGameplayShadowPolicyContracts(result);
@@ -903,8 +923,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     item.HazardType ==
                         BDHazardType.Lava
             );
+            int quicksand = volumes.Count(
+                item =>
+                    item != null &&
+                    item.HazardType ==
+                        BDHazardType.Quicksand
+            );
 
-            if (holes != 1 || lava != 1)
+            if (holes != 1 || lava != 1 || quicksand != 1)
             {
                 Add(
                     result,
@@ -912,7 +938,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "HAZARD_TEST_VOLUME_SET_INVALID",
                     PrototypeScenePath,
                     BDPrototypeHazardSceneInstaller.RootName,
-                    $"Expected one hole/chasm and one lava volume; found hole={holes}, lava={lava}."
+                    $"Expected one hole/chasm, one lava, and one quicksand volume; found hole={holes}, lava={lava}, quicksand={quicksand}."
                 );
             }
 
@@ -1737,6 +1763,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     {
                         "BDHazardType.HoleOrChasm",
                         "BDHazardType.Lava",
+                        "BDHazardType.Quicksand",
+                        "BDQuicksandStatus.TouchActor",
                         "IsActorTouchingSurface",
                         "IsInsideHoleHorizontal"
                     },
@@ -1756,7 +1784,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                         "forceActivation",
                         "ApplyUnavoidableDamage",
                         "TickHoleFall",
-                        "TickLavaBounce"
+                        "TickLavaBounce",
+                        "BDHazardType.Quicksand"
                     },
                     "PLAYER_HAZARD_RULE_MISSING"
                 );
@@ -1985,7 +2014,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 {
                     "BD SAME-ROOM GUARDIAN SPAWN SAFETY V1",
                     "TryResolveSpawnRoom",
-                    "spawnRoom.ContainsWorldPosition(player.position, 0f)",
+                    "TryResolvePlayerRoomFallback",
+                    "spawnRoom.ContainsWorldPosition(",
+                    "playerTransform.position",
                     "ClampToRoomInterior",
                     "IsInsideRoomInterior",
                     "HasClearPathFromCollectible"

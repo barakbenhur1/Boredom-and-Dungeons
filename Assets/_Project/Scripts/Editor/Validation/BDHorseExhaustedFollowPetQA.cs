@@ -27,6 +27,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
             const string healIndicatorRelative =
                 "Assets/_Project/Scripts/Runtime/" +
                 "BDHorseHealAvailabilityIndicator.cs";
+            const string contextPromptsRelative =
+                "Assets/_Project/Scripts/Runtime/Horse/" +
+                "BDHorseContextActionPrompts.cs";
             const string playerControllerRelative =
                 "Assets/_Project/Scripts/Runtime/" +
                 "BDPlayerController.cs";
@@ -52,6 +55,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ValidateRequiredFile(result, root, interactionRelative);
             ValidateRequiredFile(result, root, indicatorRelative);
             ValidateRequiredFile(result, root, healIndicatorRelative);
+            ValidateRequiredFile(result, root, contextPromptsRelative);
             ValidateRequiredFile(result, root, playerControllerRelative);
             ValidateRequiredFile(result, root, recoveryRelative);
             ValidateRequiredFile(result, root, controllerRelative);
@@ -83,13 +87,35 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "playerControlStateCaptured",
                     "DesktopPetKey",
                     "EnsurePetAvailabilityIndicator",
-                    "BDHorsePetAvailabilityIndicator",
+                    "BD UNIFIED HORSE CONTEXT PROMPTS V23R8",
+                    "BDHorseContextActionPrompts",
                     "desktopPetKey = KeyCode.Tab",
                     "desktopPetKey == KeyCode.P",
                     "BuildPetButtonLabel",
-                    "Pet [{keyLabel}]"
+                    "Pet [{keyLabel}]",
+                    "BD MOUNTED STATIONARY PET WITHOUT PROMPT V23R9",
+                    "mountedPetInteraction"
                 },
                 "HORSE_EXHAUSTED_PET_CONTRACT_MISSING"
+            );
+
+            ValidateRequiredTokens(
+                result,
+                root,
+                contextPromptsRelative,
+                new[]
+                {
+                    "BD UNIFIED HORSE CONTEXT PROMPTS V23R8",
+                    "MOUNT",
+                    "DISMOUNT",
+                    "HOLD HEAL",
+                    "PET",
+                    "IsMountedStationary",
+                    "ResolvePetKey",
+                    "DrawAction",
+                    "BD HORSE PROMPT STATE MATRIX V23R9"
+                },
+                "HORSE_CONTEXT_PROMPT_CONTRACT_MISSING"
             );
 
             ValidateRequiredTokens(
@@ -98,23 +124,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 indicatorRelative,
                 new[]
                 {
-                    "BD_Horse_Pet_Available_Indicator",
-                    "BD_Horse_Pet_Heart",
-                    "BuildIdleLabel",
-                    "DesktopPetKey",
-                    "key + \"  PET\"",
-                    "PetHoldProgress01",
-                    "IsPetAvailable",
-                    "IsPetInteractionActive",
-                    "PETTING",
-                    "HOLD  ",
-                    "heightOffset = 4.65f",
-                    "horizontalOffset = 1.15f",
-                    "depthOffsetTowardCamera = 0.18f",
-                    "sortingOrder = 90",
-                    "camera.transform.right"
+                    "BDHorseContextActionPrompts",
+                    "SetVisible(false)"
                 },
-                "HORSE_PET_VISUAL_CUE_CONTRACT_MISSING"
+                "HORSE_LEGACY_PET_CUE_SUPPRESSION_MISSING"
             );
 
             ValidateRequiredTokens(
@@ -123,13 +136,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 healIndicatorRelative,
                 new[]
                 {
-                    "heightOffset = 3.95f",
-                    "horizontalOffset = -1.15f",
-                    "depthOffsetTowardCamera = 0.12f",
-                    "sortingOrder = 80",
-                    "camera.transform.right"
+                    "BDHorseContextActionPrompts",
+                    "return false"
                 },
-                "HORSE_HEAL_VISUAL_STACK_CONTRACT_MISSING"
+                "HORSE_LEGACY_HEAL_CUE_SUPPRESSION_MISSING"
             );
 
             ValidateRequiredTokens(

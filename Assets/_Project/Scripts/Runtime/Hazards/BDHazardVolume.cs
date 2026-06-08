@@ -17,7 +17,11 @@ namespace BoredomAndDungeons
 
         public BDHazardType HazardType => hazardType;
         public float Damage =>
-            hazardType == BDHazardType.Lava ? 10f : 15f;
+            hazardType == BDHazardType.Lava
+                ? 10f
+                : hazardType == BDHazardType.Quicksand
+                    ? 15f
+                    : 15f;
 
         public float SurfaceY
         {
@@ -45,6 +49,8 @@ namespace BoredomAndDungeons
 
             if (volumeCollider != null)
                 volumeCollider.isTrigger = true;
+
+            ApplyPrototypeVisualTint();
         }
 
         private void OnEnable()
@@ -77,6 +83,26 @@ namespace BoredomAndDungeons
             if (other == null)
                 return;
 
+            BDHealth enemyHealth =
+                other.GetComponentInParent<BDHealth>();
+            bool isEnemy =
+                enemyHealth != null &&
+                enemyHealth.GetComponent<BDPlayerMarker>() == null &&
+                enemyHealth.GetComponent<BDHorseHealth>() == null;
+
+            if (isEnemy)
+            {
+                AffectEnemy(other, enemyHealth);
+                return;
+            }
+
+            // BD PLAYABLE QUICKSAND PROGRESSIVE SINK V23R17
+            if (hazardType == BDHazardType.Quicksand)
+            {
+                BDQuicksandStatus.TouchActor(other, this);
+                return;
+            }
+
             BDHorseHazardSafety horseSafety =
                 other.GetComponentInParent<BDHorseHazardSafety>();
 
@@ -106,6 +132,138 @@ namespace BoredomAndDungeons
             playerRecovery.TryHandleHazard(this);
         }
 
+
+        private void AffectEnemy(
+            Collider actorCollider,
+            BDHealth enemyHealth)
+        {
+            if (!BDEnemyHazardNavigation.IsSmallRegularEnemy(enemyHealth))
+                return;
+
+            if (hazardType == BDHazardType.Quicksand)
+            {
+                BDQuicksandStatus.TouchActor(actorCollider, this);
+                return;
+            }
+
+            if (hazardType == BDHazardType.Lava &&
+                !IsActorTouchingSurface(actorCollider, 0.10f))
+            {
+                return;
+            }
+
+            // Small regular enemies that actually land in a hole or on lava
+            // die immediately. Normal brain motion is filtered before entry;
+            // external knockback and mounted impacts are allowed to deliver
+            // them into the hazard.
+            enemyHealth.ApplyUnavoidableDamage(
+                Mathf.Max(1f, enemyHealth.CurrentHealth + enemyHealth.MaxHealth)
+            );
+        }
+
+        public static Vector3 FilterEnemyMotion(
+            CharacterController actor,
+            Vector3 requestedMotion,
+            float extraClearance)
+        {
+            if (actor == null)
+                return requestedMotion;
+
+            Vector3 horizontal = new Vector3(
+                requestedMotion.x,
+                0f,
+                requestedMotion.z
+            );
+            if (horizontal.sqrMagnitude < 0.000001f)
+                return requestedMotion;
+
+            float clearance = Mathf.Max(
+                0.08f,
+                actor.radius + actor.skinWidth + extraClearance
+            );
+            Vector3 currentCenter = actor.bounds.center;
+
+            if (!WouldSweepIntoAnyHazard(
+                    currentCenter,
+                    horizontal,
+                    clearance))
+            {
+                return requestedMotion;
+            }
+
+            Vector3 safe = Vector3.zero;
+            Vector3 xOnly = new Vector3(horizontal.x, 0f, 0f);
+            if (xOnly.sqrMagnitude > 0.000001f &&
+                !WouldSweepIntoAnyHazard(
+                    currentCenter,
+                    xOnly,
+                    clearance))
+            {
+                safe += xOnly;
+            }
+
+            Vector3 zOnly = new Vector3(0f, 0f, horizontal.z);
+            if (zOnly.sqrMagnitude > 0.000001f &&
+                !WouldSweepIntoAnyHazard(
+                    currentCenter + safe,
+                    zOnly,
+                    clearance))
+            {
+                safe += zOnly;
+            }
+
+            return safe + Vector3.up * requestedMotion.y;
+        }
+
+        private static bool WouldSweepIntoAnyHazard(
+            Vector3 currentCenter,
+            Vector3 horizontal,
+            float clearance)
+        {
+            float distance = horizontal.magnitude;
+            if (distance < 0.0001f)
+                return false;
+
+            int samples = Mathf.Clamp(
+                Mathf.CeilToInt(distance / 0.12f),
+                1,
+                18
+            );
+            Vector3 direction = horizontal / distance;
+            Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
+            float lead = Mathf.Max(0.08f, clearance * 0.72f);
+            float flank = Mathf.Max(0.06f, clearance * 0.58f);
+
+            for (int sample = 1; sample <= samples; sample++)
+            {
+                Vector3 center = currentCenter + horizontal * (sample / (float)samples);
+                if (IsHorizontalPointInsideAnyHazard(center, clearance) ||
+                    IsHorizontalPointInsideAnyHazard(center + direction * lead, clearance * 0.35f) ||
+                    IsHorizontalPointInsideAnyHazard(center + side * flank, clearance * 0.25f) ||
+                    IsHorizontalPointInsideAnyHazard(center - side * flank, clearance * 0.25f))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsHorizontalPointInsideAnyHazard(
+            Vector3 worldPoint,
+            float clearance)
+        {
+            ActiveVolumes.RemoveWhere(item => item == null);
+            foreach (BDHazardVolume volume in ActiveVolumes)
+            {
+                if (volume == null || !volume.isActiveAndEnabled)
+                    continue;
+                if (volume.ContainsHorizontalPoint(worldPoint, clearance))
+                    return true;
+            }
+            return false;
+        }
+
         public void Configure(BDHazardType type)
         {
             hazardType = type;
@@ -113,6 +271,8 @@ namespace BoredomAndDungeons
 
             if (volumeCollider != null)
                 volumeCollider.isTrigger = true;
+
+            ApplyPrototypeVisualTint();
         }
 
         public bool IsActorTouchingSurface(
@@ -644,6 +804,33 @@ namespace BoredomAndDungeons
             }
 
             return false;
+        }
+
+        private void ApplyPrototypeVisualTint()
+        {
+            Transform root = transform.parent != null
+                ? transform.parent
+                : transform;
+            Transform visual = root.Find("Visual");
+            Renderer renderer = visual != null
+                ? visual.GetComponent<Renderer>()
+                : null;
+
+            if (renderer == null)
+                return;
+
+            Color color = hazardType == BDHazardType.Lava
+                ? new Color(1f, 0.20f, 0.04f, 1f)
+                : hazardType == BDHazardType.Quicksand
+                    ? new Color(0.54f, 0.34f, 0.16f, 1f)
+                    : new Color(0.08f, 0.09f, 0.12f, 1f);
+
+            MaterialPropertyBlock block =
+                new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+            block.SetColor("_BaseColor", color);
+            block.SetColor("_Color", color);
+            renderer.SetPropertyBlock(block);
         }
 
         private void EnsureVolumeCollider()

@@ -6,7 +6,7 @@ animation integration, render settings, UI art, and Unity asset import configura
 """
 
 model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 
 nickname_candidates = [

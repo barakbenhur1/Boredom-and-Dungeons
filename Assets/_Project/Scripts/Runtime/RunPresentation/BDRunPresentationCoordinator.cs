@@ -115,6 +115,8 @@ namespace BoredomAndDungeons
 
         private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            // BD FRESH-SCENE PLAYER CACHE FOR MOUNTED INTRO V23R19E
+            BDTargetFinder.ClearCache();
             EnsureExactlyOneActiveAudioListener(Camera.main);
             coverAlpha = 1f;
             coverTarget = 1f;
@@ -139,10 +141,12 @@ namespace BoredomAndDungeons
         private bool PrimeMountedEntranceCameraBeforeRender()
         {
             Transform entrance = FindAuthoredDoor(true);
-            Transform player =
-                FindGameplayTransform("BDPlayerController", "Player");
-            Transform horse =
-                FindGameplayTransform("BDHorseController", "Horse");
+            Transform horse = ResolveCurrentHorseTransform();
+            BDHorseController horseController =
+                horse != null
+                    ? horse.GetComponent<BDHorseController>()
+                    : null;
+            Transform player = ResolveCurrentPlayerTransform(horseController);
             Camera camera = Camera.main;
 
             if (entrance == null ||
@@ -327,14 +331,12 @@ namespace BoredomAndDungeons
 
         private IEnumerator PlayMountedEntrance(Transform entrance)
         {
-            Transform player =
-                FindGameplayTransform("BDPlayerController", "Player");
-            Transform horse =
-                FindGameplayTransform("BDHorseController", "Horse");
+            Transform horse = ResolveCurrentHorseTransform();
             BDHorseController horseController =
                 horse != null
                     ? horse.GetComponent<BDHorseController>()
                     : null;
+            Transform player = ResolveCurrentPlayerTransform(horseController);
 
             if (player == null ||
                 horse == null ||
@@ -368,7 +370,15 @@ namespace BoredomAndDungeons
                 inwardDirection
             );
 
-            if (!horseController.ForceMountForCinematic(player))
+            // BD AUTHORITATIVE MOUNTED INTRO BINDING V23R19E
+            // BeginMountedRunIntro resets stale horse state, places the exact
+            // active-scene rider immediately, and owns the mount state before
+            // any cinematic frame moves the horse.
+            if (!horseController.BeginMountedRunIntro(
+                    player,
+                    start,
+                    inwardDirection) ||
+                horseController.Rider == null)
             {
                 ClearPrimedMountedEntranceCamera(true);
                 yield return FadeCoverTo(0f, 8f);
@@ -377,6 +387,10 @@ namespace BoredomAndDungeons
                 ReleaseOnFootGameplayControl();
                 yield break;
             }
+
+            player = horseController.Rider;
+            horseController.SnapCinematicRiderToMountPoint();
+            Physics.SyncTransforms();
 
             List<ComponentState> states =
                 CaptureAndDisableControls(player, horse);
@@ -454,12 +468,17 @@ namespace BoredomAndDungeons
                 yield return null;
             }
 
-            Vector3 rightDirection =
-                Quaternion.AngleAxis(90f, Vector3.up) * inwardDirection;
+            Vector3 clearDirection = ResolveClearMountedIntroDirection(
+                horse,
+                player,
+                straightEnd,
+                inwardDirection,
+                entranceRoom
+            );
             Quaternion turnStartRotation =
                 Quaternion.LookRotation(inwardDirection, Vector3.up);
             Quaternion turnEndRotation =
-                Quaternion.LookRotation(rightDirection, Vector3.up);
+                Quaternion.LookRotation(clearDirection, Vector3.up);
 
             const float turnDuration = 0.78f;
             elapsed = 0f;
@@ -512,7 +531,7 @@ namespace BoredomAndDungeons
             const float gameplayLookAhead = 10.60f;
             Vector3 gameplayCameraPosition =
                 horse.position -
-                rightDirection * gameplayDistanceBehind +
+                clearDirection * gameplayDistanceBehind +
                 Vector3.up * gameplayHeight;
             gameplayCameraPosition = ClampPointInsideRoom(
                 entranceRoom,
@@ -520,7 +539,7 @@ namespace BoredomAndDungeons
                 1.65f
             );
             Vector3 gameplayLookPoint =
-                horse.position + rightDirection * gameplayLookAhead;
+                horse.position + clearDirection * gameplayLookAhead;
             gameplayLookPoint = ClampPointInsideRoom(
                 entranceRoom,
                 gameplayLookPoint,
@@ -578,16 +597,22 @@ namespace BoredomAndDungeons
                 camera.orthographicSize = originalOrtho;
             }
 
+            horseController.MaintainMountedRunIntroBinding(player);
+            horseController.CompleteMountedRunIntro();
             horseController.PrepareMountedGameplayAfterCinematic(
-                rightDirection
+                clearDirection
             );
             if (restoreCameraFollow && cameraFollow != null)
             {
                 cameraFollow.SetTarget(horse);
                 cameraFollow.enabled = true;
             }
-            RestoreControls(states);
-            horseController.SnapCinematicRiderToMountPoint();
+            RestoreMountedIntroControls(
+                states,
+                horseController,
+                player
+            );
+            horseController.MaintainMountedRunIntroBinding(player);
             EnsureExactlyOneActiveAudioListener(camera);
             ClearPrimedMountedEntranceCamera(false);
 
@@ -598,6 +623,112 @@ namespace BoredomAndDungeons
 
 
 
+
+
+        // BD CLEAR-DIRECTION MOUNTED INTRO TURN V23R17
+        private static Vector3 ResolveClearMountedIntroDirection(
+            Transform horse,
+            Transform player,
+            Vector3 origin,
+            Vector3 inwardDirection,
+            BDMinimapRoom entranceRoom)
+        {
+            Vector3 inward = inwardDirection;
+            inward.y = 0f;
+            if (inward.sqrMagnitude < 0.001f)
+                inward = Vector3.forward;
+            inward.Normalize();
+
+            Vector3[] candidates =
+            {
+                inward,
+                Quaternion.AngleAxis(90f, Vector3.up) * inward,
+                Quaternion.AngleAxis(-90f, Vector3.up) * inward,
+                -inward
+            };
+
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                Vector3 direction = candidates[index].normalized;
+                if (IsMountedIntroDirectionClear(
+                        horse,
+                        player,
+                        origin,
+                        direction,
+                        entranceRoom))
+                {
+                    return direction;
+                }
+            }
+
+            return inward;
+        }
+
+        private static bool IsMountedIntroDirectionClear(
+            Transform horse,
+            Transform player,
+            Vector3 origin,
+            Vector3 direction,
+            BDMinimapRoom entranceRoom)
+        {
+            const float probeDistance = 4.8f;
+            CharacterController body = horse != null
+                ? horse.GetComponent<CharacterController>()
+                : null;
+            float radius = body != null
+                ? Mathf.Max(0.32f, body.radius * 0.92f)
+                : 0.70f;
+            float height = body != null
+                ? Mathf.Max(radius * 2f, body.height)
+                : 2.20f;
+            Vector3 center = origin +
+                (body != null ? body.center : Vector3.up * 1.1f);
+            float halfSegment = Mathf.Max(0f, height * 0.5f - radius);
+            Vector3 bottom = center - Vector3.up * halfSegment;
+            Vector3 top = center + Vector3.up * halfSegment;
+
+            Vector3 endPoint = origin + direction * probeDistance;
+            if (entranceRoom != null &&
+                !entranceRoom.ContainsWorldPosition(endPoint, -1.10f))
+            {
+                return false;
+            }
+
+            if (BDHazardVolume.TryFindUnsafeVolume(
+                    endPoint,
+                    radius + 0.20f,
+                    out _))
+            {
+                return false;
+            }
+
+            RaycastHit[] hits = Physics.CapsuleCastAll(
+                bottom,
+                top,
+                radius,
+                direction,
+                probeDistance,
+                ~0,
+                QueryTriggerInteraction.Ignore
+            );
+
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider == null)
+                    continue;
+                Transform hitTransform = hit.collider.transform;
+                if ((horse != null &&
+                     (hitTransform == horse || hitTransform.IsChildOf(horse))) ||
+                    (player != null &&
+                     (hitTransform == player || hitTransform.IsChildOf(player))))
+                {
+                    continue;
+                }
+                return false;
+            }
+
+            return true;
+        }
 
         private static void ResolveRoomEntranceCameraPose(
             Transform entrance,
@@ -873,8 +1004,8 @@ namespace BoredomAndDungeons
 
             inputLocked = true;
             awaitingRunStart = false;
-            Transform player = FindGameplayTransform("BDPlayerController", "Player");
-            Transform horse = FindGameplayTransform("BDHorseController", "Horse");
+            Transform player = ResolveCurrentPlayerTransform();
+            Transform horse = ResolveCurrentHorseTransform();
             BDHorseController horseController =
                 horse != null ? horse.GetComponent<BDHorseController>() : null;
             List<ComponentState> states = CaptureAndDisableControls(player, horse);
@@ -1129,6 +1260,92 @@ namespace BoredomAndDungeons
                 supportRenderer.sharedMaterial =
                     entranceRenderer.sharedMaterial;
             }
+        }
+
+        private static Transform ResolveCurrentPlayerTransform(
+            BDHorseController preferredHorse = null)
+        {
+            Scene activeScene = SceneManager.GetActiveScene();
+
+            Transform serializedRider =
+                preferredHorse != null
+                    ? preferredHorse.Rider
+                    : null;
+            if (IsValidCurrentScenePlayer(
+                    serializedRider,
+                    activeScene))
+            {
+                return serializedRider;
+            }
+
+            Transform canonicalPlayer =
+                BDTargetFinder.FindPlayer();
+            if (IsValidCurrentScenePlayer(
+                    canonicalPlayer,
+                    activeScene))
+            {
+                return canonicalPlayer;
+            }
+
+            BDPlayerController player =
+                FindBestCurrentSceneComponent<BDPlayerController>();
+            return player != null ? player.transform : null;
+        }
+
+        private static bool IsValidCurrentScenePlayer(
+            Transform candidate,
+            Scene activeScene)
+        {
+            return candidate != null &&
+                   candidate.gameObject.activeInHierarchy &&
+                   candidate.gameObject.scene.IsValid() &&
+                   candidate.gameObject.scene.isLoaded &&
+                   candidate.gameObject.scene == activeScene &&
+                   candidate.GetComponent<BDPlayerMarker>() != null;
+        }
+
+        private static Transform ResolveCurrentHorseTransform()
+        {
+            BDHorseController horse =
+                FindBestCurrentSceneComponent<BDHorseController>();
+            return horse != null ? horse.transform : null;
+        }
+
+        private static T FindBestCurrentSceneComponent<T>()
+            where T : MonoBehaviour
+        {
+            T[] candidates = Resources.FindObjectsOfTypeAll<T>();
+            Scene activeScene = SceneManager.GetActiveScene();
+            T best = null;
+            int bestScore = int.MinValue;
+
+            foreach (T candidate in candidates)
+            {
+                if (candidate == null ||
+                    !candidate.gameObject.scene.IsValid() ||
+                    !candidate.gameObject.scene.isLoaded)
+                {
+                    continue;
+                }
+
+                int score = 0;
+                if (candidate.gameObject.scene == activeScene)
+                    score += 100;
+                if (candidate.gameObject.activeInHierarchy)
+                    score += 40;
+                if (candidate.enabled)
+                    score += 10;
+                if (candidate.hideFlags == HideFlags.None)
+                    score += 5;
+
+                if (score <= bestScore)
+                    continue;
+
+                best = candidate;
+                bestScore = score;
+            }
+
+            return best;
         }
 
         private static Transform FindGameplayTransform(string componentTypeName, string nameHint)
@@ -1415,6 +1632,37 @@ namespace BoredomAndDungeons
                 states.Add(new ComponentState(controller, controller.enabled));
                 controller.enabled = false;
             }
+        }
+
+
+        private static void RestoreMountedIntroControls(
+            List<ComponentState> states,
+            BDHorseController horseController,
+            Transform rider)
+        {
+            foreach (ComponentState state in states)
+            {
+                if (state.component == null)
+                    continue;
+
+                if (state.component is BDPlayerController playerController &&
+                    rider != null &&
+                    (playerController.transform == rider ||
+                     playerController.transform.IsChildOf(rider) ||
+                     rider.IsChildOf(playerController.transform)))
+                {
+                    playerController.enabled = false;
+                    continue;
+                }
+
+                if (state.component is Behaviour behaviour)
+                    behaviour.enabled = state.enabled;
+                else if (state.component is Collider collider)
+                    collider.enabled = state.enabled;
+            }
+
+            if (horseController != null)
+                horseController.MaintainMountedRunIntroBinding(rider);
         }
 
         private static void RestoreControls(List<ComponentState> states)

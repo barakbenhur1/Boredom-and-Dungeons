@@ -78,12 +78,36 @@ Horse:
 - if the horse still enters lava, it loses no health;
 - return it to a legal non-lava horse-safe point.
 
+## Quicksand
+
+Player:
+
+- quicksand is a progressive hazard, not instant damage on first contact;
+- horizontal movement, dodge travel, and upward escape motion become progressively slower while the sink state deepens;
+- a visible sand ring follows the actor at the quicksand surface and becomes stronger as sinking progresses;
+- leaving the volume before full submerge clears the effect gradually;
+- full submerge removes exactly 12 health and recovers the player to the latest valid safe point;
+- safe points never update inside quicksand.
+
+Horse:
+
+- horse navigation and safety logic treat quicksand as unsafe terrain;
+- entering quicksand progressively slows the horse rather than teleporting it immediately;
+- full submerge recovers the horse without horse-health loss, matching the existing horse hazard-safety policy;
+- when mounted, the pair is separated/recovered safely and the rider receives the player quicksand consequence once.
+
+Readability:
+
+- prototype quicksand uses a distinct warm sand/ochre surface, an explicit label, sticky movement, a surface ring, and entry/sink/escape cues;
+- production art must remain visible under combat VFX and must not resemble ordinary walkable ground;
+- the edge must be readable early enough for player and horse decisions.
+
 ## Safe-point validation
 
 A safe point may update only when:
 
 - the actor is on stable walkable terrain;
-- it is outside holes, chasms, and lava;
+- it is outside holes, chasms, lava, and quicksand;
 - there is enough clearance from edges, walls, props, enemies, and barriers;
 - it cannot place the actor inside an active boss barrier or inaccessible region.
 
@@ -102,4 +126,4 @@ Fallback rules must handle missing or invalid recent safe points without soft-lo
 - Validate route split/merge/re-split behavior.
 - Validate inaccessible regions from 1–4 room units.
 - Test repeated falls, low-health falls, mounted falls, lava-edge contact, invalid checkpoints, death during hazard damage, and recovery near enemies/barriers.
-- Test horse follow, flee, wander, and mounted movement near both hazard types.
+- Test horse follow, flee, wander, and mounted movement near holes/chasms, lava, and quicksand.

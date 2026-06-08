@@ -17,6 +17,7 @@ namespace BoredomAndDungeons
             MainMenu,
             Settings,
             Pause,
+            AbandonConfirm,
             Loading
         }
 
@@ -30,6 +31,7 @@ namespace BoredomAndDungeons
         }
 
         private static bool autoStartAfterReload;
+        private static bool showMainMenuAfterReload;
 
         private static readonly Color StartGameHighlightTint =
             new Color(0.74f, 0.88f, 1.00f, 1f);
@@ -62,6 +64,7 @@ namespace BoredomAndDungeons
         private bool pausedFromGameplay;
         private float nextBindingRefreshAt;
         private AsyncOperation reloadOperation;
+        private Coroutine playerDeathRoutine;
 
         private GUIStyle titleStyle;
         private GUIStyle subtitleStyle;
@@ -87,6 +90,25 @@ namespace BoredomAndDungeons
         public bool IsRunActive => runActive;
         public bool IsResultSequenceActive =>
             resultSequenceActive;
+        public bool IsGameplayHudVisible =>
+            runActive &&
+            !pausedFromGameplay &&
+            mode != OverlayMode.Settings &&
+            mode != OverlayMode.Loading &&
+            !resultSequenceActive;
+        public bool IsMenuOverlayVisible =>
+            !IsGameplayHudVisible;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            // BD MAIN MENU STATIC FLAGS RESET V23R19G
+            // Reset only at the beginning of a Play session. Scene reloads
+            // intentionally preserve the one-shot destination flags.
+            autoStartAfterReload = false;
+            showMainMenuAfterReload = false;
+            Instance = null;
+        }
 
         private void Awake()
         {
@@ -100,6 +122,17 @@ namespace BoredomAndDungeons
             Instance = this;
             BDGameSettings.EnsureLoaded();
             BDGameSettings.ApplyAll();
+
+            if (showMainMenuAfterReload)
+            {
+                // BD REAL ABANDON-TO-MAIN-MENU RELOAD V23R19G
+                // A confirmed abandon owns a clean scene reload. The main menu
+                // is never drawn as a popup over the abandoned live run.
+                showMainMenuAfterReload = false;
+                autoStartAfterReload = false;
+                ShowPlainMainMenu(needsReload: false);
+                return;
+            }
 
             if (autoStartAfterReload)
             {
@@ -168,6 +201,12 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            if (mode == OverlayMode.AbandonConfirm)
+            {
+                mode = OverlayMode.Pause;
+                return;
+            }
+
             if (mode == OverlayMode.Pause)
                 ResumeGame();
             else
@@ -176,21 +215,67 @@ namespace BoredomAndDungeons
 
         public bool HandlePlayerDeath()
         {
+            return HandlePlayerDeath(null);
+        }
+
+        public bool HandlePlayerDeath(BDHealth playerHealth)
+        {
             if (!runActive)
                 return false;
 
-            // A narrative sequence owns the transition. Suppress old
-            // Died listeners and wait for the cutscene's finish signal.
-            if (resultSequenceActive)
+            if (resultSequenceActive || playerDeathRoutine != null)
                 return true;
 
+            playerDeathRoutine = StartCoroutine(
+                PresentPlayerDeathThenMenu(playerHealth)
+            );
+            return true;
+        }
+
+        private IEnumerator PresentPlayerDeathThenMenu(
+            BDHealth playerHealth)
+        {
+            // BD PLAYER DEATH BEFORE MENU V23R19E
+            // Keep the world visible and unpaused long enough to show the
+            // player's death animation. Only then may the Game Boy menu cover it.
+            resultSequenceActive = true;
+            pausedFromGameplay = false;
+            RestoreTimeScale();
+            SetPlayerControlEnabled(false);
+
+            BDParrySystem.Reset();
+            BDMeleeSlashArcVisual.ClearAllActive();
+            BDPlayerAirborneAttackAnimation.CancelAllActive();
+
+            float duration =
+                BDCharacterDeathAnimation.PlayPlayerDeath(playerHealth);
+            float remaining = Mathf.Max(1.65f, duration);
+
+            // BD READABLE PLAYER DEATH BEFORE MENU V23R19G
+            // Keep the gameplay view unobscured for the complete pose and a
+            // short readable hold; only then may the menu take ownership.
+            while (remaining > 0f ||
+                   BDCharacterDeathAnimation.IsDeathPresentationActive(
+                       playerHealth))
+            {
+                remaining -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            float finalReadHold = 0.18f;
+            while (finalReadHold > 0f)
+            {
+                finalReadHold -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
             BDRunPresentationCoordinator.MarkDeathRestartWithoutIntro();
+            resultSequenceActive = false;
+            playerDeathRoutine = null;
 
             ShowPlainMainMenu(
                 needsReload: true
             );
-
-            return true;
         }
 
         public void BeginResultSequence()
@@ -326,6 +411,13 @@ namespace BoredomAndDungeons
         private void ShowPlainMainMenu(
             bool needsReload)
         {
+            // Clear transient combat presentation before the menu takes
+            // ownership. A death or interrupted combat frame must not leave
+            // Parry/slash visuals or frozen behaviours behind.
+            BDParrySystem.Reset();
+            BDMeleeSlashArcVisual.ClearAllActive();
+            BDPlayerAirborneAttackAnimation.CancelAllActive();
+
             runNeedsReload = needsReload;
             runActive = false;
             pausedFromGameplay = false;
@@ -557,6 +649,15 @@ namespace BoredomAndDungeons
                 600f
             );
 
+            // BD INTEGRATED GAME BOY MENU SHELL V23R12
+            // Draw the device and menu in one IMGUI pass so neither can cover
+            // or disappear behind the other.
+            BDGameBoyMenuShell.DrawIntegrated(
+                panelRect,
+                virtualWidth,
+                virtualHeight
+            );
+
             GUILayout.BeginArea(
                 panelRect,
                 panelStyle
@@ -566,6 +667,8 @@ namespace BoredomAndDungeons
                 DrawSettings();
             else if (mode == OverlayMode.Pause)
                 DrawPause();
+            else if (mode == OverlayMode.AbandonConfirm)
+                DrawAbandonConfirmation();
             else if (mode == OverlayMode.Loading)
                 DrawLoading();
             else
@@ -1016,12 +1119,88 @@ namespace BoredomAndDungeons
                     MenuActionVisual.Leave,
                     52f))
             {
-                ReturnToMainMenu();
+                // BD ABANDON RUN CONFIRMATION V23R19D
+                // Never destroy a live run from the first button press.
+                mode = OverlayMode.AbandonConfirm;
             }
 
             GUILayout.FlexibleSpace();
             GUILayout.Space(24f);
         }
+
+        private void DrawAbandonConfirmation()
+        {
+            GUILayout.Space(34f);
+            GUILayout.Label("ABANDON THIS RUN?", titleStyle);
+            GUILayout.Space(18f);
+            GUILayout.Label(
+                "Current run progress will be lost. This cannot be undone.",
+                subtitleStyle
+            );
+            GUILayout.FlexibleSpace();
+
+            if (DrawActionButton(
+                    "YES, ABANDON RUN",
+                    MenuActionVisual.Leave,
+                    58f))
+            {
+                BeginConfirmedAbandonToMainMenu();
+            }
+
+            GUILayout.Space(14f);
+
+            if (DrawActionButton(
+                    "CANCEL",
+                    MenuActionVisual.Progress,
+                    54f))
+            {
+                mode = OverlayMode.Pause;
+            }
+
+            GUILayout.FlexibleSpace();
+            GUILayout.Space(24f);
+        }
+
+
+        private void BeginConfirmedAbandonToMainMenu()
+        {
+            if (reloadOperation != null)
+                return;
+
+            // Preserve the approved fresh mounted introduction for the next
+            // run, but first rebuild the scene into a genuine clean main menu.
+            BDRunPresentationCoordinator.MarkNextRunAsFreshOrVictoryIntro();
+            resultSequenceActive = false;
+            pausedFromGameplay = false;
+            runActive = false;
+            mode = OverlayMode.Loading;
+            showMainMenuAfterReload = true;
+            autoStartAfterReload = false;
+            RestoreTimeScale();
+
+            StartCoroutine(ReloadToMainMenuRoutine());
+        }
+
+        private IEnumerator ReloadToMainMenuRoutine()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+
+            reloadOperation = scene.buildIndex >= 0
+                ? SceneManager.LoadSceneAsync(scene.buildIndex)
+                : SceneManager.LoadSceneAsync(scene.name);
+
+            if (reloadOperation == null)
+            {
+                showMainMenuAfterReload = false;
+                reloadOperation = null;
+                ShowPlainMainMenu(needsReload: true);
+                yield break;
+            }
+
+            while (!reloadOperation.isDone)
+                yield return null;
+        }
+
 
 
         private void DrawLoading()

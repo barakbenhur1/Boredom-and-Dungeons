@@ -87,14 +87,21 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
+            if (!BDGameplayUiVisibility.IsGameplayHudVisible)
+                return;
+
             if (flashTimer > 0f)
             {
                 float alpha = Mathf.Clamp01(flashTimer / damageFlashDuration) * 0.35f;
                 DrawOverlay(new Color(1f, 0f, 0f, alpha));
             }
 
-            if (health != null && health.IsDead)
+            if (health != null &&
+                health.IsDead &&
+                !BDCharacterDeathAnimation.IsDeathPresentationActive(health))
+            {
                 DrawOverlay(new Color(0f, 0f, 0f, deathOverlayAlpha));
+            }
         }
 
         private void DrawOverlay(Color color)

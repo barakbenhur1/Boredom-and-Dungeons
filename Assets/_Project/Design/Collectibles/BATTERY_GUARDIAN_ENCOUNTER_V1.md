@@ -120,3 +120,20 @@ VFX must not hide hazard edges, the player, or the only safe direction.
 - Verify no duplicate activation or infinite spawn.
 - Verify the Battery can be collected after the encounter.
 - Verify hidden-collectible UI rules remain intact.
+
+
+## V23R19B runtime activation and combat classification
+
+- A guardian is constructed as one inactive GameObject with its CharacterController, health, AI archetype, grounding, collision discipline, tactical stack, and combat profile already present.
+- The root becomes active atomically only after the anticipation delay and at the final legal spawn position. Partial component disabling or below-floor live initialization is prohibited.
+- On activation, the guardian must immediately acquire the player, move, attack, expose a valid damage collider, lose health from player attacks, show hit feedback, and die through the normal `BDHealth` path.
+- Battery guardians are `Elite`, not small regular enemies. They are immune to grappling pull, player/horse knockback, and other small-enemy-only forced movement while remaining fully damageable, stagger-readable, and killable.
+- Their elite classification does not turn them into bosses or grant damage immunity.
+
+## V23R19E collectible-independent reveal repair
+
+- The delayed guardian reveal must not run on the collectible GameObject because collecting the Battery destroys that owner.
+- `BDCollectibleGuardianSpawner` constructs every guardian completely while inactive, then `BDGuardianSpawnSequence` finishes the delay and activates it from a separate scene object.
+- Exact collectible-room ownership remains preferred. When a hideout pickup lies just outside exact minimap-room bounds, fallback is allowed only to the player's containing room, within bounded trigger distance, with a clear physical path.
+- Collecting the Battery during the reveal never cancels guardians. Adjacent-room players behind a wall can never trigger the encounter.
+- The normal radius check remains the early trigger, and player `OnTriggerEnter` is the final same-frame trigger before pickup destruction; both paths converge on the same one-shot spawn method.

@@ -305,6 +305,8 @@ These files describe stable process and architecture. They must not become compe
 
 Every material package updates all affected truth sources.
 
+`Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md` is the mandatory current defect ledger. Update it immediately whenever a bug is discovered, changes status, receives an implementation, passes/fails verification, is reopened, or is reclassified. Do not leave bug status only in chat or wait until a later package.
+
 At minimum:
 
 - `PROJECT_STATUS.md`;

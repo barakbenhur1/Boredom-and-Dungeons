@@ -6,7 +6,7 @@ incomplete behavior, documentation drift, and production-release risks.
 """
 
 model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 
 nickname_candidates = [

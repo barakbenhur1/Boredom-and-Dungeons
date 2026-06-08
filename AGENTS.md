@@ -57,6 +57,7 @@ Use configured subagents when they materially improve correctness or speed, but 
 13. Do not perform `reset`, `stash`, `checkout`, `clean`, destructive `pull`, history rewriting, force-push, commit, tag, or push without explicit permission.
 14. Do not stop after a plan unless the user asked for planning only.
 15. Do not waste time with generic advice when a concrete implementation, patch, command, validator, or artifact can be produced safely.
+16. Maintain `Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md` in the same change whenever any bug is discovered, changes status, is repaired, is verified, is reopened, or is reclassified.
 
 ---
 
@@ -689,3 +690,12 @@ For analysis-only work, provide evidence, exact file/symbol references, prioriti
 Leave the repository more stable, understandable, testable, performant, and maintainable than it was before the task.
 
 The project, not the conversation, is the durable record. Every approved requirement, implementation decision, validation result, limitation, and continuation point must be recoverable from the repository.
+
+## Canonical visual source
+
+For every art, UI, VFX, model, material, texture, animation, menu, icon, typography, or presentation task, read root `ART_DIRECTION.md` before implementation.
+
+
+## Canonical audio source
+
+For every music, SFX, ambience, vocal, mixer, snapshot, mastering, or audio-accessibility task, read root `AUDIO_DIRECTION.md` before implementation. Root `AUDIO_DIRECTION.md` is canonical; `Assets/_Project/Design/Audio/MUSIC_AND_AUDIO_DIRECTION_V1.md` is the synchronized Unity-side mirror.

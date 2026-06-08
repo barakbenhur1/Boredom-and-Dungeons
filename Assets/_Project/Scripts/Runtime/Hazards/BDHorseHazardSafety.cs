@@ -41,6 +41,7 @@ namespace BoredomAndDungeons
 
         private CharacterController controller;
         private BDHorseController horse;
+        private BDHorseHealth horseHealth;
         private Transform rider;
         private Vector3 initialPosition;
         private Quaternion initialRotation;
@@ -127,6 +128,7 @@ namespace BoredomAndDungeons
         {
             controller = GetComponent<CharacterController>();
             horse = GetComponent<BDHorseController>();
+            horseHealth = GetComponent<BDHorseHealth>();
 
             initialPosition = transform.position;
             initialRotation = transform.rotation;
@@ -630,6 +632,7 @@ namespace BoredomAndDungeons
 
             return true;
         }
+        // BD HORSE/RIDER HOLE AND LAVA OWNERSHIP V23R18A
         public bool TryHandleHazard(
             BDHazardVolume volume,
             bool forceActivation = false)
@@ -653,6 +656,13 @@ namespace BoredomAndDungeons
                 return false;
             }
 
+            bool isHole =
+                volume.HazardType ==
+                BDHazardType.HoleOrChasm;
+            bool isLava =
+                volume.HazardType ==
+                BDHazardType.Lava;
+
             bool wasMounted =
                 horse != null &&
                 horse.IsMounted;
@@ -668,6 +678,27 @@ namespace BoredomAndDungeons
                     ? mountedRider.GetComponent<
                         BDPlayerHazardRecovery>()
                     : null;
+
+            // BD MOUNTED HAZARD DISMOUNT BEFORE DAMAGE AND RESPAWN V23R18B
+            // End the mounted relationship before horse damage callbacks can
+            // trigger a normal buck/faint dismount and before either actor
+            // begins hazard relocation or respawn.
+            if (wasMounted && horse != null)
+            {
+                horse.ForceDismountAfterHazardRecovery();
+            }
+
+            // The horse always owns its own hole/lava damage.
+            if ((isHole || isLava) &&
+                horseHealth != null)
+            {
+                horseHealth.ApplyDamage(
+                    Mathf.Max(
+                        0f,
+                        volume.Damage
+                    )
+                );
+            }
 
             recovering = true;
             FinishHazardRetreat();
@@ -685,11 +716,6 @@ namespace BoredomAndDungeons
             {
                 recoveryPosition = initialPosition;
                 recoveryRotation = initialRotation;
-            }
-
-            if (wasMounted && horse != null)
-            {
-                horse.ForceDismountAfterHazardRecovery();
             }
 
             bool controllerWasEnabled =
@@ -733,15 +759,32 @@ namespace BoredomAndDungeons
             if (wasMounted &&
                 riderRecovery != null)
             {
-                riderRecovery.PrepareMountedHazardRecovery(
-                    recoveryPosition,
-                    mountedPairSeparation
-                );
+                if (isLava)
+                {
+                    // Mounted lava damages the horse instead of the rider.
+                    // The rider performs the normal lava-style recovery arc
+                    // with zero damage toward a separated point beside the
+                    // horse's resolved safe position.
+                    riderRecovery.BeginMountedLavaRecoveryWithoutDamage(
+                        volume,
+                        recoveryPosition,
+                        mountedPairSeparation
+                    );
+                }
+                else
+                {
+                    riderRecovery.PrepareMountedHazardRecovery(
+                        recoveryPosition,
+                        mountedPairSeparation
+                    );
 
-                riderRecovery.TryHandleHazard(
-                    volume,
-                    forceActivation: true
-                );
+                    // Mounted hole/chasm applies the authored fall damage
+                    // and fall-recovery presentation to the rider too.
+                    riderRecovery.TryHandleHazard(
+                        volume,
+                        forceActivation: true
+                    );
+                }
             }
 
             return true;

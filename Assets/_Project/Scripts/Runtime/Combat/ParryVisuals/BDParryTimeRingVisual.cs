@@ -32,6 +32,10 @@ namespace BoredomAndDungeons
                     : "BD_Parry_Time_Ring"
             );
 
+            root.transform.SetParent(target, false);
+            root.transform.localPosition = Vector3.zero;
+            root.transform.localRotation = Quaternion.identity;
+
             BDParryTimeRingVisual visual =
                 root.AddComponent<BDParryTimeRingVisual>();
 
@@ -82,10 +86,8 @@ namespace BoredomAndDungeons
 
         private void UpdatePose()
         {
-            Vector3 position = followTarget.position;
-            position.y += 0.045f;
-            transform.position = position;
-            transform.rotation = Quaternion.identity;
+            transform.localPosition = Vector3.up * 0.045f;
+            transform.localRotation = Quaternion.identity;
         }
 
         private void BuildVisual()
@@ -163,7 +165,9 @@ namespace BoredomAndDungeons
         private void UpdateVisual()
         {
             float elapsed = Time.unscaledTime - startedAt;
-            float remaining01 = Mathf.Clamp01(1f - elapsed / duration);
+            float progress01 = Mathf.Clamp01(elapsed / duration);
+            float remaining01 = 1f - progress01;
+            float releaseFade = 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.78f, 1f, progress01));
 
             if (ringRoot != null)
             {
@@ -207,14 +211,27 @@ namespace BoredomAndDungeons
                     Mathf.Sin(Time.unscaledTime * 13f) * 0.15f;
 
                 outerRing.widthMultiplier =
-                    (upgraded ? 0.055f : 0.045f) * pulse;
+                    (upgraded ? 0.055f : 0.045f) * pulse * Mathf.Lerp(0.35f, 1f, releaseFade);
+                Color faded = upgraded ? upgradeColor : baseColor;
+                faded.a *= releaseFade;
+                outerRing.startColor = faded;
+                outerRing.endColor = faded;
+            }
+
+            if (remainingRing != null)
+            {
+                Color faded = baseColor;
+                faded.a *= releaseFade;
+                remainingRing.startColor = faded;
+                remainingRing.endColor = faded;
             }
 
             if (ringLight != null)
             {
                 ringLight.intensity =
                     (upgraded ? 2.4f : 1.7f) *
-                    Mathf.Lerp(0.45f, 1f, remaining01);
+                    Mathf.Lerp(0.20f, 1f, remaining01) *
+                    releaseFade;
             }
         }
 

@@ -17,7 +17,10 @@ Before proposing, editing, generating, or validating a material change, read the
 5. `DOCUMENTATION_INDEX.md` — map of maintained documentation and update responsibilities.
 6. `ARCHITECTURE.md` — stable system boundaries and integration map.
 7. `QA_CHECKLIST.md` — validation and release gates.
-8. The design/specification files relevant to the requested feature.
+8. `ART_DIRECTION.md` — canonical root visual language for art, UI, effects, materials, icons, typography, menus, and presentation work.
+9. `AUDIO_DIRECTION.md` — canonical root music, SFX, ambience, mixer, mastering, and transition language.
+10. The synchronized Unity-side mirror relevant to the task (`Assets/_Project/Design/Visual/` or `Assets/_Project/Design/Audio/`).
+11. The design/specification files relevant to the requested feature.
 
 `README.md` is the public orientation page. It points here and must not become a competing status document.
 
@@ -41,6 +44,7 @@ This is a standing instruction. The user does not need to explain or repeat it i
 - Repair the actual partial local state and preserve unrelated local work.
 - Do not create a second implementation when an existing owner/system can be extended.
 - Do not claim Unity compilation, Play Mode, performance, or QA success unless it was actually run.
+- Keep `Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md` synchronized on every bug discovery, status change, repair, verification, reopening, or reclassification.
 
 ## Sources of truth
 
@@ -55,6 +59,8 @@ This is a standing instruction. The user does not need to explain or repeat it i
 | Verification gates | `QA_CHECKLIST.md` |
 | Long-lived technical choices | `TECHNICAL_DECISIONS.md` |
 | Performance measurement rules | `PERFORMANCE_GUIDELINES.md` |
+| Art direction, UI language, effects, materials, typography, icons, and Game Boy menu conventions | `ART_DIRECTION.md` (canonical root), mirrored at `Assets/_Project/Design/Visual/ART_DIRECTION_AND_INTERFACE_CONVENTIONS_V1.md` |
+| Music states, ambience, SFX relationship, AudioMixer routing, snapshots, mastering, stems, and audio QA | `AUDIO_DIRECTION.md` (canonical root), mirrored at `Assets/_Project/Design/Audio/MUSIC_AND_AUDIO_DIRECTION_V1.md` |
 
 Git history stores previous versions. Do not create competing live status files.
 

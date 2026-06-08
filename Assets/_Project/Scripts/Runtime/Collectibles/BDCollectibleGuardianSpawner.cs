@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,7 +32,6 @@ namespace BoredomAndDungeons
         [SerializeField] private bool useSpawnVfx = true;
         [SerializeField] private float spawnVfxDelay = 1.05f;
         [SerializeField] private float spawnVerticalOffset = 1.05f;
-        [SerializeField] private float inactiveSinkDepth = 1.65f;
 
         [Header("Debug")]
         [SerializeField] private bool logSpawn = true;
@@ -61,17 +59,51 @@ namespace BoredomAndDungeons
             if (player == null)
                 player = BDTargetFinder.FindPlayer();
 
-            if (player == null)
+            TrySpawnForPlayer(player);
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (spawned && spawnOnlyOnce)
                 return;
 
+            BDPlayerMarker marker =
+                other != null
+                    ? other.GetComponentInParent<BDPlayerMarker>()
+                    : null;
+
+            if (marker == null)
+                return;
+
+            player = marker.transform;
+            TrySpawnForPlayer(player);
+        }
+
+        private void TrySpawnForPlayer(Transform playerTransform)
+        {
+            // BD PICKUP-FRAME GUARDIAN TRIGGER V23R19E
+            // OnTriggerEnter provides a final same-frame path before a Battery
+            // pickup can destroy itself; Update still owns the early radius trigger.
+            if (playerTransform == null ||
+                (spawned && spawnOnlyOnce))
+            {
+                return;
+            }
+
             // BD SAME-ROOM GUARDIAN SPAWN SAFETY V1
-            if (!TryResolveSpawnRoom(out spawnRoom))
+            // BD PLAYER-ROOM FALLBACK FOR HIDEOUT COLLECTIBLES V23R19E
+            // Some authored hideout pickup points sit just outside the exact
+            // minimap-room bounds. Prefer the collectible room, but allow the
+            // player's current room only when the pickup is close and there is
+            // a clear path, so adjacent-room/wall triggers remain impossible.
+            if (!TryResolveSpawnRoom(out spawnRoom) &&
+                !TryResolvePlayerRoomFallback(playerTransform, out spawnRoom))
             {
                 if (!missingSpawnRoomLogged)
                 {
                     missingSpawnRoomLogged = true;
                     Debug.LogWarning(
-                        $"B&D guardian encounter at {name} has no containing BDMinimapRoom; spawn is blocked."
+                        $"B&D guardian encounter at {name} has no safe collectible/player room; spawn is blocked."
                     );
                 }
 
@@ -81,16 +113,16 @@ namespace BoredomAndDungeons
             missingSpawnRoomLogged = false;
 
             // A player in the adjacent room cannot trigger this encounter through a wall.
-            if (!spawnRoom.ContainsWorldPosition(player.position, 0f))
+            if (!spawnRoom.ContainsWorldPosition(playerTransform.position, 0f))
                 return;
 
-            Vector3 delta = player.position - transform.position;
+            Vector3 delta = playerTransform.position - transform.position;
             delta.y = 0f;
 
             if (delta.sqrMagnitude > triggerRadius * triggerRadius)
                 return;
 
-            SpawnGuardians(player);
+            SpawnGuardians(playerTransform);
         }
 
         private void SpawnGuardians(Transform playerTransform)
@@ -138,64 +170,52 @@ namespace BoredomAndDungeons
         {
             if (!useSpawnVfx || !Application.isPlaying)
             {
-                CreateGuardian(position, type);
+                CreateGuardian(position, type, activateImmediately: true);
                 return;
             }
 
-            StartCoroutine(SpawnGuardianAfterVfx(position, type));
+            float sourceY = transform.position.y;
+            BDGuardianSpawnVfx.Create(
+                new Vector3(position.x, sourceY + 0.08f, position.z),
+                spawnVfxDelay
+            );
+
+            // BD ATOMIC COLLECTIBLE-GUARDIAN ACTIVATION V23R19B
+            // BD COLLECTIBLE-INDEPENDENT GUARDIAN SPAWN V23R19E
+            // The collectible can be collected/destroyed during the reveal.
+            // Build the complete inactive enemy now and let a separate scene
+            // runner finish activation so the coroutine cannot die with the pickup.
+            GameObject guardian = CreateGuardian(
+                position,
+                type,
+                activateImmediately: false
+            );
+
+            BDGuardianSpawnSequence.Schedule(
+                guardian,
+                position,
+                sourceY,
+                spawnVfxDelay
+            );
         }
 
-        private IEnumerator SpawnGuardianAfterVfx(Vector3 position, GuardianType type)
-        {
-            BDGuardianSpawnVfx.Create(new Vector3(position.x, transform.position.y + 0.08f, position.z), spawnVfxDelay);
-
-            Vector3 hiddenPosition = position + Vector3.down * Mathf.Max(0f, inactiveSinkDepth);
-            GameObject guardian = CreateGuardian(hiddenPosition, type);
-            SetGuardianActiveState(guardian, false);
-
-            float start = Time.time;
-            float delay = Mathf.Max(0.05f, spawnVfxDelay);
-
-            while (Time.time - start < delay)
-                yield return null;
-
-            if (guardian == null)
-                yield break;
-
-            guardian.transform.position = position;
-            SetGuardianActiveState(guardian, true);
-
-            BDGuardianSpawnVfx.Create(new Vector3(position.x, transform.position.y + 0.10f, position.z), 0.35f);
-        }
-
-        private static void SetGuardianActiveState(GameObject guardian, bool active)
+        internal static void ActivateGuardian(GameObject guardian)
         {
             if (guardian == null)
                 return;
 
+            guardian.SetActive(true);
+
             CharacterController controller = guardian.GetComponent<CharacterController>();
             if (controller != null)
-                controller.enabled = active;
-
-            BDSwordEnemy sword = guardian.GetComponent<BDSwordEnemy>();
-            if (sword != null)
-                sword.enabled = active;
-
-            BDChargerEnemy charger = guardian.GetComponent<BDChargerEnemy>();
-            if (charger != null)
-                charger.enabled = active;
+                controller.enabled = true;
 
             BDEnemyGroundStick groundStick = guardian.GetComponent<BDEnemyGroundStick>();
-            if (groundStick != null)
-                groundStick.enabled = active;
+            groundStick?.ForceSnapNow();
 
-            BDEnemyCollisionDiscipline collisionDiscipline = guardian.GetComponent<BDEnemyCollisionDiscipline>();
-            if (collisionDiscipline != null)
-                collisionDiscipline.enabled = active;
-
-            BDEnemyBootstrap bootstrap = guardian.GetComponent<BDEnemyBootstrap>();
-            if (bootstrap != null)
-                bootstrap.enabled = active;
+            BDEnemyMotionStabilizer stabilizer =
+                guardian.GetComponent<BDEnemyMotionStabilizer>();
+            stabilizer?.AcceptCurrentPositionAsBaseline();
         }
         private Vector3 ResolveFairSpawnPosition(
             Vector3 baseDirection,
@@ -434,6 +454,72 @@ namespace BoredomAndDungeons
             return resolvedRoom != null;
         }
 
+        private bool TryResolvePlayerRoomFallback(
+            Transform playerTransform,
+            out BDMinimapRoom resolvedRoom)
+        {
+            resolvedRoom = null;
+
+            if (playerTransform == null)
+                return false;
+
+            Vector3 playerDelta =
+                playerTransform.position - transform.position;
+            playerDelta.y = 0f;
+
+            float maximumFallbackDistance =
+                Mathf.Max(triggerRadius + 1.5f, 3.0f);
+
+            if (playerDelta.sqrMagnitude >
+                maximumFallbackDistance * maximumFallbackDistance)
+            {
+                return false;
+            }
+
+            if (!HasClearPathFromCollectible(
+                    playerTransform.position))
+            {
+                return false;
+            }
+
+            BDMinimapRoom[] rooms =
+                FindObjectsByType<BDMinimapRoom>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None
+                );
+
+            float nearestDistance = float.PositiveInfinity;
+
+            for (int index = 0; index < rooms.Length; index++)
+            {
+                BDMinimapRoom room = rooms[index];
+
+                if (room == null ||
+                    !room.ContainsWorldPosition(
+                        playerTransform.position,
+                        0f))
+                {
+                    continue;
+                }
+
+                float distance = room.SqrDistanceToCenter(
+                    playerTransform.position
+                );
+
+                if (distance >= nearestDistance)
+                    continue;
+
+                nearestDistance = distance;
+                resolvedRoom = room;
+            }
+
+            if (resolvedRoom == null)
+                return false;
+
+            spawnRoom = resolvedRoom;
+            return true;
+        }
+
         private Vector3 ClampToRoomInterior(
             Vector3 position,
             BDMinimapRoom room)
@@ -539,15 +625,22 @@ namespace BoredomAndDungeons
             Charger
         }
 
-        private GameObject CreateGuardian(Vector3 position, GuardianType type)
+        private GameObject CreateGuardian(
+            Vector3 position,
+            GuardianType type,
+            bool activateImmediately)
         {
             GameObject guardian = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             guardian.name = type == GuardianType.Sword ? "BD_Collectible_Guardian_Sword" : "BD_Collectible_Guardian_Charger";
+            guardian.SetActive(false);
             guardian.transform.position = position;
 
             CapsuleCollider capsule = guardian.GetComponent<CapsuleCollider>();
             if (capsule != null)
+            {
+                capsule.enabled = false;
                 Destroy(capsule);
+            }
 
             CharacterController controller = guardian.AddComponent<CharacterController>();
             controller.height = 2f;
@@ -568,17 +661,43 @@ namespace BoredomAndDungeons
             BDHealth health = guardian.AddComponent<BDHealth>();
             health.SetMaxHealth(type == GuardianType.Sword ? swordHealth : chargerHealth, true);
 
-            guardian.AddComponent<BDEnemyBootstrap>();
+            BDCombatantProfile profile =
+                guardian.AddComponent<BDCombatantProfile>();
+            profile.ConfigureEliteGuardian();
+
+            // Build the same complete runtime stack as normal authored enemies
+            // before any Awake/Start/OnEnable path is allowed to run.
             guardian.AddComponent<BDKnockbackReceiver>();
             guardian.AddComponent<BDEnemyGroundStick>();
             guardian.AddComponent<BDEnemyCollisionDiscipline>();
+            guardian.AddComponent<BDEnemyMotionStabilizer>();
+            guardian.AddComponent<BDEnemyHazardNavigation>();
+            guardian.AddComponent<BDEnemyPlacementGuard>();
+            guardian.AddComponent<BDHitStaggerReceiver>();
+            guardian.AddComponent<BDEnemyHorseHarasser>();
+            guardian.AddComponent<BDEnemyLootDropper>();
+            BDEnemyTacticalRole tacticalRole =
+                guardian.AddComponent<BDEnemyTacticalRole>();
+            guardian.AddComponent<BDEnemyTacticalCommand>();
+            guardian.AddComponent<BDEnemyExitInterference>();
+            guardian.AddComponent<BDEnemyBootstrap>();
 
             if (type == GuardianType.Sword)
+            {
                 guardian.AddComponent<BDSwordEnemy>();
+                tacticalRole.SetRole(BDEnemyTacticalRoleType.Pressure);
+            }
             else
+            {
                 guardian.AddComponent<BDChargerEnemy>();
+                tacticalRole.SetRole(BDEnemyTacticalRoleType.BurstPunish);
+            }
 
             CreateDarkAura(guardian.transform, type);
+
+            if (activateImmediately)
+                ActivateGuardian(guardian);
+
             return guardian;
         }
 

@@ -8,11 +8,12 @@ namespace BoredomAndDungeons
     public sealed class BDHorsePetAvailabilityIndicator : MonoBehaviour
     {
         [Header("Layout")]
-        [SerializeField] private float heightOffset = 4.65f;
-        [SerializeField] private float horizontalOffset = 1.15f;
-        [SerializeField] private float pulseScale = 0.09f;
-        [SerializeField] private float visualScale = 0.82f;
-        [SerializeField] private float depthOffsetTowardCamera = 0.18f;
+        // BD COMPACT HORSE INTERACTION STACK V23R7
+        [SerializeField] private float heightOffset = 3.08f;
+        [SerializeField] private float horizontalOffset = 0.58f;
+        [SerializeField] private float pulseScale = 0.07f;
+        [SerializeField] private float visualScale = 0.62f;
+        [SerializeField] private float depthOffsetTowardCamera = 0.08f;
         [SerializeField] private int sortingOrder = 90;
         [SerializeField] private float pulseFrequency = 3.8f;
 
@@ -56,6 +57,12 @@ namespace BoredomAndDungeons
         {
             if (interaction == null || indicatorRoot == null)
                 return;
+
+            if (GetComponent<BDHorseContextActionPrompts>() != null)
+            {
+                SetVisible(false);
+                return;
+            }
 
             bool visible =
                 interaction.IsPetAvailable ||

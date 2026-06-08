@@ -37,9 +37,12 @@
 ## Distance-preserving room handoff
 
 - Use the union of previous and next room bounds during a legal transition.
-- End the handoff when target and desired camera position fit naturally inside the next room.
+- Do not end the handoff from an unsmoothed desired camera position.
+- End the handoff only after the target is safely inside the next room and the actual final camera body plus the smoothed look point are both inside that room.
+- Release happens after the final camera pose is written for the frame, so removing the previous-room bounds cannot create a next-frame clamp.
 - Minimap discovery and rotation do not reposition gameplay actors or camera.
 - Room/tile changes preserve distance, FOV, pitch, and yaw response without snap or zoom.
+- The existing gated V23R6 diagnostics distinguish camera motion from player/horse root and visual-model motion without adding a second camera owner.
 
 ## Future asymmetric texture readiness
 

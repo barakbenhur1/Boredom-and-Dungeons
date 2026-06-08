@@ -44,8 +44,11 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
-            if (!showHud)
+            if (!showHud ||
+                !BDGameplayUiVisibility.IsGameplayHudVisible)
+            {
                 return;
+            }
 
             EnsureStyles();
 

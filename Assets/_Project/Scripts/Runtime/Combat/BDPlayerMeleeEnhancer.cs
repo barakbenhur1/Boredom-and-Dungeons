@@ -32,6 +32,8 @@ namespace BoredomAndDungeons
         private BDPlayerCombat combat;
         private BDPlayerAirStateTracker airState;
         private BDPlayerParryState parryState;
+        private BDPlayerAirborneAttackAnimation airborneAnimation;
+        private BDPlayerController playerController;
 
         private FieldInfo lightDamageField;
         private FieldInfo heavyDamageField;
@@ -48,6 +50,9 @@ namespace BoredomAndDungeons
         private float originalLightDamage;
         private float originalHeavyDamage;
         private bool reflectionReady;
+        private int lastCommittedPresentationFrame = -1;
+        private bool lastCommittedPresentationWasHeavy;
+        private bool lastCommittedPresentationWasAirborne;
 
         private void Awake()
         {
@@ -56,9 +61,17 @@ namespace BoredomAndDungeons
             if (airState == null)
                 airState = gameObject.AddComponent<BDPlayerAirStateTracker>();
 
+            playerController = GetComponent<BDPlayerController>();
+
             parryState = GetComponent<BDPlayerParryState>();
             if (parryState == null)
                 parryState = gameObject.AddComponent<BDPlayerParryState>();
+
+            airborneAnimation =
+                GetComponent<BDPlayerAirborneAttackAnimation>();
+            if (airborneAnimation == null)
+                airborneAnimation =
+                    gameObject.AddComponent<BDPlayerAirborneAttackAnimation>();
 
             CacheCombatReflection();
         }
@@ -89,10 +102,10 @@ namespace BoredomAndDungeons
             bool lightPressed = ReadLightAttackPressed();
             bool heavyPressed = ReadHeavyAttackPressed();
 
-            if (lightPressed)
+            if (lightPressed && !combat.UsesLightHoldInput)
                 HandlePressedAttack(BufferedAttack.Light);
 
-            if (heavyPressed)
+            if (heavyPressed && !combat.UsesHeavyHoldInput)
                 HandlePressedAttack(BufferedAttack.Heavy);
 
             TryExecuteBufferedAttack();
@@ -119,29 +132,91 @@ namespace BoredomAndDungeons
             bufferedUntilUnscaled = Time.unscaledTime + Mathf.Max(0.05f, attackBufferDuration);
         }
 
+        public void PrepareCommittedAttack(bool heavy)
+        {
+            float damage = GetFloatField(
+                heavy ? heavyDamageField : lightDamageField
+            );
+            PrepareCommittedAttackDamage(heavy, damage);
+        }
+
+        // BD COMMITTED AIRBORNE ATTACK PRESENTATION V23R11
+        // Runtime names intentionally remain stable for QA and capture:
+        // BD_Heavy_Vertical_Airborne_Slash / BD_Light_Vertical_Airborne_Slash.
+        public float PrepareCommittedAttackDamage(
+            bool heavy,
+            float requestedDamage)
+        {
+            return PrepareCommittedAttackDamage(
+                heavy,
+                requestedDamage,
+                out _
+            );
+        }
+
+        // BD EXPLICIT AIRBORNE ATTACK PRESENTATION BRANCH V23R19
+        // The real committed attack returns one explicit presentation identity.
+        // BDPlayerCombat then spawns either the vertical airborne slash or the
+        // grounded slash, never both and never via a timing-based suppression race.
+        public float PrepareCommittedAttackDamage(
+            bool heavy,
+            float requestedDamage,
+            out bool airbornePresentation)
+        {
+            airbornePresentation = false;
+
+            if (!reflectionReady || combat == null || !combat.enabled)
+                return requestedDamage;
+
+            airbornePresentation =
+                (airState != null && airState.IsAirborneFromJump) ||
+                (playerController != null &&
+                 playerController.IsAirborneFromControlledJump);
+            bool landingDamage =
+                airbornePresentation &&
+                airState != null &&
+                airState.IsDescendingFromJump;
+
+            float resolvedDamage = landingDamage
+                ? requestedDamage * Mathf.Max(1f, landingDamageMultiplier)
+                : requestedDamage;
+
+            bool alreadyPreparedThisFrame =
+                lastCommittedPresentationFrame == Time.frameCount &&
+                lastCommittedPresentationWasHeavy == heavy;
+
+            if (alreadyPreparedThisFrame)
+            {
+                airbornePresentation =
+                    lastCommittedPresentationWasAirborne;
+                return resolvedDamage;
+            }
+
+            lastCommittedPresentationFrame = Time.frameCount;
+            lastCommittedPresentationWasHeavy = heavy;
+            lastCommittedPresentationWasAirborne = airbornePresentation;
+            parryState.RecordMeleeAttack(heavy);
+
+            if (airbornePresentation)
+                airborneAnimation?.Play(heavy);
+
+            return resolvedDamage;
+        }
+
+        public bool ShouldSpawnAirborneSlashVisual =>
+            spawnLandingAttackVisual;
+
         private void PrepareImmediateAttack(BufferedAttack attack)
         {
             bool heavy = attack == BufferedAttack.Heavy;
-            bool landing = airState != null && airState.IsDescendingFromJump;
+            float damage = GetFloatField(
+                heavy ? heavyDamageField : lightDamageField
+            );
 
-            parryState.RecordMeleeAttack(heavy);
-
-            if (!landing)
-                return;
-
-            // BD LANDING-ONLY ANIMATION FIX:
-            // The landing strike replaces the normal slash visual for this hit.
-            combat.SuppressNextStandardMeleeVisual();
-            ApplyTemporaryLandingDamage(attack);
-
-            if (spawnLandingAttackVisual)
-            {
-                BDLandingAttackVisual.Spawn(
-                    transform.position,
-                    ResolveAimDirection(),
-                    heavy
-                );
-            }
+            // BD VERTICAL AIRBORNE MELEE VISUAL V23R8
+            // Non-hold inputs commit on the press frame. Hold-based light/heavy
+            // inputs are intentionally deferred to BDPlayerCombat's real commit.
+            PrepareCommittedAttackDamage(heavy, damage);
         }
 
         private void TryExecuteBufferedAttack()
@@ -169,34 +244,19 @@ namespace BoredomAndDungeons
                 return;
 
             bool heavy = attack == BufferedAttack.Heavy;
-            bool landing = airState != null && airState.IsDescendingFromJump;
-            float baseDamage = GetFloatField(heavy ? heavyDamageField : lightDamageField);
-            float cooldown = GetFloatField(heavy ? heavyCooldownField : lightCooldownField);
-            FieldInfo nextAllowedField = heavy ? nextHeavyAllowedAtField : nextLightAllowedAtField;
+            float baseDamage = GetFloatField(
+                heavy ? heavyDamageField : lightDamageField
+            );
+            float cooldown = GetFloatField(
+                heavy ? heavyCooldownField : lightCooldownField
+            );
+            FieldInfo nextAllowedField =
+                heavy ? nextHeavyAllowedAtField : nextLightAllowedAtField;
             float nextAllowedAt = GetFloatField(nextAllowedField);
-            float finalDamage = landing
-                ? baseDamage * Mathf.Max(1f, landingDamageMultiplier)
-                : baseDamage;
-
-            parryState.RecordMeleeAttack(heavy);
-
-            if (landing)
-            {
-                combat.SuppressNextStandardMeleeVisual();
-
-                if (spawnLandingAttackVisual)
-                {
-                    BDLandingAttackVisual.Spawn(
-                        transform.position,
-                        ResolveAimDirection(),
-                        heavy
-                    );
-                }
-            }
 
             object[] arguments =
             {
-                finalDamage,
+                baseDamage,
                 cooldown,
                 nextAllowedAt,
                 heavy ? "heavy" : "light"
@@ -204,14 +264,22 @@ namespace BoredomAndDungeons
 
             try
             {
+                // TryMeleeAttack owns the final committed presentation and
+                // landing-damage resolution for buffered and direct attacks.
                 tryMeleeAttackMethod.Invoke(combat, arguments);
 
                 if (arguments[2] is float updatedNextAllowedAt)
-                    nextAllowedField.SetValue(combat, updatedNextAllowedAt);
+                    nextAllowedField.SetValue(
+                        combat,
+                        updatedNextAllowedAt
+                    );
             }
             catch (TargetInvocationException exception)
             {
-                Debug.LogException(exception.InnerException ?? exception, combat);
+                Debug.LogException(
+                    exception.InnerException ?? exception,
+                    combat
+                );
             }
         }
 
@@ -394,102 +462,243 @@ namespace BoredomAndDungeons
     public sealed class BDLandingAttackVisual : MonoBehaviour
     {
         [SerializeField] private float lifetime = 0.30f;
-        [SerializeField] private float startHeight = 2.8f;
-        [SerializeField] private float impactRadius = 1.15f;
+        [SerializeField] private int arcSegments = 12;
 
-        private Transform blade;
-        private Transform ring;
+        private LineRenderer primaryArc;
+        private LineRenderer secondaryArc;
+        private Material runtimeMaterial;
         private float elapsed;
         private Vector3 direction;
+        private Vector3 startPosition;
         private bool heavy;
+        private float initialVerticalSpeed;
+        private Color baseColor;
 
-        public static void Spawn(Vector3 position, Vector3 attackDirection, bool heavyAttack)
+        public static void Spawn(
+            Vector3 position,
+            Vector3 attackDirection,
+            bool heavyAttack,
+            float verticalSpeed)
         {
-            GameObject root = new GameObject(heavyAttack
-                ? "BD_Heavy_Landing_Attack_Visual"
-                : "BD_Light_Landing_Attack_Visual");
-            root.transform.position = position + Vector3.up * 0.08f;
+            GameObject root = new GameObject(
+                heavyAttack
+                    ? "BD_Heavy_Vertical_Airborne_Slash"
+                    : "BD_Light_Vertical_Airborne_Slash"
+            );
 
-            BDLandingAttackVisual visual = root.AddComponent<BDLandingAttackVisual>();
-            visual.direction = attackDirection.sqrMagnitude > 0.001f
-                ? attackDirection.normalized
-                : Vector3.forward;
+            BDLandingAttackVisual visual =
+                root.AddComponent<BDLandingAttackVisual>();
+
+            visual.direction =
+                attackDirection.sqrMagnitude > 0.001f
+                    ? attackDirection.normalized
+                    : Vector3.forward;
+            visual.direction.y = 0f;
+
+            if (visual.direction.sqrMagnitude < 0.001f)
+                visual.direction = Vector3.forward;
+
+            visual.direction.Normalize();
             visual.heavy = heavyAttack;
+            visual.initialVerticalSpeed = verticalSpeed;
+            visual.startPosition =
+                position +
+                Vector3.up * 0.28f +
+                visual.direction * 0.18f;
+
+            root.transform.position = visual.startPosition;
+            root.transform.rotation = Quaternion.LookRotation(
+                visual.direction,
+                Vector3.up
+            );
+
             visual.Build();
         }
 
         private void Build()
         {
-            Color color = heavy
-                ? new Color(1f, 0.48f, 0.10f, 1f)
-                : new Color(0.35f, 0.92f, 1f, 1f);
+            // Light keeps the regular cyan identity; heavy keeps the approved
+            // orange identity. Only the slash plane changes from horizontal
+            // to vertical while the player is airborne.
+            baseColor = heavy
+                ? new Color(1f, 0.48f, 0.10f, 0.94f)
+                : new Color(0.35f, 0.92f, 1f, 0.92f);
 
-            GameObject bladeObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bladeObject.name = "BD_Landing_Downward_Strike";
-            blade = bladeObject.transform;
-            blade.SetParent(transform, false);
-            blade.localPosition = Vector3.up * startHeight + direction * 0.45f;
-            blade.localRotation = Quaternion.LookRotation(Vector3.down + direction * 0.18f, direction);
-            blade.localScale = heavy
-                ? new Vector3(0.22f, 0.22f, 2.4f)
-                : new Vector3(0.15f, 0.15f, 1.8f);
-            ConfigureVisualObject(bladeObject, color);
+            runtimeMaterial = CreateRuntimeMaterial(baseColor);
 
-            GameObject ringObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            ringObject.name = "BD_Landing_Impact_Ring";
-            ring = ringObject.transform;
-            ring.SetParent(transform, false);
-            ring.localPosition = direction * 0.65f;
-            ring.localScale = new Vector3(0.05f, 0.018f, 0.05f);
-            ConfigureVisualObject(ringObject, color);
+            primaryArc = CreateArc(
+                "BD_Airborne_Vertical_Slash_Primary",
+                heavy ? 0.18f : 0.115f,
+                heavy ? 0.42f : 0.31f,
+                0f,
+                mirror: false
+            );
+
+            if (heavy)
+            {
+                secondaryArc = CreateArc(
+                    "BD_Airborne_Vertical_Slash_Secondary",
+                    0.09f,
+                    0.31f,
+                    -0.16f,
+                    mirror: true
+                );
+            }
+        }
+
+        private LineRenderer CreateArc(
+            string objectName,
+            float width,
+            float curve,
+            float lateralOffset,
+            bool mirror)
+        {
+            GameObject arcObject = new GameObject(objectName);
+            arcObject.transform.SetParent(
+                transform,
+                worldPositionStays: false
+            );
+
+            LineRenderer line =
+                arcObject.AddComponent<LineRenderer>();
+
+            line.useWorldSpace = false;
+            line.loop = false;
+            line.positionCount = Mathf.Max(6, arcSegments);
+            line.startWidth = width;
+            line.endWidth = width * 0.48f;
+            line.numCapVertices = 4;
+            line.numCornerVertices = 4;
+            line.textureMode = LineTextureMode.Stretch;
+            line.alignment = LineAlignment.View;
+
+            if (runtimeMaterial != null)
+                line.sharedMaterial = runtimeMaterial;
+
+            float verticalStart =
+                initialVerticalSpeed > 0.20f ? 2.15f : 1.92f;
+            int count = line.positionCount;
+
+            for (int index = 0; index < count; index++)
+            {
+                float t = index / (float)(count - 1);
+                float signedCurve =
+                    Mathf.Sin(t * Mathf.PI) *
+                    curve *
+                    (mirror ? -1f : 1f);
+
+                Vector3 point = new Vector3(
+                    lateralOffset + signedCurve,
+                    Mathf.Lerp(verticalStart, -0.68f, t),
+                    Mathf.Lerp(-0.10f, 1.14f, t)
+                );
+
+                line.SetPosition(index, point);
+            }
+
+            line.startColor = baseColor;
+            line.endColor = new Color(
+                baseColor.r,
+                baseColor.g,
+                baseColor.b,
+                baseColor.a * 0.40f
+            );
+
+            return line;
         }
 
         private void Update()
         {
             elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, lifetime));
+            float t = Mathf.Clamp01(
+                elapsed / Mathf.Max(0.01f, lifetime)
+            );
 
-            if (blade != null)
-            {
-                Vector3 end = direction * 0.72f + Vector3.up * 0.12f;
-                blade.localPosition = Vector3.Lerp(Vector3.up * startHeight + direction * 0.45f, end, t);
-                blade.localScale *= 1f - Time.unscaledDeltaTime * 2.4f;
-            }
+            float eased = 1f - (1f - t) * (1f - t);
+            transform.position =
+                startPosition +
+                direction * Mathf.Lerp(0f, 0.34f, eased) +
+                Vector3.down * Mathf.Lerp(0f, 0.20f, eased);
 
-            if (ring != null)
-            {
-                float radius = Mathf.Lerp(0.05f, impactRadius * (heavy ? 1.25f : 1f), t);
-                ring.localScale = new Vector3(radius, 0.018f, radius);
-            }
+            float scale = Mathf.Lerp(
+                heavy ? 0.88f : 0.82f,
+                heavy ? 1.12f : 1.04f,
+                eased
+            );
+            transform.localScale = Vector3.one * scale;
+
+            float alpha = 1f - Mathf.SmoothStep(
+                0.42f,
+                1f,
+                t
+            );
+
+            UpdateArcStyle(
+                primaryArc,
+                heavy ? 0.18f : 0.115f,
+                alpha
+            );
+            UpdateArcStyle(
+                secondaryArc,
+                0.09f,
+                alpha * 0.72f
+            );
 
             if (elapsed >= lifetime)
                 Destroy(gameObject);
         }
 
-        private static void ConfigureVisualObject(GameObject visual, Color color)
+        private void UpdateArcStyle(
+            LineRenderer line,
+            float baseWidth,
+            float alpha)
         {
-            Collider collider = visual.GetComponent<Collider>();
-            if (collider != null)
-                Destroy(collider);
-
-            Renderer renderer = visual.GetComponent<Renderer>();
-            if (renderer == null)
+            if (line == null)
                 return;
 
-            Material material = renderer.material;
+            line.startWidth =
+                baseWidth * Mathf.Lerp(1f, 0.58f, elapsed / lifetime);
+            line.endWidth = line.startWidth * 0.48f;
+
+            Color start = baseColor;
+            start.a *= Mathf.Clamp01(alpha);
+
+            Color end = baseColor;
+            end.a *= Mathf.Clamp01(alpha * 0.38f);
+
+            line.startColor = start;
+            line.endColor = end;
+        }
+
+        private static Material CreateRuntimeMaterial(Color color)
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+
+            if (shader == null)
+                shader = Shader.Find(
+                    "Universal Render Pipeline/Unlit"
+                );
+
+            if (shader == null)
+                shader = Shader.Find("Unlit/Color");
+
+            if (shader == null)
+                shader = Shader.Find("Standard");
+
+            if (shader == null)
+                return null;
+
+            Material material = new Material(shader);
+            material.hideFlags = HideFlags.HideAndDontSave;
             material.color = color;
+            material.renderQueue = 3120;
+            return material;
+        }
 
-            if (material.HasProperty("_BaseColor"))
-                material.SetColor("_BaseColor", color);
-
-            if (material.HasProperty("_Color"))
-                material.SetColor("_Color", color);
-
-            if (material.HasProperty("_EmissionColor"))
-            {
-                material.EnableKeyword("_EMISSION");
-                material.SetColor("_EmissionColor", color * 2.5f);
-            }
+        private void OnDestroy()
+        {
+            if (runtimeMaterial != null)
+                Destroy(runtimeMaterial);
         }
     }
 

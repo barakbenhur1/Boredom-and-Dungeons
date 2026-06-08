@@ -66,9 +66,14 @@ namespace BoredomAndDungeons
             if (!TryFindGround(out RaycastHit groundHit))
                 return;
 
-            float halfHeight = Mathf.Max(controller.height * 0.5f, controller.radius);
-            float desiredCenterY = groundHit.point.y + halfHeight + desiredBottomOffset;
-            float deltaY = desiredCenterY - transform.position.y;
+            Vector3 desiredRoot =
+                BDSafeEnemyPlacement.ResolveRootPositionForGround(
+                    groundHit.point,
+                    transform,
+                    controller,
+                    desiredBottomOffset
+                );
+            float deltaY = desiredRoot.y - transform.position.y;
 
             if (!force && Mathf.Abs(deltaY) <= maxAllowedAboveGround)
                 return;
@@ -77,8 +82,18 @@ namespace BoredomAndDungeons
                 ? Mathf.Abs(deltaY)
                 : Mathf.Min(Mathf.Abs(deltaY), Mathf.Min(maxSnapDistancePerFrame, snapSpeed * Time.deltaTime));
 
-            Vector3 move = Vector3.up * Mathf.Sign(deltaY) * maxStep;
-            controller.Move(FilterMoveByHitStagger(move));
+            Vector3 move =
+                Vector3.up *
+                Mathf.Sign(deltaY) *
+                maxStep;
+
+            // A forced grounding repair is structural, not authored enemy
+            // locomotion, and must not be damped by hit stagger.
+            controller.Move(
+                force
+                    ? move
+                    : FilterMoveByHitStagger(move)
+            );
         }
 
         public bool TryFindGround(out RaycastHit groundHit)
@@ -162,7 +177,7 @@ namespace BoredomAndDungeons
             }
 
             if (push.sqrMagnitude > 0.001f)
-                controller.Move(FilterMoveByHitStagger(push.normalized * 1.25f * Time.deltaTime));
+                controller.Move(BDEnemyHazardNavigation.FilterBrainMotion(this, FilterMoveByHitStagger(push.normalized * 1.25f * Time.deltaTime)));
         }
         private Vector3 FilterMoveByHitStagger(Vector3 move)
         {

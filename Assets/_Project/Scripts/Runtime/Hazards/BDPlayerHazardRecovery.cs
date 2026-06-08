@@ -103,12 +103,14 @@ namespace BoredomAndDungeons
 
         private bool holeFallInProgress;
         private BDHazardVolume holeFallVolume;
+        private BDHazardType activeFallHazardType = BDHazardType.HoleOrChasm;
         private float holeFallStartedAt;
         private bool holeControllerWasEnabled;
         private bool holePlayerWasEnabled;
 
         private bool lavaBounceInProgress;
         private BDHazardVolume lavaBounceVolume;
+        private float lavaBounceAppliedDamage;
         private float lavaBounceStartedAt;
         private Vector3 lavaBounceStart;
         private Vector3 lavaBounceTarget;
@@ -222,6 +224,16 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            // BD CONTROLLED JUMP COMBAT CONTACT IS NOT FLOOR LOSS V23R19D
+            // Landing on or brushing an attacking enemy during a deliberate
+            // jump may remove ground support for a moment. Never arm the
+            // safe-point teleport guard for that valid airborne state.
+            if (playerController != null &&
+                playerController.IsAirborneFromControlledJump)
+            {
+                return;
+            }
+
             combatImpactStartedAt = Time.unscaledTime;
             combatImpactGuardUntil =
                 combatImpactStartedAt +
@@ -237,6 +249,19 @@ namespace BoredomAndDungeons
 
         private void CheckCombatGroundingGuard()
         {
+            // BD QUICKSAND NONLETHAL JUMP MUST NOT TELEPORT V23R19
+            // Quicksand owns its own sink/failure/recovery state. Generic floor
+            // loss recovery must not move a living jumping player to a safe point.
+            if (BDQuicksandStatus.IsActorUnderQuicksandControl(gameObject))
+                return;
+
+            if (playerController != null &&
+                playerController.IsAirborneFromControlledJump)
+            {
+                combatImpactGuardUntil = -999f;
+                return;
+            }
+
             if (Time.unscaledTime > combatImpactGuardUntil ||
                 characterController == null ||
                 !characterController.enabled ||
@@ -330,6 +355,73 @@ namespace BoredomAndDungeons
             FreezeSafePointUpdates();
         }
 
+        // BD MOUNTED LAVA ZERO-DAMAGE RECOVERY ARC V23R18A
+        public bool BeginMountedLavaRecoveryWithoutDamage(
+            BDHazardVolume volume,
+            Vector3 recoveredHorsePosition,
+            float requestedSeparation)
+        {
+            if (volume == null ||
+                holeFallInProgress ||
+                lavaBounceInProgress ||
+                health == null ||
+                health.IsDead)
+            {
+                return false;
+            }
+
+            hasLocalHoleRecovery = false;
+
+            PrepareMountedHazardRecovery(
+                recoveredHorsePosition,
+                requestedSeparation
+            );
+
+            lavaBounceAppliedDamage = 0f;
+
+            recoveryProtectedUntil =
+                Time.unscaledTime +
+                Mathf.Max(
+                    0.1f,
+                    lavaBounceDuration +
+                    recoveryProtectionSeconds
+                );
+
+            if (!TryResolveRecoveryPoint(
+                    out lavaBounceTarget,
+                    out lavaBounceRotation))
+            {
+                lavaBounceTarget = initialSpawnPosition;
+                lavaBounceRotation = initialSpawnRotation;
+            }
+
+            lavaBounceInProgress = true;
+            lavaBounceVolume = volume;
+            lavaBounceStartedAt = Time.unscaledTime;
+            lavaBounceStart = transform.position;
+
+            lavaBounceTarget =
+                ResolveReducedLavaBounceTarget(
+                    lavaBounceStart,
+                    lavaBounceTarget
+                );
+
+            lavaControllerWasEnabled =
+                characterController != null &&
+                characterController.enabled;
+            lavaPlayerWasEnabled =
+                playerController != null &&
+                playerController.enabled;
+
+            if (playerController != null)
+                playerController.enabled = false;
+
+            if (characterController != null)
+                characterController.enabled = false;
+
+            return true;
+        }
+
         public bool TryHandleHazard(
             BDHazardVolume volume,
             bool forceActivation = false)
@@ -342,6 +434,16 @@ namespace BoredomAndDungeons
                 health.IsDead)
             {
                 return false;
+            }
+
+            if (volume.HazardType == BDHazardType.Quicksand)
+            {
+                // BD QUICKSAND HALF-BODY FALL RECOVERY V23R17
+                // Quicksand failure uses the same visible downward fall and
+                // safe-point recovery pipeline as a chasm, but reports the
+                // Quicksand hazard type and its configured fall damage.
+                BeginHoleFall(volume);
+                return true;
             }
 
             if (volume.HazardType == BDHazardType.Lava)
@@ -494,6 +596,9 @@ namespace BoredomAndDungeons
             FreezeSafePointUpdates();
             holeFallInProgress = true;
             holeFallVolume = volume;
+            activeFallHazardType = volume != null
+                ? volume.HazardType
+                : BDHazardType.HoleOrChasm;
             holeFallStartedAt = Time.unscaledTime;
             recoveryProtectedUntil =
                 Time.unscaledTime +
@@ -558,12 +663,13 @@ namespace BoredomAndDungeons
             }
 
             HazardRecovered?.Invoke(
-                BDHazardType.HoleOrChasm,
+                activeFallHazardType,
                 damage
             );
 
             holeFallInProgress = false;
             holeFallVolume = null;
+            activeFallHazardType = BDHazardType.HoleOrChasm;
         }
 
         private void BeginLavaBounce(
@@ -571,6 +677,7 @@ namespace BoredomAndDungeons
         {
             FreezeSafePointUpdates();
             float damage = volume.Damage;
+            lavaBounceAppliedDamage = damage;
             health.ApplyUnavoidableDamage(damage);
 
             recoveryProtectedUntil =
@@ -708,13 +815,12 @@ namespace BoredomAndDungeons
 
             HazardRecovered?.Invoke(
                 BDHazardType.Lava,
-                lavaBounceVolume != null
-                    ? lavaBounceVolume.Damage
-                    : 10f
+                lavaBounceAppliedDamage
             );
 
             lavaBounceInProgress = false;
             lavaBounceVolume = null;
+            lavaBounceAppliedDamage = 0f;
         }
 
         private void DetectForcedDisplacement()
@@ -844,6 +950,12 @@ namespace BoredomAndDungeons
 
         private void CheckGroundExit()
         {
+            // BD QUICKSAND NONLETHAL JUMP MUST NOT TELEPORT V23R19
+            // Jumping or steering inside quicksand is not an accidental fall.
+            // Only BDQuicksandStatus may request recovery at its failure depth.
+            if (BDQuicksandStatus.IsActorUnderQuicksandControl(gameObject))
+                return;
+
             if (characterController == null ||
                 !characterController.enabled ||
                 characterController.isGrounded ||

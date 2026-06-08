@@ -38,6 +38,26 @@ namespace BoredomAndDungeons
         [SerializeField] private float lightHitStopTimeScale = 0.55f;
         [SerializeField] private float heavyHitStopTimeScale = 0.12f;
 
+        [Header("Sword Damage Spectrum and Criticals")]
+        // BD PLAYER SWORD DAMAGE SPECTRUM AND CRITICAL V23R15
+        [SerializeField, Range(0f, 0.35f)] private float swordDamageVariance = 0.10f;
+        private const float SwordCriticalChance = 0.06f;
+        private const float SwordCriticalMultiplier = 1.50f;
+
+        [Header("Grappling Hook Heavy Hold")]
+        // BD HEAVY-HOLD GRAPPLING HOOK C03.23A
+        [SerializeField] private bool enableGrapplingHookAttack = true;
+        [SerializeField] private float grapplingHookHoldThreshold = 0.30f;
+        [SerializeField] private float grapplingHookCooldown = 2.75f;
+        [SerializeField] private float grapplingHookDamage = 2f;
+        [SerializeField] private float grapplingHookRange = 13.5f;
+        [SerializeField] private float grapplingHookHitRadius = 0.52f;
+        [SerializeField] private float grapplingHookTravelSpeed = 25f;
+        [SerializeField] private float grapplingHookPullStopDistance = 2.35f;
+        [SerializeField] private float grapplingHookPullDuration = 0.48f;
+        [SerializeField] private float grapplingHookMaxPullHorizontalSize = 2.8f;
+        [SerializeField] private float grapplingHookMaxPullHeight = 3.6f;
+
         [Header("Spinning AOE Attack")]
         [SerializeField] private bool enableSpinningAttack = true;
         [SerializeField] private float spinningAttackHoldThreshold = 0.24f;
@@ -88,6 +108,10 @@ namespace BoredomAndDungeons
 
         private float nextLightAllowedAt;
         private float nextHeavyAllowedAt;
+        private float nextGrapplingHookAllowedAt;
+        private bool heavyPressPending;
+        private float heavyPressStartedAtUnscaled;
+        private BDPlayerMeleeEnhancer meleeEnhancer;
         private float nextSpinningAttackAllowedAt;
         private bool lightPressPending;
         private float lightPressStartedAtUnscaled;
@@ -129,6 +153,123 @@ namespace BoredomAndDungeons
             );
         public float WeaponDamageMultiplier =>
             Mathf.Max(0.01f, boostWeaponDamageMultiplier);
+        public bool UsesHeavyHoldInput => enableGrapplingHookAttack;
+        public bool UsesLightHoldInput => enableSpinningAttack;
+        public float MeleeAttackRange => Mathf.Max(0.5f, attackRange);
+        public float MeleeAttackRadius => Mathf.Max(0.05f, attackRadius);
+        public bool IsGrapplingHookReady =>
+            Time.time >= nextGrapplingHookAllowedAt;
+        public bool IsHeavyAttackHoldPending => heavyPressPending;
+        public float GrapplingHookHoldProgress01 =>
+            !heavyPressPending
+                ? 0f
+                : Mathf.Clamp01(
+                    (Time.unscaledTime -
+                     heavyPressStartedAtUnscaled) /
+                    Mathf.Max(0.05f, grapplingHookHoldThreshold)
+                );
+        public float GrapplingHookCooldownRemaining =>
+            Mathf.Max(0f, nextGrapplingHookAllowedAt - Time.time);
+
+        // BD RANGE-AWARE COMBAT TARGET ENVELOPE V23R8
+        public Vector3 TargetHighlightAimDirection =>
+            GetCombatAimDirection();
+
+        public Vector3 TargetHighlightOrigin
+        {
+            get
+            {
+                if (IsMountedOnHorse() &&
+                    cachedMountedHorseCheck != null)
+                {
+                    return
+                        cachedMountedHorseCheck.transform.position +
+                        Vector3.up * 1.22f;
+                }
+
+                return transform.position + Vector3.up * 1.25f;
+            }
+        }
+
+        public bool TryResolveTargetHighlightEnvelope(
+            out float range,
+            out float radius,
+            out string mode)
+        {
+            range = 0f;
+            radius = 0f;
+            mode = "none";
+
+            bool mounted = IsMountedOnHorse();
+
+            // BD BOY MOUNTED HOOK DISABLED GIRL FUTURE V23R19H
+            // The current playable character is the boy. His mounted combat
+            // remains ranged-only: neither sword attacks nor the grappling hook
+            // may be used while riding. The future Girl character may opt into
+            // mounted hook use through a character capability/profile when she
+            // is implemented; do not enable that capability globally here.
+            if (mounted)
+            {
+                if (reloading || rangedAmmo <= 0)
+                    return false;
+
+                range = Mathf.Max(
+                    1f,
+                    rangedProjectileSpeed *
+                    rangedProjectileLifetime
+                );
+                radius = Mathf.Max(
+                    0.05f,
+                    rangedProjectileHitRadius
+                );
+                mode = "mounted ranged";
+                return true;
+            }
+
+            if (heavyPressPending && IsGrapplingHookReady)
+            {
+                range = Mathf.Max(1f, grapplingHookRange);
+                radius = Mathf.Max(
+                    0.05f,
+                    grapplingHookHitRadius
+                );
+                mode = "grappling hook";
+                return true;
+            }
+
+            bool explicitMeleeIntent =
+                lightPressPending ||
+                (heavyPressPending && !IsGrapplingHookReady);
+
+            // BD PRIMARY LOOKED-AT RANGED TARGET V23R10
+            // When a normal projectile is currently available, the frame may
+            // identify the one enemy that the shot would actually hit, even
+            // before the player presses the ranged button.
+            if (!explicitMeleeIntent &&
+                !reloading &&
+                rangedAmmo > 0)
+            {
+                range = Mathf.Max(
+                    1f,
+                    rangedProjectileSpeed *
+                    rangedProjectileLifetime
+                );
+                radius = Mathf.Max(
+                    0.05f,
+                    rangedProjectileHitRadius
+                );
+                mode = mounted ? "mounted ranged" : "ranged";
+                return true;
+            }
+
+            range = Mathf.Max(
+                0.5f,
+                meleeStartForwardOffset + attackRange
+            );
+            radius = Mathf.Max(0.05f, attackRadius);
+            mode = "melee";
+            return true;
+        }
         public bool IsSpinningAttackReady =>
             Time.time >= nextSpinningAttackAllowedAt;
         public bool IsLightAttackHoldPending => lightPressPending;
@@ -179,6 +320,7 @@ namespace BoredomAndDungeons
         public void ResetTransientCombatInputState()
         {
             ClearPendingLightPress();
+            ClearPendingHeavyPress();
             ClearPendingRangedPress();
             CancelChargedShot();
             suppressStandardMeleeVisualUntilUnscaled = -999f;
@@ -188,10 +330,22 @@ namespace BoredomAndDungeons
         private void Awake()
         {
             rangedAmmo = RangedMagazineSize;
+            meleeEnhancer = GetComponent<BDPlayerMeleeEnhancer>();
+            EnsureCombatTargetHighlighter();
+        }
+
+        private void EnsureCombatTargetHighlighter()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (GetComponent<BDCombatTargetHighlighter>() == null)
+                gameObject.AddComponent<BDCombatTargetHighlighter>();
         }
         private void OnDisable()
         {
             ClearPendingLightPress();
+            ClearPendingHeavyPress();
             ClearPendingRangedPress();
             CancelChargedShot();
         }
@@ -222,26 +376,20 @@ namespace BoredomAndDungeons
         {
             if (mounted)
             {
+                // BD BOY MOUNTED HOOK DISABLED GIRL FUTURE V23R19H
                 ClearPendingLightPress();
+                ClearPendingHeavyPress();
 
-                if (ReadLightAttackPressed() ||
-                    ReadHeavyAttackPressed())
-                {
-                    lastCombatAction = "mounted melee disabled";
-                }
+                if (ReadLightAttackPressed())
+                    lastCombatAction = "boy mounted sword melee disabled";
+
+                if (ReadHeavyAttackPressed())
+                    lastCombatAction = "boy mounted hook disabled";
 
                 return;
             }
 
-            if (ReadHeavyAttackPressed())
-            {
-                TryMeleeAttack(
-                    heavyDamage,
-                    heavyCooldown,
-                    ref nextHeavyAllowedAt,
-                    "heavy"
-                );
-            }
+            TickHeavyAttackInput();
 
             if (!enableSpinningAttack)
             {
@@ -268,6 +416,131 @@ namespace BoredomAndDungeons
 
             if (ReadLightAttackPressed())
                 BeginPendingLightPress();
+        }
+
+        private void TickHeavyAttackInput()
+        {
+            if (!enableGrapplingHookAttack)
+            {
+                ClearPendingHeavyPress();
+                if (ReadHeavyAttackPressed())
+                    CommitRegularHeavyAttack();
+                return;
+            }
+
+            if (heavyPressPending)
+            {
+                TickPendingHeavyPress();
+                return;
+            }
+
+            if (ReadHeavyAttackPressed())
+                BeginPendingHeavyPress();
+        }
+
+        private void BeginPendingHeavyPress()
+        {
+            if (Time.time < nextGrapplingHookAllowedAt)
+            {
+                CommitRegularHeavyAttack();
+                return;
+            }
+
+            heavyPressPending = true;
+            heavyPressStartedAtUnscaled = Time.unscaledTime;
+            lastCombatAction = "heavy press pending hook";
+        }
+
+        private void TickPendingHeavyPress()
+        {
+            if (!heavyPressPending)
+                return;
+
+            if (Time.time < nextGrapplingHookAllowedAt)
+            {
+                ClearPendingHeavyPress();
+                CommitRegularHeavyAttack();
+                return;
+            }
+
+            float heldDuration =
+                Time.unscaledTime - heavyPressStartedAtUnscaled;
+
+            if (!ReadHeavyAttackHeld())
+            {
+                ClearPendingHeavyPress();
+                CommitRegularHeavyAttack();
+                return;
+            }
+
+            if (heldDuration < Mathf.Max(0.05f, grapplingHookHoldThreshold))
+                return;
+
+            ClearPendingHeavyPress();
+            TryGrapplingHookAttack();
+        }
+
+        private void ClearPendingHeavyPress()
+        {
+            heavyPressPending = false;
+            heavyPressStartedAtUnscaled = 0f;
+        }
+
+        private void CommitRegularHeavyAttack()
+        {
+            if (Time.time < nextHeavyAllowedAt)
+            {
+                lastCombatAction = "heavy fallback still cooling down";
+                return;
+            }
+
+            if (meleeEnhancer == null)
+                meleeEnhancer = GetComponent<BDPlayerMeleeEnhancer>();
+
+            if (meleeEnhancer != null)
+                meleeEnhancer.PrepareCommittedAttack(heavy: true);
+
+            TryMeleeAttack(
+                heavyDamage,
+                heavyCooldown,
+                ref nextHeavyAllowedAt,
+                "heavy"
+            );
+        }
+
+        private void TryGrapplingHookAttack()
+        {
+            if (Time.time < nextGrapplingHookAllowedAt)
+            {
+                CommitRegularHeavyAttack();
+                return;
+            }
+
+            Vector3 aim = GetCombatAimDirection();
+            ApplyCombatFacing(aim);
+
+            nextGrapplingHookAllowedAt =
+                Time.time + Mathf.Max(0.01f, grapplingHookCooldown);
+
+            BDPlayerGrapplingHook.Launch(
+                transform,
+                aim,
+                grapplingHookRange,
+                grapplingHookHitRadius,
+                grapplingHookTravelSpeed,
+                grapplingHookDamage,
+                Mathf.Clamp(
+                    grapplingHookPullStopDistance,
+                    Mathf.Max(1.25f, attackRange * 0.88f),
+                    attackRange + attackRadius * 0.45f
+                ),
+                grapplingHookPullDuration,
+                grapplingHookMaxPullHorizontalSize,
+                grapplingHookMaxPullHeight
+            );
+
+            lastCombatAction =
+                $"grappling hook launched cooldown={grapplingHookCooldown:0.00}s";
         }
 
         private void BeginPendingLightPress()
@@ -369,11 +642,17 @@ namespace BoredomAndDungeons
             );
 
             int hitCount = 0;
+            int criticalHitCount = 0;
             int uniqueHealthCount = 0;
-            float effectiveDamage =
+
+            // BD SPIN SHARED SPECTRUM + PER-TARGET CRITICAL V23R15B
+            // The spin rolls its base sword spectrum once, preserving one coherent
+            // AOE damage band. Every unique enemy then receives its own exact 6%
+            // critical roll, so one target may crit while another does not.
+            float spinningBaseDamage = ResolveSwordAttackBaseDamage(
                 lightDamage *
-                Mathf.Clamp(spinningAttackDamageMultiplier, 0.10f, 1f) *
-                WeaponDamageMultiplier;
+                Mathf.Clamp(spinningAttackDamageMultiplier, 0.10f, 1f)
+            );
 
             for (int index = 0; index < overlapCount; index++)
             {
@@ -401,7 +680,18 @@ namespace BoredomAndDungeons
                 if (uniqueHealthCount < MeleeHealthBuffer.Length)
                     MeleeHealthBuffer[uniqueHealthCount++] = health;
 
-                health.ApplyDamage(effectiveDamage);
+                bool criticalAttack;
+                float effectiveDamage = ApplySwordCriticalRoll(
+                    spinningBaseDamage,
+                    out criticalAttack
+                );
+                if (criticalAttack)
+                    criticalHitCount++;
+
+                health.ApplyPlayerSwordDamage(
+                    effectiveDamage,
+                    criticalAttack
+                );
                 RequestEnemyHitStagger(
                     health,
                     spinningAttackHitStaggerDuration
@@ -452,6 +742,7 @@ namespace BoredomAndDungeons
 
             lastCombatAction =
                 $"spinning aoe hits={hitCount} " +
+                $"criticals={criticalHitCount} " +
                 $"cooldown={spinningAttackCooldown:0.00}s";
         }
 
@@ -597,11 +888,31 @@ namespace BoredomAndDungeons
 
             ApplyCombatFacing(aim);
 
+            // BD COMMITTED AIRBORNE ATTACK PRESENTATION V23R11
+            // The committed attack, not the initial button press, decides
+            // whether the one visible arc is horizontal or vertical.
+            if (meleeEnhancer == null)
+                meleeEnhancer = GetComponent<BDPlayerMeleeEnhancer>();
+
+            bool airbornePresentation = false;
+            if (meleeEnhancer != null)
+            {
+                damage = meleeEnhancer.PrepareCommittedAttackDamage(
+                    label == "heavy",
+                    damage,
+                    out airbornePresentation
+                );
+            }
+
             Vector3 capsuleStart = transform.position + Vector3.up * 1f + aim * Mathf.Max(0f, meleeStartForwardOffset);
             Vector3 capsuleEnd = transform.position + Vector3.up * 1f + aim * Mathf.Max(meleeStartForwardOffset + 0.05f, attackRange);
             Vector3 feedbackCenter = Vector3.Lerp(capsuleStart, capsuleEnd, 0.65f);
 
-            SpawnMeleeSlashArc(aim, label == "heavy");
+            SpawnCommittedMeleeSlashArc(
+                aim,
+                label == "heavy",
+                airbornePresentation
+            );
 
             // Capsule catches enemies that are too close to the player.
             // The old endpoint sphere could miss enemies already inside the swing / body range.
@@ -616,7 +927,11 @@ namespace BoredomAndDungeons
 
             int hitCount = 0;
             int uniqueHealthCount = 0;
-            float effectiveDamage = damage * WeaponDamageMultiplier;
+            bool criticalAttack;
+            float effectiveDamage = ResolveSwordAttackDamage(
+                damage,
+                out criticalAttack
+            );
 
             for (int i = 0; i < overlapCount; i++)
             {
@@ -644,7 +959,10 @@ namespace BoredomAndDungeons
                     MeleeHealthBuffer[uniqueHealthCount++] = health;
 
                 bool heavyHit = label == "heavy";
-                health.ApplyDamage(effectiveDamage);
+                health.ApplyPlayerSwordDamage(
+                    effectiveDamage,
+                    criticalAttack
+                );
                 RequestEnemyHitStagger(health, heavyHit ? heavyHitStaggerDuration : lightHitStaggerDuration);
                 RequestEnemyHitFlash(health, heavyHit);
                 TriggerMeleeHitFeedback(health, hit, feedbackCenter, aim, heavyHit);
@@ -675,6 +993,53 @@ namespace BoredomAndDungeons
                 MeleeHealthBuffer[i] = null;
 
             lastCombatAction = $"{label} melee capsule hits={hitCount}";
+        }
+
+
+        // BD PLAYER SWORD DAMAGE SPECTRUM AND CRITICAL V23R15
+        // Light, heavy, and airborne attacks roll one spectrum and one critical
+        // for the committed attack. Spin rolls one shared spectrum, then invokes
+        // ApplySwordCriticalRoll independently for every unique enemy target.
+        // Projectiles and the grappling hook intentionally bypass this path.
+        private float ResolveSwordAttackDamage(
+            float configuredDamage,
+            out bool criticalAttack)
+        {
+            float resolvedBaseDamage = ResolveSwordAttackBaseDamage(
+                configuredDamage
+            );
+            return ApplySwordCriticalRoll(
+                resolvedBaseDamage,
+                out criticalAttack
+            );
+        }
+
+        private float ResolveSwordAttackBaseDamage(float configuredDamage)
+        {
+            float variance = Mathf.Clamp(
+                swordDamageVariance,
+                0f,
+                0.35f
+            );
+            float spectrumMultiplier = Random.Range(
+                1f - variance,
+                1f + variance
+            );
+
+            return
+                Mathf.Max(0f, configuredDamage) *
+                spectrumMultiplier *
+                WeaponDamageMultiplier;
+        }
+
+        private float ApplySwordCriticalRoll(
+            float resolvedBaseDamage,
+            out bool criticalAttack)
+        {
+            criticalAttack = Random.value < SwordCriticalChance;
+            return criticalAttack
+                ? resolvedBaseDamage * SwordCriticalMultiplier
+                : resolvedBaseDamage;
         }
 
         private bool AlreadyHitThisSwing(BDHealth health, int count)
@@ -778,6 +1143,43 @@ namespace BoredomAndDungeons
                 return baseAim;
 
             return assisted.normalized;
+        }
+
+        // BD EXPLICIT COMMITTED AIRBORNE VISUAL OWNER V23R19K
+        // The committed attack chooses exactly one visible arc. Airborne identity
+        // is returned by BDPlayerMeleeEnhancer and consumed here; no timing-based
+        // suppression race and no horizontal duplicate are allowed.
+        private void SpawnCommittedMeleeSlashArc(
+            Vector3 aim,
+            bool heavySwing,
+            bool airbornePresentation)
+        {
+            if (airbornePresentation)
+            {
+                suppressStandardMeleeVisualUntilUnscaled = -999f;
+
+                if (!spawnMeleeSlashArc ||
+                    meleeEnhancer == null ||
+                    !meleeEnhancer.ShouldSpawnAirborneSlashVisual)
+                {
+                    return;
+                }
+
+                Vector3 origin =
+                    transform.position +
+                    aim.normalized * 0.25f;
+
+                BDMeleeSlashArcVisual.SpawnVertical(
+                    origin,
+                    aim,
+                    attackRange,
+                    attackRadius,
+                    heavySwing
+                );
+                return;
+            }
+
+            SpawnMeleeSlashArc(aim, heavySwing);
         }
 
         private void SpawnMeleeSlashArc(
@@ -1645,6 +2047,26 @@ namespace BoredomAndDungeons
             return false;
         }
 
+        private bool ReadHeavyAttackHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Mouse mouse = Mouse.current;
+            if (mouse != null && mouse.rightButton.isPressed)
+                return true;
+
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.kKey.isPressed)
+                return true;
+#endif
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetMouseButton(1) || Input.GetKey(KeyCode.K))
+                return true;
+#endif
+
+            return false;
+        }
+
         private bool ReadRangedAttackPressed()
         {
 #if ENABLE_INPUT_SYSTEM
@@ -1703,11 +2125,12 @@ namespace BoredomAndDungeons
             if (!showCombatDebug)
                 return;
 
-            GUI.Box(new Rect(12, 210, 440, 118), "B&D Combat");
+            GUI.Box(new Rect(12, 210, 440, 140), "B&D Combat");
             GUI.Label(new Rect(24, 240, 410, 22), $"Last: {lastCombatAction}");
             GUI.Label(new Rect(24, 262, 410, 22), $"Ranged ammo: {rangedAmmo} / {RangedMagazineSize}");
             GUI.Label(new Rect(24, 284, 410, 22), $"Reloading: {reloading}");
-            GUI.Label(new Rect(24, 306, 410, 22), $"Aim: {GetCombatAimDirection().x:0.00}, {GetCombatAimDirection().z:0.00}");
+            GUI.Label(new Rect(24, 306, 410, 22), $"Hook cooldown: {GrapplingHookCooldownRemaining:0.00}s");
+            GUI.Label(new Rect(24, 328, 410, 22), $"Aim: {GetCombatAimDirection().x:0.00}, {GetCombatAimDirection().z:0.00}");
         }
     }
 }

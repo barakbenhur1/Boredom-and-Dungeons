@@ -52,6 +52,9 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
+            if (!BDGameplayUiVisibility.IsGameplayHudVisible)
+                return;
+
             if (showOnlyInPlayMode && !Application.isPlaying)
                 return;
 

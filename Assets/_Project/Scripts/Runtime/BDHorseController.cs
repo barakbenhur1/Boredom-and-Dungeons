@@ -194,6 +194,24 @@ namespace BoredomAndDungeons
         private Quaternion riderOriginalLocalRotation = Quaternion.identity;
 
         public bool IsMounted => state == HorseState.Mounted;
+        public float CurrentMountedPlanarSpeed =>
+            smoothedMountedHorizontalVelocity.magnitude;
+        public float MountedMaximumMoveSpeed =>
+            Mathf.Max(0.1f, mountedMoveSpeed);
+        public Vector3 CurrentMountedTravelDirection
+        {
+            get
+            {
+                Vector3 direction = smoothedMountedHorizontalVelocity;
+                direction.y = 0f;
+                if (direction.sqrMagnitude < 0.001f)
+                    direction = transform.forward;
+                direction.y = 0f;
+                return direction.sqrMagnitude > 0.001f
+                    ? direction.normalized
+                    : Vector3.forward;
+            }
+        }
         public bool IsStartupCalm =>
             Time.unscaledTime < startupCalmUntil;
         public bool HasImmediateCombatThreat =>
@@ -206,7 +224,19 @@ namespace BoredomAndDungeons
         public Transform Rider => rider;
         public Vector3 LastMountedAimDirection => lastMountedAimDirection.sqrMagnitude > 0.001f ? lastMountedAimDirection.normalized : transform.forward;
         public Vector2 LastRideInput => lastRideInput;
-        public bool HasRideMoveInput => lastRideInput.sqrMagnitude > 0.0001f;
+        public bool HasRideMoveInput =>
+            lastRideInput.sqrMagnitude > 0.0001f;
+        public bool IsMountedStationary =>
+            IsMounted &&
+            !HasRideMoveInput &&
+            smoothedMountedHorizontalVelocity.sqrMagnitude <= 0.04f;
+        public bool IsPlayerInInteractionRange => playerInRange;
+        public bool CanOfferMountAction =>
+            IsAvailable && playerInRange;
+        public bool NeedsHealing =>
+            health != null &&
+            (health.IsFainted ||
+             health.CurrentHealth < health.MaxHealth - 0.5f);
         public Vector3 LastMountedMovementDirection
         {
             get
@@ -418,10 +448,11 @@ namespace BoredomAndDungeons
                 groundedStickVelocity;
             mountedYawInitialized = false;
 
-            PlaceRiderOnMountPoint();
-            lastAction =
-                "mounted run intro active";
-            return true;
+            bool bound = MaintainMountedRunIntroBinding(rider);
+            lastAction = bound
+                ? "mounted run intro active"
+                : "mounted run intro rider binding failed";
+            return bound;
         }
 
         public void CompleteMountedRunIntro()
@@ -469,29 +500,41 @@ namespace BoredomAndDungeons
 
             facingDirection.y = 0f;
 
-            if (facingDirection.sqrMagnitude < 0.001f)
-                return;
+            if (facingDirection.sqrMagnitude >= 0.001f)
+            {
+                float previousRotationSpeed = rotationSpeed;
+                rotationSpeed = Mathf.Max(
+                    0.1f,
+                    previousRotationSpeed *
+                    Mathf.Max(0.1f, turnSpeedMultiplier)
+                );
 
-            float previousRotationSpeed = rotationSpeed;
-            rotationSpeed = Mathf.Max(
-                0.1f,
-                previousRotationSpeed *
-                Mathf.Max(0.1f, turnSpeedMultiplier)
-            );
+                RotateToward(facingDirection);
+                rotationSpeed = previousRotationSpeed;
+            }
 
-            RotateToward(facingDirection);
-            rotationSpeed = previousRotationSpeed;
+            // BD EXTERNAL-CONTROL RIDER FOLLOW V23R19E
+            // The horse controller is deliberately disabled during the mounted
+            // entrance, so its normal Update cannot keep the unparented rider
+            // on the mount point. External movement must move the rider too.
+            if (state == HorseState.Mounted && rider != null)
+                PlaceRiderOnMountPoint();
         }
         private void ApplyNaturalHorseMovementProfile()
         {
             baseMoveSpeed = 5.6f;
             mountedMoveSpeed = 9.6f;
-            mountedMoveAcceleration = 15f;
-            mountedMoveDeceleration = 19f;
-            rotationSpeed = 8.5f;
-            mountedMouseAimIdleTurnDegreesPerSecond = 110f;
-            mountedMouseAimMovingTurnDegreesPerSecond = 150f;
-            mountedMouseAimTargetSmoothing = 12f;
+            // BD COHERENT MOUNTED MOUSE STEERING V23R8
+            mountedMoveAcceleration = 14f;
+            mountedMoveDeceleration = 20f;
+            rotationSpeed = 8.0f;
+            mountedTravelTurnDegreesPerSecond = 96f;
+            mountedMouseScreenCenterDeadZonePixels = 104f;
+            mountedMouseFrontDeadZoneDegrees = 5f;
+            mountedMouseAimIdleTurnDegreesPerSecond = 92f;
+            mountedMouseAimMovingTurnDegreesPerSecond = 132f;
+            mountedMouseAimTargetSmoothing = 9f;
+            mountedMousePointAimSmoothing = 18f;
             mountedMouseImmediateYaw = false;
         }
 
@@ -508,6 +551,9 @@ namespace BoredomAndDungeons
             if (hazardSafety == null)
                 hazardSafety = gameObject.AddComponent<BDHorseHazardSafety>();
             health = GetComponent<BDHorseHealth>();
+            EnsureContextActionPrompts();
+            if (GetComponent<BDHorseImpactAttack>() == null)
+                gameObject.AddComponent<BDHorseImpactAttack>();
             health.Fainted += OnFainted;
             health.Recovered += OnRecovered;
             health.DamageBurstTriggered += OnHorseDamageBurstTriggered;
@@ -515,6 +561,15 @@ namespace BoredomAndDungeons
             ResetForCleanGameStart(
                 startupCalmSeconds
             );
+        }
+
+        private void EnsureContextActionPrompts()
+        {
+            if (!Application.isPlaying)
+                return;
+
+            if (GetComponent<BDHorseContextActionPrompts>() == null)
+                gameObject.AddComponent<BDHorseContextActionPrompts>();
         }
 
         private void Start()
@@ -945,7 +1000,18 @@ namespace BoredomAndDungeons
             }
 
             if (state == HorseState.Mounted)
+            {
                 TickMounted();
+
+                // BD HEALING ON FOOT ONLY V23R9
+                // Mounted play never heals the horse, even while stationary.
+                // Any on-foot healing session is closed immediately when
+                // mounting so F cannot continue healing from the saddle.
+                EndHealingSessionIfNeeded();
+
+                if (healingReleaseHoldActive)
+                    ClearHealingReleaseHold();
+            }
             else if (state == HorseState.MovingToSafeSpot)
                 TickMoveToSafeSpot();
             else if (state == HorseState.Fainted)
@@ -1250,8 +1316,40 @@ namespace BoredomAndDungeons
             return IsMounted;
         }
 
+        public bool MaintainMountedRunIntroBinding(
+            Transform expectedRider)
+        {
+            // BD AUTHORITATIVE PER-FRAME INTRO RIDER BINDING V23R19G
+            // The cinematic can disable normal Update. Reassert the exact
+            // rider, mounted state, hurtbox and mount-point pose explicitly.
+            if (expectedRider != null)
+                rider = expectedRider;
+
+            if (rider == null)
+                return false;
+
+            CachePlayerComponents();
+            state = HorseState.Mounted;
+            stateBeforeExternalControl = HorseState.Mounted;
+
+            if (playerController != null)
+                playerController.enabled = false;
+
+            if (playerCharacterController != null)
+                playerCharacterController.enabled = true;
+
+            PlaceRiderOnMountPoint();
+            return true;
+        }
+
         public void SnapCinematicRiderToMountPoint()
         {
+            if (externalControlReason == "mounted run intro")
+            {
+                MaintainMountedRunIntroBinding(rider);
+                return;
+            }
+
             if (rider != null && IsMounted)
                 PlaceRiderOnMountPoint();
         }
@@ -1659,10 +1757,13 @@ namespace BoredomAndDungeons
             Vector3 basis = ResolveMountedMovementReferenceForward();
             Vector3 forward = Vector3.zero;
 
-            if (targetMountedAimDirection.sqrMagnitude > 0.001f)
-                forward = targetMountedAimDirection;
-            else if (lastMountedAimDirection.sqrMagnitude > 0.001f)
+            // Movement follows the same rate-limited direction that the horse
+            // and camera already show. Using the raw target made the horse slide
+            // toward the cursor before its body had turned there.
+            if (lastMountedAimDirection.sqrMagnitude > 0.001f)
                 forward = lastMountedAimDirection;
+            else if (targetMountedAimDirection.sqrMagnitude > 0.001f)
+                forward = targetMountedAimDirection;
 
             forward.y = 0f;
 
@@ -2286,6 +2387,11 @@ namespace BoredomAndDungeons
                 hazardSafety != null
                     ? hazardSafety.FilterMovement(motion)
                     : motion;
+
+            filtered = BDQuicksandStatus.FilterMotion(
+                gameObject,
+                filtered
+            );
 
             controller.Move(filtered);
         }

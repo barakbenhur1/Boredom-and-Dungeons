@@ -19,6 +19,9 @@ namespace BoredomAndDungeons
         [SerializeField] private float lookAhead = 8.25f;
         // BD FORWARD SCREEN SPACE LOOKAHEAD FIX
         [SerializeField] private float extraForwardCompositionLookAhead = 2.35f;
+        // BD EXPLICIT 40-BEHIND 60-AHEAD COMPOSITION V23R8
+        [SerializeField, Range(0.30f, 0.48f)]
+        private float targetViewportHeight01 = 0.40f;
         [SerializeField] private float followSmooth = 9.5f;
         [SerializeField] private float rotationSmooth = 8.5f;
 
@@ -32,6 +35,7 @@ namespace BoredomAndDungeons
         // BD CLOSED-WALL HEIGHT + SMOOTH ROOM HANDOFF V21
         // BD DISTANCE-PRESERVING UNION ROOM HANDOFF V22
         // BD STABLE WALL PRESSURE CAMERA V23R4
+        // BD ACTUAL-POSE ROOM HANDOFF RELEASE V23R6
         [SerializeField] private bool stopAtClosedRoomWalls = true;
         [SerializeField] private float roomBoundaryInset = 0.80f;
         [SerializeField] private float cameraFrustumSafetyInset = 1.20f;
@@ -50,7 +54,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float cameraShakeSmoothing = 18f;
 
         [Header("Angle")]
-        [SerializeField] private float minPitch = 50f;
+        [SerializeField] private float minPitch = 35f;
         [SerializeField] private float maxPitch = 68f;
 
         [Header("Debug")]
@@ -74,6 +78,9 @@ namespace BoredomAndDungeons
         private float nextRoomCacheRefreshAt;
         private int lastRoomResolveFrame = -1;
         private BDMinimapRoom[] cachedRooms = new BDMinimapRoom[0];
+        private BDCameraTransitionDiagnostics transitionDiagnostics;
+        private Camera attachedCamera;
+        private bool handoffWallCastAppliedThisFrame;
 
         public void SetTarget(Transform newTarget)
         {
@@ -102,10 +109,24 @@ namespace BoredomAndDungeons
 
         private void OnEnable()
         {
+            // BD LEGACY SERIALIZED COMPOSITION MIGRATION V23R8
+            // Existing scene instances may still serialize the old 50-degree
+            // minimum pitch. Bound it here so the explicit 40/60 composition
+            // works without regenerating or rewriting the authoritative scene.
+            minPitch = Mathf.Min(minPitch, 35f);
+            targetViewportHeight01 = Mathf.Clamp(
+                targetViewportHeight01,
+                0.30f,
+                0.48f
+            );
+
             smoothedLookPointReady = false;
             lastRoomResolveFrame = -1;
             nextRoomResolveAt = 0f;
             nextRoomCacheRefreshAt = 0f;
+
+            if (Application.isPlaying)
+                EnsureTransitionDiagnostics();
         }
 
         private void Start()
@@ -120,6 +141,8 @@ namespace BoredomAndDungeons
 
         private void LateUpdate()
         {
+            Vector3 cameraPositionBeforeFollow = transform.position;
+            Quaternion cameraRotationBeforeFollow = transform.rotation;
             ResolveTargets();
 
             if (target == null)
@@ -135,11 +158,18 @@ namespace BoredomAndDungeons
 
             if (!lockedBehindTarget)
             {
-                FollowFixedOffset();
+                FollowFixedOffset(
+                    cameraPositionBeforeFollow,
+                    cameraRotationBeforeFollow
+                );
                 return;
             }
 
-            FollowLockedBehind(lastForward);
+            FollowLockedBehind(
+                lastForward,
+                cameraPositionBeforeFollow,
+                cameraRotationBeforeFollow
+            );
         }
 
 
@@ -267,7 +297,10 @@ namespace BoredomAndDungeons
         }
 
 
-        private void FollowLockedBehind(Vector3 forward)
+        private void FollowLockedBehind(
+            Vector3 forward,
+            Vector3 cameraPositionBeforeFollow,
+            Quaternion cameraRotationBeforeFollow)
         {
             if (forward.sqrMagnitude < 0.001f)
                 forward = Vector3.forward;
@@ -278,15 +311,16 @@ namespace BoredomAndDungeons
             Vector3 targetPosition = target.position;
             ResolveCurrentCameraRoom(targetPosition);
             Vector3 shakeOffset = ResolvePlanarCameraShake();
+            handoffWallCastAppliedThisFrame = false;
 
-            Vector3 desiredPosition =
+            Vector3 rawDesiredPosition =
                 targetPosition -
                 forward * distanceBehind +
                 Vector3.up * height +
                 shakeOffset;
-            desiredPosition = ResolveRoomBoundaryConstrainedPosition(
+            Vector3 desiredPosition = ResolveRoomBoundaryConstrainedPosition(
                 targetPosition,
-                desiredPosition,
+                rawDesiredPosition,
                 true
             );
 
@@ -301,13 +335,13 @@ namespace BoredomAndDungeons
                 false
             );
 
-            Vector3 desiredLookPoint =
+            Vector3 rawDesiredLookPoint =
                 targetPosition +
                 forward *
                 (lookAhead + Mathf.Max(0f, extraForwardCompositionLookAhead));
-            desiredLookPoint = ResolveRoomBoundaryConstrainedLookPoint(
+            Vector3 desiredLookPoint = ResolveRoomBoundaryConstrainedLookPoint(
                 targetPosition,
-                desiredLookPoint
+                rawDesiredLookPoint
             );
             Vector3 lookPoint = ResolveSmoothedLookPoint(
                 targetPosition,
@@ -319,10 +353,9 @@ namespace BoredomAndDungeons
                 Vector3.up
             );
             Vector3 euler = desiredRotation.eulerAngles;
-            euler.x = Mathf.Clamp(
-                NormalizePitch(euler.x),
-                minPitch,
-                maxPitch
+            euler.x = ResolveScreenCompositionPitch(
+                targetPosition,
+                finalPosition
             );
             euler.z = 0f;
             desiredRotation = Quaternion.Euler(euler);
@@ -335,20 +368,44 @@ namespace BoredomAndDungeons
 
             // Apply one final room-safe pose after all smoothing and shake.
             transform.SetPositionAndRotation(finalPosition, finalRotation);
+            TryCompleteRoomHandoffAfterFinalPose(
+                targetPosition,
+                finalPosition,
+                lookPoint
+            );
+
+            CaptureTransitionDiagnostics(
+                "locked-behind",
+                cameraPositionBeforeFollow,
+                cameraRotationBeforeFollow,
+                targetPosition,
+                rawDesiredPosition,
+                desiredPosition,
+                blendedPosition,
+                finalPosition,
+                rawDesiredLookPoint,
+                desiredLookPoint,
+                lookPoint,
+                desiredRotation,
+                finalRotation
+            );
         }
 
 
 
-        private void FollowFixedOffset()
+        private void FollowFixedOffset(
+            Vector3 cameraPositionBeforeFollow,
+            Quaternion cameraRotationBeforeFollow)
         {
             Vector3 targetPosition = target.position;
             ResolveCurrentCameraRoom(targetPosition);
             Vector3 offset = new Vector3(0f, height, -distanceBehind);
-            Vector3 desiredPosition =
+            handoffWallCastAppliedThisFrame = false;
+            Vector3 rawDesiredPosition =
                 targetPosition + offset + ResolvePlanarCameraShake();
-            desiredPosition = ResolveRoomBoundaryConstrainedPosition(
+            Vector3 desiredPosition = ResolveRoomBoundaryConstrainedPosition(
                 targetPosition,
-                desiredPosition,
+                rawDesiredPosition,
                 true
             );
             Vector3 blended = Vector3.Lerp(
@@ -362,9 +419,11 @@ namespace BoredomAndDungeons
                 false
             );
 
+            Vector3 rawDesiredLookPoint =
+                targetPosition + Vector3.up * 0.5f;
             Vector3 desiredLookPoint = ResolveRoomBoundaryConstrainedLookPoint(
                 targetPosition,
-                targetPosition + Vector3.up * 0.5f
+                rawDesiredLookPoint
             );
             Vector3 lookPoint = ResolveSmoothedLookPoint(
                 targetPosition,
@@ -383,6 +442,27 @@ namespace BoredomAndDungeons
                 )
             );
             cameraState = "fixed room-contained fallback";
+            TryCompleteRoomHandoffAfterFinalPose(
+                targetPosition,
+                finalPosition,
+                lookPoint
+            );
+
+            CaptureTransitionDiagnostics(
+                "fixed-offset",
+                cameraPositionBeforeFollow,
+                cameraRotationBeforeFollow,
+                targetPosition,
+                rawDesiredPosition,
+                desiredPosition,
+                blended,
+                finalPosition,
+                rawDesiredLookPoint,
+                desiredLookPoint,
+                lookPoint,
+                desiredRotation,
+                transform.rotation
+            );
         }
 
         // BD PLANAR COMBAT SHAKE V23
@@ -456,7 +536,62 @@ namespace BoredomAndDungeons
             );
             smoothedLookPoint = lookPoint;
             smoothedLookPointReady = true;
-            transform.rotation = Quaternion.LookRotation(lookPoint - transform.position, Vector3.up);
+            Quaternion snappedRotation = Quaternion.LookRotation(
+                lookPoint - transform.position,
+                Vector3.up
+            );
+            Vector3 snappedEuler = snappedRotation.eulerAngles;
+            snappedEuler.x = ResolveScreenCompositionPitch(
+                target.position,
+                transform.position
+            );
+            snappedEuler.z = 0f;
+            transform.rotation = Quaternion.Euler(snappedEuler);
+        }
+
+        private float ResolveScreenCompositionPitch(
+            Vector3 targetPosition,
+            Vector3 cameraPosition)
+        {
+            Vector3 delta = targetPosition - cameraPosition;
+            float horizontalDistance = new Vector2(
+                delta.x,
+                delta.z
+            ).magnitude;
+
+            if (horizontalDistance < 0.01f)
+                return Mathf.Clamp(minPitch, 1f, maxPitch);
+
+            float targetDownPitch = Mathf.Atan2(
+                cameraPosition.y - targetPosition.y,
+                horizontalDistance
+            ) * Mathf.Rad2Deg;
+
+            Camera cameraComponent = attachedCamera;
+            if (cameraComponent == null)
+                cameraComponent = GetComponent<Camera>();
+
+            float verticalFov = cameraComponent != null &&
+                                !cameraComponent.orthographic
+                ? cameraComponent.fieldOfView
+                : 58f;
+
+            float viewportY = Mathf.Clamp(
+                targetViewportHeight01,
+                0.30f,
+                0.48f
+            );
+            float normalizedScreenY = viewportY * 2f - 1f;
+            float targetAngleFromCenter = Mathf.Atan(
+                normalizedScreenY *
+                Mathf.Tan(verticalFov * 0.5f * Mathf.Deg2Rad)
+            ) * Mathf.Rad2Deg;
+
+            return Mathf.Clamp(
+                targetDownPitch + targetAngleFromCenter,
+                minPitch,
+                maxPitch
+            );
         }
 
         private Vector3 ResolveRoomBoundaryConstrainedPosition(
@@ -469,11 +604,6 @@ namespace BoredomAndDungeons
 
             ResolveCurrentCameraRoom(targetPosition);
             float safeInset = ResolveStableCameraSafetyInset();
-            TryCompleteRoomHandoff(
-                targetPosition,
-                desiredPosition,
-                safeInset
-            );
             desiredPosition = ClampPointToClosedRoomBounds(
                 desiredPosition,
                 safeInset
@@ -510,6 +640,7 @@ namespace BoredomAndDungeons
                     desiredPosition =
                         castOrigin + castDelta.normalized * allowedDistance;
                     cameraState = "handoff wall cast containment";
+                    handoffWallCastAppliedThisFrame = true;
                 }
             }
 
@@ -687,10 +818,13 @@ namespace BoredomAndDungeons
         }
 
 
-        private void TryCompleteRoomHandoff(
+        // The previous-room union is released from the actual final pose,
+        // never from the unsmoothed desired position. This prevents the next
+        // frame from clamping the camera body or look point into the new room.
+        private void TryCompleteRoomHandoffAfterFinalPose(
             Vector3 targetPosition,
-            Vector3 desiredCameraPosition,
-            float inset)
+            Vector3 actualCameraPosition,
+            Vector3 actualLookPoint)
         {
             if (!roomHandoffActive || currentCameraRoom == null)
                 return;
@@ -709,15 +843,23 @@ namespace BoredomAndDungeons
 
             if (!IsPointInsideRoomBounds(
                     currentCameraRoom,
-                    desiredCameraPosition,
-                    inset))
+                    actualCameraPosition,
+                    ResolveStableCameraSafetyInset()))
+            {
+                return;
+            }
+
+            if (!IsPointInsideRoomBounds(
+                    currentCameraRoom,
+                    actualLookPoint,
+                    Mathf.Max(0.05f, roomBoundaryInset)))
             {
                 return;
             }
 
             roomHandoffActive = false;
             previousCameraRoom = null;
-            cameraState = "completed union room handoff";
+            cameraState = "completed actual-pose room handoff";
         }
 
         private static bool IsInsideRoomInterior(
@@ -863,6 +1005,81 @@ namespace BoredomAndDungeons
                 pitch -= 360f;
 
             return pitch;
+        }
+
+        private void EnsureTransitionDiagnostics()
+        {
+            if (transitionDiagnostics == null)
+                transitionDiagnostics =
+                    GetComponent<BDCameraTransitionDiagnostics>();
+
+            if (transitionDiagnostics == null)
+                transitionDiagnostics =
+                    gameObject.AddComponent<BDCameraTransitionDiagnostics>();
+
+            if (attachedCamera == null)
+                attachedCamera = GetComponent<Camera>();
+        }
+
+        private void CaptureTransitionDiagnostics(
+            string mode,
+            Vector3 cameraPositionBeforeFollow,
+            Quaternion cameraRotationBeforeFollow,
+            Vector3 targetPosition,
+            Vector3 rawDesiredPosition,
+            Vector3 containedDesiredPosition,
+            Vector3 blendedPosition,
+            Vector3 finalPosition,
+            Vector3 rawDesiredLookPoint,
+            Vector3 containedDesiredLookPoint,
+            Vector3 finalLookPoint,
+            Quaternion desiredRotation,
+            Quaternion finalRotation)
+        {
+            if (!Application.isPlaying)
+                return;
+
+            EnsureTransitionDiagnostics();
+
+            if (transitionDiagnostics == null ||
+                !transitionDiagnostics.IsRecording)
+            {
+                return;
+            }
+
+            transitionDiagnostics.Capture(
+                new BDCameraTransitionSample
+                {
+                    Mode = mode,
+                    CameraState = cameraState,
+                    Target = target,
+                    CurrentRoom = currentCameraRoom,
+                    PreviousRoom = previousCameraRoom,
+                    RoomHandoffActive = roomHandoffActive,
+                    HandoffWallCastApplied =
+                        handoffWallCastAppliedThisFrame,
+                    CameraPositionBeforeFollow =
+                        cameraPositionBeforeFollow,
+                    CameraRotationBeforeFollow =
+                        cameraRotationBeforeFollow,
+                    TargetPosition = targetPosition,
+                    RawDesiredCameraPosition = rawDesiredPosition,
+                    ContainedDesiredCameraPosition =
+                        containedDesiredPosition,
+                    BlendedCameraPosition = blendedPosition,
+                    FinalCameraPosition = finalPosition,
+                    RawDesiredLookPoint = rawDesiredLookPoint,
+                    ContainedDesiredLookPoint =
+                        containedDesiredLookPoint,
+                    FinalLookPoint = finalLookPoint,
+                    DesiredRotation = desiredRotation,
+                    FinalRotation = finalRotation,
+                    FieldOfView =
+                        attachedCamera != null
+                            ? attachedCamera.fieldOfView
+                            : 0f
+                }
+            );
         }
 
         private void OnGUI()

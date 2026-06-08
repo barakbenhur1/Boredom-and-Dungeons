@@ -125,8 +125,12 @@ namespace BoredomAndDungeons
 
         private void TryHit()
         {
-            if (didHit || target == null)
+            if (didHit ||
+                target == null ||
+                BDGrapplingHookPullState.IsContactAttackSuppressed(transform))
+            {
                 return;
+            }
 
             bool hitAnything = false;
 
@@ -155,7 +159,12 @@ namespace BoredomAndDungeons
             transform.rotation = Quaternion.Slerp(transform.rotation, rot, 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime));
         }
 
-        private void OnDied(BDHealth dead) => Destroy(gameObject, 0.1f);
+        private void OnDied(BDHealth dead)
+        {
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
+        }
 
         private void OnDestroy()
         {

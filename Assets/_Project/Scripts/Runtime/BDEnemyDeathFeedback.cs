@@ -31,6 +31,8 @@ namespace BoredomAndDungeons
 
             handled = true;
 
+            BDCharacterDeathAnimation.PlayEnemyDeath(deadHealth);
+
             if (spawnDeathBurst)
                 BDDeathBurstVisual.Spawn(transform.position);
 

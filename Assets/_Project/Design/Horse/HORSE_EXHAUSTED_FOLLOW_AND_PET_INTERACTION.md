@@ -132,6 +132,14 @@ Releasing after the threshold must not also trigger the short-press animation.
 - the button may remain hidden during active combat to avoid accidental interaction and control clutter;
 - zero-health exhausted follow is a navigation safety behavior, not a healing mechanic.
 
+## Mounted pet state
+
+- Petting while mounted is allowed only while fully stationary.
+- The normal Pet key remains active, but no Pet icon/card or pointer button is shown.
+- Mounted Pet uses a small rider lean and horse response rather than the on-foot face-to-face pose.
+- Moving, dismounting, hazard recovery, nearby combat, damage, pause, or death cancels the interaction.
+- Healing is never available while mounted; horse healing remains an on-foot proximity interaction.
+
 ## 8. QA requirements
 
 ### Exhausted follow
@@ -148,7 +156,9 @@ Releasing after the threshold must not also trigger the short-press animation.
 
 ### Pet interaction
 
-- verify button appears only within valid range and on foot;
+- verify the prompt/button appears only within valid range and on foot;
+- verify mounted stationary Pet works from its key without any Pet prompt/button;
+- verify mounted movement disables Pet and mounted states never allow Heal;
 - verify short press triggers only player-pets-horse;
 - verify long press triggers only horse-nuzzles-player;
 - verify release after threshold does not fire both actions;
@@ -169,8 +179,12 @@ Releasing after the threshold must not also trigger the short-press animation.
 - Movement uses the existing horse hazard filter. A safe fallback near the player is attempted only after the horse remains stuck while still far away.
 - Normal horse, flee, mount, jump, and combat control are explicitly locked while exhausted follow or Pet owns movement.
 - Short press and long press are mutually exclusive. The long-press threshold remains `0.65s`.
-- Horse interaction cues use a fixed non-overlapping stack above the horse HUD: healing occupies the lower-left screen-relative slot and Pet occupies the higher-right screen-relative slot. Both use a small toward-camera depth offset and separate sorting orders, and may never cover the horse name/health bar or one another. The amber Pet cue shows long-press progress and changes to `PETTING` during the interaction.
-- When key rebinding is implemented, every keyboard label in this interaction must read the live binding display string instead of a hard-coded `P` or `F`.
+- `BDHorseContextActionPrompts` owns one compact screen-space action row near the horse instead of separate floating Heal and Pet symbols. The row shows a distinct keycap, action symbol, and clear label for every currently valid action.
+- On foot near the horse the row may show `MOUNT`, conditional `HOLD HEAL`, and `PET`/`HOLD PET`/`PETTING`.
+- Mounted and stationary shows only `DISMOUNT`; Pet remains key-usable without a prompt and Heal is disabled.
+- Mounted and moving shows no row; Dismount remains key-usable while Pet and Heal are disabled.
+- Legacy standalone Heal/Pet indicators suppress themselves whenever the unified prompt owner is present, so the horse HUD and action cues cannot overlap or duplicate.
+- Every keyboard label reads the active input value exposed by the owning gameplay component. New bindings must never be represented by a second hard-coded UI source.
 - Pet interaction temporarily disables player movement/combat input, restores the exact previous enabled states, and emergency-cancels on serious damage, invalid separation, death, or hazard recovery.
 - Neither Pet nor exhausted follow calls healing, damage, maximum-health, score, collectible, or progression APIs.
 - The prototype scene installer serializes the component; runtime repair remains an idempotent fallback for older scenes.

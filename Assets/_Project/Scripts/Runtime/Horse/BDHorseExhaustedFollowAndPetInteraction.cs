@@ -65,6 +65,7 @@ namespace BoredomAndDungeons
         private float petHoldStartedAt = -999f;
         private Coroutine petRoutine;
         private bool petInteractionActive;
+        private bool mountedPetInteraction;
         private bool emergencyCancelRequested;
 
         private bool fleeStateCaptured;
@@ -118,10 +119,11 @@ namespace BoredomAndDungeons
             if (!Application.isPlaying)
                 return;
 
-            if (GetComponent<BDHorsePetAvailabilityIndicator>() != null)
-                return;
-
-            gameObject.AddComponent<BDHorsePetAvailabilityIndicator>();
+            // BD UNIFIED HORSE CONTEXT PROMPTS V23R8
+            // Mount, dismount, heal, and pet share one compact prompt row.
+            // Do not create the obsolete independent world-space Pet cue.
+            if (GetComponent<BDHorseContextActionPrompts>() == null)
+                gameObject.AddComponent<BDHorseContextActionPrompts>();
         }
 
         private void OnEnable()
@@ -495,14 +497,20 @@ namespace BoredomAndDungeons
         private IEnumerator PetInteractionRoutine(bool horseNuzzlesPlayer)
         {
             petInteractionActive = true;
+            mountedPetInteraction =
+                horseController != null &&
+                horseController.IsMounted &&
+                horseController.IsMountedStationary;
             emergencyCancelRequested = false;
             StopExhaustedFollow();
             SuppressFleeComponents();
 
             AcquireHorseExternalControl(
-                horseNuzzlesPlayer
-                    ? "horse nuzzles player"
-                    : "player pets horse"
+                mountedPetInteraction
+                    ? "mounted stationary rider pets horse"
+                    : horseNuzzlesPlayer
+                        ? "horse nuzzles player"
+                        : "player pets horse"
             );
 
             CaptureAndDisablePlayerControls();
@@ -523,8 +531,14 @@ namespace BoredomAndDungeons
                 elapsed += Mathf.Max(0f, Time.unscaledDeltaTime);
                 float progress = Mathf.Clamp01(elapsed / duration);
 
-                FaceInteractionPair();
-                AnimatePetVisuals(horseNuzzlesPlayer, progress);
+                if (!mountedPetInteraction)
+                    FaceInteractionPair();
+
+                AnimatePetVisuals(
+                    horseNuzzlesPlayer,
+                    progress,
+                    mountedPetInteraction
+                );
                 yield return null;
             }
 
@@ -534,6 +548,7 @@ namespace BoredomAndDungeons
             RestoreFleeComponents();
 
             petInteractionActive = false;
+            mountedPetInteraction = false;
             emergencyCancelRequested = false;
             petRoutine = null;
         }
@@ -547,8 +562,21 @@ namespace BoredomAndDungeons
                 return true;
             }
 
-            if (Vector3.Distance(player.position, transform.position) >
-                Mathf.Max(petInteractionRange, petEmergencyCancelRange))
+            if (mountedPetInteraction)
+            {
+                if (horseController == null ||
+                    !horseController.IsMounted ||
+                    !horseController.IsMountedStationary)
+                {
+                    return true;
+                }
+            }
+            else if (Vector3.Distance(
+                         player.position,
+                         transform.position) >
+                     Mathf.Max(
+                         petInteractionRange,
+                         petEmergencyCancelRange))
             {
                 return true;
             }
@@ -679,14 +707,19 @@ namespace BoredomAndDungeons
 
         private void AnimatePetVisuals(
             bool horseNuzzlesPlayer,
-            float progress)
+            float progress,
+            bool mounted)
         {
             float wave = Mathf.Sin(progress * Mathf.PI);
 
             if (horseVisual != null)
             {
-                Quaternion motion =
-                    horseNuzzlesPlayer
+                Quaternion motion = mounted
+                    ? Quaternion.Euler(
+                        2.5f * wave,
+                        0f,
+                        -2.0f * wave)
+                    : horseNuzzlesPlayer
                         ? Quaternion.Euler(
                             8f * wave,
                             -10f * wave,
@@ -702,8 +735,12 @@ namespace BoredomAndDungeons
 
             if (playerVisual != null)
             {
-                Quaternion motion =
-                    horseNuzzlesPlayer
+                Quaternion motion = mounted
+                    ? Quaternion.Euler(
+                        8f * wave,
+                        0f,
+                        -6f * wave)
+                    : horseNuzzlesPlayer
                         ? Quaternion.Euler(
                             -5f * wave,
                             0f,
@@ -718,6 +755,7 @@ namespace BoredomAndDungeons
             }
         }
 
+        // BD MOUNTED STATIONARY PET WITHOUT PROMPT V23R9
         private bool CanOfferPetInteraction()
         {
             if (petInteractionActive ||
@@ -728,20 +766,34 @@ namespace BoredomAndDungeons
                 return false;
             }
 
-            if (horseController.IsMounted ||
-                (horseController.IsExternallyControlled &&
-                 !exhaustedFollowActive))
+            bool mountedStationary =
+                horseController.IsMounted &&
+                horseController.IsMountedStationary;
+
+            if (horseController.IsMounted &&
+                !mountedStationary)
             {
                 return false;
             }
 
-            if (Vector3.Distance(player.position, transform.position) >
+            if (!mountedStationary &&
+                horseController.IsExternallyControlled &&
+                !exhaustedFollowActive)
+            {
+                return false;
+            }
+
+            if (!mountedStationary &&
+                Vector3.Distance(
+                    player.position,
+                    transform.position) >
                 Mathf.Max(0.25f, petInteractionRange))
             {
                 return false;
             }
 
-            if (playerController != null &&
+            if (!mountedStationary &&
+                playerController != null &&
                 (!playerController.enabled ||
                  playerController.IsDodging))
             {
@@ -749,7 +801,8 @@ namespace BoredomAndDungeons
             }
 
             if (playerCombat != null &&
-                (!playerCombat.enabled ||
+                ((!mountedStationary &&
+                  !playerCombat.enabled) ||
                  playerCombat.IsChargingRangedShot ||
                  playerCombat.IsLightAttackHoldPending))
             {
@@ -766,7 +819,8 @@ namespace BoredomAndDungeons
             if (HasNearbyLivingEnemy())
                 return false;
 
-            return HasClearInteractionLine();
+            return mountedStationary ||
+                   HasClearInteractionLine();
         }
 
         private bool HasNearbyLivingEnemy()
@@ -1052,6 +1106,14 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
+            // Mounted stationary Pet remains bound to the normal key but has
+            // no icon or pointer button by design.
+            if (horseController != null &&
+                horseController.IsMounted)
+            {
+                return;
+            }
+
             if (!petAvailable &&
                 !petHoldActive &&
                 !petInteractionActive)

@@ -24,13 +24,14 @@ namespace BoredomAndDungeons
 
         [Header("Jump")]
         [SerializeField] private float windupDuration = 0.72f;
-        [SerializeField] private float jumpDuration = 0.48f;
+        [SerializeField] private float jumpDuration = 0.62f;
         [SerializeField] private float recoveryDuration = 1.25f;
         [SerializeField] private float jumpCooldown = 4.1f;
         [SerializeField] private float jumpArcHeight = 1.8f;
         [SerializeField] private float landingBehindOffset = 1.55f;
         [SerializeField] private float landingLeadOffset = 0.85f;
-        [SerializeField] private float maxLandingDistance = 8.5f;
+        [SerializeField] private float maxLandingDistance = 7.2f;
+        [SerializeField] private float landingPlayerClearance = 2.20f;
         [SerializeField] private float landingDamage = 18f;
         [SerializeField] private float landingHitRadius = 1.28f;
 
@@ -58,6 +59,12 @@ namespace BoredomAndDungeons
         private Vector3 jumpEnd;
         private float jumpElapsed;
         private bool didDamage;
+
+        public bool IsPerformingAuthoredJump =>
+            state == State.Windup ||
+            state == State.Jumping ||
+            (state == State.Recover &&
+             stateTimer > recoveryDuration - 0.16f);
 
         private void Awake()
         {
@@ -108,7 +115,9 @@ namespace BoredomAndDungeons
 
 
             if (hitStaggerReceiver != null && hitStaggerReceiver.ShouldPauseEnemyBrain())
-                return;TickJumper();
+                return;
+
+            TickJumper();
         }
 
         private void TickJumper()
@@ -188,8 +197,6 @@ namespace BoredomAndDungeons
                     break;
 
                 case State.Recover:
-                    groundStick?.ForceSnapNow();
-
                     RotateToward(direction);
                     stateTimer -= Time.deltaTime;
 
@@ -220,11 +227,13 @@ namespace BoredomAndDungeons
 
             Vector3[] candidates =
             {
-                target.position - playerForward * landingBehindOffset,
-                target.position + directionToTarget * landingLeadOffset,
+                // Prefer the near side and side lanes. Crossing through the
+                // player to the far side is the final fallback only.
                 target.position - directionToTarget * fallbackBackLandingOffset,
                 target.position + playerRight * fallbackSideLandingOffset,
-                target.position - playerRight * fallbackSideLandingOffset
+                target.position - playerRight * fallbackSideLandingOffset,
+                target.position - playerForward * landingBehindOffset,
+                target.position + directionToTarget * landingLeadOffset
             };
 
             foreach (Vector3 candidate in candidates)
@@ -248,7 +257,24 @@ namespace BoredomAndDungeons
             if (fromEnemy.magnitude > maxLandingDistance)
                 flatCandidate = transform.position + fromEnemy.normalized * maxLandingDistance;
 
+            Vector3 fromPlayer = flatCandidate - target.position;
+            fromPlayer.y = 0f;
+            if (fromPlayer.magnitude < landingPlayerClearance)
+            {
+                landing = transform.position;
+                return false;
+            }
+
             if (!TrySnapCandidateToGround(flatCandidate, out Vector3 grounded))
+            {
+                landing = transform.position;
+                return false;
+            }
+
+            if (BDHazardVolume.TryFindUnsafeVolume(
+                    grounded,
+                    controller.radius + 0.20f,
+                    out _))
             {
                 landing = transform.position;
                 return false;
@@ -291,8 +317,12 @@ namespace BoredomAndDungeons
                 if (hit.normal.y < 0.65f)
                     continue;
 
-                grounded = hit.point;
-                grounded.y += Mathf.Max(controller.height * 0.5f, controller.radius) + 0.02f;
+                grounded =
+                    BDSafeEnemyPlacement.ResolveRootPositionForGround(
+                        hit.point,
+                        transform,
+                        controller
+                    );
                 return true;
             }
 
@@ -367,12 +397,17 @@ namespace BoredomAndDungeons
             Vector3 next = flat + Vector3.up * arc;
             Vector3 delta = next - transform.position;
 
-            controller.Move(FilterMoveByHitStagger(delta));
+            Vector3 jumpMove = hitStaggerReceiver != null
+                ? hitStaggerReceiver.FilterMove(delta)
+                : delta;
+            controller.Move(jumpMove);
             RotateToward(jumpEnd - transform.position);
             TryLandingDamage(false);
 
             if (t >= 1f)
             {
+                Vector3 finalCorrection = jumpEnd - transform.position;
+                controller.Move(finalCorrection);
                 TryLandingDamage(true);
                 groundStick?.ForceSnapNow();
                 stateTimer = recoveryDuration;
@@ -382,8 +417,12 @@ namespace BoredomAndDungeons
 
         private void TryLandingDamage(bool force)
         {
-            if (didDamage || target == null)
+            if (didDamage ||
+                target == null ||
+                BDGrapplingHookPullState.IsContactAttackSuppressed(transform))
+            {
                 return;
+            }
 
             float distance = Vector3.Distance(transform.position, target.position);
             float allowed = force ? landingHitRadius * 1.15f : landingHitRadius;
@@ -393,8 +432,10 @@ namespace BoredomAndDungeons
 
             BDHealth targetHealth = target.GetComponent<BDHealth>();
             if (targetHealth != null)
+            {
                 ShowAttackTelegraphBeforeDamage(false);
                 targetHealth.ApplyDamage(landingDamage);
+            }
 
             BDHorseDamageUtility.TryDamageHorseNear(transform.position, landingHitRadius, landingDamage, transform);
 
@@ -416,7 +457,12 @@ namespace BoredomAndDungeons
             );
         }
 
-        private void OnDied(BDHealth dead) => Destroy(gameObject, 0.1f);
+        private void OnDied(BDHealth dead)
+        {
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
+        }
 
         private void OnDestroy()
         {

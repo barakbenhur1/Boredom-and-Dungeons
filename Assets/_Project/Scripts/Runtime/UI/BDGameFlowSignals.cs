@@ -23,7 +23,7 @@ namespace BoredomAndDungeons
                 return false;
             }
 
-            return flow.HandlePlayerDeath();
+            return flow.HandlePlayerDeath(health);
         }
 
         public static void BeginResultSequence()

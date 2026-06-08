@@ -5,22 +5,22 @@ namespace BoredomAndDungeons
 {
     public static class BDParrySystem
     {
+        private enum ParryPhase
+        {
+            None,
+            Anticipation,
+            Frozen,
+            Recovery
+        }
+
         private sealed class Runner : MonoBehaviour
         {
             private GUIStyle titleStyle;
             private GUIStyle subtitleStyle;
             private Texture2D whiteTexture;
 
-            private void Update()
-            {
-                Tick();
-            }
-
-            private void OnGUI()
-            {
-                DrawOverlay(ref titleStyle, ref subtitleStyle, ref whiteTexture);
-            }
-
+            private void Update() => Tick();
+            private void OnGUI() => DrawOverlay(ref titleStyle, ref subtitleStyle, ref whiteTexture);
             private void OnDestroy()
             {
                 if (whiteTexture != null)
@@ -47,21 +47,29 @@ namespace BoredomAndDungeons
         private static readonly List<AnimatorState> FrozenAnimators = new List<AnimatorState>(64);
         private static readonly List<ParticleSystem> PausedParticles = new List<ParticleSystem>(64);
 
+        private const float AnticipationDuration = 0.085f;
+        private const float RecoveryDuration = 0.24f;
+
         private static Runner runner;
         private static Transform activePlayer;
         private static Transform activeAttacker;
-        private static float freezeEndsAtUnscaled;
-        private static float flashEndsAtUnscaled;
+        private static ParryPhase phase;
+        private static float effectStartedAtUnscaled;
+        private static float anticipationEndsAtUnscaled;
         private static float freezeStartedAtUnscaled;
+        private static float freezeEndsAtUnscaled;
+        private static float recoveryStartedAtUnscaled;
+        private static float recoveryEndsAtUnscaled;
+        private static float flashEndsAtUnscaled;
         private static float freezeDuration;
         private static bool heavyParry;
         private static bool active;
 
         public static bool IsActive => active;
-        public static float Remaining => active ? Mathf.Max(0f, freezeEndsAtUnscaled - Time.unscaledTime) : 0f;
-        public static float Progress01 => !active || freezeDuration <= 0f
+        public static float Remaining => active ? Mathf.Max(0f, recoveryEndsAtUnscaled - Time.unscaledTime) : 0f;
+        public static float Progress01 => !active || recoveryEndsAtUnscaled <= effectStartedAtUnscaled
             ? 1f
-            : Mathf.Clamp01((Time.unscaledTime - freezeStartedAtUnscaled) / freezeDuration);
+            : Mathf.Clamp01((Time.unscaledTime - effectStartedAtUnscaled) / (recoveryEndsAtUnscaled - effectStartedAtUnscaled));
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -76,46 +84,56 @@ namespace BoredomAndDungeons
                 return;
 
             EnsureRunner();
-
-            if (active)
-                RestoreFrozenWorld();
+            RestoreFrozenWorld();
+            BDMeleeSlashArcVisual.ClearAllActive();
+            BDPlayerAirborneAttackAnimation.CancelAllActive();
 
             activePlayer = player;
             activeAttacker = attacker;
             heavyParry = heavy;
             freezeDuration = Mathf.Max(0.10f, duration);
-            freezeStartedAtUnscaled = Time.unscaledTime;
+            effectStartedAtUnscaled = Time.unscaledTime;
+            anticipationEndsAtUnscaled = effectStartedAtUnscaled + AnticipationDuration;
+            freezeStartedAtUnscaled = anticipationEndsAtUnscaled;
             freezeEndsAtUnscaled = freezeStartedAtUnscaled + freezeDuration;
-            flashEndsAtUnscaled = freezeStartedAtUnscaled + 0.20f;
+            recoveryStartedAtUnscaled = freezeEndsAtUnscaled;
+            recoveryEndsAtUnscaled = recoveryStartedAtUnscaled + RecoveryDuration;
+            flashEndsAtUnscaled = effectStartedAtUnscaled + 0.18f;
+            phase = ParryPhase.Anticipation;
             active = true;
 
-            // BD PARRY RING VISUAL REDESIGN FIX
-            SpawnParryBurst(player.position + Vector3.up * 0.95f, heavy);
+            // BD PROFESSIONAL PARRY ANTICIPATION FREEZE RECOVERY V23R10
+            SpawnParryBurst(player, heavy, release: false);
+            BDGameFeelAudio.PlayParryCue();
 
-            BDPlayerParryState state =
-                player.GetComponent<BDPlayerParryState>();
-
+            BDPlayerParryState state = player.GetComponent<BDPlayerParryState>();
             BDParryTimeRingVisual.Spawn(
                 player,
-                freezeDuration,
+                AnticipationDuration + freezeDuration + RecoveryDuration,
                 heavy,
                 state != null && state.HasExtendedFreeze
             );
 
-            FreezeWorldExceptPlayer(player);
-            BDGameFeelEvents.RequestCameraShake(heavy ? 0.38f : 0.26f, 0.18f);
+            BDGameFeelEvents.RequestCameraShake(heavy ? 0.30f : 0.22f, 0.11f);
         }
 
         public static void Reset()
         {
             RestoreFrozenWorld();
+            BDMeleeSlashArcVisual.ClearAllActive();
+            BDPlayerAirborneAttackAnimation.CancelAllActive();
             active = false;
+            phase = ParryPhase.None;
             activePlayer = null;
             activeAttacker = null;
-            freezeEndsAtUnscaled = 0f;
+            effectStartedAtUnscaled = 0f;
+            anticipationEndsAtUnscaled = 0f;
             freezeStartedAtUnscaled = 0f;
-            freezeDuration = 0f;
+            freezeEndsAtUnscaled = 0f;
+            recoveryStartedAtUnscaled = 0f;
+            recoveryEndsAtUnscaled = 0f;
             flashEndsAtUnscaled = 0f;
+            freezeDuration = 0f;
             heavyParry = false;
         }
 
@@ -124,13 +142,41 @@ namespace BoredomAndDungeons
             if (!active)
                 return;
 
-            if (Time.unscaledTime < freezeEndsAtUnscaled)
-                return;
+            float now = Time.unscaledTime;
 
-            RestoreFrozenWorld();
-            active = false;
-            activePlayer = null;
-            activeAttacker = null;
+            if (phase == ParryPhase.Anticipation && now >= anticipationEndsAtUnscaled)
+            {
+                FreezeWorldExceptPlayer(activePlayer);
+                phase = ParryPhase.Frozen;
+                BDGameFeelAudio.PlayParryLock();
+                BDGameFeelEvents.RequestCameraShake(heavyParry ? 0.40f : 0.28f, 0.16f);
+                return;
+            }
+
+            if (phase == ParryPhase.Frozen && now >= freezeEndsAtUnscaled)
+            {
+                phase = ParryPhase.Recovery;
+                recoveryStartedAtUnscaled = now;
+                recoveryEndsAtUnscaled = now + RecoveryDuration;
+                SpawnParryBurst(activePlayer, heavyParry, release: true);
+                BDGameFeelAudio.PlayParryRelease();
+                return;
+            }
+
+            if (phase == ParryPhase.Recovery)
+            {
+                float t = Mathf.InverseLerp(recoveryStartedAtUnscaled, recoveryEndsAtUnscaled, now);
+                UpdateAnimatorRecovery(Mathf.SmoothStep(0f, 1f, t));
+
+                if (now < recoveryEndsAtUnscaled)
+                    return;
+
+                RestoreFrozenWorld();
+                active = false;
+                phase = ParryPhase.None;
+                activePlayer = null;
+                activeAttacker = null;
+            }
         }
 
         private static void FreezeWorldExceptPlayer(Transform player)
@@ -146,10 +192,8 @@ namespace BoredomAndDungeons
                 MonoBehaviour behaviour = behaviours[i];
                 if (behaviour == null || !behaviour.enabled)
                     continue;
-
                 if (ShouldRemainActive(behaviour.transform, player, behaviour))
                     continue;
-
                 behaviour.enabled = false;
                 DisabledBehaviours.Add(behaviour);
             }
@@ -160,7 +204,6 @@ namespace BoredomAndDungeons
                 Rigidbody body = bodies[i];
                 if (body == null || IsInHierarchy(body.transform, player))
                     continue;
-
                 FrozenRigidbodies.Add(new RigidbodyState
                 {
                     Body = body,
@@ -168,7 +211,6 @@ namespace BoredomAndDungeons
                     AngularVelocity = body.angularVelocity,
                     WasKinematic = body.isKinematic
                 });
-
                 body.linearVelocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
                 body.isKinematic = true;
@@ -180,7 +222,6 @@ namespace BoredomAndDungeons
                 Animator animator = animators[i];
                 if (animator == null || IsInHierarchy(animator.transform, player))
                     continue;
-
                 FrozenAnimators.Add(new AnimatorState { Animator = animator, Speed = animator.speed });
                 animator.speed = 0f;
             }
@@ -191,9 +232,18 @@ namespace BoredomAndDungeons
                 ParticleSystem particle = particles[i];
                 if (particle == null || IsInHierarchy(particle.transform, player) || !particle.isPlaying)
                     continue;
-
                 particle.Pause(withChildren: true);
                 PausedParticles.Add(particle);
+            }
+        }
+
+        private static void UpdateAnimatorRecovery(float blend)
+        {
+            for (int i = 0; i < FrozenAnimators.Count; i++)
+            {
+                AnimatorState state = FrozenAnimators[i];
+                if (state.Animator != null)
+                    state.Animator.speed = state.Speed * blend;
             }
         }
 
@@ -212,7 +262,6 @@ namespace BoredomAndDungeons
                 RigidbodyState state = FrozenRigidbodies[i];
                 if (state.Body == null)
                     continue;
-
                 state.Body.isKinematic = state.WasKinematic;
                 if (!state.WasKinematic)
                 {
@@ -243,7 +292,6 @@ namespace BoredomAndDungeons
         {
             if (behaviour == runner)
                 return true;
-
             if (IsInHierarchy(candidate, player))
                 return true;
 
@@ -254,7 +302,6 @@ namespace BoredomAndDungeons
                 if (camera != null && IsInHierarchy(candidate, camera.transform))
                     return true;
             }
-
             return false;
         }
 
@@ -262,20 +309,21 @@ namespace BoredomAndDungeons
         {
             if (candidate == null || root == null)
                 return false;
-
             return candidate == root || candidate.IsChildOf(root) || root.IsChildOf(candidate);
         }
 
-        private static void SpawnParryBurst(Vector3 position, bool heavy)
+        private static void SpawnParryBurst(Transform player, bool heavy, bool release)
         {
-            GameObject root = new GameObject("BD_Parry_Burst");
-            root.transform.position = position;
+            if (player == null)
+                return;
 
-            int count = heavy ? 18 : 14;
-            float radius = heavy ? 1.2f : 0.95f;
-            Color color = heavy
-                ? new Color(1f, 0.68f, 0.12f, 1f)
-                : new Color(0.35f, 0.92f, 1f, 1f);
+            GameObject root = new GameObject(release ? "BD_Parry_Release_Burst" : "BD_Parry_Anticipation_Burst");
+            root.transform.SetParent(player, false);
+            root.transform.localPosition = Vector3.up * 0.95f;
+
+            int count = heavy ? 20 : 16;
+            float radius = release ? (heavy ? 1.55f : 1.25f) : (heavy ? 1.10f : 0.88f);
+            Color color = heavy ? new Color(1f, 0.68f, 0.12f, 1f) : new Color(0.35f, 0.92f, 1f, 1f);
 
             for (int i = 0; i < count; i++)
             {
@@ -285,12 +333,9 @@ namespace BoredomAndDungeons
                 mote.name = "BD_Parry_Mote";
                 mote.transform.SetParent(root.transform, false);
                 mote.transform.localPosition = direction * radius;
-                mote.transform.localScale = Vector3.one * (heavy ? 0.16f : 0.12f);
-
+                mote.transform.localScale = Vector3.one * (heavy ? 0.15f : 0.11f);
                 Collider collider = mote.GetComponent<Collider>();
-                if (collider != null)
-                    Object.Destroy(collider);
-
+                if (collider != null) Object.Destroy(collider);
                 Renderer renderer = mote.GetComponent<Renderer>();
                 if (renderer != null)
                 {
@@ -300,18 +345,18 @@ namespace BoredomAndDungeons
                     if (material.HasProperty("_EmissionColor"))
                     {
                         material.EnableKeyword("_EMISSION");
-                        material.SetColor("_EmissionColor", color * 3f);
+                        material.SetColor("_EmissionColor", color * (release ? 4.2f : 3.2f));
                     }
                 }
             }
 
-            root.AddComponent<BDParryBurstLifetime>();
+            BDParryBurstLifetime life = root.AddComponent<BDParryBurstLifetime>();
+            life.Configure(release ? 0.36f : 0.24f, release ? 2.25f : 1.75f);
         }
 
         private static void DrawOverlay(ref GUIStyle titleStyle, ref GUIStyle subtitleStyle, ref Texture2D whiteTexture)
         {
-            bool flashActive = Time.unscaledTime < flashEndsAtUnscaled;
-            if (!active && !flashActive)
+            if (!active || !BDGameplayUiVisibility.IsGameplayHudVisible)
                 return;
 
             if (whiteTexture == null)
@@ -323,56 +368,45 @@ namespace BoredomAndDungeons
 
             if (titleStyle == null)
             {
-                titleStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 38,
-                    fontStyle = FontStyle.Bold
-                };
+                titleStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 38, fontStyle = FontStyle.Bold };
                 titleStyle.normal.textColor = Color.white;
             }
-
             if (subtitleStyle == null)
             {
-                subtitleStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 15,
-                    fontStyle = FontStyle.Bold
-                };
+                subtitleStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 15, fontStyle = FontStyle.Bold };
                 subtitleStyle.normal.textColor = new Color(0.78f, 0.96f, 1f, 1f);
             }
 
+            float recoveryFade = phase == ParryPhase.Recovery
+                ? 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(recoveryStartedAtUnscaled, recoveryEndsAtUnscaled, Time.unscaledTime))
+                : 1f;
+            float anticipationPulse = phase == ParryPhase.Anticipation
+                ? Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(effectStartedAtUnscaled, anticipationEndsAtUnscaled, Time.unscaledTime))
+                : 1f;
+
             Color previous = GUI.color;
+            GUI.color = new Color(0.035f, 0.11f, 0.19f, 0.18f * recoveryFade);
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), whiteTexture);
 
-            if (active)
+            float border = Mathf.Lerp(14f, 7f, anticipationPulse);
+            Color accent = heavyParry ? new Color(1f, 0.67f, 0.12f, 0.95f) : new Color(0.28f, 0.90f, 1f, 0.95f);
+            accent.a *= recoveryFade;
+            GUI.color = accent;
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, border), whiteTexture);
+            GUI.DrawTexture(new Rect(0f, Screen.height - border, Screen.width, border), whiteTexture);
+            GUI.DrawTexture(new Rect(0f, 0f, border, Screen.height), whiteTexture);
+            GUI.DrawTexture(new Rect(Screen.width - border, 0f, border, Screen.height), whiteTexture);
+
+            GUI.color = new Color(1f, 1f, 1f, recoveryFade);
+            string title = phase == ParryPhase.Anticipation ? "PERFECT PARRY" : phase == ParryPhase.Recovery ? "TIME RETURNS" : "PARRY";
+            string subtitle = phase == ParryPhase.Anticipation ? "TIME BREAK" : phase == ParryPhase.Recovery ? "MOMENTUM RESTORED" : $"FROZEN MOMENT  {Mathf.Max(0f, freezeEndsAtUnscaled - Time.unscaledTime):0.0}s";
+            GUI.Label(new Rect(0f, Screen.height * 0.12f, Screen.width, 48f), title, titleStyle);
+            GUI.Label(new Rect(0f, Screen.height * 0.12f + 44f, Screen.width, 28f), subtitle, subtitleStyle);
+
+            if (Time.unscaledTime < flashEndsAtUnscaled)
             {
-                GUI.color = new Color(0.05f, 0.14f, 0.24f, 0.20f);
-                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), whiteTexture);
-
-                float border = 9f;
-                GUI.color = new Color(0.28f, 0.90f, 1f, 0.92f);
-                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, border), whiteTexture);
-                GUI.DrawTexture(new Rect(0f, Screen.height - border, Screen.width, border), whiteTexture);
-                GUI.DrawTexture(new Rect(0f, 0f, border, Screen.height), whiteTexture);
-                GUI.DrawTexture(new Rect(Screen.width - border, 0f, border, Screen.height), whiteTexture);
-
-                // The old loading bar was intentionally removed.
-                // Remaining time is now shown by the in-world ring around the player.
-
-                GUI.color = Color.white;
-                GUI.Label(new Rect(0f, Screen.height * 0.12f, Screen.width, 48f), "PARRY", titleStyle);
-                GUI.Label(
-                    new Rect(0f, Screen.height * 0.12f + 44f, Screen.width, 28f),
-                    $"TIME BREAK  {Remaining:0.0}s",
-                    subtitleStyle
-                );
-            }
-
-            if (flashActive)
-            {
-                float alpha = Mathf.Clamp01((flashEndsAtUnscaled - Time.unscaledTime) / 0.20f);
-                GUI.color = new Color(0.70f, 0.96f, 1f, alpha * 0.42f);
+                float alpha = Mathf.Clamp01((flashEndsAtUnscaled - Time.unscaledTime) / 0.18f);
+                GUI.color = new Color(accent.r, accent.g, accent.b, alpha * 0.35f);
                 GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), whiteTexture);
             }
 
@@ -383,7 +417,6 @@ namespace BoredomAndDungeons
         {
             if (!Application.isPlaying || runner != null)
                 return;
-
             GameObject go = new GameObject("BD_Parry_System");
             Object.DontDestroyOnLoad(go);
             runner = go.AddComponent<Runner>();
@@ -397,12 +430,17 @@ namespace BoredomAndDungeons
         [SerializeField] private float expansion = 1.8f;
         private float elapsed;
 
+        public void Configure(float newLifetime, float newExpansion)
+        {
+            lifetime = Mathf.Max(0.05f, newLifetime);
+            expansion = Mathf.Max(1f, newExpansion);
+        }
+
         private void Update()
         {
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / Mathf.Max(0.01f, lifetime));
-            transform.localScale = Vector3.one * Mathf.Lerp(0.7f, expansion, t);
-
+            transform.localScale = Vector3.one * Mathf.Lerp(0.7f, expansion, Mathf.SmoothStep(0f, 1f, t));
             if (elapsed >= lifetime)
                 Destroy(gameObject);
         }

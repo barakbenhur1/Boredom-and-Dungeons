@@ -37,8 +37,11 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
-            if (healthGroup == null)
+            if (!BDGameplayUiVisibility.IsGameplayHudVisible ||
+                healthGroup == null)
+            {
                 return;
+            }
 
             if (showOnlyDuringEncounter && encounter != null)
             {

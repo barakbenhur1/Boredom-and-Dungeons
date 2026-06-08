@@ -9,7 +9,7 @@ namespace BoredomAndDungeons
         [Header("Personal Space")]
         [SerializeField] private float personalRadius = 1.35f;
         [SerializeField] private float separationStrength = 7.5f;
-        [SerializeField] private float maxSeparationSpeed = 3.2f;
+        [SerializeField] private float maxSeparationSpeed = 2.35f;
         [SerializeField] private float checkInterval = 0.035f;
 
         [Header("Role Multipliers")]
@@ -150,7 +150,7 @@ namespace BoredomAndDungeons
             if (magnitude > maxSeparationSpeed)
                 push = push.normalized * maxSeparationSpeed;
 
-            controller.Move(push * Time.deltaTime);
+            controller.Move(BDEnemyHazardNavigation.FilterBrainMotion(this, push * Time.deltaTime));
         }
     }
 }

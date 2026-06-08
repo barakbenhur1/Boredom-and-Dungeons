@@ -37,10 +37,22 @@ namespace BoredomAndDungeons
 
         [Header("Jump")]
         [SerializeField] private float jumpHeight = 1.35f;
+        [SerializeField, Range(1f, 1.35f)] private float jumpTravelMultiplier = 1.10f;
+        [SerializeField] private float jumpTravelBoostDuration = 0.70f;
         [SerializeField] private float gravity = -24f;
 
+        [Header("Wall Jump")]
+        [SerializeField] private float wallContactGraceSeconds = 0.22f;
+        [SerializeField] private float wallJumpHeight = 1.75f;
+        [SerializeField] private float wallJumpHorizontalSpeed = 8.2f;
+        [SerializeField] private float wallJumpHorizontalDuration = 0.48f;
+        [SerializeField, Range(0f, 1f)] private float wallJumpAirControl = 0.28f;
+        [SerializeField] private float wallJumpCooldown = 0.18f;
+        [SerializeField] private float wallJumpSurfaceProbeDistance = 0.38f;
+        [SerializeField] private float wallJumpSurfaceProbeRadius = 0.12f;
+
         [Header("Dodge / Double Tap")]
-        [SerializeField] private float dashDistance = 3.05f;
+        [SerializeField] private float dashDistance = 3.35f;
         [SerializeField] private float dashDuration = 0.12f;
         [SerializeField] private float dashCooldown = 0.32f;
         [SerializeField] private float doubleTapDashWindow = 0.30f;
@@ -62,6 +74,11 @@ namespace BoredomAndDungeons
 
         // BD BOOST API: movement multiplier
         private float boostMoveSpeedMultiplier = 1f;
+        // BD EXPLICIT QUICKSAND SPEED OWNER V23R19D
+        // BDQuicksandStatus pushes one authoritative multiplier here so the
+        // player cannot miss slowdown because the status was resolved through
+        // a different collider/root, and the multiplier is applied only once.
+        private float quicksandMoveSpeedMultiplier = 1f;
 
         private float verticalVelocity;
         private Vector3 dashVelocity;
@@ -71,6 +88,14 @@ namespace BoredomAndDungeons
         private float dodgeInvulnerableUntil;
         private float lastDodgeStartedAt;
         private float lastJumpStartedAt = -999f;
+        private bool lastJumpWasWallJump;
+        private int jumpSequence;
+        private Vector3 lastWallNormal;
+        private float lastWallContactAt = -999f;
+        private float lastWallJumpAt = -999f;
+        private Vector3 wallJumpHorizontalVelocity;
+        private float wallJumpHorizontalTimer;
+        private readonly RaycastHit[] wallJumpProbeHits = new RaycastHit[16];
         private float forcedGapEntryUntil = -999f;
         // BD POST-RECOVERY WALK REENTRY SUPPRESSION V23R3
         private const float PostRecoveryGapEntrySuppressionSeconds = 0.85f;
@@ -122,6 +147,15 @@ namespace BoredomAndDungeons
             }
         }
         public bool IsDashing => dashTimer > 0f;
+        public bool IsGrounded =>
+            characterController != null && characterController.isGrounded;
+        public int JumpSequence => jumpSequence;
+        public bool IsWallJumping => wallJumpHorizontalTimer > 0f;
+        // BD AUTHORITATIVE CONTROLLED-JUMP AIRBORNE STATE V23R19
+        public bool IsAirborneFromControlledJump =>
+            characterController != null &&
+            !characterController.isGrounded &&
+            Time.time - lastJumpStartedAt <= 1.60f;
         // BD ACTIVE GAP ENTRY ONLY V23R2
         public bool IsPostRecoveryGapEntrySuppressed =>
             Time.time < postRecoveryGapEntrySuppressedUntil;
@@ -148,7 +182,23 @@ namespace BoredomAndDungeons
         public bool HasRecentIntentionalGapEntry =>
             HasActiveIntentionalGapEntry;
         public float EffectiveMoveSpeed =>
-            Mathf.Max(0.1f, moveSpeed * boostMoveSpeedMultiplier);
+            Mathf.Max(
+                0.1f,
+                moveSpeed *
+                boostMoveSpeedMultiplier *
+                quicksandMoveSpeedMultiplier
+            );
+        public float QuicksandMoveSpeedMultiplier =>
+            quicksandMoveSpeedMultiplier;
+
+        public void SetQuicksandMovementMultiplier(float multiplier)
+        {
+            quicksandMoveSpeedMultiplier = Mathf.Clamp(
+                multiplier,
+                0.05f,
+                1f
+            );
+        }
 
         public void SetBoostMoveSpeedMultiplier(float multiplier)
         {
@@ -177,6 +227,10 @@ namespace BoredomAndDungeons
             lastMoveInput = Vector2.zero;
             lastDodgeStartedAt = -999f;
             lastJumpStartedAt = -999f;
+            lastJumpWasWallJump = false;
+            wallJumpHorizontalVelocity = Vector3.zero;
+            wallJumpHorizontalTimer = 0f;
+            lastWallContactAt = -999f;
             forcedGapEntryUntil = -999f;
             postRecoveryGapEntrySuppressedUntil =
                 Time.time + PostRecoveryGapEntrySuppressionSeconds;
@@ -264,16 +318,41 @@ namespace BoredomAndDungeons
             ReadDoubleTapDodge();
 
             if (ReadJumpPressed())
-                TryJump();
+                TryJumpOrWallJump();
 
             TickGravity();
             TickDash();
+            TickWallJumpMotion();
 
             Vector3 worldMove = wantsMove ? ToPlayerRelativeMove(moveInput) : Vector3.zero;
             Vector3 horizontalVelocity = SmoothHorizontalVelocity(worldMove, wantsMove);
-            Vector3 velocity = horizontalVelocity + dashVelocity + Vector3.up * verticalVelocity;
+
+            // BD SLIGHTLY LONGER CONTROLLED JUMP TRAVEL V23R19
+            // A normal jump carries held movement a little farther without
+            // becoming a dash. Quicksand filtering still applies afterwards.
+            bool regularJumpTravelBoost =
+                wantsMove &&
+                characterController != null &&
+                !characterController.isGrounded &&
+                !lastJumpWasWallJump &&
+                Time.time - lastJumpStartedAt <=
+                    Mathf.Max(0.10f, jumpTravelBoostDuration);
+            if (regularJumpTravelBoost)
+            {
+                horizontalVelocity *= Mathf.Clamp(
+                    jumpTravelMultiplier,
+                    1f,
+                    1.35f
+                );
+            }
+
+            if (wallJumpHorizontalTimer > 0f)
+                horizontalVelocity *= Mathf.Clamp01(wallJumpAirControl);
+            Vector3 velocity = horizontalVelocity + wallJumpHorizontalVelocity + dashVelocity + Vector3.up * verticalVelocity;
             Vector3 requestedMotion =
                 velocity * Time.deltaTime;
+            // Player quicksand slowdown is already part of EffectiveMoveSpeed.
+            // Do not multiply horizontal motion a second time here.
 
             Vector3 safeMotion =
                 BDHazardVolume.FilterPlayerMotion(
@@ -818,13 +897,219 @@ namespace BoredomAndDungeons
             verticalVelocity += gravity * Time.deltaTime;
         }
 
-        private void TryJump()
+        private void TryJumpOrWallJump()
         {
-            if (!characterController.isGrounded)
+            if (characterController != null && characterController.isGrounded)
+            {
+                jumpSequence++;
+                lastJumpStartedAt = Time.time;
+                lastJumpWasWallJump = false;
+                verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 return;
+            }
 
+            bool cooldownReady =
+                Time.time - lastWallJumpAt >=
+                Mathf.Max(0.05f, wallJumpCooldown);
+
+            if (!cooldownReady ||
+                !TryResolveWallJumpNormal(out Vector3 awayFromWall))
+            {
+                return;
+            }
+
+            awayFromWall.y = 0f;
+            if (awayFromWall.sqrMagnitude < 0.001f)
+                return;
+            awayFromWall.Normalize();
+
+            jumpSequence++;
             lastJumpStartedAt = Time.time;
-            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            lastJumpWasWallJump = true;
+            lastWallJumpAt = Time.time;
+            verticalVelocity = Mathf.Sqrt(
+                Mathf.Max(jumpHeight, wallJumpHeight) *
+                -2f * gravity
+            );
+            wallJumpHorizontalVelocity =
+                awayFromWall * Mathf.Max(0.1f, wallJumpHorizontalSpeed);
+            wallJumpHorizontalTimer =
+                Mathf.Max(0.08f, wallJumpHorizontalDuration);
+            smoothedHorizontalVelocity = Vector3.zero;
+
+            lastLookDirection = awayFromWall;
+            targetLookDirection = awayFromWall;
+            smoothedTargetLookDirection = awayFromWall;
+            transform.rotation = Quaternion.LookRotation(
+                awayFromWall,
+                Vector3.up
+            );
+        }
+
+        private void TickWallJumpMotion()
+        {
+            if (wallJumpHorizontalTimer <= 0f)
+            {
+                wallJumpHorizontalVelocity = Vector3.zero;
+                return;
+            }
+
+            wallJumpHorizontalTimer -= Time.deltaTime;
+            float deceleration =
+                Mathf.Max(0.1f, wallJumpHorizontalSpeed) /
+                Mathf.Max(0.08f, wallJumpHorizontalDuration);
+            wallJumpHorizontalVelocity = Vector3.MoveTowards(
+                wallJumpHorizontalVelocity,
+                Vector3.zero,
+                deceleration * Time.deltaTime
+            );
+        }
+
+        // BD ANY SOLID VERTICAL WALL-JUMP SURFACE V23R19
+        // Walls, props, enemies, the horse, and other non-trigger solid bodies
+        // may all provide a valid push-off when their contact face is vertical.
+        private bool TryResolveWallJumpNormal(out Vector3 awayFromSurface)
+        {
+            bool recentWallContact =
+                Time.time - lastWallContactAt <=
+                Mathf.Max(0.05f, wallContactGraceSeconds) &&
+                lastWallNormal.sqrMagnitude > 0.001f;
+
+            if (recentWallContact)
+            {
+                awayFromSurface = lastWallNormal.normalized;
+                return true;
+            }
+
+            return TryProbeWallJumpSurface(out awayFromSurface);
+        }
+
+        private bool TryProbeWallJumpSurface(out Vector3 awayFromSurface)
+        {
+            awayFromSurface = Vector3.zero;
+
+            if (characterController == null ||
+                !characterController.enabled ||
+                characterController.isGrounded)
+            {
+                return false;
+            }
+
+            Vector3 center = characterController.bounds.center;
+            float probeRadius = Mathf.Clamp(
+                wallJumpSurfaceProbeRadius,
+                0.04f,
+                Mathf.Max(0.05f, characterController.radius * 0.55f)
+            );
+            float castDistance =
+                Mathf.Max(0.05f, characterController.radius) +
+                Mathf.Max(0.05f, wallJumpSurfaceProbeDistance);
+
+            Vector3 forward = transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.001f)
+                forward = Vector3.forward;
+            forward.Normalize();
+            Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
+
+            Vector3[] directions =
+            {
+                forward,
+                -forward,
+                right,
+                -right,
+                (forward + right).normalized,
+                (forward - right).normalized,
+                (-forward + right).normalized,
+                (-forward - right).normalized
+            };
+
+            float bestDistance = float.PositiveInfinity;
+            Vector3 bestNormal = Vector3.zero;
+
+            for (int directionIndex = 0;
+                 directionIndex < directions.Length;
+                 directionIndex++)
+            {
+                int hitCount = Physics.SphereCastNonAlloc(
+                    center,
+                    probeRadius,
+                    directions[directionIndex],
+                    wallJumpProbeHits,
+                    castDistance,
+                    ~0,
+                    QueryTriggerInteraction.Ignore
+                );
+
+                for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
+                {
+                    RaycastHit hit = wallJumpProbeHits[hitIndex];
+                    wallJumpProbeHits[hitIndex] = default;
+
+                    if (!IsValidWallJumpSurface(hit.collider, hit.normal) ||
+                        hit.distance >= bestDistance)
+                    {
+                        continue;
+                    }
+
+                    bestDistance = hit.distance;
+                    bestNormal = hit.normal;
+                }
+            }
+
+            bestNormal.y = 0f;
+            if (bestNormal.sqrMagnitude < 0.001f)
+                return false;
+
+            awayFromSurface = bestNormal.normalized;
+            lastWallNormal = awayFromSurface;
+            lastWallContactAt = Time.time;
+            return true;
+        }
+
+        private bool IsValidWallJumpSurface(
+            Collider surface,
+            Vector3 contactNormal)
+        {
+            if (surface == null ||
+                !surface.enabled ||
+                surface.isTrigger)
+            {
+                return false;
+            }
+
+            Transform surfaceTransform = surface.transform;
+            if (surfaceTransform == transform ||
+                surfaceTransform.IsChildOf(transform))
+            {
+                return false;
+            }
+
+            // Only a mostly vertical face is a wall-jump surface. Horizontal
+            // floors, ceilings, ramps, and hazard trigger volumes are rejected.
+            if (Mathf.Abs(contactNormal.y) > 0.35f)
+                return false;
+
+            Vector3 horizontalNormal = contactNormal;
+            horizontalNormal.y = 0f;
+            return horizontalNormal.sqrMagnitude > 0.001f;
+        }
+
+        private void OnControllerColliderHit(
+            ControllerColliderHit hit)
+        {
+            if (hit == null ||
+                characterController == null ||
+                characterController.isGrounded ||
+                !IsValidWallJumpSurface(hit.collider, hit.normal))
+            {
+                return;
+            }
+
+            Vector3 normal = hit.normal;
+            normal.y = 0f;
+            lastWallNormal = normal.normalized;
+            lastWallContactAt = Time.time;
         }
 
         private void TryDash(Vector3 direction, DodgeDirection dodgeDirection)

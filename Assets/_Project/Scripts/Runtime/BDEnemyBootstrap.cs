@@ -25,6 +25,24 @@ namespace BoredomAndDungeons
             if (GetComponent<BDEnemyGroundStick>() == null)
                 gameObject.AddComponent<BDEnemyGroundStick>();
 
+            if (GetComponent<CharacterController>() != null &&
+                GetComponent<BDEnemyMotionStabilizer>() == null)
+            {
+                gameObject.AddComponent<BDEnemyMotionStabilizer>();
+            }
+
+            if (GetComponent<CharacterController>() != null &&
+                GetComponent<BDEnemyHazardNavigation>() == null)
+            {
+                gameObject.AddComponent<BDEnemyHazardNavigation>();
+            }
+
+            if (GetComponent<CharacterController>() != null &&
+                GetComponent<BDEnemyPlacementGuard>() == null)
+            {
+                gameObject.AddComponent<BDEnemyPlacementGuard>();
+            }
+
             if (GetComponent<BDEnemyDeathFeedback>() == null)
                 gameObject.AddComponent<BDEnemyDeathFeedback>();
 

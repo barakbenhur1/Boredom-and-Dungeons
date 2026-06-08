@@ -118,7 +118,7 @@ namespace BoredomAndDungeons
             if (toTarget.magnitude > holdRadius)
             {
                 Vector3 direction = toTarget.normalized;
-                controller.Move(direction * moveSpeed * Time.deltaTime);
+                controller.Move(BDEnemyHazardNavigation.FilterBrainMotion(this, direction * moveSpeed * Time.deltaTime));
                 RotateToward(direction);
                 state = "sprinting to exit";
             }

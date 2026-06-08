@@ -31,6 +31,7 @@ namespace BoredomAndDungeons
             currentHealth = maxHealth;
             EnsureDamageFlashFeedback();
             EnsureEnemyDeathFeedback();
+            EnsureCharacterDeathAnimation();
             EnsureEnemyWorldHealthBar();
             EnsureEnemyAttackTelegraph();
             EnsureEnemyProximityTelegraph();
@@ -141,6 +142,20 @@ namespace BoredomAndDungeons
             gameObject.AddComponent<BDEnemyWorldHealthBar>();
         }
 
+        private void EnsureCharacterDeathAnimation()
+        {
+            if (GetComponent<BDCharacterDeathAnimation>() != null)
+                return;
+
+            if (GetComponent<BDPlayerMarker>() == null &&
+                GetComponent<BDEnemyDeathFeedback>() == null)
+            {
+                return;
+            }
+
+            gameObject.AddComponent<BDCharacterDeathAnimation>();
+        }
+
         private void EnsureEnemyDeathFeedback()
         {
             if (GetComponent<BDEnemyDeathFeedback>() != null)
@@ -195,7 +210,37 @@ namespace BoredomAndDungeons
 
             ApplyResolvedDamage(
                 amount,
-                unavoidable: false
+                unavoidable: false,
+                critical: false
+            );
+        }
+
+        // BD PLAYER SWORD CRITICAL DAMAGE ROUTING V23R15
+        public void ApplyPlayerSwordDamage(
+            float amount,
+            bool critical)
+        {
+            BDHorseHealth bridgedHorseHealth =
+                GetComponent<BDHorseHealth>();
+            if (bridgedHorseHealth != null)
+            {
+                bridgedHorseHealth.ApplyDamage(amount);
+                return;
+            }
+
+            if (ShouldIgnorePlayerDamageDuringRunIntro() || IsDead)
+                return;
+
+            if (TryCancelPlayerDamageWithParry())
+                return;
+
+            if (ShouldIgnoreDamageDuringDodge())
+                return;
+
+            ApplyResolvedDamage(
+                amount,
+                unavoidable: false,
+                critical: critical
             );
         }
 
@@ -214,13 +259,15 @@ namespace BoredomAndDungeons
 
             ApplyResolvedDamage(
                 amount,
-                unavoidable: true
+                unavoidable: true,
+                critical: false
             );
         }
 
         private void ApplyResolvedDamage(
             float amount,
-            bool unavoidable)
+            bool unavoidable,
+            bool critical)
         {
             float damage = Mathf.Abs(amount);
             if (damage <= 0f)
@@ -243,6 +290,13 @@ namespace BoredomAndDungeons
                 );
             }
 
+            // BD ANIMATED PLAYER/ENEMY DAMAGE NUMBERS V23R14
+            BDDamageNumberFeedback.Spawn(
+                this,
+                appliedDamage,
+                critical
+            );
+
             RequestDamageCameraShake();
             HealthChanged?.Invoke(this, currentHealth, maxHealth);
 
@@ -254,11 +308,29 @@ namespace BoredomAndDungeons
             if (currentHealth > 0f)
                 return;
 
+            // BD SYNCHRONOUS LETHAL DEATH PRESENTATION V23R19G
+            // Start the visible pose before any menu, loot, Died callback or
+            // destruction path can hide the player, large enemy or guardian.
+            bool isPlayer = GetComponent<BDPlayerMarker>() != null;
+            BDCombatantRank rank =
+                BDCombatantProfile.ResolveRank(this);
+            float deathAnimationDuration = isPlayer
+                ? BDCharacterDeathAnimation.PlayPlayerDeath(this)
+                : rank != BDCombatantRank.Boss
+                    ? BDCharacterDeathAnimation.PlayEnemyDeath(this)
+                    : 0f;
+
             if (!BDGameFlowSignals.TryHandleDeath(this))
                 Died?.Invoke(this);
 
-            if (destroyOnDeath)
-                Destroy(gameObject);
+            if (destroyOnDeath && !isPlayer)
+            {
+                float delay = Mathf.Max(
+                    deathAnimationDuration,
+                    BDCharacterDeathAnimation.GetEnemyDeathDuration(this)
+                ) + 0.10f;
+                Destroy(gameObject, Mathf.Max(0.10f, delay));
+            }
         }
 
         private void NotifyMountedRiderHitForBuck()

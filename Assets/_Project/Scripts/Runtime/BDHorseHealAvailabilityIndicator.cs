@@ -13,11 +13,12 @@ namespace BoredomAndDungeons
         [SerializeField] private bool hideWhileMounted = true;
 
         [Header("Layout")]
-        [SerializeField] private float heightOffset = 3.95f;
-        [SerializeField] private float horizontalOffset = -1.15f;
-        [SerializeField] private float pulseScale = 0.09f;
-        [SerializeField] private float visualScale = 0.82f;
-        [SerializeField] private float depthOffsetTowardCamera = 0.12f;
+        // BD COMPACT HORSE INTERACTION STACK V23R7
+        [SerializeField] private float heightOffset = 2.96f;
+        [SerializeField] private float horizontalOffset = -0.58f;
+        [SerializeField] private float pulseScale = 0.07f;
+        [SerializeField] private float visualScale = 0.62f;
+        [SerializeField] private float depthOffsetTowardCamera = 0.06f;
         [SerializeField] private float pulseFrequency = 4.2f;
         [SerializeField] private int sortingOrder = 80;
 
@@ -73,6 +74,9 @@ namespace BoredomAndDungeons
 
         private bool ShouldShow()
         {
+            if (GetComponent<BDHorseContextActionPrompts>() != null)
+                return false;
+
             if (horseHealth == null)
                 return false;
 

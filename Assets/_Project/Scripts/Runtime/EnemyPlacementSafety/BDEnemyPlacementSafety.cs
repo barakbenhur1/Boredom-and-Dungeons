@@ -9,6 +9,38 @@ namespace BoredomAndDungeons
     {
         private const int DirectionCount = 16;
 
+        // BD CONTROLLER-CENTER-AWARE GROUND ROOT V23R12
+        public static Vector3 ResolveRootPositionForGround(
+            Vector3 groundPoint,
+            Transform owner,
+            CharacterController controller,
+            float bottomOffset = 0.02f)
+        {
+            if (owner == null || controller == null)
+                return groundPoint;
+
+            float scaleY = Mathf.Max(
+                0.0001f,
+                Mathf.Abs(owner.lossyScale.y)
+            );
+            float centerOffsetY =
+                owner.TransformPoint(controller.center).y -
+                owner.position.y;
+            float halfHeight =
+                Mathf.Max(
+                    controller.height * 0.5f,
+                    controller.radius
+                ) * scaleY;
+
+            Vector3 root = groundPoint;
+            root.y =
+                groundPoint.y +
+                Mathf.Max(0f, bottomOffset) +
+                halfHeight -
+                centerOffsetY;
+            return root;
+        }
+
         public static bool TryFindSafeGroundPosition(
             Vector3 preferred,
             Transform owner,
@@ -248,9 +280,7 @@ namespace BoredomAndDungeons
     public sealed class BDEnemyPlacementGuard : MonoBehaviour
     {
         [SerializeField] private float spawnSearchRadius = 5.5f;
-        [SerializeField] private float landingSearchRadius = 4.5f;
         [SerializeField] private float playerClearanceMargin = 0.7f;
-        [SerializeField] private float descendingThresholdPerFrame = 0.025f;
 
         private CharacterController controller;
         private BDHealth health;
@@ -262,6 +292,10 @@ namespace BoredomAndDungeons
         private IEnumerator Start()
         {
             ResolveReferences();
+
+            // Validate before the first visible gameplay frame, then repeat
+            // after one frame in case scene construction settled late.
+            ValidateSpawn();
             previousPosition = transform.position;
             previousGrounded = IsGrounded();
 
@@ -283,7 +317,6 @@ namespace BoredomAndDungeons
             ResolveReferences();
 
             if (!initialized ||
-                player == null ||
                 health == null ||
                 health.IsDead)
             {
@@ -292,22 +325,11 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            Vector3 current = transform.position;
-            float verticalDelta = current.y - previousPosition.y;
-            bool grounded = IsGrounded();
-            bool justLanded = !previousGrounded && grounded;
-            bool descending =
-                verticalDelta <= -Mathf.Abs(descendingThresholdPerFrame);
-
-            if ((descending || justLanded) && IsTooCloseToPlayer())
-            {
-                Relocate(landingSearchRadius);
-                current = transform.position;
-                grounded = IsGrounded();
-            }
-
-            previousPosition = current;
-            previousGrounded = grounded;
+            // BD SPAWN-ONLY HORIZONTAL RELOCATION V23R12
+            // Runtime landing recovery must never teleport an enemy across the
+            // player. Ground-stick and the motion stabilizer own vertical repair.
+            previousPosition = transform.position;
+            previousGrounded = IsGrounded();
         }
 
         private void ResolveReferences()
@@ -333,18 +355,20 @@ namespace BoredomAndDungeons
             ResolveDimensions(out float radius, out float height);
             float minimumDistance = ResolveMinimumDistance(radius);
 
-            if (BDSafeEnemyPlacement.IsPositionSafe(
+            if (!BDSafeEnemyPlacement.TryFindSafeGroundPosition(
                     transform.position,
                     transform,
                     player,
                     radius,
                     height,
-                    minimumDistance))
+                    minimumDistance,
+                    spawnSearchRadius,
+                    out Vector3 groundPoint))
             {
                 return;
             }
 
-            Relocate(spawnSearchRadius);
+            ApplyGroundPoint(groundPoint);
         }
 
         private bool IsTooCloseToPlayer()
@@ -393,15 +417,38 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            bool wasEnabled = controller != null && controller.enabled;
+            ApplyGroundPoint(safePosition);
+        }
+
+        private void ApplyGroundPoint(Vector3 groundPoint)
+        {
+            Vector3 rootPosition =
+                BDSafeEnemyPlacement.ResolveRootPositionForGround(
+                    groundPoint,
+                    transform,
+                    controller
+                );
+
+            bool wasEnabled =
+                controller != null && controller.enabled;
 
             if (wasEnabled)
                 controller.enabled = false;
 
-            transform.position = safePosition;
+            transform.position = rootPosition;
 
             if (wasEnabled)
                 controller.enabled = true;
+
+            BDEnemyGroundStick groundStick =
+                GetComponent<BDEnemyGroundStick>();
+            if (groundStick != null)
+                groundStick.ForceSnapNow();
+
+            BDEnemyMotionStabilizer stabilizer =
+                GetComponent<BDEnemyMotionStabilizer>();
+            if (stabilizer != null)
+                stabilizer.AcceptCurrentPositionAsBaseline();
         }
 
         private float ResolveMinimumDistance(float enemyRadius)

@@ -3,15 +3,15 @@
 ## Current development snapshot
 
 ```text
-Status date: 2026-06-07
-Classification: EARLIER / BLOCKING CAMERA TRANSITION REGRESSION
-Active work: C01/C11.RUNTIME.V23R6-DIAGNOSIS
-Current truth: The complete local V23R2-V23R5 Runtime, scene, QA, Codex, governance, and documentation state was committed and merged with current origin/main without losing either side. The synchronized remote checkpoint is merge commit 3af374d839cd8eb917501ce8cc6f8c703cc45474. V23R5 greatly improved first-frame mounted cinematic camera ownership and removed the main entrance-adjacent camera flash. A smaller motion problem remains during ordinary walking and mounted movement: crossing procedural room or node boundaries can subtly change the camera direction, and intermittent framing changes appear as a small zoom pulse or forward/back jump of either the camera, player model, or horse model.
-Unresolved cause: it is not yet proven whether the visible motion comes from room-handoff identity changes, containment correction, camera-target switching, camera boom distance, player or horse gameplay-root movement, animation/model movement, or another transform writer. Rooms and corridors must not be enlarged until instrumentation identifies the real source.
-Verification truth: On the synchronized state, Unity 6000.0.76f1 TEST EVERYTHING passed on 2026-06-07T12:56:12.9858310Z with 0 blockers, 0 warnings, and 0 info items. The user visually confirmed that V23R5 is much better. The remaining node-transition motion is still open, so focused Play Mode diagnosis and the final V23R6 repair remain required.
-Current action: instrument and reproduce the remaining walking and mounted node-transition direction change and apparent zoom/forward-back jump, identify the actual transform or model-motion owner from measured deltas, then implement the smallest evidence-based V23R6 repair.
-Saved feature resume point after the camera and retained focused regression gates pass: C03.23A -> C07.16A -> C07.16 -> C07.17.
-Later work retained without interruption: C12.42 explicit AudioMixer routing for Master, Music, SFX, and Ambience.
+Status date: 2026-06-08
+Classification: EARLIER / BLOCKING AIRBORNE BRANCH + QA REALIGNMENT
+Active work: C01/C03.RUNTIME.V23R19K
+Current truth: Unity compilation succeeds, but the post-V23R19J TEST EVERYTHING run at 2026-06-08T17:07:43.5483780Z reported 10 blockers, 0 warnings and 0 info. Six blockers still require obsolete airborne suppression ownership, one requires outdated Girl wording, and two incorrectly require a resolved compile bug to remain in the open-bug table. Inspection also found one real Runtime defect: `BDPlayerMeleeEnhancer` returns explicit airborne identity, but `BDPlayerCombat` ignored it and always spawned the grounded horizontal arc.
+Implementation truth: V23R19K consumes the explicit identity in the committed combat path and selects exactly one vertical or grounded visual. It realigns the remaining scanners to the active branch, preserves the Boy mounted-hook restriction and future Girl permission, keeps resolved bugs out of the open table, and captures the approved wordless opening-dialogue specification as required future work.
+Verification truth: Package/static checks can run here. Unity compilation, TEST EVERYTHING and focused airborne Play Mode verification must be rerun before V23R19K is closed.
+Current action: install V23R19K, rerun TEST EVERYTHING, then verify airborne Light/Heavy orientation and continue the retained V23R19G/V23R19H Play Mode gates.
+Saved feature resume point after V23R19K and retained gates pass: C03.23A completion review -> C07.16A -> C07.16 -> C07.17.
+Later approved work: C06 merchant shop/run economy, temporary and final C06.META progression, Girl/Father content, reusable wordless character-dialogue and opening “I’m bored.” sequence, gameplay/abilities/map/ambient/UI expansion, rope swinging, climbable vegetation, quicksand swamp, final production animations, and C12.42 audio implementation.
 ```
 
 This file is the only live source for current status, ordering, blockers, verification truth, and the resume point. Durable behavior belongs in the maintained files under `Assets/_Project/Design/`. Git history stores previous states; stale package narratives and duplicate roadmaps are not live documentation.
@@ -28,31 +28,804 @@ This file is the only live source for current status, ordering, blockers, verifi
 8. Run repository hygiene on every handoff and before every commit.
 9. When remote and local both contain valid unique progress, preserve both sides and merge; never reset one side over the other.
 
-# Active blocking work — C01/C11.RUNTIME.V23R6-DIAGNOSIS
 
-## V23R6.1 Node-transition camera and model-motion diagnosis — BLOCKING / ACTIVE
 
-- Preserve the V23R5 first-visible-frame cinematic repair and the V23R4 containment improvements.
-- Do not enlarge rooms, corridors, openings, or regenerate the maze until measurements prove that physical dimensions remain the cause.
-- During walking and mounted movement, record the current room/node identity and every legal handoff start and completion.
-- Record desired camera position, contained position, final camera position, camera-target identity, camera-to-target distance, look point, pitch, yaw, and FOV.
-- Record player and horse gameplay-root transforms separately from visual model and animation transforms.
-- Determine whether the visible forward/back movement belongs to the camera, gameplay root, animated model, target switching, containment correction, or multiple stages.
-- Changing room metadata alone must not rotate the camera.
-- Legal transitions must preserve visual distance, FOV, pitch, yaw response, and stable player/horse screen placement.
-- Implement the smallest evidence-based repair after the responsible stage is identified.
+
+
+
+# Active blocking work — C01/C03.RUNTIME.V23R19K
+
+## V23R19K explicit airborne visual branch and remaining QA realignment — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Consume the `airbornePresentation` identity returned by `BDPlayerMeleeEnhancer` at the real committed melee hit.
+- Spawn exactly one selected attack visual: `BDMeleeSlashArcVisual.SpawnVertical` while airborne, otherwise the normal grounded arc.
+- Do not restore the superseded timing-based `combat.SuppressNextStandardMeleeVisual` call in the enhancer.
+- Realign V23R11, V23R19 and V23R19J scanners to the explicit branch.
+- Validate the future Girl hook wording semantically and keep the current Boy mounted hook disabled.
+- Record V23R19I compile repair in project history rather than forcing a resolved bug into the open table.
+- Capture `OPENING_DIALOGUE_WORDLESS_CHARACTER_VOICE_HE_V1.md` as required future work; no dialogue Runtime, UI or audio is implemented by this package.
+
+## V23R19K acceptance gate
+
+1. Installer and validator pass twice; the second installation writes zero files.
+2. Changed-file fail-safe writes nothing.
+3. Repository hygiene and `git diff --check` pass.
+4. Unity compiles without C# errors.
+5. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+6. A committed grounded Light/Heavy attack creates only its grounded arc.
+7. A committed airborne Light/Heavy attack creates only the selected vertical arc and no horizontal duplicate.
+8. The Boy remains unable to use sword melee or hook while mounted; the future Girl permission remains documentation only.
+9. The opening `I’m bored.` dialogue remains `REQUIRED / LATER / NOT IMPLEMENTED`.
+10. Continue the retained V23R19G/V23R19H focused Play Mode gates after automated PASS.
+
+# Active blocking work — C01.DOCUMENTATION-QA.V23R19J
+
+## V23R19J semantic QA realignment and corrected Girl/Father specification — PARTIAL / SUPERSEDED BY V23R19K
+
+- Record V23R19I as a confirmed compile repair because Unity executed TEST EVERYTHING after installation.
+- Update mounted-intro order QA to use `RestoreMountedIntroControls` after the full-stop hold and before `inputLocked = false`.
+- Validate committed airborne damage/timing in `BDPlayerCombat` and actual airborne visual ownership in `BDPlayerMeleeEnhancer`.
+- Validate mounted target origin through the active `TargetHighlightOrigin` implementation instead of an obsolete marker comment.
+- Validate Battery guardians through `ConfigureEliteGuardian()` plus forced-movement-disabled policy without inserting a new serialized enum value.
+- Restore the valid V23R19B hit-committed hook-pull design contract while preserving the corrected boy/girl mounted-hook rules.
+- Validate the current V23R19G renderer-branch death owner and the corrected V23R19H bug ID.
+- Replace the canonical Girl/Father/meta document with the latest approved correction: Girl is a meta unlock, Father temporarily summons invulnerable Mother for exactly 30 seconds in phases 1–3, phase 4 uses full Mother plus enemy-wave summons, and the temporary meta-points screen remains required future work.
+
+## V23R19J acceptance gate
+
+1. Installer and validator pass twice; the second install writes zero files.
+2. Changed-file fail-safe performs zero writes.
+3. Repository hygiene and `git diff --check` pass.
+4. Unity compiles without restoring the V23R19I API errors.
+5. TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+6. The 15 reported blocker codes/tokens are absent without adding dead Runtime code or reverting active ownership.
+7. Boy mounted hook remains disabled; future Girl mounted hook remains required and not implemented.
+8. No Runtime, scene, prefab, balance or serialization behavior changes in this package.
+9. Continue the retained V23R19G/V23R19H focused Play Mode checks after automated PASS.
+
+# Active blocking work — C01/C03/C05.RUNTIME.V23R19I
+
+## V23R19I forced-movement API compile compatibility — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Restore `BDCombatantProfile.ReceivesForcedMovement` for `BDKnockbackReceiver`.
+- Restore `BDCombatantProfile.CanReceiveForcedMovement(BDHealth)` for `BDPlayerGrapplingHook`.
+- Preserve existing serialized data and `Regular` / `MiniBoss` / `Boss` semantics.
+- Preserve Elite/Battery-guardian forced-movement immunity through their existing explicit profile configuration.
+- Preserve the corrected character rule: the boy cannot use the hook while mounted; the future Girl may.
+- Capture `ROPE_CLIMBING_AND_QUICKSAND_SWAMP_HE_V1.md` as required future work; no traversal or swamp Runtime is implemented here.
+
+## V23R19I acceptance gate
+
+1. Installer and validator pass twice; second install writes zero files.
+2. Changed-file fail-safe performs zero writes.
+3. Repository hygiene and `git diff --check` pass.
+4. Unity compiles with neither CS1061 nor CS0117 for the forced-movement API.
+5. TEST EVERYTHING reports 0 blockers and 0 warnings.
+6. Regular small enemies remain pullable/knockback-capable; Battery guardians, large enemies and bosses preserve their intended immunity.
+7. The boy-mounted-hook correction remains active.
+8. Resume the retained V23R19G/V23R19H Play Mode verification.
+
+# Active blocking work — C01/C03/C04.RUNTIME.V23R19H
+
+## V23R19H character-specific mounted-hook correction — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Correct the misinterpreted requirement: the **boy cannot use the hook while mounted**.
+- While the boy is riding, Light/Heavy sword input and grappling-hook input are blocked without consuming the hook cooldown.
+- Preserve the boy's normal on-foot hook behavior and the existing mounted ranged attack behavior.
+- Record the future Girl character capability: the girl may use the hook while mounted when she is implemented, through character-specific data/capability rather than a global combat switch.
+- Remove obsolete V23R19G QA/text anchors that required mounted hook use for the boy.
+- Preserve all five focused V23R19G visual/run-flow repairs and the canonical open-bug tracker.
+
+## V23R19H acceptance gate
+
+1. Installer and validator pass from either the V23R19F base or an already-installed V23R19G state, and a second install writes zero files.
+2. Repository hygiene and `git diff --check` pass.
+3. Unity compiles and TEST EVERYTHING reports 0 blockers and 0 warnings.
+4. On foot, the boy's short/long Heavy behavior remains unchanged and the hook still launches on a valid hold.
+5. While mounted as the boy, Light/Heavy input launches neither sword melee nor hook and consumes no hook cooldown.
+6. Mounted ranged shooting remains functional.
+7. The future Girl specification explicitly requires mounted hook use through character-specific capability data.
+8. The five retained V23R19G regressions remain open until focused Play Mode verifies them.
+
+# Active blocking work — C01/C03/C04/C05/C11.RUNTIME.V23R19G
+
+## V23R19G airborne, death, abandon, mounted replay, and bug-ledger repair — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Correct the airborne slash from the wrong positive local-X rotation to the selected grounded attack rotated `-90°` around local X, with the same shape/scale language and downward motion in front of the player.
+- Start lethal player/enemy death presentation synchronously at the health owner and animate actual top-level renderer branches, so the spherical player prototype, large enemies and Battery guardians all have visible death motion.
+- Keep the player death view unobscured and wait for the complete pose plus readable hold before opening the menu.
+- Confirmed abandon reloads the current scene into a clean main-menu state instead of drawing the menu over the abandoned run.
+- Reassert the exact current rider, mounted state and mount-point pose throughout the entrance, and never restore the player's walking controller while the horse remains mounted.
+- The original package temporarily enabled mounted hook holds for the boy; this requirement was corrected and superseded by V23R19H.
+- Add and permanently maintain `Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md` on every bug discovery/status/repair/verification/reopen/reclassification.
+
+## V23R19G acceptance gate
+
+1. Package installer and validator pass twice and are idempotent; changed-file fail-safe writes nothing.
+2. Repository hygiene and `git diff --check` pass.
+3. Unity compiles and TEST EVERYTHING reports 0 blockers and 0 warnings.
+4. Air Light and Heavy use the selected grounded arc rotated `-90°` around local X, directly in front and toward the floor, with no horizontal duplicate.
+5. Player lethal damage shows an unmistakable death motion and hold before the menu.
+6. Large enemies and Battery guardians stop gameplay, show death motion, then loot/despawn.
+7. Confirmed abandon reloads to a clean main menu rather than a popup over gameplay.
+8. Abandon -> Start Game keeps the exact player attached to the horse from the first visible intro frame through control release.
+9. Superseded by V23R19H: the boy must not launch sword melee or hook while mounted; on-foot hook behavior remains correct.
+10. Every bug status is synchronized in `OPEN_BUG_TRACKER.md` and `PROJECT_STATUS.md`.
+
+# Active blocking work — C01.DOCUMENTATION-QA.V23R19F
+
+## V23R19F semantic guardian/status QA compatibility — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Replace the obsolete guardian scanner token `spawnRoom.ContainsWorldPosition(player.position, 0f)` with the active V23R19E semantic contract: `TryResolvePlayerRoomFallback`, `spawnRoom.ContainsWorldPosition(`, and `playerTransform.position`.
+- Preserve strict same-room, room-interior, bounded-distance, and clear-path validation.
+- Replace the obsolete V23R9 status phrase `V23R8 automated baseline` with the maintained current phrase `V23R8 automated QA passed`.
+- Do not add dead Runtime code, duplicate local variables, or stale documentation text merely to satisfy scanners.
+- Capture the uploaded gameplay/abilities/map/ambient-world/UI prompt in `Assets/_Project/Design/Runtime/GAMEPLAY_ABILITIES_MAP_AMBIENT_UI_EXPANSION_HE_V1.md` as required future work; no feature in that prompt is marked implemented by this package.
+
+## V23R19F acceptance gate
+
+1. Package installer and validator pass twice and remain idempotent.
+2. Changed-file fail-safe performs zero writes.
+3. Repository hygiene and `git diff --check` pass.
+4. Unity compiles without new errors or warnings.
+5. TEST EVERYTHING no longer reports `GUARDIAN_SAME_ROOM_SAFETY_MISSING`.
+6. TEST EVERYTHING no longer reports `V23R9_PROJECT_STATUS_MISSING`.
+7. V23R19E Runtime and scene behavior remain unchanged.
+8. Continue V23R19E focused Play Mode verification after the automated gate passes.
+
+# Active blocking work — C01/C03/C05/C06/C11/C12.RUNTIME.V23R19E
+
+## V23R19E mounted replay, exact airborne rotation, death presentation, and Battery-guardian spawn — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Clear stale player targeting cache on scene load and resolve the current player through the horse's serialized rider/canonical marker before generic component fallback.
+- Start the entrance through `BeginMountedRunIntro`, snap the rider before the first visible movement frame, keep the unparented rider attached inside every `MoveByExternalControl` frame while the horse controller is disabled, and complete the authoritative mounted state before gameplay control returns.
+- Reuse the exact grounded Light/Heavy slash geometry and rotate it exactly 90 degrees around local X for airborne presentation; body motion remains secondary and minimal.
+- Keep gameplay visible during player death, play a dedicated player death animation, then open the Game Boy menu after the pose is readable.
+- Play enemy death animation before regular-enemy loot and destruction; disable enemy gameplay/collision while the death pose runs.
+- Build Battery guardians inactive, but finish delayed activation from a separate scene runner so collecting/destroying the Battery cannot cancel spawn.
+- Preserve same-room safety and add a bounded line-of-sight player-room fallback for hideout pickup points just outside exact minimap-room bounds.
+- Synchronize merchant hostile/alive/defeated behavior, partial empty-slot refresh, fixed-cost full reroll, exclusive weapon reward, and required open-design meta progression into maintained documents only; those future systems remain not implemented.
+
+## V23R19E acceptance gate
+
+1. Package installer and validator pass twice; changed-file fail-safe performs zero writes.
+2. Repository hygiene and `git diff --check` pass.
+3. Unity compiles and TEST EVERYTHING reports 0 blockers and 0 warnings.
+4. Confirmed abandon -> Start Game shows the exact player attached to the horse from the first visible entrance frame through control release.
+5. Air Light and Air Heavy look exactly like their grounded selected slash identity rotated 90 degrees, remain in front of the player, and do not spawn a second horizontal slash.
+6. Player lethal damage shows the player death pose before the menu appears; input and combat cannot continue during the pose.
+7. Sword, Patrol, Charger, Trap, Ranged, Jumper, and Exit-blocker enemies show death motion before loot/despawn and cannot attack/move during it.
+8. Battery A and Battery B each trigger visible guardians even if the collectible is collected during reveal; guardians chase, attack, take damage, and retain Elite forced-movement immunity.
+9. No guardian can trigger through an adjacent wall; fallback requires the player's containing room, bounded distance, and clear path.
+10. Retained quicksand, hook, mounted hazards, camera, Parry, bomb, menu, and Console gates remain passing.
+
+# Active blocking work — C01/C03/C10/C11.RUNTIME.V23R19D
+
+## V23R19D focused Play Mode regression repair — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Preserve the confirmed fix: jumping with movement input inside quicksand does not respawn a living player.
+- Push the quicksand depth multiplier directly into `BDPlayerController` and apply it exactly once.
+- Present airborne Light/Heavy directly in front of the player as a vertical overhead-to-floor chop with no diagonal body roll.
+- Treat controlled-jump enemy contact/damage as valid airborne movement, not combat floor loss; do not teleport to an old safe point.
+- Require confirmation before abandoning a live run.
+- Resolve and mount the exact active loaded-scene player for abandon -> New Game mounted-intro replay.
+
+## V23R19D acceptance gate
+
+1. Installer/validator pass twice; fail-safe performs zero writes on a changed supported file.
+2. Repository hygiene and `git diff --check` pass.
+3. Unity compiles and TEST EVERYTHING reports 0 blockers and 0 warnings.
+4. Quicksand entry is visibly slower, slowdown increases with sink depth, and leaving restores normal speed.
+5. Air Light/Heavy appear in front, square to facing, and strike downward to the floor without a grounded slash or diagonal body roll.
+6. Jump onto an attacking enemy repeatedly; the player may take damage but never teleports backward to a safe point.
+7. Pause -> Abandon opens confirmation; Cancel/Escape preserves the run; Yes returns to menu.
+8. After confirmed abandon, Start Game shows both horse and player entering together for the full intro.
+9. Retained hook, Battery guardian, mounted hazard, camera, Parry, bomb, enemy-grounding, and Console gates remain passing.
+
+# Active blocking work — C01.DOCUMENTATION-QA.V23R19C
+
+## V23R19C semantic QA compatibility — IMPLEMENTED IN PACKAGE / UNITY RERUN REQUIRED
+
+- Replace the obsolete direct `BDCombatantRank.Regular` hook token with the active centralized contract: `BDEnemyHazardNavigation.IsSmallRegularEnemy` plus `BDCombatantProfile.CanReceiveForcedMovement`.
+- Keep strict validation that a real hook impact applies damage and uses the safe pull-stop contract.
+- Validate committed airborne identity/body animation in `BDPlayerMeleeEnhancer`.
+- Validate the actual vertical slash spawn in its V23R19 owner, `BDPlayerCombat`, rather than requiring that presentation call in the enhancer.
+- Runtime hook, airborne combat, scene, guardians, quicksand, traversal, assets, and balance remain unchanged.
+
+## V23R19C acceptance gate
+
+1. Package installer and validator pass twice and remain idempotent.
+2. Repository hygiene and `git diff --check` pass.
+3. Unity compiles without new errors or warnings.
+4. TEST EVERYTHING no longer reports `C03_23A_GRAPPLING_RUNTIME_MISSING`.
+5. TEST EVERYTHING no longer reports `V23R11_COMMITTED_AIRBORNE_MISSING`.
+6. No runtime code is added merely to satisfy obsolete scanner text.
+7. Continue all V23R19B focused Play Mode verification before marking gameplay complete.
+
+# Active blocking work — C01/C03/C05/C06/C10.RUNTIME.V23R19B
+
+## V23R19B scene-safe traversal, committed hook pull, and Battery-guardian repair — IMPLEMENTED / UNITY UNVERIFIED
+
+- Preserve arbitrary unrelated local scene edits and patch only the approved movement serialization fields.
+- A hook impact on a living canonical small regular enemy commits the pull; helper colliders or a child-health layout cannot downgrade it to damage-only.
+- Oversized, elite, mini-boss, and boss targets remain fixed-damage-only for the hook.
+- Construct collectible guardians inactive with the complete runtime stack and activate the root atomically at the final spawn position.
+- Battery guardians acquire the player, move, attack, receive player damage, show normal feedback, and die normally.
+- Battery guardians use the Elite category and never receive hook pull, knockback, mounted-impact displacement, or small-enemy forced hazard entry.
+
+## V23R19B acceptance gate
+
+1. Installer accepts the supported post-V23R18A and post-V23R18B code/document states without requiring an exact whole-scene hash.
+2. Unrelated scene text and objects remain byte-identical except for the approved movement fields.
+3. Quicksand nonlethal jumping never invokes generic respawn; jump, dodge, and Wall Jump reach match V23R19.
+4. Airborne Light and Heavy use only their explicit airborne presentation.
+5. Hook several Sword, Charger, Patrol, Trap, and Jumper small regular enemies; every real hit pulls the living target into safe sword range.
+6. Hook a Battery guardian; it receives exactly 2 damage and does not move.
+7. Battery guardians visibly chase/attack, expose a valid hit collider, lose HP to Light/Heavy/Spin/Airborne/Ranged attacks, and die normally.
+8. Player melee, explosions, horse impacts, and other knockback paths cannot displace Battery guardians.
+9. Unity compiles and TEST EVERYTHING passes with zero blockers and warnings.
+10. Focused Play Mode results are recorded before marking V23R19B complete.
+
+# Active blocking work — C01/C03/C10.RUNTIME.V23R19
+
+## V23R19.1 Quicksand nonlethal-jump recovery — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Generic ground-exit and combat-grounding recovery are disabled while quicksand owns active/residual sink state.
+- Jumping with movement input cannot teleport a living player to a safe point.
+- Only half-body quicksand failure may apply fall damage and respawn.
+
+## V23R19.2 Traversal reach and universal solid wall jump — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Normal jump held-movement travel is increased by 10% for the controlled jump window.
+- Dodge distance increases from 3.05 to 3.35.
+- Wall-jump horizontal speed/duration increase from 7.1/0.42 to 8.2/0.48.
+- Wall jump accepts any sensible enabled non-trigger solid vertical surface, including enemies and the horse, through contact plus a bounded probe.
+
+## V23R19.3 Dedicated airborne attack identity — IMPLEMENTED / UNITY VISUAL VERIFICATION REQUIRED
+
+- The committed attack explicitly selects grounded or airborne presentation.
+- Airborne Light/Heavy use their dedicated body animation and vertical slash only.
+- The regular horizontal slash is never invoked for that same airborne attack.
+
+## V23R19 acceptance gate
+
+1. Unity compiles without new errors or warnings and TEST EVERYTHING passes.
+2. Jumping and steering inside quicksand never teleports before failure depth.
+3. Quicksand damage, extraction, slowdown and true failure respawn remain correct.
+4. Normal jump and dodge are slightly farther without becoming dash-like or bypassing hazard guards.
+5. Wall jump works from structural walls, hard props, a small enemy and the horse, but not floors/triggers.
+6. Air Light and Air Heavy show only dedicated vertical/body presentation; grounded attacks remain horizontal.
+7. Retained V23R18B mounted-hole/lava ordering and all prior focused gates remain intact.
+
+# Active blocking work — C01/C04/C10/C12.RUNTIME.V23R18B
+
+## V23R18B.1 Mounted hazard dismount-before-damage ordering — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- `BDHorseHazardSafety` captures the rider recovery owner while mounted, then calls `ForceDismountAfterHazardRecovery` before applying horse hazard damage.
+- Horse `DamageBurstTriggered` and `Fainted` callbacks therefore cannot launch the ordinary buck/dismount path while hazard recovery still considers the pair mounted.
+- Horse relocation occurs only after dismount and damage resolution.
+- Mounted hole rider damage/recovery and mounted lava zero-damage rider recovery begin only after the pair is already unmounted.
+
+## V23R18B.2 Exact production-animation token — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- The exact lower-case token `temporary procedural animation is not final release animation` exists in root art direction, the Unity-side visual mirror, and the production-animation requirements.
+- The visible human-facing sentence remains unchanged; the exact scanner token is retained as a non-rendered documentation contract.
+
+## V23R18B.3 Focused regression QA — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- `BDV23R18BMountedHoleAnimationTokenQA` validates the real API owner in `BDHorseController`, exact token coverage, and source ordering from dismount through damage, horse relocation and rider recovery.
+- The scanner uses the active `result.findings` / `BDOneClickQAFinding` API and is integrated into the single TEST EVERYTHING entry point.
+
+## V23R18B acceptance gate
+
+1. Installer and validator pass twice; fail-safe writes nothing on a mismatched base.
+2. Repository hygiene and `git diff --check` pass after package cleanup.
+3. Unity compiles without new project errors or warnings.
+4. TEST EVERYTHING passes without the V23R18A exact-token blocker and without a V23R18B ordering blocker.
+5. Mounted hole force-dismounts before horse damage callbacks and before horse/rider relocation.
+6. Mounted hole still applies configured damage to horse and rider; both finish unmounted at separate legal safe positions.
+7. Mounted lava still damages only the horse; the rider follows the zero-damage recovery arc and both finish unmounted.
+8. A horse faint or damage-burst threshold reached by hazard damage does not start the ordinary buck/dismount presentation.
+9. V23R18A quicksand semantic QA and all retained V23R17 movement/hazard/wall-jump behavior remain intact.
+10. Record real Unity and focused Play Mode results before marking V23R18B PASS.
+
+# Active blocking work — C01/C04/C10/C12.RUNTIME.V23R18A
+
+## V23R18A.1 Production-animation completeness contract — DOCUMENTED / IMPLEMENTATION PROGRAM OPEN
+
+- Every action requiring visible motion must receive a final production-quality animation or an explicitly approved production procedural solution.
+- Coverage includes player, horse, enemies, mini-bosses, bosses, interactions, hazards, destructibles, UI motion and cinematics.
+- Temporary prototype transforms are recorded as animation debt and are not release-complete.
+- The detailed source is `Assets/_Project/Design/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md`.
+
+## V23R18A.2 Horse hole/lava damage ownership — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Unmounted hole/chasm damages the horse and returns it to its latest safe point.
+- Mounted hole/chasm damages horse and rider.
+- Unmounted lava damages the horse and returns it to its latest safe point.
+- Mounted lava damages the horse instead of the rider.
+- Mounted recovery force-dismounts before actor relocation.
+- The rider receives zero lava damage and follows a safe recovery arc to a separated point beside the recovered horse.
+
+## V23R18A.3 V23R13 quicksand semantic-QA compatibility — IMPLEMENTED / UNITY RERUN REQUIRED
+
+- Replace obsolete `TriggerFullSink` with the active player/horse/enemy failure methods.
+- Replace the V23R13 volume marker requirement with the active V23R17 marker.
+- Do not restore obsolete methods or comments merely to satisfy static scanning.
+
+## V23R18A acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles without new project errors or warnings.
+3. TEST EVERYTHING passes without the two stale V23R13 quicksand blockers.
+4. Unmounted horse hole contact applies fall damage and safe recovery.
+5. Mounted horse hole contact applies damage to horse and rider and separates them safely.
+6. Unmounted horse lava contact applies lava damage and safe recovery.
+7. Mounted horse lava contact damages only the horse; the rider loses no HP and both recover unmounted.
+8. Existing quicksand, enemy hazard, mounted impact, wall jump, intro and airborne-attack behavior remains intact.
+9. Production animation requirements are discoverable from root art direction and the documentation index.
+10. Record real results before marking V23R18A PASS.
+
+# Active blocking work — C01/C03/C04/C10.RUNTIME.V23R17
+
+## V23R17.1 Exact quicksand behavior — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Grounded standing and walking sink continuously and slow progressively with depth.
+- Every grounded contact second deals exactly 2 damage.
+- Committed jumps extract a fixed amount; deeper sink requires more jumps.
+- Dodge pauses additional sink and grants no extraction.
+- Half-body depth triggers fall damage and safe respawn.
+
+## V23R17.2 Enemy hazard intent and forced entry — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Enemy brain motion cannot intentionally enter registered hazards.
+- Jumping enemies reject hazard landing candidates.
+- External knockback and mounted impacts may push small regular enemies into hazards.
+- Hole/lava kill eligible small enemies immediately; quicksand sinks and then kills them.
+
+## V23R17.3 Mounted small-enemy impact — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- A moving mounted horse deals 4-10 damage to small regular enemies according to speed and contact directness.
+- Glancing contact is valid at the lower end; a fast square collision reaches 10.
+- Knockback direction follows the actual strike and may deliver the enemy into a hazard.
+- Large enemies, mini-bosses, and bosses are excluded.
+
+## V23R17.4 Wall jump — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Jump pressed during recent airborne wall contact turns the player away and launches a medium upward arc.
+- The launch is not a straight dash and has reduced temporary air control.
+
+## V23R17.5 Carried-forward presentation repairs — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Mounted intro chooses a clear direction rather than fixed right.
+- Air Light and Air Heavy use distinct body-animation timelines in addition to vertical slash presentation.
+
+## V23R17 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles without new errors or warnings and TEST EVERYTHING passes.
+3. Player quicksand matches the documented damage, jump, dodge, depth, slowdown, and recovery contract.
+4. Enemies avoid hazards under brain motion; only valid external force pushes small regular enemies inside.
+5. Hole/lava immediate death and quicksand sink-death work for eligible enemies.
+6. Mounted grazing and direct impacts deal values inside 4-10 and apply correctly directed knockback once per cooldown.
+7. Wall jump turns away from the wall and follows a medium arc.
+8. Intro turn avoids walls/hazards and Air Light/Heavy are visibly distinct from ground attacks and each other.
+9. Record real results before resuming the saved feature sequence.
+
+# Active blocking work — C01/C12.QA.V23R15D-CANONICAL-ROOT-TOKEN
+
+## V23R15D.1 Exact canonical-root phrase compatibility — IMPLEMENTED / UNITY RERUN REQUIRED
+
+- Keep root `ART_DIRECTION.md` as the sole canonical visual source.
+- Keep the asset-side document as the synchronized Unity mirror.
+- Use the exact, semantically correct declaration `Canonical root source: ART_DIRECTION.md`.
+- Do not modify Runtime, combat, hazards, scenes, target presentation, damage systems, or art policy.
+
+## V23R15D acceptance gate
+
+1. Installer and validator pass twice; package text contains no whitespace or merge-marker defects.
+2. The Unity-side mirror contains both `Canonical root source` and `ART_DIRECTION.md`.
+3. Unity compiles and TEST EVERYTHING no longer reports `V23R9_ART_DIRECTION_MIRROR_MISSING`.
+4. Record the real automated result, then continue V23R15 focused combat verification.
+
+# Active blocking work — C01/C12.QA.V23R15C-ART-DIRECTION-MIRROR
+
+## V23R15C.1 Canonical root filename in Unity mirror — IMPLEMENTED / UNITY RERUN REQUIRED
+
+- Preserve the full approved art-direction content and reference board.
+- Keep `ART_DIRECTION.md` as the canonical root source.
+- State the exact root filename inside the Unity-side mirror so humans and automated governance resolve the same authority.
+- Do not copy or fork a second independent design policy.
+- Do not modify Runtime, combat, hazards, target presentation, scenes, or assets.
+
+## V23R15C acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. The Unity-side mirror contains the literal canonical path `ART_DIRECTION.md`.
+3. `ART_DIRECTION.md` remains the root authority and the asset-side document remains a synchronized mirror.
+4. Unity compiles and TEST EVERYTHING no longer reports `V23R9_ART_DIRECTION_MIRROR_MISSING`.
+5. Record the real automated result, then continue V23R15 focused combat verification.
+
+# Active blocking work — C01/C03.QA.RUNTIME.V23R15B-AOE-CRITICAL-SEMANTIC-COMPATIBILITY
+
+## V23R15B.1 Independent critical per AOE target — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Preserve one committed spin spectrum roll so the AOE remains one coherent sword attack.
+- Roll the exact 6% critical chance independently for each unique `BDHealth` hit by the spin.
+- Apply the exact 1.5 multiplier only to the target whose roll succeeds.
+- Duplicate colliders of one enemy do not create extra rolls or damage.
+- Light, heavy, airborne light, and airborne heavy retain one critical roll per committed attack.
+- Projectiles and grappling hook remain fixed damage and cannot enter the sword-critical path.
+
+## V23R15B.2 Semantic QA contract compatibility — IMPLEMENTED / UNITY RERUN REQUIRED
+
+- Validate quicksand through its active class and behavior methods rather than a comment token.
+- Validate the critical-aware damage-number dispatch through the active multiline call and parameters.
+- Validate the art-direction mirror through its canonical-root declaration and path rather than a frozen sentence.
+- Preserve strict QA coverage without adding fake compatibility tokens to Runtime.
+
+## V23R15B acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles with zero errors and TEST EVERYTHING no longer reports the three stale blockers.
+3. Multi-target spin shares one pre-critical spectrum value.
+4. Every unique enemy hit rolls critical independently; one spin can display a normal number on one enemy and a critical fuchsia number on another.
+5. Statistical sampling per AOE target approaches 6% critical frequency.
+6. Duplicate colliders do not create duplicate critical rolls or duplicate damage.
+7. Non-AOE sword attacks retain one critical state per committed attack.
+8. Projectiles and hook remain fixed and never use the critical color.
+9. Record real Unity and Play Mode results before resuming the saved feature sequence.
+
+# Active blocking work — C01.QA.V23R15A-RESULT-API-COMPATIBILITY
+
+## V23R15A.1 Repair scanner integration with maintained QA API — IMPLEMENTED / UNITY RERUN REQUIRED
+
+- Replace nonexistent `result.Blockers` access with `result.findings`.
+- Replace nonexistent `BDOneClickQAIssue` with `BDOneClickQAFinding`.
+- Add findings with `BDOneClickQASeverity.Blocker`, empty asset/object paths, and the existing code/message values.
+- Apply the same maintained pattern to both V23R14 and V23R15 scanners.
+- Do not modify Runtime combat, damage resolution, critical chance, damage-number presentation, scene data, or gameplay assets.
+
+## V23R15A acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Neither scanner contains `result.Blockers` or `BDOneClickQAIssue`.
+3. Both scanners add `BDOneClickQAFinding` instances to `result.findings` with blocker severity.
+4. Unity recompiles without the four reported CS1061/CS0246 errors.
+5. TEST EVERYTHING runs and reports the real automated result.
+6. If automated QA passes, resume V23R15 sword-spectrum, critical-frequency, fixed-projectile, and fixed-hook focused verification.
+
+# Active work — C01/C03/C11.RUNTIME.V23R15
+
+## V23R15.1 Sword damage spectrum — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Light, heavy, airborne light/heavy, and spin roll once per committed attack inside a ±10% spectrum around configured sword damage.
+- Every target hit by one spin shares the same pre-critical spectrum roll; each unique enemy rolls critical independently.
+- Projectiles and grappling hook remain fixed-damage paths and do not use the spectrum resolver.
+
+## V23R15.2 Sword critical attacks — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Eligible player sword attacks have exactly 6% critical chance.
+- Critical damage is exactly 1.5 times the rolled pre-critical sword damage.
+- Critical damage numbers use a dedicated fuchsia/magenta identity.
+- Ranged, hook, bombs, hazards, horse, and enemy attacks cannot use this critical path.
+
+## V23R15.3 Compilation truth — OPEN UNTIL UNITY RERUN
+
+- The previous V23R14 report contained only the aggregate `UNITY_SCRIPT_COMPILATION_FAILED` blocker.
+- V23R15 uses conservative Runtime APIs for the V23R14 presentation additions, but compilation is not marked passed without a new Unity result.
+- If compilation remains blocked, record the exact red Console compiler lines before another code change.
+
+## V23R15 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles with zero errors.
+3. TEST EVERYTHING passes with zero blockers.
+4. Repeated light/heavy/airborne/spin hits show a spectrum rather than one fixed number.
+5. Sampling many eligible attacks approaches 6% critical frequency.
+6. Critical damage is exactly 1.5x the same attack's pre-critical resolved value.
+7. A multi-target spin shares one spectrum roll, while each unique enemy receives an independent critical roll.
+8. Projectiles and hook remain fixed and never use the critical color.
+9. Critical numbers use the dedicated fuchsia color and clean up correctly.
+10. Record real results before resuming the saved feature sequence.
+
+# Active work — C01/C03/C11.RUNTIME.V23R14
+
+## V23R14.1 Animated damage numbers — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Successful player damage displays a coral-red animated world-space value.
+- Successful enemy damage displays an amber-gold animated world-space value.
+- Values pop, rise, settle, fade, stack under rapid hits, and use unscaled time.
+- Zero/blocked/dodged/parried damage does not display a false value.
+- `BDHealth` remains the damage authority; the number system is presentation only.
+
+## V23R14.2 Prototype hazard-label wall visibility — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Hole, lava, quicksand, and future generated test labels hide behind walls and solid blockers.
+- Labels are distance-gated and hidden outside active gameplay HUD state.
+- Existing scene labels are upgraded at runtime; future generated labels receive the visibility component from the installer.
+- Hazard Runtime behavior and obstacle visibility are unchanged.
+
+## V23R14.3 Semantic QA compatibility — IMPLEMENTED / AUTOMATED RERUN REQUIRED
+
+- V23R11 audio QA validates the active complete-coverage mirror instead of a removed phrase.
+- V23R13 quicksand QA validates the current state-owner marker.
+- V23R8 target QA validates the V23R13 silhouette outline rather than removed GUI corner-frame fields.
+
+## V23R14 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles without new warnings or errors.
+3. TEST EVERYTHING passes with zero blockers.
+4. Player damage numbers are red/coral; enemy damage numbers are amber/gold.
+5. Rapid hits stack legibly and every number cleans itself up.
+6. Parry slow motion does not strand damage text.
+7. Hole/lava/quicksand test labels hide behind walls and when distant.
+8. Menus, pause, death, and intro show no combat numbers or prototype labels.
+9. Existing V23R13 and retained regression gates remain passing.
+10. Record real results before resuming the saved feature sequence.
+
+# Active work — C01/C03/C10/C11/C12.RUNTIME.V23R13
+
+## V23R13.1 Complete audio-event direction — COMPLETED AS DOCUMENTATION
+
+- The audio source of truth now covers all gameplay, weapon, impact, movement, horse, hazard, UI, menu, intro, cinematic, ambience, enemy, boss, and future sound events as a minimum non-exclusive matrix.
+- Menu music, Game Boy UI sounds, intro sound design, button feedback, breakables, shots, sword actions, jump/dodge, hole/lava/quicksand, riding, and horse vocalizations are explicitly included.
+- Full authored assets, mixer routing, adaptive states, and mastering remain honestly ordered under C12.42.
+
+## V23R13.2 Playable quicksand — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- `BDHazardType.Quicksand` is implemented and installed as the third prototype hazard.
+- Player and horse movement slow progressively while sinking.
+- A sand surface ring follows the actor; prototype entry/sink/escape audio is provided.
+- Escape before full sink clears gradually.
+- Full player sink deals 12 damage and safe-recovers; horse full sink uses horse-safe recovery without horse damage.
+- The mounted pair is recovered without double rider damage.
+
+## V23R13.3 Constant-size enemy silhouette outline — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- The rectangular GUI corner frame and pulse are removed.
+- One red inverted-hull outline follows the actual enemy mesh shape.
+- Thickness remains constant in pixels and does not grow with distance.
+- Sword, hook, ranged, mounted, line-of-fire, wall, death, and menu rules remain authoritative.
+
+## V23R13.4 Compiler-warning cleanup — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Remove the four reported assigned-but-unused fields from target highlight, Parry, and enemy placement safety.
+
+## V23R13 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles without the four reported CS0414 warnings.
+3. TEST EVERYTHING passes with zero blockers.
+4. Player quicksand entry slows progressively, displays a following ring, clears after escape, and full sink deals 12 damage plus safe recovery.
+5. Horse and mounted quicksand behavior recover safely without repeated or double damage.
+6. Prototype scene contains one hole/chasm, one lava, and one quicksand volume with distinct readable surfaces.
+7. One red silhouette outline follows the real enemy shape at legal melee/hook/projectile ranges on foot and mounted.
+8. Outline thickness remains stable, never becomes a box, never pulses/grows, and never appears through blockers.
+9. Existing V23R12 and retained regression gates remain passing.
+10. Record real results before resuming the saved feature sequence.
+
+# Active work — C01/C03/C04/C05/C11.RUNTIME.V23R12
+
+## V23R12.1 Reliable hook pull and safe contact release — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Resolve and move the actual CharacterController/Rigidbody/combatant root even when `BDHealth` lives on a child.
+- Classify pull size from the body controller/collider, not attack or awareness volumes.
+- Keep large regular enemies, mini-bosses, and bosses damage-only.
+- Stop before player overlap, ground the enemy, accept the new motion baseline, and suppress contact attacks briefly.
+
+## V23R12.2 Mounted highlight and Parry transient cleanup — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Mounted targeting uses a horse-height ranged envelope and may frame the one enemy the current shot would hit.
+- Successful Parry and menu/death reset clear active player slash visuals before time freeze or UI ownership changes.
+
+## V23R12.3 Horse prompt readability — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Raise the unified horse action row.
+- Suppress the legacy action sentence in the horse status presenter whenever the unified row exists.
+- Preserve the approved on-foot/mounted-stationary/mounted-moving action matrix.
+
+## V23R12.4 Enemy spawn, grounding, and teleport repair — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Ground placement converts the sampled surface to the correct CharacterController root.
+- Validate before first visibility and after initialization settles.
+- Continuous safety logic may correct vertical grounding but cannot relocate an active enemy horizontally across the player.
+- Bootstrap, ground stick, jumper landing, hook completion, and the motion stabilizer share the root-aware contract.
+
+## V23R12.5 Integrated Game Boy menu/death shell — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Draw the shell and content in the same `BDMainMenuFlow.OnGUI` pass.
+- Remove the shell's independent GUI owner that could cover content or race the plain menu.
+- Clear transient Parry/slash presentation before menu/death display.
+
+## V23R12 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles and TEST EVERYTHING passes with zero blockers.
+3. Hook pulls multiple small regular enemy archetypes consistently, stops before contact, and causes no immediate contact damage.
+4. Mounted ranged aim displays one truthful target frame at legal projectile distance.
+5. Parry slow time contains no frozen slash visual.
+6. Horse action row is visibly separated from status/name/health text.
+7. Repeated room combat produces no floating, floor-spawned, stuck-air, impossible-speed, or opposite-side teleporting enemy.
+8. Main menu, death, pause, and settings show readable content inside one Game Boy shell.
+9. Record the real result before resuming the saved feature sequence.
+
+# Active work — C01/C03/C05/C12.RUNTIME.V23R11
+
+## V23R11.1 Music and audio direction — COMPLETED AS DOCUMENTATION
+
+- Root `AUDIO_DIRECTION.md` is canonical and the asset-side music/audio document is its synchronized mirror.
+- Exploration is cheerful nature/fantasy; standard combat, mini-boss, and boss increase rhythmic intensity in distinct tiers.
+- Boss music uses fantasy-heavy-rock energy with sparse one-word vocal stabs.
+- Mother uses an escalating child-song motif; phase 4 adds a synchronized tick-tock stem.
+- Mixer groups, snapshots, transition timing, headroom, true peak, loudness, ducking, asset metadata, and QA are defined.
+- Full runtime implementation remains later under C12.42.
+
+## V23R11.2 Trap-layer bomb explosion and friendly fire — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+- Bombs now create visible core/ring/spark explosion feedback and generated impact audio.
+- Player and horse damage routing is preserved.
+- Other enemies take one damage event per `BDHealth`; multiple colliders cannot multiply damage.
+- The bomb owner is excluded; enemy hits receive flash, stagger, radial knockback, and existing motion stabilization.
+
+## V23R11.3 Airborne light/heavy animation repair — IMPLEMENTED / UNITY VISUAL VERIFICATION REQUIRED
+
+- The initial press of hold-capable light/heavy input no longer decides the airborne visual.
+- The actual committed attack resolves landing damage and presentation.
+- Light and heavy reuse the grounded mesh/color/width identity in a vertical high-to-low plane.
+- The horizontal slash is suppressed for the committed airborne attack.
+- **Implementation checklist status: DONE in code and documentation; Play Mode PASS still required.**
+
+## V23R11 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles and TEST EVERYTHING passes with zero blockers.
+3. Bomb explosion is clearly visible and audible.
+4. Player and horse receive expected bomb damage; at least two nearby enemies each receive one friendly-fire hit; owner is immune.
+5. Jump + light shows one vertical light slash matching normal light identity.
+6. Jump + heavy short press shows one vertical heavy slash matching normal heavy identity.
+7. No horizontal duplicate or early hold-press slash appears.
+8. Ground attacks, spin hold, hook hold, cooldowns, damage, camera, menu, horse, targeting, and enemy stability remain passing.
+9. Record real results and resume the saved feature sequence.
+
+# Retained work — C01/C03/C05/C11/C12.RUNTIME.V23R10
+
+## V23R10.1 Menu/death UI ownership and Game Boy shell — PREPARED
+
+- Root `ART_DIRECTION.md` becomes the canonical visual source.
+- `BDGameplayUiVisibility` prevents gameplay HUD and feedback from leaking into menu/death/pause/settings states.
+- `BDGameBoyMenuShell` frames the existing readable menu and changes after true Mother victory.
+
+## V23R10.2 Hook, Parry, target frame, and enemy stability — PREPARED
+
+- Hook range becomes 13.5, hit radius 0.52, and configured release distance 2.35 with CharacterController-safe separation and post-release stagger.
+- Parry uses anticipation, frozen moment, and gradual recovery; its ring and bursts remain parented to the player.
+- A loaded ranged projectile may identify the one distant on-screen enemy its actual path would hit.
+- `BDEnemyMotionStabilizer`, capped brain motion, and safer jumper landings prevent invalid teleport/overshoot/floating behavior.
+
+## V23R10 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles and TEST EVERYTHING passes with zero blockers.
+3. Menu/death/pause/settings contain no gameplay UI leakage and visibly use the Game Boy shell.
+4. Hook stops small enemies before contact but inside sword range, with no immediate overlap damage.
+5. Parry has a clear pre-freeze cue, player-following ring, and gradual release.
+6. One truthful ranged target frame is visible at distance when a shot would hit.
+7. Repeated combat shows no enemy teleport through the player, impossible speed burst, or persistent floating state.
+8. Record focused results and resume the saved feature sequence.
+
+# Active current work — C04/C11/C12.RUNTIME.V23R9
+
+## V23R9.1 Horse interaction state matrix — PREPARED
+
+- On foot near the horse: show Mount, Pet, and conditional Heal prompts with active bindings.
+- Mounted and stationary: show Dismount only; Pet remains available by key without a prompt; Heal is disabled.
+- Mounted and moving: show no horse action row; Dismount remains available by key; Pet and Heal are disabled.
+- Mounting terminates and clears any active on-foot healing transaction.
+- Mounted Pet uses a restrained saddle interaction and cancels when stationary conditions or safety conditions fail.
+
+## V23R9.2 Art direction and interface conventions — PREPARED
+
+- Establish 65% colorful wonder / 35% mystery and danger.
+- Use polished stylized-fantasy geometry with hand-painted color design and restrained PBR materials.
+- Preserve clear silhouettes, magical ambient atmosphere, child-centered coolness, and gameplay readability.
+- Use clear fantasy headings, readable body typography, and Game Boy-inspired modern-resolution icons.
+- Frame menus inside an original Game Boy-like in-world device.
+- After true victory over Mother, persistently restore/awaken the device shell, magical inlays, boot treatment, and palette for the post-victory layer.
+- Use one responsive visual language with platform-specific desktop and landscape-mobile layouts.
+- Preserve the compact user-approved reference board without copying its brands or exact layouts.
+
+## V23R9 acceptance gate
+
+1. Installer and validator pass twice; repository hygiene and `git diff --check` pass.
+2. Unity compiles and TEST EVERYTHING passes with the V23R9 domain scan.
+3. On foot: Mount/Pet prompts appear when legal; Heal appears only when needed.
+4. Mounted stationary: Dismount prompt appears, Pet works without a prompt, Heal never works.
+5. Mounted moving: no row appears, Dismount works, Pet and Heal do not.
+6. Mounted Pet cancels safely and restores control/visual state.
+7. V23R8 and V23R6 retained regressions remain passing.
+8. The art-direction document, reference board, index, architecture, decisions, QA, and status remain synchronized.
+9. Record real results, then resume `C07.16A -> C07.16 -> C07.17`.
+
+# Retained implemented work — C01/C03/C04/C11.RUNTIME.V23R8
+
+- Explicit viewport-Y 0.40 camera composition is implemented.
+- Unified horse prompt presentation and coherent mounted mouse steering are implemented; V23R9 refines the exact mounted visibility/availability matrix.
+- Heavy-hold grappling hook C03.23A is implemented.
+- Airborne light/heavy vertical presentation is implemented.
+- One-target in-range red corner highlight is implemented.
+- TEST EVERYTHING generated at `2026-06-07T17:56:35.5590780Z` passed with 0 blockers, 0 warnings, and 0 info.
+- Focused Play Mode truth remains recorded separately from automated QA.
+# Active blocking work — C01.QA.V23R6B-PROJECT-STATUS-TOKEN
+
+## V23R6B.1 Restore canonical saved-feature token — BLOCKING / PREPARED
+
+- Preserve V23R6 Runtime, diagnostics, scene work, Codex-agent work, and V23R6A semantic camera QA unchanged.
+- Replace the non-canonical snapshot wording `Saved resume point` with the required stable contract `Saved feature resume point`.
+- Record the real latest TEST EVERYTHING result: two documentation blockers, zero warnings, and zero info items.
+- Treat the two reported blocker codes as one documentation cause, not as a Runtime or camera failure.
+
+## V23R6B acceptance gate
+
+1. Installer and validator pass twice on the exact post-V23R6A status file.
+2. Only `PROJECT_STATUS.md` changes.
+3. Repository hygiene and `git diff --check` pass after package cleanup.
+4. TEST EVERYTHING no longer reports `DOCUMENTATION_CONTRACT_TOKEN_MISSING` or `PROJECT_STATUS_CURRENT_ACTIVE_WORK_MISSING` for `Saved feature resume point`.
+5. Record the new automated result, then resume V23R6 focused walking and mounted transition verification.
+
+# Active blocking work — C01.QA.V23R6A-SEMANTIC-COMPATIBILITY
+
+## V23R6A.1 Replace stale V20 handoff-state anchor — BLOCKING / PREPARED
+
+- Preserve the installed V23R6 Runtime, diagnostics, scene, Codex-agent changes, and authored map geometry unchanged.
+- Remove the obsolete V20 requirement for the state string `completed union room handoff`.
+- Require the active semantic Runtime anchors: `BD ACTUAL-POSE ROOM HANDOFF RELEASE V23R6`, `TryCompleteRoomHandoffAfterFinalPose`, and `completed actual-pose room handoff`.
+- Keep V23 regression coverage strict; this is not a weakening or a compatibility comment inserted into Runtime.
+- Record the real blocked TEST EVERYTHING result without committing the generated QA report itself.
+
+## V23R6A acceptance gate
+
+1. Installer and validator pass twice on the exact post-V23R6 local state.
+2. Only `BDV20ActiveRegressionQA.cs`, `PROJECT_STATUS.md`, and `QA_CHECKLIST.md` are changed.
+3. `BDCameraFollow`, the scene, diagnostics, Codex agents, packages, and gameplay assets remain byte-for-byte untouched.
+4. Repository hygiene and `git diff --check` pass after package cleanup.
+5. Unity compiles and TEST EVERYTHING no longer reports `V20_CLOSED_WALL_CAMERA_CONTRACT_MISSING`.
+6. Record the new automated result, then resume V23R6 focused walking/mounted transition verification.
+
+# Active blocking work — C01/C11.RUNTIME.V23R6-ACTUAL-POSE-HANDOFF
+
+## V23R6.1 Existing gated transition diagnostics — IMPLEMENTED LOCALLY / UNVERIFIED
+
+- Preserve `BDCameraTransitionDiagnostics.cs`, its `.meta`, the camera integration, the QA integration, and the local Codex-agent guidance.
+- Recording is user-gated: F8 starts/stops and exports, F9 exports, and F10 marks the observed pulse.
+- Diagnostics record room switches, handoff start/end, target switches, wall-cast application, desired/contained/final camera poses, FOV, external camera writers, player/horse roots, visual offsets, and Animator root-motion state.
+- Diagnostics do not become a second camera transform owner and do not record unless explicitly enabled.
+
+## V23R6.2 Actual-pose room-handoff release — BLOCKING / PREPARED
+
+- Preserve V23R5 first-frame cinematic ownership and V23R4 stable room containment.
+- Preserve the current scene, diagnostics, Codex-agent changes, map geometry, corridors, openings, walls, portals, hazards, enemies, and minimap layout.
+- Remove handoff completion from the pre-smoothing position-constraint stage.
+- Keep the previous/current two-room union until the target is safely inside the new room.
+- Require the actual final smoothed camera position to be inside the new room with the stable camera safety inset.
+- Require the actual smoothed constrained look point to be inside the new room with the look-point inset.
+- Complete the handoff after the final camera pose is written and before the diagnostic sample is captured, so diagnostics record the real completion frame.
+- If motion remains after this repair, use the existing CSV diagnostics to distinguish camera movement from target/root/model movement rather than changing geometry speculatively.
 
 ## V23R6 acceptance gate
 
-1. **PASS:** local and remote histories were synchronized without losing either side; remote main contains merge commit `3af374d839cd8eb917501ce8cc6f8c703cc45474`.
-2. **AUTOMATED PASS:** Unity compiled and TEST EVERYTHING passed on the synchronized state with 0 blockers, 0 warnings, and 0 info items.
-3. Diagnostics reproduce at least one problematic walking transition and one mounted transition.
-4. The responsible transform owner or root/model-motion source is identified using measured deltas.
-5. Repeated node transitions produce no direction snap, zoom pulse, or forward/back screen-space jump.
-6. Closed-wall visibility and room containment remain intact.
-7. Mounted intro, death restart, hole handling, combat grounding, charged shot, AudioListener, and BBH intro remain passing during focused verification.
-8. Record real focused verification results and resume the saved feature sequence.
-
+1. **PASS baseline:** local and remote were synchronized at `d6a73960b08889cc4fd4e3c14c8dd7dfc5deeecb`, and the pre-V23R6 TEST EVERYTHING baseline passed with 0 blockers and 0 warnings.
+2. Installer preflight matches the captured local working tree and does not overwrite scene, Codex-agent, or diagnostics files.
+3. Installer and validator pass twice; repository hygiene and `git diff --check` pass after cleanup.
+4. Unity compiles without project errors or new warnings.
+5. TEST EVERYTHING passes with the actual-pose release requirement, existing diagnostics requirement, and obsolete pre-smoothing release guard.
+6. Repeated walking transitions in both directions produce no direction snap, apparent zoom, or forward/back jump.
+7. Repeated mounted transitions at full speed produce no direction snap, apparent zoom, or forward/back jump.
+8. The handoff flag clears only after the final camera body and smoothed look point are legal in the new room.
+9. Closed-wall visibility, doorway passage, FOV, first-frame intro, death restart, holes, combat grounding, charged shot, AudioListener, BBH intro, and Console cleanliness remain passing.
+10. If residual motion remains, record a short F8 session, press F10 at the visible pulse, export, and inspect the CSV before another repair.
+11. Record real results, then resume the saved feature sequence.
 # Active blocking work — C01/C11.RUNTIME.V23R5
 
 ## V23R5.1 First-render mounted cinematic camera ownership — IMPLEMENTED / AUTOMATED PASS / FOCUSED PARTIAL
@@ -172,38 +945,82 @@ This file is the only live source for current status, ordering, blockers, verifi
 11. Safety checkpoint, remote fetch, merge, inspection, and push are complete.
 12. Complete V23R6 focused diagnosis, then resume C03.23A.
 
+# Approved future work — C06 SHOP/ECONOMY
+
+## Merchant shop and run currency — APPROVED REQUIREMENTS / NOT IMPLEMENTED
+
+- Durable specification: `Assets/_Project/Design/Economy/SHOP_AND_CURRENCY_SYSTEM_V1.md`.
+- Place 2–4 shops per run: 1–2 in rooms that began empty, with the remainder spawning after combat-room clear. Every run has at least one of each placement class.
+- Merchant presentation: seated hooded monk-like figure with hidden face, original game-compatible cloak, rug, and exactly three offers.
+- Weighted stock uses the complete approved item/price pool. Once-per-run items are rarer and may appear at most once across all shops and refreshes.
+- Automatic stock refresh requires both elapsed-time and progressed-room gates and refills only purchased/empty slots; occupied offers remain unchanged.
+- A separate fixed-cost `REROLL` replaces all three offers atomically. The exact fixed cost remains a balance value to approve.
+- Friendly, HostileAlive, and Defeated are run-global merchant states. A hostile living merchant appears without stock and attacks; a defeated merchant never appears again and cannot refresh/reroll.
+- Killing a friendly merchant makes the ordinary offers still on that rug free, and also creates an exclusive one-of-two light-sword/cannon reward choice. Taking one removes the other and doubles the matching base damage channel for the run with updated models/presentation.
+- Enemy currency: 20% chance for 3–8. Appropriate breakables: 30% chance for 2–10 in the relevant reward slot.
+- Runtime implementation waits until the current V23R19E stability and focused verification gates close.
+
+# Approved future work — C06.META
+
+## Cross-run meta progression — REQUIRED / DESIGN OPEN / NOT IMPLEMENTED
+
+- Durable specification: `Assets/_Project/Design/Economy/META_PROGRESSION_SYSTEM_V1.md`.
+- End every run with persistent meta points based on approved progress/performance factors.
+- Meta points are separate from in-run shop money and are spent in a new main-menu area whose name and visual design remain open.
+- Candidate unlocks include player/horse skins, a new playable character, a new boss, and additional content defined later.
+- Every unlock has a point cost based on desirability/rarity/impact; the exact catalog, costs, formula, pacing, save schema, and abandon/crash policy require a dedicated future design phase.
+
+
+# Approved future work — C03/C05/C06/C10/C11/C12 CROSS-SYSTEM EXPANSION
+
+## Gameplay abilities, map teleport, living world, and UI polish — REQUIRED / NOT IMPLEMENTED
+
+- Durable Hebrew source: `Assets/_Project/Design/Runtime/GAMEPLAY_ABILITIES_MAP_AMBIENT_UI_EXPANSION_HE_V1.md`.
+- Required future scope includes: readable enemy attack animations and hit timing; player bomb inventory/use on `R`; generic collectible flutes; knockback and animal-summoning flutes; shared flute cooldown and short/long `Shift` input; summoned-creature AI/health/threat/despawn; two additional design-open flutes; jump/dodge animations; map teleport to safe visited-cleared rooms; ambient animals, insects, birds, fish, reactive vegetation, particles, footprints, spatial ambience, rare events, pooling/LOD/mobile performance; and professional menu/HUD polish.
+- Ambient and summoned creatures must share approved base assets where practical while keeping combat state, AI, damage, targeting, room-clear, teleport, and reward behavior strictly separated.
+- The source also defines extensive automated/manual QA and mandatory completion-report fields.
+- This is a multi-stage product expansion. No item is considered implemented until its own Runtime, assets, UI/input, save/load, QA, performance, and focused Play Mode gates pass.
+- Current V23R19F/V23R19E blockers remain earlier work and must close before this expansion begins.
+
 # Ordered project categories
 
 - **C00 Governance:** one authoritative status, current-only documentation, request capture, repository hygiene, and lossless remote/local synchronization.
-- **C01 Stability/QA:** automated QA currently passes; focused Runtime/Console regression verification remains active under V23R6.
+- **C01 Stability/QA:** V23R19D automated baseline passed; V23R19E Unity compilation, TEST EVERYTHING, focused Runtime, documentation, and Console verification are active.
 - **C02 Platform/architecture:** Unity 6000.0.76f1, runtime/editor separation, mobile-landscape target.
-- **C03 Player/combat:** complete V23R6 and retained focused regression verification, then resume C03.23A.
-- **C04 Horse:** mounted hit routing, buck logic, healing, flee, hazard safety, and restart grounding.
-- **C05 Enemies:** sword, patrol, charger, trap, ranged, and exit-interference roles.
-- **C06 Collectibles/rewards:** secret Game Boy, Batteries, Cartridge, guardians, chests, ammo, and run boosts.
-- **C07 Boss framework:** after C03.23A continue C07.16A -> C07.16 -> C07.17.
+- **C03 Player/combat:** V23R19E owns the exact grounded-slash-rotated-90-degrees airborne presentation and player death lock; resume C03.23A only after its focused gate passes.
+- **C04 Horse:** preserve mounted damage, prompts, healing, flee, hazard, and restart contracts; V23R19E repairs external-control rider attachment during the mounted intro.
+- **C05 Enemies:** V23R19E adds visible death presentation before regular-enemy loot/despawn while preserving sword, patrol, charger, trap, ranged, jumper, and exit-interference behavior.
+- **C06 Collectibles/rewards/economy:** V23R19E repairs Battery guardian activation; run currency, merchant shop/combat, partial refresh/full reroll, and required open-design meta progression remain approved future work.
+- **C07 Boss framework:** after V23R19E and C03.23A pass, continue C07.16A -> C07.16 -> C07.17.
 - **C08 Mini-bosses:** Square Jumper, Roller, Serpent, Quad Gunners; choose three per run.
 - **C09 Narrative bosses:** preserve final-boss and complete Mother-boss contracts, including phase-specific Dodge budgets.
-- **C10 Map/hazards:** retain focused walking-proof hole-boundary and local-recovery verification, then continue map/hazard work.
-- **C11 Camera/UI:** diagnose and close V23R6 node-transition motion first, then minimap/HUD/settings/accessibility/mobile readability.
-- **C12 Art/audio:** visual/audio production; C12.42 AudioMixer routing remains later.
+- **C10 Map/hazards:** preserve V23R19D quicksand slowdown/controlled-jump fixes and retained walking-proof hole recovery.
+- **C11 Camera/UI:** V23R19E delays the death menu until the player death pose is visible while preserving camera, target outline, Game Boy menu, and abandonment confirmation.
+- **C12 Art/audio:** final authored death/attack/merchant animation and audio remain mandatory production work; C12.42 AudioMixer routing remains later.
 - **C13 Story/endings:** incomplete-set endings, secret continuation, Mother loss/victory, state isolation.
 - **C14 Balance/release:** profiling, pooling, persistence, cleanup, target build, clean-clone verification, release tag.
 
 # Exact current sequence
 
-1. Preserve the synchronized `main` checkpoint at merge commit `3af374d839cd8eb917501ce8cc6f8c703cc45474`.
-2. Use the recorded TEST EVERYTHING PASS as the current automated baseline: 0 blockers, 0 warnings, 0 info items on Unity 6000.0.76f1.
-3. Add temporary V23R6 diagnostics for room/node identity, handoff state, desired/contained/final camera pose, camera target, distance, yaw, pitch, FOV, player/horse gameplay roots, and visual-model offsets.
-4. Reproduce at least one problematic transition on foot and one while mounted.
-5. Identify whether the source is room handoff, containment, camera-target switching, camera boom distance, gameplay-root movement, model animation, or another transform owner.
-6. Implement the smallest evidence-based V23R6 repair without enlarging or regenerating the maze unless measurements prove geometry is the source.
-7. Re-run TEST EVERYTHING and the walking, riding, wall, corner, room-transition, first-frame cinematic, hole, combat, and Console gates.
-8. Remove or deliberately retain any diagnostic tooling according to the test-harness cleanup contract.
-9. Record real focused results, then resume C03.23A -> C07.16A -> C07.16 -> C07.17.
-10. Keep C12.42 ordered later.
-
+1. Install V23R19E on the exact uploaded post-V23R19D local state without resetting, cleaning, or replacing unrelated files.
+2. Run package validation, repository hygiene, and `git diff --check`; wait for Unity compilation to finish.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING` and require 0 blockers and 0 warnings.
+4. Confirm Pause -> Abandon -> confirm -> Start Game binds the active-scene player to the horse before movement and keeps the rider attached through the full entrance animation.
+5. Verify Air Light and Air Heavy reuse their selected grounded slash identity rotated exactly 90 degrees, in front of the player, with no second horizontal slash.
+6. Kill the player and confirm a readable player death animation completes before the Game Boy death menu appears.
+7. Kill each regular enemy archetype and confirm death animation occurs before loot/despawn while attacks, movement, collision, and damage stop immediately.
+8. Trigger Battery A and Battery B guardians, including collecting during the reveal; confirm guardians still activate, chase, attack, take damage, die, and retain Elite immunity to small-enemy pull/knockback.
+9. Re-run retained quicksand slowdown, hook, wall jump, mounted hazards, camera, Parry, bomb, menu, and Console checks.
+10. Record real automated and focused results in this file; only then close V23R19E and resume C03.23A -> C07.16A -> C07.16 -> C07.17.
+11. Keep merchant shop/combat and C06.META as required future systems, and keep final authored animation/audio replacement as mandatory release work.
 # Current risks
+
+- Existing Unity scene serialization may retain old camera pitch values; Runtime migration must preserve the explicit 40/60 contract without rewriting the scene.
+- Multiple standalone horse prompts can overlap the horse HUD; unified prompts must suppress legacy presenters without taking gameplay ownership.
+- Range highlighting must use current attack availability and blockers, not merely enemy proximity.
+- Hook pull must not override boss/large-enemy movement policies or bypass walls.
+- Airborne presentation must not duplicate the committed melee attack or grant unapproved damage.
+- The Art-direction conventions document must remain pending until user answers exist; inventing the style guide would create false project truth.
 
 - Camera boom distance plus safety inset can exceed available room half-size and create orientation-dependent compression.
 - Repeated wall casts or room scans inside one LateUpdate can produce visible jitter and avoidable frame spikes.
@@ -216,8 +1033,246 @@ This file is the only live source for current status, ordering, blockers, verifi
 - Replacing local files with remote copies would lose Runtime/scene progress; ignoring remote would lose governance and design progress.
 - A failed sequential installer can leave an intentional partial state; repair packages must detect and continue from it.
 - Static QA can pass while visual Runtime behavior remains wrong.
+- Mounted hazard damage callbacks can trigger normal buck/faint dismount logic unless the hazard-specific dismount happens before damage is applied.
 
 # Current changelog
+
+## 2026-06-08 — V23R19K explicit airborne branch and dialogue-spec capture
+
+- The post-V23R19J Unity run reported 10 blockers with no warnings or info items.
+- Inspection proved the remaining airborne blockers were not only wording drift: the new explicit airborne identity was returned but ignored by `BDPlayerCombat`, which still spawned the horizontal arc.
+- V23R19K consumes that identity and chooses exactly one visual branch, then updates the remaining scanners to the active ownership.
+- Resolved V23R19I compilation history remains in `PROJECT_STATUS.md`; it is not forced back into the open-bug table.
+- The approved opening `I’m bored.` / wordless-character-voice prompt is captured as required future design and is not reported as implemented.
+
+
+## 2026-06-08 — V23R19J semantic QA realignment and corrected Girl/Father specification
+
+- Unity compiled after V23R19I and TEST EVERYTHING reported 15 semantic/text QA blockers with zero warnings.
+- V23R19J updates active-owner scanners rather than reintroducing obsolete code or incorrect mounted-hook behavior.
+- The V23R19B hook-reliability contract is restored in the design document, and the latest corrected Girl/Father/meta specification becomes canonical future work.
+
+
+## 2026-06-08 — V23R19I compile compatibility and traversal-requirement capture
+
+- Unity reported CS1061 and CS0117 because forced-movement call sites outlived the compatibility APIs in `BDCombatantProfile`.
+- V23R19I restores the property/static API as semantic aliases without changing serialization or gameplay classification.
+- The rope, climbing and quicksand-swamp specification is captured as required future work and remains not implemented.
+
+
+## 2026-06-08 — V23R19H character-specific mounted-hook correction
+
+- The previous request was interpreted incorrectly as enabling the hook while mounted for the current boy character.
+- Correct contract: the boy cannot use the hook while mounted; the future Girl character may use it while riding when her character-specific mounted-combat capability is implemented.
+- V23R19H removes the boy's mounted hook input/highlight path, updates QA and the open-bug ledger, and captures the approved Girl/Father/meta-progression prompt as future required design.
+
+
+## 2026-06-08 — V23R19G reopened focused regressions, mounted hook, and canonical bug tracker
+
+- V23R19F automated QA passed with 0 blockers, 0 warnings, and 0 info items.
+- Focused Play Mode confirmed all unmentioned behavior looked correct, while reopening airborne rotation, player/large/guardian death presentation, clean abandon-to-menu navigation, and mounted replay binding.
+- User added the requirement that the hook work while riding and required a permanently maintained open-bug tracker.
+- V23R19G implements the focused repairs and creates the current defect ledger; Unity verification remains open.
+
+## 2026-06-08 — V23R19F semantic QA repair and cross-system requirement capture
+
+- The post-V23R19E TEST EVERYTHING run reported two static blockers and no warnings.
+- Guardian Runtime already uses the current `playerTransform.position` same-room contract with a player-room fallback; the older scanner was frozen to `player.position`.
+- V23R9 status QA was frozen to `V23R8 automated baseline`; maintained status uses `V23R8 automated QA passed`.
+- V23R19F aligns both scanners with active truth without changing Runtime or scene behavior.
+- The uploaded Hebrew gameplay/abilities/map/ambient-world/UI prompt is preserved as a required future specification and is not falsely marked implemented.
+
+
+## 2026-06-08 — V23R19E run-flow, death, airborne, guardian, shop-state, and meta requirements
+
+- The post-V23R19D TEST EVERYTHING run passed with 0 blockers and 0 warnings, but focused Play Mode exposed four Runtime/presentation defects: riderless abandon replay, incorrect airborne visual, abrupt death menu, and missing Battery guardians.
+- User clarified that death animation is required for both player and enemies.
+- V23R19E repairs the four active defects on the exact uploaded local state and adds focused regression QA.
+- Merchant requirements now include partial empty-slot refresh, fixed-cost three-slot reroll, HostileAlive/Defeated global states, no commerce after aggression, free remaining rug stock on friendly defeat, and exclusive light-sword/cannon reward choice.
+- Cross-run meta progression is recorded as required but design-open and remains separate from run currency.
+
+
+## 2026-06-08 — V23R19D focused Play Mode findings
+
+- Unity TEST EVERYTHING passed after V23R19C with 0 blockers, 0 warnings, and 0 info items.
+- The user confirmed that jumping/moving inside quicksand no longer causes premature respawn.
+- The same focused test showed no effective player slowdown, so multiplier delivery is repaired at the movement owner.
+- The airborne attack is now distinct but needs a front-facing vertical overhead-to-floor presentation.
+- Jumping onto an attacking enemy can arm the combat grounding guard and teleport the player backward; controlled jumps are now excluded.
+- Abandon requires confirmation, and abandon -> New Game must bind the exact newly loaded player to the mounted intro horse.
+
+
+## 2026-06-08 — V23R19C QA compatibility and future merchant-shop requirements
+
+- TEST EVERYTHING reported exactly two static blockers and no warnings: one obsolete hook-rank token and one obsolete airborne visual-owner token.
+- The active runtime already centralizes small-regular pull eligibility and places vertical slash spawning in `BDPlayerCombat`; V23R19C aligns QA with those owners without changing runtime behavior.
+- The user approved a future 2–4-shop per-run merchant system, weighted three-item stock, complete item/price pool, enemy/breakable money drops, player/horse protection, and upgrades.
+- Shop stock may refresh only after both elapsed-time and progressed-room thresholds pass. Unique once-per-run offers are rarer and removed from the run pool after their first appearance.
+- Shop implementation is scheduled under C06 and does not interrupt the active regression gate.
+
+## 2026-06-08 — V23R19B scene-safe install, hook commitment, and Battery guardians
+
+- The first V23R19 package correctly stopped before writing because the local scene no longer matched its whole-file hash.
+- V23R19B replaces whole-scene replacement with a structural patch of only the approved player movement fields.
+- Hook eligibility is rechecked on impact and a valid living small-enemy hit commits the pull on the real movement root.
+- Collectible guardians are now created fully inactive and activated atomically, avoiding partially initialized underground AI/collision state.
+- Battery guardians are damageable Elite combatants: normal AI and health apply, while small-enemy pull/knockback/forced movement does not.
+
+## 2026-06-08 — V23R19 quicksand, traversal reach, universal wall jump and airborne identity
+
+- User reported a nonlethal quicksand jump/movement teleport, requested slightly farther normal jump and dodge, farther wall jump from every sensible solid vertical surface, and reiterated that airborne attack still used the regular presentation.
+- V23R19 repairs the ownership/order issue rather than adding another visual suppression workaround.
+- Unity and focused Play Mode verification remain required.
+
+## 2026-06-08 — V23R18B rebuilt from the authoritative latest local ZIP
+
+- The user identified `Boredom-and-Dungeons.zip` as the most up-to-date local state.
+- The previous rebuilt installer correctly wrote nothing, but its preflight looked for `ForceDismountAfterHazardRecovery` in the wrong owner file.
+- Inspection confirmed that `BDHorseController` owns the API and `BDHorseHazardSafety` owns mounted hazard ordering.
+- Hazard-specific dismount now occurs before horse damage callbacks, horse relocation and rider recovery.
+- The exact lower-case animation token is synchronized across all three maintained animation/art documents.
+- Unity verification remains required after installation.
+
+## 2026-06-08 — V23R18A production animation and horse hazard damage ownership
+
+- User required final production-grade animation coverage for every action that needs animation, including combat, locomotion, firing, jump, dodge, horse interactions, healing, knockback, stagger and stun.
+- A dedicated production-animation contract was added and linked from canonical art direction.
+- Horse hole/lava behavior now has explicit mounted and unmounted damage ownership.
+- Mounted hole damages horse and rider; mounted lava damages the horse instead of the rider and uses a zero-damage rider recovery arc.
+- The latest automated run was blocked only by two stale V23R13 quicksand scanner tokens, updated semantically by V23R18A.
+
+## 2026-06-08 — V23R17 quicksand, enemy hazards, mounted impact, and wall jump
+
+- V23R16 was safely rejected by preflight because newer local quicksand/document work existed.
+- V23R17 was rebuilt on the exact uploaded local state.
+- The package adds exact player quicksand, enemy hazard avoidance and forced-entry outcomes, variable 4-10 mounted impact damage for small enemies, correctly directed knockback, wall jump, clear-direction intro turn, and distinct airborne body animations.
+- Unity verification remains open.
+
+## 2026-06-07 — V23R15D exact canonical-root token compatibility
+
+- TEST EVERYTHING after V23R15C reported one blocker, zero warnings, and zero info items.
+- The mirror already named `ART_DIRECTION.md`, but used `Canonical repository source`.
+- The retained V23R9 scanner requires the exact phrase `Canonical root source`.
+- V23R15D adopts that accurate phrase without changing the design policy or Runtime.
+
+## 2026-06-07 — V23R15C art-direction mirror root-token repair
+
+- TEST EVERYTHING ran after V23R15B with Unity compilation successful.
+- The run reported exactly one blocker, zero warnings, and zero info items.
+- The Unity-side art-direction mirror already contained the complete approved policy, but omitted the literal canonical filename `ART_DIRECTION.md`.
+- V23R15C adds the explicit root-source declaration without changing art policy or Runtime behavior.
+
+## 2026-06-07 — V23R15B independent AOE criticals and semantic QA compatibility
+
+- User clarified that every enemy hit by an AOE attack must calculate critical independently.
+- Spinning sword AOE now shares one pre-critical spectrum roll but performs one exact 6% critical roll per unique enemy target.
+- Light, heavy, and airborne sword attacks keep one critical state per committed attack.
+- The same repair replaces the three latest stale exact-text QA contracts with active semantic checks.
+- Runtime and automated/focused Unity verification remain open until the new run is supplied.
+
+## 2026-06-07 — V23R15A QA result API compatibility
+
+- Unity reported two CS1061 errors because `BDOneClickQAResult` has no `Blockers` collection.
+- Unity reported two CS0246 errors because `BDOneClickQAIssue` does not exist.
+- The maintained API is `result.findings.Add(new BDOneClickQAFinding(...))` with `BDOneClickQASeverity.Blocker`.
+- V23R15A applies that exact pattern to the V23R14 and V23R15 scanners only.
+- Runtime sword variance, critical behavior, projectiles, hook, scenes, and assets are unchanged.
+
+## 2026-06-07 — V23R15 sword spectrum and critical attacks
+
+- User specified an exact 6% critical chance and exact 1.5 damage multiplier.
+- Eligibility is limited to light, heavy, airborne light/heavy, and spinning sword attacks.
+- Sword damage now uses a configurable spectrum rather than one fixed value.
+- Ranged projectiles and the grappling hook remain fixed damage and cannot crit through this system.
+- Critical enemy damage numbers use a dedicated fuchsia/magenta color.
+- Previous automated QA was blocked by a compilation aggregate; exact Unity compiler lines remain required if the new rerun still fails.
+
+## 2026-06-07 — V23R14 damage numbers and occlusion-safe test labels
+
+- User requested animated damage values for player and enemies with different colors.
+- User reported first-room hole/lava/obstacle labels visible through walls and confusing adjacent-room readability.
+- The latest automated run was blocked only by five stale semantic QA tokens and reported zero warnings/info items.
+- V23R14 adds applied-damage number presentation, wall/distance/UI-state label gating, and aligns legacy QA with active V23R13 contracts.
+- Visual and Play Mode verification remains open until tested in Unity.
+
+## 2026-06-07 — V23R13 audio coverage, quicksand, and silhouette outline
+
+- V23R12 automated QA passed with zero blockers, warnings, and info items.
+- User requested a comprehensive, non-exclusive sound-event contract covering every action/state that requires audio.
+- User requested immediate quicksand implementation and explicit completion tracking.
+- User rejected distance-growing rectangular target frames and required a constant-size red outline following the enemy shape.
+- Four reported CS0414 warning sources are removed.
+- V23R13 implements the code/doc/QA changes; Unity and focused Play Mode verification remain open.
+
+## 2026-06-07 — V23R12 focused Play Mode regression repair
+
+- V23R11 automated QA passed with zero findings, but focused Play Mode exposed hook, mounted-targeting, Parry-visual, horse-prompt, enemy-grounding/motion, and menu-shell regressions.
+- Hook pulling now resolves the actual movement root and body envelope and suppresses immediate contact attacks after safe release.
+- Mounted targeting uses the ranged envelope; Parry/menu entry clear active slash visuals.
+- Enemy ground placement is CharacterController-center-aware and continuous horizontal safety teleporting is removed.
+- The Game Boy shell and menu content now share one GUI owner/pass.
+- All items remain Unity-verification-required until the user confirms the focused gate.
+
+## 2026-06-07 — V23R11 music direction, bomb explosion, and committed airborne animation
+
+- V23R10 automated QA passed with 0 blockers, 0 warnings, and 0 info.
+- User defined exploration/combat/mini-boss/boss/Mother music progression and requested correct channel/mix/master design.
+- Canonical root and Unity-side audio-direction documents were added; runtime adaptive music remains under C12.42.
+- Trap-layer bombs now have visible/audio explosion feedback and damage non-owner enemies once each.
+- Airborne animation is now selected at actual attack commit and reuses the regular light/heavy mesh in a vertical plane.
+- Code/document implementation is marked done; Unity visual/gameplay verification remains pending.
+
+## 2026-06-07 — V23R10 menu, hook, Parry, targeting, and enemy stability
+
+- Focused Play Mode found gameplay UI leaking over the menu/death screen, no final Game Boy shell, unsafe hook release distance, incomplete Parry payoff, insufficient distant ranged target framing, and unstable enemy displacement/grounding.
+- The latest automated blockers are stale V23R8 documentation tokens only; art direction is no longer pending.
+- V23R10 makes root `ART_DIRECTION.md` canonical, adds one gameplay-UI visibility owner and a Game Boy shell, safely tunes the hook, phases Parry feedback, extends truthful ranged highlighting, and adds enemy motion stabilization.
+- V23R10 automated verification pending.
+
+## 2026-06-07 — V23R9 horse state matrix and art-direction conventions
+
+- V23R8 automated QA passed with zero blockers, warnings, and info items.
+- User refined horse interactions: on-foot actions show prompts; mounted stationary shows only Dismount while Pet remains invisible-key; mounted moving shows no row; Heal is on-foot only.
+- User approved 65% colorful / 35% mysterious stylized fantasy, clear fantasy typography, Game Boy-inspired icons, a full Game Boy menu shell, smooth/elegant plus weighty animation, and responsive desktop/mobile language.
+- The supplied visual references are preserved as one compact board and translated into an original non-copying production contract.
+- True victory over Mother is recorded as a persistent restored/awakened Game Boy device state for the future post-victory layer.
+
+## 2026-06-07 — V23R8 camera, horse, combat, and UX package
+
+- The user confirmed that the V23R6 node-transition camera issue is fixed.
+- Latest pre-V23R8 TEST EVERYTHING passed with 0 blockers, 0 warnings, and 0 info items.
+- New reported regressions: target returned to screen center, horse Heal/Pet cues were badly placed, and mounted mouse control still felt inconsistent.
+- New combat requirements: heavy-hold rope/hook with 2 damage, small-enemy pull, large-enemy damage-only, independent cooldown, and normal-heavy fallback.
+- New presentation requirements: airborne light/heavy attacks keep their identity as vertical slashes; one subtle red frame marks only an aimed enemy in usable range.
+- New horse UX requirements: Mount/Dismount/Heal/Pet prompts show the real key and appear only in their valid on-foot or mounted-stationary contexts.
+- V23R7 failed safely before writes because `ARCHITECTURE.md` had changed. V23R8 is rebuilt from the exact captured local state and preserves all newer local work.
+- The Art-direction conventions document remains pending because the required user questionnaire has not yet been answered.
+
+## 2026-06-07 — V23R6B canonical saved-feature status token
+
+- V23R6A removed the stale V20 camera-state blocker.
+- The next TEST EVERYTHING run reported two blockers, zero warnings, and zero info items.
+- Both blockers came from one documentation wording mismatch: `Saved resume point` instead of `Saved feature resume point`.
+- V23R6B changes only `PROJECT_STATUS.md` and restores the canonical token without touching Runtime or QA implementation.
+- Focused walking and mounted node-transition verification remains next after automated QA is green.
+
+## 2026-06-07 — V23R6A stale V20 semantic QA blocker
+
+- The local-state-aware V23R6 actual-pose repair was installed and Unity TEST EVERYTHING ran.
+- The run at `2026-06-07T16:23:06.1766460Z` reported exactly one blocker, zero warnings, and zero info items.
+- The blocker was static only: `BDV20ActiveRegressionQA` still required `completed union room handoff`, which V23R6 intentionally replaced.
+- V23R6A updates the scanner to require the actual-pose release marker, method, and state string without touching Runtime or scene behavior.
+- Focused walking and mounted verification remains pending after automated QA is green.
+
+## 2026-06-07 — V23R6 actual local diagnostics and actual-pose handoff release
+
+- The first V23R6 installer correctly stopped because the local camera source had advanced beyond the remote-based structure.
+- The captured local state showed new gated transition diagnostics, four updated Codex agent profiles, a modified Unity scene, and camera/QA integration that must be preserved.
+- Local and origin/main both point to `d6a73960b08889cc4fd4e3c14c8dd7dfc5deeecb`; the listed changes are later uncommitted local progress.
+- Inspection of that exact camera source found that handoff completion still used the unsmoothed desired camera position inside containment.
+- The local-state-aware repair moves completion after the final pose write and requires both actual final camera position and smoothed look point to fit in the new room.
+- Existing CSV diagnostics remain intact and will be used only if residual movement remains.
+- No scene, Codex-agent, diagnostics, or map-geometry file is replaced by this repair.
 
 ## 2026-06-07 — Synchronized checkpoint and automated QA baseline recorded
 

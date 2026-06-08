@@ -9,6 +9,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
         private static readonly string[] RequiredDocuments =
         {
             "AGENTS.md",
+            "ART_DIRECTION.md",
+            "AUDIO_DIRECTION.md",
             "README.md",
             "START_HERE.md",
             "DEVELOPMENT_WORKFLOW.md",
@@ -112,6 +114,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 new[]
                 {
                     "AGENTS.md",
+                    "ART_DIRECTION.md",
+                    "AUDIO_DIRECTION.md",
                     ".codex/config.toml",
                     "ARCHITECTURE.md",
                     "QA_CHECKLIST.md",

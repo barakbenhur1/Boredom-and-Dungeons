@@ -73,3 +73,27 @@ Open external entrance and exit doorways receive an opaque animated light portal
 8. Die and select New Game; confirm the player starts unmounted at the authored spawn with no mounted intro.
 9. Repeat fresh/cinematic and death-restart paths.
 10. Run `Boredom And Dungeons -> TEST EVERYTHING` and inspect the Console.
+
+## V23R17 clear-direction final turn
+
+- The horse no longer performs a fixed right turn.
+- At the authored stop point it probes forward, right, left, then back with a body-sized capsule.
+- The chosen direction must remain inside the entrance room, avoid registered hazards, and contain no solid blocker.
+- The same chosen direction owns the final horse facing, gameplay camera return, and mounted-control handoff.
+
+
+## V23R19D abandon-to-new-run rider binding
+
+- Abandoning a live run requires explicit confirmation before the run is discarded.
+- A confirmed abandon classifies the next run as a fresh mounted-intro start.
+- The intro resolves the active loaded-scene `BDPlayerController` and `BDHorseController` deterministically.
+- `ForceMountForCinematic` must bind that exact current-scene player before the horse is moved to the entrance.
+- During every entrance movement phase the rider remains snapped to the horse mount point; the horse may never leave the entrance alone while the player remains at spawn.
+
+## V23R19E abandon-to-new-run rider authority
+
+- Scene load clears the cached player target before resolving intro actors.
+- The horse's valid active-scene serialized rider is preferred, then the canonical active `BDPlayerMarker`, then typed fallback.
+- `BeginMountedRunIntro` must establish the mounted state and snap the rider before the first visible horse movement frame.
+- Every cinematic movement frame snaps the authoritative `horseController.Rider`; `CompleteMountedRunIntro` finishes mounted ownership before gameplay control returns.
+- A riderless horse entrance after confirmed abandon is a blocking run-flow regression.

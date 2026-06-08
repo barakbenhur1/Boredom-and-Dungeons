@@ -6,7 +6,7 @@ loading, asset streaming, scalability, and mobile performance.
 """
 
 model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 
 nickname_candidates = [

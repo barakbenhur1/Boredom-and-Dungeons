@@ -96,3 +96,10 @@ Escape opens:
 - Main Menu
 
 Returning to Main Menu abandons the current run without result wording.
+
+## V23R19E player death presentation before menu
+
+- Lethal player damage does not open the main/death menu immediately.
+- Gameplay input and combat stop, the gameplay camera remains visible, and the player death animation completes first.
+- Only after the readable final death pose may `BDMainMenuFlow` open the integrated Game Boy menu and freeze the world.
+- Enemy death presentation is independent from the menu: regular enemies animate, then release loot/despawn.

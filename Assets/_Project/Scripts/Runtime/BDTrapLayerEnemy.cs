@@ -182,7 +182,8 @@ namespace BoredomAndDungeons
             SphereCollider col = bomb.GetComponent<SphereCollider>();
             col.isTrigger = true;
 
-            bomb.AddComponent<BDBombHazard>();
+            BDBombHazard hazard = bomb.AddComponent<BDBombHazard>();
+            hazard.ConfigureOwner(transform);
         }
 
         private void RotateToward(Vector3 direction)
@@ -200,7 +201,12 @@ namespace BoredomAndDungeons
             );
         }
 
-        private void OnDied(BDHealth dead) => Destroy(gameObject, 0.1f);
+        private void OnDied(BDHealth dead)
+        {
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
+        }
 
         private void OnDestroy()
         {

@@ -159,8 +159,12 @@ namespace BoredomAndDungeons
 
         private void TryAttack(float distance)
         {
-            if (cooldown > 0f || distance > attackRange)
+            if (cooldown > 0f ||
+                distance > attackRange ||
+                BDGrapplingHookPullState.IsContactAttackSuppressed(transform))
+            {
                 return;
+            }
 
             ShowAttackTelegraphBeforeDamage(false);
             PlayDoubleSlashVisual();
@@ -392,7 +396,9 @@ namespace BoredomAndDungeons
 
         private void OnDied(BDHealth dead)
         {
-            Destroy(gameObject, 0.1f);
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
         }
 
         private void OnDisable()

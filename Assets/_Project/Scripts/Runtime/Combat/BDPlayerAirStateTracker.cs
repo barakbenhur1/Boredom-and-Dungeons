@@ -19,12 +19,17 @@ namespace BoredomAndDungeons
 
         public float VerticalSpeed => verticalSpeed;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
-        public bool IsDescendingFromJump =>
+
+        // BD AIRBORNE ATTACK VISUAL STATE V23R8
+        public bool IsAirborneFromJump =>
             !BDNewRunFeedbackReset.IsCombatInputSuppressed &&
             !BDMountedRunIntro.IsGameplayInputLocked &&
             !IsGrounded &&
-            verticalSpeed <= -Mathf.Max(0.05f, minimumDescendingSpeed) &&
             Time.unscaledTime - lastAirborneAt <= 2.5f;
+
+        public bool IsDescendingFromJump =>
+            IsAirborneFromJump &&
+            verticalSpeed <= -Mathf.Max(0.05f, minimumDescendingSpeed);
 
         private void Awake()
         {

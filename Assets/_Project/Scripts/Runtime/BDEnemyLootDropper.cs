@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace BoredomAndDungeons
@@ -33,6 +34,23 @@ namespace BoredomAndDungeons
 
         private void OnDied(BDHealth deadHealth)
         {
+            StartCoroutine(
+                DropAfterDeathAnimation(deadHealth)
+            );
+        }
+
+        private IEnumerator DropAfterDeathAnimation(
+            BDHealth deadHealth)
+        {
+            float remaining =
+                BDCharacterDeathAnimation.GetEnemyDeathDuration(deadHealth);
+
+            while (remaining > 0f)
+            {
+                remaining -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
             TryDropHeal();
             TryDropBoost(deadHealth);
         }

@@ -11,6 +11,7 @@ namespace BoredomAndDungeons
         [SerializeField] private float minimumLockTime = 0.05f;
 
         private CharacterController characterController;
+        private BDCombatantProfile combatantProfile;
         private Vector3 velocity;
         private float knockLockTimer;
 
@@ -19,6 +20,7 @@ namespace BoredomAndDungeons
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
+            combatantProfile = GetComponent<BDCombatantProfile>();
         }
 
         private void Update()
@@ -45,6 +47,17 @@ namespace BoredomAndDungeons
 
         public void AddKnockback(Vector3 direction, float strength, float lockDuration)
         {
+            // BD NON-SMALL COMBATANT FORCED-MOVEMENT IMMUNITY V23R19B
+            if (combatantProfile == null)
+                combatantProfile = GetComponent<BDCombatantProfile>();
+
+            if (combatantProfile != null &&
+                !combatantProfile.ReceivesForcedMovement)
+            {
+                ClearKnockback();
+                return;
+            }
+
             direction.y = 0f;
 
             if (direction.sqrMagnitude < 0.001f)
@@ -64,6 +77,12 @@ namespace BoredomAndDungeons
                 velocity = velocity.normalized * maxKnockbackSpeed;
 
             knockLockTimer = Mathf.Max(knockLockTimer, Mathf.Max(minimumLockTime, lockDuration));
+
+            BDEnemyHazardNavigation navigation =
+                GetComponent<BDEnemyHazardNavigation>();
+            navigation?.NotifyForcedHazardEntry(
+                Mathf.Max(lockDuration, 0.85f)
+            );
         }
 
         public void ClearKnockback()

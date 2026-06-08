@@ -70,7 +70,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "ResolveCameraClampBounds",
                 "handoff wall cast containment",
                 "union room boundary handoff",
-                "completed union room handoff"
+                "BD ACTUAL-POSE ROOM HANDOFF RELEASE V23R6",
+                "TryCompleteRoomHandoffAfterFinalPose",
+                "completed actual-pose room handoff"
             );
 
 
@@ -139,12 +141,23 @@ namespace BoredomAndDungeons.EditorTools.Validation
             int stop = coordinator.IndexOf(
                 "fullStopHoldDuration = 0.24f",
                 StringComparison.Ordinal);
-            int restore = coordinator.IndexOf(
-                "RestoreControls(states)",
+            // BD SEMANTIC MOUNTED INTRO RELEASE ORDER QA V23R19J
+            // V23R19G consolidated restoration into RestoreMountedIntroControls.
+            // Validate the active owner and retain compatibility with older reviewed states.
+            int restoreMounted = coordinator.IndexOf(
+                "RestoreMountedIntroControls(",
+                stop >= 0 ? stop : 0,
                 StringComparison.Ordinal);
+            int restoreLegacy = coordinator.IndexOf(
+                "RestoreControls(states)",
+                stop >= 0 ? stop : 0,
+                StringComparison.Ordinal);
+            int restore = restoreMounted >= 0
+                ? restoreMounted
+                : restoreLegacy;
             int unlock = coordinator.IndexOf(
                 "inputLocked = false",
-                stop >= 0 ? stop : 0,
+                restore >= 0 ? restore : (stop >= 0 ? stop : 0),
                 StringComparison.Ordinal);
             if (stop < 0 || restore < stop || unlock < restore)
             {

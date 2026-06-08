@@ -24,6 +24,13 @@ namespace BoredomAndDungeons
             rank != BDCombatantRank.Boss &&
             receivesPlayerProjectileKnockback;
 
+        // BD FORCED MOVEMENT COMPATIBILITY API V23R19I
+        // Unified alias used by hook and generic knockback call sites.
+        // It intentionally preserves the existing serialized projectile-knockback
+        // field and the current Regular/MiniBoss/Boss rank semantics.
+        public bool ReceivesForcedMovement =>
+            ReceivesPlayerProjectileKnockback;
+
         public void Configure(
             BDCombatantRank newRank,
             bool receivesKnockback)
@@ -49,23 +56,32 @@ namespace BoredomAndDungeons
             Configure(BDCombatantRank.MiniBoss, false);
         }
 
+        // BD ELITE GUARDIAN IS NOT A SMALL REGULAR ENEMY V23R19G
+        public void ConfigureEliteGuardian()
+        {
+            Configure(BDCombatantRank.MiniBoss, false);
+        }
+
         public void ConfigureFinalBoss()
         {
             Configure(BDCombatantRank.Boss, false);
         }
 
-        public static bool CanReceivePlayerProjectileKnockback(BDHealth health)
+        public static bool CanReceiveForcedMovement(BDHealth health)
         {
             if (health == null)
                 return false;
 
             BDCombatantProfile profile = ResolveProfile(health);
 
-            // Existing regular enemies without a profile keep receiving knockback.
-            if (profile == null)
-                return true;
+            // Existing regular enemies without a profile preserve their current
+            // forced-movement behavior. Explicit profiles remain authoritative.
+            return profile == null || profile.ReceivesForcedMovement;
+        }
 
-            return profile.ReceivesPlayerProjectileKnockback;
+        public static bool CanReceivePlayerProjectileKnockback(BDHealth health)
+        {
+            return CanReceiveForcedMovement(health);
         }
 
         public static BDCombatantRank ResolveRank(BDHealth health)

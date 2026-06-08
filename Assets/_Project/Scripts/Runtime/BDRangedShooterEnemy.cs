@@ -214,7 +214,12 @@ namespace BoredomAndDungeons
             );
         }
 
-        private void OnDied(BDHealth dead) => Destroy(gameObject, 0.1f);
+        private void OnDied(BDHealth dead)
+        {
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
+        }
 
         private void OnDestroy()
         {

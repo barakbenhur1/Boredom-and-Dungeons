@@ -12,6 +12,7 @@ namespace BoredomAndDungeons
         [SerializeField] private bool alwaysShow = true;
 
         private BDHorseHealth health;
+        private BDHorseContextActionPrompts contextPrompts;
         private Camera mainCamera;
         private GUIStyle labelStyle;
         private Texture2D whiteTexture;
@@ -19,6 +20,7 @@ namespace BoredomAndDungeons
         private void Awake()
         {
             health = GetComponent<BDHorseHealth>();
+            contextPrompts = GetComponent<BDHorseContextActionPrompts>();
             whiteTexture = Texture2D.whiteTexture;
         }
 
@@ -30,8 +32,11 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
-            if (health == null || mainCamera == null)
+            if (!BDGameplayUiVisibility.IsGameplayHudVisible ||
+                health == null || mainCamera == null)
+            {
                 return;
+            }
 
             if (!alwaysShow && !health.IsFainted && health.CurrentHealth >= health.MaxHealth)
                 return;
@@ -55,10 +60,16 @@ namespace BoredomAndDungeons
 
             GUI.Label(new Rect(x - 25f, y - 22f, width + 50f, 20f), text, labelStyle);
 
-            if (health.IsFainted)
-                GUI.Label(new Rect(x - 45f, y + 13f, width + 90f, 20f), "HOLD F TO REVIVE", labelStyle);
-            else if (ratio < 0.98f)
-                GUI.Label(new Rect(x - 45f, y + 13f, width + 90f, 20f), "HOLD F TO HEAL", labelStyle);
+            // BD SINGLE HORSE ACTION PROMPT OWNER V23R12
+            // The unified key cards own action instructions. Keep this component
+            // limited to health/state so text cannot overlap the cards.
+            if (contextPrompts == null)
+            {
+                if (health.IsFainted)
+                    GUI.Label(new Rect(x - 45f, y + 13f, width + 90f, 20f), "HOLD F TO REVIVE", labelStyle);
+                else if (ratio < 0.98f)
+                    GUI.Label(new Rect(x - 45f, y + 13f, width + 90f, 20f), "HOLD F TO HEAL", labelStyle);
+            }
         }
 
         private void DrawBar(Rect rect, float ratio)

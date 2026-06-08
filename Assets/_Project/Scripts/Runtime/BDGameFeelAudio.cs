@@ -43,6 +43,13 @@ namespace BoredomAndDungeons
         private static AudioClip deathClip;
         private static AudioClip dodgeClip;
         private static AudioClip damageClip;
+        private static AudioClip parryCueClip;
+        private static AudioClip parryLockClip;
+        private static AudioClip parryReleaseClip;
+        private static AudioClip bombExplosionClip;
+        private static AudioClip quicksandEnterClip;
+        private static AudioClip quicksandSinkClip;
+        private static AudioClip quicksandEscapeClip;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
@@ -59,6 +66,13 @@ namespace BoredomAndDungeons
         public static void PlayEnemyDeath() => Play(deathClip, 0.34f, 0.82f);
         public static void PlayDodge() => Play(dodgeClip, 0.25f, 1.15f);
         public static void PlayDamage() => Play(damageClip, 0.30f, 0.95f);
+        public static void PlayParryCue() => Play(parryCueClip, 0.42f, 1.22f);
+        public static void PlayParryLock() => Play(parryLockClip, 0.50f, 0.88f);
+        public static void PlayParryRelease() => Play(parryReleaseClip, 0.38f, 1.08f);
+        public static void PlayBombExplosion() => Play(bombExplosionClip, 0.62f, 0.90f);
+        public static void PlayQuicksandEnter() => Play(quicksandEnterClip, 0.30f, 0.82f);
+        public static void PlayQuicksandSink() => Play(quicksandSinkClip, 0.48f, 0.68f);
+        public static void PlayQuicksandEscape() => Play(quicksandEscapeClip, 0.28f, 1.08f);
 
         private static void Play(AudioClip clip, float volume, float pitch)
         {
@@ -115,6 +129,13 @@ namespace BoredomAndDungeons
             deathClip = MakeImpactClip("BD_EnemyDeath", 0.22f, 145f, 36f, 0.72f);
             dodgeClip = MakeWhooshClip("BD_Dodge", 0.13f);
             damageClip = MakeImpactClip("BD_Damage", 0.12f, 240f, 65f, 0.42f);
+            parryCueClip = MakePickupClip("BD_ParryCue", 0.11f);
+            parryLockClip = MakeImpactClip("BD_ParryLock", 0.18f, 520f, 72f, 0.18f);
+            parryReleaseClip = MakeWhooshClip("BD_ParryRelease", 0.20f);
+            bombExplosionClip = MakeImpactClip("BD_BombExplosion", 0.28f, 135f, 38f, 0.82f);
+            quicksandEnterClip = MakeWhooshClip("BD_QuicksandEnter", 0.18f);
+            quicksandSinkClip = MakeImpactClip("BD_QuicksandSink", 0.32f, 118f, 34f, 0.62f);
+            quicksandEscapeClip = MakePickupClip("BD_QuicksandEscape", 0.16f);
         }
 
         private static AudioClip MakeImpactClip(string name, float duration, float startHz, float endHz, float noiseAmount)

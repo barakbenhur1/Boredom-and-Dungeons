@@ -60,6 +60,25 @@ AGENTS.md
 agent profiles. Local rich-text copies such as `AGENTS.rtf` are not repository
 documents.
 
+## Canonical art and interface direction
+
+```text
+ART_DIRECTION.md
+```
+
+`ART_DIRECTION.md` is the mandatory root source for art, UI, VFX, models,
+materials, textures, animation feel, typography, icons, Game Boy menu treatment,
+and desktop/mobile presentation. The document under `Assets/_Project/Design/Visual/`
+is a synchronized Unity-side mirror, not a competing source.
+
+## Canonical music and audio direction
+
+```text
+AUDIO_DIRECTION.md
+```
+
+`AUDIO_DIRECTION.md` is the mandatory root source for exploration/combat/boss/Mother music, stems, transitions, AudioMixer routing, snapshots, SFX relationship, mastering, loudness, and audio QA. The asset-side file under `Assets/_Project/Design/Audio/` is a synchronized mirror.
+
 ## Main project locations
 
 ```text

@@ -136,8 +136,12 @@ namespace BoredomAndDungeons
 
         private void TryAttack()
         {
-            if (attackTimer > 0f || player == null)
+            if (attackTimer > 0f ||
+                player == null ||
+                BDGrapplingHookPullState.IsContactAttackSuppressed(transform))
+            {
                 return;
+            }
 
             BDHealth playerHealth = player.GetComponent<BDHealth>();
             if (playerHealth != null)
@@ -157,7 +161,12 @@ namespace BoredomAndDungeons
             transform.rotation = Quaternion.Slerp(transform.rotation, rot, 1f - Mathf.Exp(-rotationSpeed * Time.deltaTime));
         }
 
-        private void OnDied(BDHealth dead) => Destroy(gameObject, 0.1f);
+        private void OnDied(BDHealth dead)
+        {
+            float delay =
+                BDCharacterDeathAnimation.PlayEnemyDeath(dead) + 0.10f;
+            Destroy(gameObject, Mathf.Max(0.10f, delay));
+        }
 
         private void OnDestroy()
         {

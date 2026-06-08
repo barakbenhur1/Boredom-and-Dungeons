@@ -25,11 +25,31 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BD ROOM WALL CAST ONLY DURING HANDOFF V23R4",
                 "BD INDEPENDENT LOOK POINT SOFT CONSTRAINT V23R4",
                 "BD SINGLE ROOM SCAN PER FRAME V23R4",
+                "BD ACTUAL-POSE ROOM HANDOFF RELEASE V23R6",
+                "TryCompleteRoomHandoffAfterFinalPose",
+                "actualCameraPosition",
+                "actualLookPoint",
                 "ResolvePlanarCameraShake",
                 "ResolveStableCameraSafetyInset",
                 "ResolveSmoothedLookPoint",
                 "ResolveCachedRooms",
+                "BDCameraTransitionDiagnostics",
+                "CaptureTransitionDiagnostics",
                 "transform.SetPositionAndRotation"
+            );
+
+            Require(result, root,
+                "Assets/_Project/Scripts/Runtime/Camera/BDCameraTransitionDiagnostics.cs",
+                "V23R6_CAMERA_TRANSITION_DIAGNOSTICS_MISSING",
+                "BD V23R6 GATED CAMERA TRANSITION DIAGNOSTICS",
+                "F8 stops/exports",
+                "F10 marks an observed pulse",
+                "external-camera-writer",
+                "desired-containment",
+                "final-containment",
+                "player_apply_root_motion",
+                "horse_apply_root_motion",
+                "V23R6_camera_transition_"
             );
 
             Require(result, root,
@@ -108,6 +128,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "ResolveClosedWallProximity01",
                 "nearClosedWallPitch",
                 "movementDirectionBlend"
+            );
+
+            ForbidToken(result, root,
+                "Assets/_Project/Scripts/Runtime/BDCameraFollow.cs",
+                "V23R6_PRE_SMOOTH_HANDOFF_RELEASE_REMAINS",
+                "private void TryCompleteRoomHandoff("
             );
         }
 
