@@ -27,13 +27,13 @@ namespace BoredomAndDungeons
             EnsurePausePanel(page);
 
             float[] y = { 170f, 72f, -26f, -124f };
-            RectTransform[] rows = DirectRows(page);
+            RectTransform[] items = DirectRows(page);
             for (int index = 0;
-                 index < rows.Length && index < y.Length;
+                 index < items.Length && index < y.Length;
                  index++)
             {
-                ResizeRow(rows[index], 0f, y[index], 620f, 78f);
-                MoveScreenTarget(index, 0f, y[index], 620f, 78f);
+                PlaceMenuItem(items[index], 0f, y[index], 620f, 78f);
+                AlignScreenArea(index, 0f, y[index], 620f, 78f);
             }
         }
     }
