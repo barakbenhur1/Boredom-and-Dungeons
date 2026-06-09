@@ -18,6 +18,20 @@ namespace BoredomAndDungeons
         private Vector3 restScale;
         private Vector3 pressDirection = Vector3.forward;
 
+        public void Configure(
+            float depth,
+            float speed,
+            float scaleCompression)
+        {
+            pressedDepth = Mathf.Max(0f, depth);
+            responseSpeed = Mathf.Max(0.01f, speed);
+            pressedScale = 1f - Mathf.Clamp(
+                scaleCompression,
+                0f,
+                0.20f
+            );
+        }
+
         private void Awake()
         {
             CaptureRestPose();
