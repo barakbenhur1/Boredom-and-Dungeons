@@ -72,14 +72,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
+                "ProjectGuide/Status/BUGS.md",
                 "V23R19O_BUG_LEDGER_MISSING",
                 "BUG-V23R19G-005",
                 "BUG-V23R19O-001"
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19O_STATUS_MISSING",
                 "C03/C04/C11.RUNTIME.V23R19O",
                 "V23R19O acceptance gate"

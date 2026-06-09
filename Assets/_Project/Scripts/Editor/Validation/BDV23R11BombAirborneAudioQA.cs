@@ -22,7 +22,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "AUDIO_DIRECTION.md",
+                "ProjectGuide/Product/AUDIO_DIRECTION.md",
                 "V23R11_AUDIO_DIRECTION_MISSING",
                 "Exploration / no active combat",
                 "Mini-boss combat",
@@ -34,7 +34,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Audio/MUSIC_AND_AUDIO_DIRECTION_V1.md",
+                "ProjectGuide/Product/AUDIO_DIRECTION.md",
                 "V23R11_AUDIO_MIRROR_MISSING",
                 "Complete sound-event coverage",
                 "MotherPhase4",
@@ -119,7 +119,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/BOMB_EXPLOSION_AND_FRIENDLY_FIRE_V1.md",
+                "ProjectGuide/Features/Combat/BOMB_EXPLOSION_AND_FRIENDLY_FIRE_V1.md",
                 "V23R11_BOMB_DESIGN_MISSING",
                 "visibly explode",
                 "friendly-fire",
@@ -128,7 +128,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md",
+                "ProjectGuide/Features/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md",
                 "V23R11_AIRBORNE_DESIGN_MISSING",
                 "V23R11 committed-animation repair",
                 "IMPLEMENTED in V23R11",
@@ -136,7 +136,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R11_STATUS_MISSING",
                 "C01/C03/C05/C12.RUNTIME.V23R11",
                 "Music and audio direction — COMPLETED AS DOCUMENTATION",

@@ -130,7 +130,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/V23R12_RUNTIME_REGRESSION_REPAIR.md",
+                "ProjectGuide/Features/Runtime/V23R12_RUNTIME_REGRESSION_REPAIR.md",
                 "V23R12_DESIGN_CONTRACT_MISSING",
                 "reliable pull and safe release",
                 "Mounted gameplay uses a horse-height targeting origin",
@@ -138,7 +138,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "same `BDMainMenuFlow.OnGUI` pass"
             );
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R12_STATUS_MISSING",
                 "C01/C03/C04/C05/C11.RUNTIME.V23R12",
                 "focused Play Mode regression repair",

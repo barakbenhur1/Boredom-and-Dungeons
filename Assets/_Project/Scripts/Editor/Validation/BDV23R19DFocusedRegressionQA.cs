@@ -89,14 +89,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19D_STATUS_MISSING",
                 "C01/C03/C10/C11.RUNTIME.V23R19D",
                 "V23R19D acceptance gate"
             );
 
             Require(result, root,
-                "QA_CHECKLIST.md",
+                "ProjectGuide/QA/QA_CHECKLIST.md",
                 "V23R19D_QA_CONTRACT_MISSING",
                 "Active V23R19D quicksand, airborne, combat-contact, and abandon gate",
                 "Abandon replay"

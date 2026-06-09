@@ -12,7 +12,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             string root = Directory.GetParent(UnityEngine.Application.dataPath).FullName;
 
             Require(result, root, "Assets/_Project/Scripts/Editor/Validation/BDOneClickQAWindow.cs", "V23R10_QA_NOT_INTEGRATED", "BDV23R10RuntimePolishQA.Scan(result)");
-            Require(result, root, "ART_DIRECTION.md", "V23R10_ROOT_ART_DIRECTION_MISSING", "Canonical root source", "Game Boy menu shell", "65% colorful wonder");
+            Require(result, root, "ProjectGuide/Product/ART_DIRECTION.md", "V23R10_ROOT_ART_DIRECTION_MISSING", "Canonical root source", "Game Boy menu shell", "65% colorful wonder");
             Require(result, root, "Assets/_Project/Scripts/Runtime/UI/BDGameplayUiVisibility.cs", "V23R10_UI_VISIBILITY_OWNER_MISSING", "BD SINGLE GAMEPLAY UI VISIBILITY OWNER V23R10", "IsGameplayHudVisible", "IsTargetingVisible");
             Require(result, root, "Assets/_Project/Scripts/Runtime/UI/BDGameBoyMenuShell.cs", "V23R10_GAME_BOY_MENU_SHELL_MISSING", "BD GAME BOY MENU SHELL AND UI OWNERSHIP V23R10", "TRUE VICTORY LINK ACTIVE", "B&D // POCKET MEMORY");
             Require(result, root, "Assets/_Project/Scripts/Runtime/Combat/BDPlayerGrapplingHook.cs", "V23R10_HOOK_SAFE_RELEASE_MISSING", "BD SAFE HOOK RELEASE BEFORE CONTACT V23R10", "ResolveSafePullStopDistance", "BDGrapplingHookPullState", "0.55f");
@@ -22,8 +22,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(result, root, "Assets/_Project/Scripts/Runtime/BDEnemyMotionStabilizer.cs", "V23R10_ENEMY_STABILIZER_MISSING", "BD SINGLE ENEMY MOTION STABILITY OWNER V23R10", "RecoverIfFloating", "minimumFrameAllowance");
             Require(result, root, "Assets/_Project/Scripts/Runtime/BDEnemyBootstrap.cs", "V23R10_ENEMY_STABILIZER_NOT_INSTALLED", "BDEnemyMotionStabilizer");
             Require(result, root, "Assets/_Project/Scripts/Runtime/BDJumperEnemy.cs", "V23R10_JUMPER_STABILITY_MISSING", "IsPerformingAuthoredJump", "landingPlayerClearance", "finalCorrection");
-            Require(result, root, "DOCUMENTATION_INDEX.md", "V23R10_DOCUMENTATION_MAP_MISSING", "ART_DIRECTION.md", "GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md", "PARRY_SUCCESS_PRESENTATION_V1.md", "ENEMY_MOTION_STABILITY_V1.md");
-            Require(result, root, "PROJECT_STATUS.md", "V23R10_STATUS_MISSING", "C01/C03/C05/C11/C12.RUNTIME.V23R10", "V23R10 automated verification pending", "Saved feature resume point");
+            Require(result, root, "ProjectGuide/INDEX.md", "V23R10_DOCUMENTATION_MAP_MISSING", "ProjectGuide/Product/ART_DIRECTION.md", "GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md", "PARRY_SUCCESS_PRESENTATION_V1.md", "ENEMY_MOTION_STABILITY_V1.md");
+            Require(result, root, "ProjectGuide/Status/CURRENT.md", "V23R10_STATUS_MISSING", "C01/C03/C05/C11/C12.RUNTIME.V23R10", "V23R10 automated verification pending", "Saved feature resume point");
         }
 
         private static string Read(string root, string relative){string p=Path.Combine(root,relative);return File.Exists(p)?File.ReadAllText(p):string.Empty;}

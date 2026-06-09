@@ -48,7 +48,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
+                "ProjectGuide/Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
                 "V23R19J_HOOK_DESIGN_MISSING",
                 "V23R19B hit-committed pull reliability",
                 "pull is committed",
@@ -66,7 +66,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
+                "ProjectGuide/Features/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
                 "V23R19J_CHARACTER_SPEC_CORRECTION_MISSING",
                 "REQUIRED / FUTURE / NOT IMPLEMENTED",
                 "זימון האמא בשלבים 1–3",

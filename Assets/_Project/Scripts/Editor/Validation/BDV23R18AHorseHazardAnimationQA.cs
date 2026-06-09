@@ -42,7 +42,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "ART_DIRECTION.md",
+                "ProjectGuide/Product/ART_DIRECTION.md",
                 "V23R18A_PRODUCTION_ANIMATION_ROOT_MISSING",
                 "Production animation completeness",
                 "Every gameplay action that benefits from visible motion",
@@ -52,7 +52,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "Assets/_Project/Design/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md",
+                "ProjectGuide/Features/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md",
                 "V23R18A_PRODUCTION_ANIMATION_DESIGN_MISSING",
                 "Player animation coverage",
                 "Horse animation coverage",
@@ -63,7 +63,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R18A_STATUS_MISSING",
                 "C01/C04/C10/C12.RUNTIME.V23R18A",
                 "Saved feature resume point"

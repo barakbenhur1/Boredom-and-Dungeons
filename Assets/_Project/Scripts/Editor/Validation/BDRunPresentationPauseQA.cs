@@ -109,7 +109,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "TALL_ROOM_BOUNDARY_INSTALLER_MISSING");
 
             Check(result, root,
-                "Assets/_Project/Design/UI/RUN_PRESENTATION_PAUSE_AND_MENU_POLISH.md",
+                "ProjectGuide/Features/UI/RUN_PRESENTATION_PAUSE_AND_MENU_POLISH.md",
                 new[] {
                     "authored entrance",
                     "ordinary death restart",
@@ -119,7 +119,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "RUN_PRESENTATION_DESIGN_MISSING");
 
             Check(result, root,
-                "Assets/_Project/Design/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md",
+                "ProjectGuide/Features/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md",
                 new[] {
                     "64 world units",
                     "visibility boundary",

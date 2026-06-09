@@ -100,7 +100,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDOneClickQAResult result,
             string root)
         {
-            const string relative = "PROJECT_STATUS.md";
+            const string relative = "ProjectGuide/Status/CURRENT.md";
             string absolute = Path.Combine(root, relative);
             if (!File.Exists(absolute))
             {

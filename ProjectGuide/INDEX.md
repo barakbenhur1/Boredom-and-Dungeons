@@ -1,0 +1,166 @@
+# Project Guide Index
+
+This index lists every maintained guide file. `Status/CURRENT.md` remains the global state authority.
+
+## Rules
+
+- [`Rules/DOCUMENT_MAINTENANCE.md`](Rules/DOCUMENT_MAINTENANCE.md)
+- [`Rules/TASK_CONTINUITY.md`](Rules/TASK_CONTINUITY.md)
+- [`Rules/WORKFLOW.md`](Rules/WORKFLOW.md)
+
+## Status
+
+- [`Status/BUGS.md`](Status/BUGS.md)
+- [`Status/CURRENT.md`](Status/CURRENT.md)
+- [`Status/VERIFICATION.md`](Status/VERIFICATION.md)
+- [`Status/WORK_QUEUE.md`](Status/WORK_QUEUE.md)
+
+## Product
+
+- [`Product/ART_DIRECTION.md`](Product/ART_DIRECTION.md)
+- [`Product/AUDIO_DIRECTION.md`](Product/AUDIO_DIRECTION.md)
+
+## Engineering
+
+- [`Engineering/ARCHITECTURE.md`](Engineering/ARCHITECTURE.md)
+- [`Engineering/PERFORMANCE.md`](Engineering/PERFORMANCE.md)
+- [`Engineering/REPOSITORY_MAP.md`](Engineering/REPOSITORY_MAP.md)
+- [`Engineering/TECHNICAL_DECISIONS.md`](Engineering/TECHNICAL_DECISIONS.md)
+
+## QA
+
+- [`QA/HISTORY.md`](QA/HISTORY.md)
+- [`QA/QA_CHECKLIST.md`](QA/QA_CHECKLIST.md)
+
+## Plans
+
+- [`Plans/DEFERRED_AND_REVISIT.md`](Plans/DEFERRED_AND_REVISIT.md)
+- [`Plans/FUTURE_SYSTEMS.md`](Plans/FUTURE_SYSTEMS.md)
+- [`Plans/ROADMAP.md`](Plans/ROADMAP.md)
+
+## Production
+
+- [`Production/Assets/ASSET_FOLDER_USAGE.md`](Production/Assets/ASSET_FOLDER_USAGE.md)
+- [`Production/Assets/ASSET_PIPELINE.md`](Production/Assets/ASSET_PIPELINE.md)
+- [`Production/CHARACTER_ART_PARITY.md`](Production/CHARACTER_ART_PARITY.md)
+- [`Production/ModernHandheld/MODERN_HANDHELD_3D_SPEC.md`](Production/ModernHandheld/MODERN_HANDHELD_3D_SPEC.md)
+
+## Tasks
+
+- [`Tasks/ACTIVE/MODERN_HANDHELD_MAIN_PAUSE_UI.md`](Tasks/ACTIVE/MODERN_HANDHELD_MAIN_PAUSE_UI.md)
+- [`Tasks/PAUSED/ARCHITECTURE_AUDIT.md`](Tasks/PAUSED/ARCHITECTURE_AUDIT.md)
+- [`Tasks/QUEUED/ENEMY_ATTACK_ANIMATIONS.md`](Tasks/QUEUED/ENEMY_ATTACK_ANIMATIONS.md)
+- [`Tasks/QUEUED/PROFESSIONAL_OPENING_CINEMATIC.md`](Tasks/QUEUED/PROFESSIONAL_OPENING_CINEMATIC.md)
+- [`Tasks/QUEUED/RUNTIME_REPAIR_RETURN.md`](Tasks/QUEUED/RUNTIME_REPAIR_RETURN.md)
+
+## Historical QA compatibility map
+
+This section preserves stable discovery phrases required by older automated QA after the production documentation reorganization. It is a compatibility map, not a second status source.
+
+### Current V23R8 feature contracts
+
+- Canonical art owner: `ProjectGuide/Product/ART_DIRECTION.md`.
+- Targeting: `ProjectGuide/Features/Combat/RANGE_AWARE_TARGET_HIGHLIGHT_V1.md`.
+- Grappling: `ProjectGuide/Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md`.
+- Horse prompts: `ProjectGuide/Features/Horse/HORSE_CONTEXT_ACTION_PROMPTS_V1.md`.
+- Art-direction conventions are active and remain mandatory for all Runtime presentation work.
+
+### V23R9 and V23R10 visual-contract migration
+
+- The former Unity-side mirror `ART_DIRECTION_AND_INTERFACE_CONVENTIONS_V1.md` was merged into `ProjectGuide/Product/ART_DIRECTION.md`; Git history retains the retired file.
+- The active V23R10 contracts remain indexed at `ProjectGuide/Features/UI/GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md`, `ProjectGuide/Features/Combat/PARRY_SUCCESS_PRESENTATION_V1.md`, and `ProjectGuide/Features/Combat/ENEMY_MOTION_STABILITY_V1.md`.
+- No duplicate art-direction mirror should be recreated merely to satisfy historical discovery checks.
+
+## Features
+
+- [`Features/Animation/DEATH_PRESENTATION_V1.md`](Features/Animation/DEATH_PRESENTATION_V1.md)
+- [`Features/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md`](Features/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md)
+- [`Features/Bosses/FINAL_BOSS_BLACK_WHITE_COLOSSUS_V127.md`](Features/Bosses/FINAL_BOSS_BLACK_WHITE_COLOSSUS_V127.md)
+- [`Features/Bosses/FINAL_BOSS_SPLIT_PHASE_CLARIFICATIONS_V127.md`](Features/Bosses/FINAL_BOSS_SPLIT_PHASE_CLARIFICATIONS_V127.md)
+- [`Features/Bosses/MINIBOSS_ARCHETYPE_QUAD_GUNNERS_V127.md`](Features/Bosses/MINIBOSS_ARCHETYPE_QUAD_GUNNERS_V127.md)
+- [`Features/Bosses/MINIBOSS_ARCHETYPE_ROLLER_V127.md`](Features/Bosses/MINIBOSS_ARCHETYPE_ROLLER_V127.md)
+- [`Features/Bosses/MINIBOSS_ARCHETYPE_SERPENT_V127.md`](Features/Bosses/MINIBOSS_ARCHETYPE_SERPENT_V127.md)
+- [`Features/Bosses/MINIBOSS_ARCHETYPE_SQUARE_JUMPER_V127.md`](Features/Bosses/MINIBOSS_ARCHETYPE_SQUARE_JUMPER_V127.md)
+- [`Features/Bosses/MINIBOSS_RANDOM_REWARD_ASSIGNMENT_RULES_V127.md`](Features/Bosses/MINIBOSS_RANDOM_REWARD_ASSIGNMENT_RULES_V127.md)
+- [`Features/Bosses/MOTHER_BOSS_DESIGN_V1.md`](Features/Bosses/MOTHER_BOSS_DESIGN_V1.md)
+- [`Features/Bosses/MOTHER_BOSS_DESIGN_V2_WORKING.md`](Features/Bosses/MOTHER_BOSS_DESIGN_V2_WORKING.md)
+- [`Features/Bosses/MOTHER_BOSS_DESIGN_V3_DECISIONS.md`](Features/Bosses/MOTHER_BOSS_DESIGN_V3_DECISIONS.md)
+- [`Features/Bosses/MOTHER_BOSS_HORSE_ENTRY_GATE_V1.md`](Features/Bosses/MOTHER_BOSS_HORSE_ENTRY_GATE_V1.md)
+- [`Features/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md`](Features/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md)
+- [`Features/Cinematics/AMMO_RELOAD_HUD_V111.md`](Features/Cinematics/AMMO_RELOAD_HUD_V111.md)
+- [`Features/Cinematics/COLLECTIBLE_GUARDIANS_V111.md`](Features/Cinematics/COLLECTIBLE_GUARDIANS_V111.md)
+- [`Features/Cinematics/ENDING_BRANCHES_V123.md`](Features/Cinematics/ENDING_BRANCHES_V123.md)
+- [`Features/Cinematics/ENDING_SPEECH_BUBBLE_RULES.md`](Features/Cinematics/ENDING_SPEECH_BUBBLE_RULES.md)
+- [`Features/Cinematics/ENDING_STATE_CONTROLLER_V122.md`](Features/Cinematics/ENDING_STATE_CONTROLLER_V122.md)
+- [`Features/Cinematics/GAMEBOY_BATTERIES_CINEMATIC_V108.md`](Features/Cinematics/GAMEBOY_BATTERIES_CINEMATIC_V108.md)
+- [`Features/Cinematics/GAMEBOY_CINEMATIC_EDITOR_SAFETY_V110.md`](Features/Cinematics/GAMEBOY_CINEMATIC_EDITOR_SAFETY_V110.md)
+- [`Features/Cinematics/OPENING_DIALOGUE_WORDLESS_CHARACTER_VOICE_HE_V1.md`](Features/Cinematics/OPENING_DIALOGUE_WORDLESS_CHARACTER_VOICE_HE_V1.md)
+- [`Features/Collectibles/BATTERY_GUARDIAN_ENCOUNTER_V1.md`](Features/Collectibles/BATTERY_GUARDIAN_ENCOUNTER_V1.md)
+- [`Features/Collectibles/GAME_CARTRIDGE_COLLECTIBLE_V120.md`](Features/Collectibles/GAME_CARTRIDGE_COLLECTIBLE_V120.md)
+- [`Features/Collectibles/INVENTORY_STATE_V116.md`](Features/Collectibles/INVENTORY_STATE_V116.md)
+- [`Features/Collectibles/SECRET_COLLECTIBLE_ADVERTISING_RULES_V124.md`](Features/Collectibles/SECRET_COLLECTIBLE_ADVERTISING_RULES_V124.md)
+- [`Features/Collectibles/SECRET_COLLECTIBLE_DISCOVERY_RULES_V121.md`](Features/Collectibles/SECRET_COLLECTIBLE_DISCOVERY_RULES_V121.md)
+- [`Features/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md`](Features/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md)
+- [`Features/Combat/BOMB_EXPLOSION_AND_FRIENDLY_FIRE_V1.md`](Features/Combat/BOMB_EXPLOSION_AND_FRIENDLY_FIRE_V1.md)
+- [`Features/Combat/DODGE_IFRAMES_V118.md`](Features/Combat/DODGE_IFRAMES_V118.md)
+- [`Features/Combat/DODGE_IFRAME_PROJECTILE_RULE.md`](Features/Combat/DODGE_IFRAME_PROJECTILE_RULE.md)
+- [`Features/Combat/ENEMY_MOTION_STABILITY_V1.md`](Features/Combat/ENEMY_MOTION_STABILITY_V1.md)
+- [`Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md`](Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md)
+- [`Features/Combat/MELEE_DAMAGE_SPECTRUM_AND_CRITICALS_V1.md`](Features/Combat/MELEE_DAMAGE_SPECTRUM_AND_CRITICALS_V1.md)
+- [`Features/Combat/MOUNTED_MOUSE_SHOOT_NO_TURN_V113.md`](Features/Combat/MOUNTED_MOUSE_SHOOT_NO_TURN_V113.md)
+- [`Features/Combat/MOUSE_POINT_ATTACKS_V112.md`](Features/Combat/MOUSE_POINT_ATTACKS_V112.md)
+- [`Features/Combat/PARRY_SUCCESS_PRESENTATION_V1.md`](Features/Combat/PARRY_SUCCESS_PRESENTATION_V1.md)
+- [`Features/Combat/RANGE_AWARE_TARGET_HIGHLIGHT_V1.md`](Features/Combat/RANGE_AWARE_TARGET_HIGHLIGHT_V1.md)
+- [`Features/Combat/SPINNING_AOE_LONG_PRESS_LIGHT_ATTACK_V1.md`](Features/Combat/SPINNING_AOE_LONG_PRESS_LIGHT_ATTACK_V1.md)
+- [`Features/Economy/CATERPILLAR_GAMBLING_NPC_V1.md`](Features/Economy/CATERPILLAR_GAMBLING_NPC_V1.md)
+- [`Features/Economy/META_PROGRESSION_SYSTEM_V1.md`](Features/Economy/META_PROGRESSION_SYSTEM_V1.md)
+- [`Features/Economy/SHOP_AND_CURRENCY_SYSTEM_V1.md`](Features/Economy/SHOP_AND_CURRENCY_SYSTEM_V1.md)
+- [`Features/Encounters/BATTERY_ENCOUNTERS_HARDENING_V126.md`](Features/Encounters/BATTERY_ENCOUNTERS_HARDENING_V126.md)
+- [`Features/Encounters/GUARDIAN_SPAWN_VFX_V125.md`](Features/Encounters/GUARDIAN_SPAWN_VFX_V125.md)
+- [`Features/Hazards/QUICKSAND_AND_ENEMY_HAZARD_BEHAVIOR_V1.md`](Features/Hazards/QUICKSAND_AND_ENEMY_HAZARD_BEHAVIOR_V1.md)
+- [`Features/Horse/HORSE_CLEAN_RUN_START_AND_LOCAL_FLEE.md`](Features/Horse/HORSE_CLEAN_RUN_START_AND_LOCAL_FLEE.md)
+- [`Features/Horse/HORSE_CONTEXT_ACTION_PROMPTS_V1.md`](Features/Horse/HORSE_CONTEXT_ACTION_PROMPTS_V1.md)
+- [`Features/Horse/HORSE_EXHAUSTED_FOLLOW_AND_PET_INTERACTION.md`](Features/Horse/HORSE_EXHAUSTED_FOLLOW_AND_PET_INTERACTION.md)
+- [`Features/Horse/MOUNTED_ENEMY_IMPACT_V1.md`](Features/Horse/MOUNTED_ENEMY_IMPACT_V1.md)
+- [`Features/Level/CAMERA_FORWARD_VISIBILITY_V105.md`](Features/Level/CAMERA_FORWARD_VISIBILITY_V105.md)
+- [`Features/Level/CAMERA_MAP_VISIBILITY_V109.md`](Features/Level/CAMERA_MAP_VISIBILITY_V109.md)
+- [`Features/Level/CAMERA_TILT_ANGLE_V106.md`](Features/Level/CAMERA_TILT_ANGLE_V106.md)
+- [`Features/Level/CAMERA_TILT_ANGLE_V107.md`](Features/Level/CAMERA_TILT_ANGLE_V107.md)
+- [`Features/Level/NATURAL_MAP_SHAPE_PASS_V102.md`](Features/Level/NATURAL_MAP_SHAPE_PASS_V102.md)
+- [`Features/Level/NATURAL_MAP_SHAPE_PASS_V103_COMPILE_FIX.md`](Features/Level/NATURAL_MAP_SHAPE_PASS_V103_COMPILE_FIX.md)
+- [`Features/Level/NATURAL_MAP_SHAPE_PASS_V104_OBJECT_FIX.md`](Features/Level/NATURAL_MAP_SHAPE_PASS_V104_OBJECT_FIX.md)
+- [`Features/Level/SCENE_BUILDER_DECOMPOSITION_PLAN_V115.md`](Features/Level/SCENE_BUILDER_DECOMPOSITION_PLAN_V115.md)
+- [`Features/Map/MAP_ROUTES_AND_HAZARDS_DESIGN_V1.md`](Features/Map/MAP_ROUTES_AND_HAZARDS_DESIGN_V1.md)
+- [`Features/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md`](Features/Map/ROOM_BOUNDARY_CAMERA_AND_TEXTURE_READINESS.md)
+- [`Features/Movement/NATURAL_MOVEMENT_AWARENESS_FACING_V1.md`](Features/Movement/NATURAL_MOVEMENT_AWARENESS_FACING_V1.md)
+- [`Features/Movement/ROPE_CLIMBING_AND_QUICKSAND_SWAMP_HE_V1.md`](Features/Movement/ROPE_CLIMBING_AND_QUICKSAND_SWAMP_HE_V1.md)
+- [`Features/Movement/WALL_JUMP_V1.md`](Features/Movement/WALL_JUMP_V1.md)
+- [`Features/Rendering/GAMEPLAY_SHADOW_POLICY_V1.md`](Features/Rendering/GAMEPLAY_SHADOW_POLICY_V1.md)
+- [`Features/Runtime/EARLY_RUN_REGRESSION_REPAIR.md`](Features/Runtime/EARLY_RUN_REGRESSION_REPAIR.md)
+- [`Features/Runtime/GAMEPLAY_ABILITIES_MAP_AMBIENT_UI_EXPANSION_HE_V1.md`](Features/Runtime/GAMEPLAY_ABILITIES_MAP_AMBIENT_UI_EXPANSION_HE_V1.md)
+- [`Features/Runtime/MOUNTED_RUN_INTRO_AND_DOORWAY_PORTALS.md`](Features/Runtime/MOUNTED_RUN_INTRO_AND_DOORWAY_PORTALS.md)
+- [`Features/Runtime/NEW_RUN_FEEDBACK_RESET.md`](Features/Runtime/NEW_RUN_FEEDBACK_RESET.md)
+- [`Features/Runtime/V23R12_RUNTIME_REGRESSION_REPAIR.md`](Features/Runtime/V23R12_RUNTIME_REGRESSION_REPAIR.md)
+- [`Features/Runtime/V23R13_AUDIO_QUICKSAND_TARGET_OUTLINE_REPAIR.md`](Features/Runtime/V23R13_AUDIO_QUICKSAND_TARGET_OUTLINE_REPAIR.md)
+- [`Features/UI/BBH_BOOT_INTRO_V1.md`](Features/UI/BBH_BOOT_INTRO_V1.md)
+- [`Features/UI/DAMAGE_NUMBERS_AND_TEST_LABEL_VISIBILITY_V1.md`](Features/UI/DAMAGE_NUMBERS_AND_TEST_LABEL_VISIBILITY_V1.md)
+- [`Features/UI/GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md`](Features/UI/GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md)
+- [`Features/UI/HUD_LAYOUT_HOTFIX_V119.md`](Features/UI/HUD_LAYOUT_HOTFIX_V119.md)
+- [`Features/UI/MAIN_MENU_DREAMY_STORYBOOK_V1.md`](Features/UI/MAIN_MENU_DREAMY_STORYBOOK_V1.md)
+- [`Features/UI/MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md`](Features/UI/MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md)
+- [`Features/UI/MINIMAP_HARD_FIX_V118.md`](Features/UI/MINIMAP_HARD_FIX_V118.md)
+- [`Features/UI/MINIMAP_RIGID_UNIT_ROTATION.md`](Features/UI/MINIMAP_RIGID_UNIT_ROTATION.md)
+- [`Features/UI/MINIMAP_VISIBILITY_HOTFIX_V117.md`](Features/UI/MINIMAP_VISIBILITY_HOTFIX_V117.md)
+- [`Features/UI/RUN_PRESENTATION_PAUSE_AND_MENU_POLISH.md`](Features/UI/RUN_PRESENTATION_PAUSE_AND_MENU_POLISH.md)
+- [`Features/UI/SECRET_COLLECTIBLE_BADGE_HUD_V121.md`](Features/UI/SECRET_COLLECTIBLE_BADGE_HUD_V121.md)
+- [`Features/VFX/GUARDIAN_TELEPORT_EFFECT_V125.md`](Features/VFX/GUARDIAN_TELEPORT_EFFECT_V125.md)
+
+## References
+
+- [`References/Visual/BOREDOM_AND_DUNGEONS_ART_DIRECTION_REFERENCE_BOARD_V1.jpg`](References/Visual/BOREDOM_AND_DUNGEONS_ART_DIRECTION_REFERENCE_BOARD_V1.jpg)
+- [`References/Visual/ModernHandheld3D/HANDHELD_3D_FRONT_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_3D_FRONT_GIRL_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_3D_MATERIAL_CLOSEUP_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_3D_MATERIAL_CLOSEUP_GIRL_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_3D_THREE_QUARTER_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_3D_THREE_QUARTER_GIRL_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_MENU_BOY_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_MENU_BOY_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_MENU_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_MENU_GIRL_V1.png)
+- [`References/Visual/ModernHandheld3D/REFERENCE_MANIFEST.md`](References/Visual/ModernHandheld3D/REFERENCE_MANIFEST.md)

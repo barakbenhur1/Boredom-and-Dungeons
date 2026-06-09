@@ -33,7 +33,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
+                "ProjectGuide/Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
                 "V23R19H_HOOK_DESIGN_RULE_MISSING",
                 "Boy mounted rule",
                 "The boy cannot use the grappling hook while mounted.",
@@ -42,14 +42,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
+                "ProjectGuide/Features/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
                 "V23R19H_GIRL_FUTURE_SPEC_MISSING",
                 "הילד אינו יכול להשתמש בוו בזמן רכיבה",
                 "הילדה תוכל להשתמש בוו"
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
+                "ProjectGuide/Status/BUGS.md",
                 "V23R19H_BUG_LEDGER_MISSING",
                 "BUG-V23R19H-001",
                 "Boy mounted hook incorrectly enabled",
@@ -57,7 +57,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19H_STATUS_MISSING",
                 "C01/C03/C04.RUNTIME.V23R19H",
                 "V23R19H acceptance gate",

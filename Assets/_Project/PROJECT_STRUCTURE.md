@@ -2,7 +2,7 @@
 
 Status date: **2026-06-06**
 
-This document defines folder ownership under `Assets/_Project`. Current progress and requirements remain authoritative only in `/PROJECT_STATUS.md`.
+This document defines folder ownership under `Assets/_Project`. Current progress and requirements remain authoritative only in `/ProjectGuide/Status/CURRENT.md`.
 
 ## Runtime scripts
 
@@ -165,9 +165,9 @@ Design/
 
 Document ownership:
 
-- `/PROJECT_STATUS.md` — only complete authoritative project plan and status.
+- `/ProjectGuide/Status/CURRENT.md` — only complete authoritative project plan and status.
 - `/README.md` — current overview and onboarding.
-- `/DOCUMENTATION_INDEX.md` — current/canonical/historical document map.
+- `/ProjectGuide/INDEX.md` — current/canonical/historical document map.
 - `Design/**` — detailed system specifications.
 - `Design/QA/**` — historical stage reports.
 - `Design/Roadmap/MASTER_REMAINING_WORK_ROADMAP_V128.md` — historical only.

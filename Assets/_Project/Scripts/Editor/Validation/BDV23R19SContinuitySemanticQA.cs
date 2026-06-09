@@ -33,7 +33,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/TASK_CONTINUITY_AND_HANDOFF_CONTRACT.md",
+                "ProjectGuide/Rules/TASK_CONTINUITY.md",
                 "V23R19S_CONTINUITY_LADDER_MISSING",
                 "installer/static validation",
                 "compilation",
@@ -45,7 +45,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/Tasks/MASTER_ACTIVE_WORK_SEQUENCE_V1.md",
+                "ProjectGuide/Status/WORK_QUEUE.md",
                 "V23R19S_MASTER_SEQUENCE_MISSING",
                 "Priority 0 — Close current automated blocker",
                 "Priority 1 — Enemy attack animations",
@@ -53,7 +53,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19S_STATUS_MISSING",
                 "Classification: CURRENT /",
                 "MASTER_ACTIVE_WORK_SEQUENCE_V1.md",
@@ -62,7 +62,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
+                "ProjectGuide/Status/BUGS.md",
                 "V23R19S_BUG_LEDGER_MISSING",
                 "This document must be updated every time"
             );

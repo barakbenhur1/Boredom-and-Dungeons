@@ -70,7 +70,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/OPEN_BUG_TRACKER.md",
+                "ProjectGuide/Status/BUGS.md",
                 "V23R19G_BUG_TRACKER_MISSING",
                 "This document must be updated every time",
                 "BUG-V23R19G-005",
@@ -79,7 +79,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19G_STATUS_MISSING",
                 "C01/C03/C04/C05/C11.RUNTIME.V23R19G",
                 "V23R19G acceptance gate",

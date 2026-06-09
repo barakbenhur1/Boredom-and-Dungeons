@@ -82,7 +82,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Economy/SHOP_AND_CURRENCY_SYSTEM_V1.md",
+                "ProjectGuide/Features/Economy/SHOP_AND_CURRENCY_SYSTEM_V1.md",
                 "V23R19E_MERCHANT_STATE_REQUIREMENTS_MISSING",
                 "Automatic partial refresh",
                 "Paid full reroll",
@@ -92,7 +92,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Economy/META_PROGRESSION_SYSTEM_V1.md",
+                "ProjectGuide/Features/Economy/META_PROGRESSION_SYSTEM_V1.md",
                 "V23R19E_META_REQUIREMENT_MISSING",
                 "REQUIRED FUTURE SYSTEM",
                 "separate from the in-run merchant currency",
@@ -101,7 +101,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19E_STATUS_MISSING",
                 "C01/C03/C05/C06/C11/C12.RUNTIME.V23R19E",
                 "V23R19E acceptance gate",

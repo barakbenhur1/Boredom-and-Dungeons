@@ -21,7 +21,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "ART_DIRECTION.md",
+                "ProjectGuide/Product/ART_DIRECTION.md",
                 "V23R18B_ANIMATION_TOKEN_ROOT_MISSING",
                 ExactAnimationToken
             );
@@ -29,7 +29,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "Assets/_Project/Design/Visual/ART_DIRECTION_AND_INTERFACE_CONVENTIONS_V1.md",
+                "ProjectGuide/Product/ART_DIRECTION.md",
                 "V23R18B_ANIMATION_TOKEN_MIRROR_MISSING",
                 ExactAnimationToken
             );
@@ -37,7 +37,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "Assets/_Project/Design/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md",
+                "ProjectGuide/Features/Animation/PRODUCTION_ANIMATION_REQUIREMENTS_V1.md",
                 "V23R18B_ANIMATION_TOKEN_REQUIREMENTS_MISSING",
                 ExactAnimationToken
             );
@@ -55,7 +55,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "Assets/_Project/Design/Hazards/QUICKSAND_AND_ENEMY_HAZARD_BEHAVIOR_V1.md",
+                "ProjectGuide/Features/Hazards/QUICKSAND_AND_ENEMY_HAZARD_BEHAVIOR_V1.md",
                 "V23R18B_HAZARD_ORDER_DESIGN_MISSING",
                 "Mounted recovery ordering refinement — V23R18B",
                 "before horse damage callbacks",
@@ -65,7 +65,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R18B_STATUS_MISSING",
                 "C01/C04/C10/C12.RUNTIME.V23R18B",
                 "dismount-before-damage",
@@ -75,7 +75,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(
                 result,
                 root,
-                "QA_CHECKLIST.md",
+                "ProjectGuide/QA/QA_CHECKLIST.md",
                 "V23R18B_QA_GATE_MISSING",
                 "Active V23R18B mounted-hole ordering and animation-token gate",
                 "before horse damage callbacks"

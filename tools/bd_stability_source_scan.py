@@ -220,6 +220,17 @@ def scan_duplicate_type_definitions(
         )
 
         for match in type_pattern.finditer(text):
+            line_start = text.rfind("\n", 0, match.start()) + 1
+            indentation = text[line_start:match.start()]
+            indentation_width = len(indentation.expandtabs(4))
+
+            # Project sources use block namespaces. Namespace-level type
+            # declarations are indented by at most four spaces; deeper
+            # declarations are nested helper types and may legitimately reuse
+            # names such as State, Runner or Bootstrap in multiple owners.
+            if indentation_width > 4:
+                continue
+
             full_name = f"{namespace}.{match.group('name')}"
             is_partial = bool(match.group("partial"))
             declarations[full_name].append((path, is_partial))

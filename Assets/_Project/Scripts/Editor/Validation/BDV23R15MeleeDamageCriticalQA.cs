@@ -46,7 +46,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/MELEE_DAMAGE_SPECTRUM_AND_CRITICALS_V1.md",
+                "ProjectGuide/Features/Combat/MELEE_DAMAGE_SPECTRUM_AND_CRITICALS_V1.md",
                 "V23R15_DESIGN_MISSING",
                 "exactly a 6% critical chance",
                 "exactly 1.5",

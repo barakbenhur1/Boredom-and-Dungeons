@@ -24,7 +24,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BD EXPLICIT COMMITTED AIRBORNE VISUAL OWNER V23R19K", "out airbornePresentation", "SpawnCommittedMeleeSlashArc", "BDMeleeSlashArcVisual.SpawnVertical");
             Require(result, root, "Assets/_Project/Scenes/02_CleanCore_MazePrototype.unity", "V23R19_SCENE_TUNING_MISSING",
                 "jumpTravelMultiplier: 1.1", "dashDistance: 3.35");
-            Require(result, root, "PROJECT_STATUS.md", "V23R19_STATUS_MISSING", "C01/C03/C10.RUNTIME.V23R19", "UNITY VERIFICATION REQUIRED");
+            Require(result, root, "ProjectGuide/Status/CURRENT.md", "V23R19_STATUS_MISSING", "C01/C03/C10.RUNTIME.V23R19", "UNITY VERIFICATION REQUIRED");
         }
         private static void Require(BDOneClickQAResult result,string root,string relative,string code,params string[] tokens)
         {

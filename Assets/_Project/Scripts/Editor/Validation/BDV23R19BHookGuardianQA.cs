@@ -61,7 +61,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Collectibles/BATTERY_GUARDIAN_ENCOUNTER_V1.md",
+                "ProjectGuide/Features/Collectibles/BATTERY_GUARDIAN_ENCOUNTER_V1.md",
                 "V23R19B_GUARDIAN_DESIGN_MISSING",
                 "V23R19B runtime activation and combat classification",
                 "`Elite`, not small regular enemies",
@@ -69,7 +69,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
+                "ProjectGuide/Features/Combat/GRAPPLING_HOOK_HEAVY_HOLD_V1.md",
                 "V23R19B_HOOK_DESIGN_MISSING",
                 "V23R19B hit-committed pull reliability",
                 "pull is committed",

@@ -60,7 +60,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/UI/GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md",
+                "ProjectGuide/Features/UI/GAME_BOY_MENU_AND_UI_OWNERSHIP_V1.md",
                 "V23R19Q_UI_CONTRACT_MISSING",
                 "memory rather than replica",
                 "Professional finish",
@@ -69,7 +69,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Runtime/Tasks/GAME_BOY_UI_PROFESSIONALIZATION_V1.md",
+                "ProjectGuide/Tasks/ACTIVE/MODERN_HANDHELD_MAIN_PAUSE_UI.md",
                 "V23R19Q_TASK_RECORD_MISSING",
                 "Why this task exists",
                 "Protected content and behavior",
@@ -78,7 +78,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19Q_STATUS_MISSING",
                 "C11.UI.V23R19Q",
                 "V23R19Q acceptance gate"

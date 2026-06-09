@@ -38,7 +38,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md",
+                "ProjectGuide/Features/Combat/AIRBORNE_VERTICAL_ATTACK_PRESENTATION_V1.md",
                 "V23R19M_AIRBORNE_DESIGN_AXIS_MISSING",
                 "local Z axis",
                 "left-to-right",
@@ -46,7 +46,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Animation/DEATH_PRESENTATION_V1.md",
+                "ProjectGuide/Features/Animation/DEATH_PRESENTATION_V1.md",
                 "V23R19M_SMALL_ENEMY_DEATH_DESIGN_MISSING",
                 "Small regular enemies",
                 "intact-body recoil",

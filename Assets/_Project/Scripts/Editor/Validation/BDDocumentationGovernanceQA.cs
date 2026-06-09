@@ -9,17 +9,20 @@ namespace BoredomAndDungeons.EditorTools.Validation
         private static readonly string[] RequiredDocuments =
         {
             "AGENTS.md",
-            "ART_DIRECTION.md",
-            "AUDIO_DIRECTION.md",
             "README.md",
-            "START_HERE.md",
-            "DEVELOPMENT_WORKFLOW.md",
-            "PROJECT_STATUS.md",
-            "DOCUMENTATION_INDEX.md",
-            "ARCHITECTURE.md",
-            "QA_CHECKLIST.md",
-            "TECHNICAL_DECISIONS.md",
-            "PERFORMANCE_GUIDELINES.md"
+            "ProjectGuide/README.md",
+            "ProjectGuide/INDEX.md",
+            "ProjectGuide/Rules/WORKFLOW.md",
+            "ProjectGuide/Rules/DOCUMENT_MAINTENANCE.md",
+            "ProjectGuide/Status/CURRENT.md",
+            "ProjectGuide/Status/BUGS.md",
+            "ProjectGuide/Status/WORK_QUEUE.md",
+            "ProjectGuide/Product/ART_DIRECTION.md",
+            "ProjectGuide/Product/AUDIO_DIRECTION.md",
+            "ProjectGuide/Engineering/ARCHITECTURE.md",
+            "ProjectGuide/Engineering/TECHNICAL_DECISIONS.md",
+            "ProjectGuide/Engineering/PERFORMANCE.md",
+            "ProjectGuide/QA/QA_CHECKLIST.md"
         };
 
         // BD PERMANENT REPOSITORY HYGIENE QA V19
@@ -29,7 +32,17 @@ namespace BoredomAndDungeons.EditorTools.Validation
             "WORKING_NOW.md",
             "LATEST_STATUS.md",
             "PROJECT_STATUS_V2.md",
-            "CURRENT_STATUS.md"
+            "CURRENT_STATUS.md",
+            "START_HERE.md",
+            "DEVELOPMENT_WORKFLOW.md",
+            "PROJECT_STATUS.md",
+            "DOCUMENTATION_INDEX.md",
+            "ARCHITECTURE.md",
+            "QA_CHECKLIST.md",
+            "TECHNICAL_DECISIONS.md",
+            "PERFORMANCE_GUIDELINES.md",
+            "ART_DIRECTION.md",
+            "AUDIO_DIRECTION.md"
         };
 
         public static void Scan(BDOneClickQAResult result)
@@ -83,51 +96,50 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ValidateTokens(
                 result,
                 root,
-                "START_HERE.md",
+                "ProjectGuide/README.md",
                 new[]
                 {
-                    "Mandatory First Read",
-                    "AGENTS.md",
-                    ".codex/",
-                    "Permanent user-request capture rule",
-                    "The user does not need to explain or repeat it"
+                    "Mandatory read order before any change",
+                    "Status/CURRENT.md",
+                    "Status/BUGS.md",
+                    "Status/WORK_QUEUE.md",
+                    "Non-negotiable rules"
                 }
             );
 
             ValidateTokens(
                 result,
                 root,
-                "DEVELOPMENT_WORKFLOW.md",
+                "ProjectGuide/Rules/WORKFLOW.md",
                 new[]
                 {
-                    "PERMANENT USER-REQUEST CAPTURE CONTRACT",
-                    "PERMANENT REPOSITORY HYGIENE CONTRACT",
-                    "The user never needs to repeat this instruction",
-                    "DOCUMENTATION_INDEX.md"
+                    "Request intake and ordering",
+                    "Mandatory ZIP delivery",
+                    "Unity verification gate",
+                    "ProjectGuide/Status/CURRENT.md"
                 }
             );
 
             ValidateTokens(
                 result,
                 root,
-                "DOCUMENTATION_INDEX.md",
+                "ProjectGuide/INDEX.md",
                 new[]
                 {
-                    "AGENTS.md",
-                    "ART_DIRECTION.md",
-                    "AUDIO_DIRECTION.md",
-                    ".codex/config.toml",
-                    "ARCHITECTURE.md",
-                    "QA_CHECKLIST.md",
-                    "TECHNICAL_DECISIONS.md",
-                    "PERFORMANCE_GUIDELINES.md"
+                    "## Rules",
+                    "## Status",
+                    "## Product",
+                    "## Engineering",
+                    "## QA",
+                    "## Features",
+                    "## Plans"
                 }
             );
 
             ValidateTokens(
                 result,
                 root,
-                "ARCHITECTURE.md",
+                "ProjectGuide/Engineering/ARCHITECTURE.md",
                 new[]
                 {
                     "flowchart",
@@ -139,13 +151,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ValidateTokens(
                 result,
                 root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 new[]
                 {
-                    "Current development snapshot",
-                    "Record every material user request here",
-                    "Saved feature resume point",
-                    "Run repository hygiene on every handoff"
+                    "# Current Development Snapshot",
+                    "Classification: CURRENT",
+                    "Exact resume point",
+                    "Current user decisions"
                 }
             );
 

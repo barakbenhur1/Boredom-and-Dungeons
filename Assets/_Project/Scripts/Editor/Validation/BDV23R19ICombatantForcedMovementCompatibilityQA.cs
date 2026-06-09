@@ -26,14 +26,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19I_COMPILE_HISTORY_MISSING",
                 "V23R19I forced-movement API compile compatibility",
                 "Unity compiled after V23R19I"
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Movement/ROPE_CLIMBING_AND_QUICKSAND_SWAMP_HE_V1.md",
+                "ProjectGuide/Features/Movement/ROPE_CLIMBING_AND_QUICKSAND_SWAMP_HE_V1.md",
                 "V23R19I_TRAVERSAL_REQUIREMENTS_MISSING",
                 "REQUIRED / LATER / NOT IMPLEMENTED",
                 "חבלים מתנדנדים",

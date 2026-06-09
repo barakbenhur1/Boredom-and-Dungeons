@@ -49,7 +49,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Economy/CATERPILLAR_GAMBLING_NPC_V1.md",
+                "ProjectGuide/Features/Economy/CATERPILLAR_GAMBLING_NPC_V1.md",
                 "V23R19P_CATERPILLAR_SPEC_MISSING",
                 "REQUIRED / FUTURE / NOT IMPLEMENTED",
                 "does **not** appear in every room",
@@ -62,7 +62,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R19P_STATUS_MISSING",
                 "C01.QA.V23R19P",
                 "Caterpillar gambling NPC"

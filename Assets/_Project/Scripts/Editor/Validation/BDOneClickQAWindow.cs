@@ -1447,7 +1447,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BDC07PlayableBossEncounterInstaller.cs";
 
             string designRelative =
-                "Assets/_Project/Design/UI/" +
+                "ProjectGuide/Features/UI/" +
                 "BBH_BOOT_INTRO_V1.md";
 
             string[] requiredFiles =
@@ -2092,7 +2092,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BDPrototypeHazardSceneInstaller.cs";
 
             string designRelative =
-                "Assets/_Project/Design/Rendering/" +
+                "ProjectGuide/Features/Rendering/" +
                 "GAMEPLAY_SHADOW_POLICY_V1.md";
 
             string[] requiredFiles =
@@ -2244,7 +2244,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BDPrototypeHazardSceneInstaller.cs";
 
             string designRelative =
-                "Assets/_Project/Design/UI/" +
+                "ProjectGuide/Features/UI/" +
                 "MAIN_MENU_SETTINGS_RESULT_FLOW_V2.md";
 
             string[] requiredFiles =
@@ -2446,7 +2446,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BDBBHBootIntro.cs";
 
             string designRelative =
-                "Assets/_Project/Design/UI/" +
+                "ProjectGuide/Features/UI/" +
                 "MAIN_MENU_DREAMY_STORYBOOK_V1.md";
 
             string[] requiredFiles =
@@ -2575,7 +2575,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/Hazards/BDHorseHazardSafety.cs",
                 "Assets/_Project/Scripts/Runtime/BDHorseController.cs",
                 "Assets/_Project/Scripts/Runtime/BDPlayerController.cs",
-                "Assets/_Project/Design/Movement/NATURAL_MOVEMENT_AWARENESS_FACING_V1.md"
+                "ProjectGuide/Features/Movement/NATURAL_MOVEMENT_AWARENESS_FACING_V1.md"
             };
 
             for (int index = 0;
@@ -2724,7 +2724,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/BDSpinAttackVisual.cs";
 
             const string designRelative =
-                "Assets/_Project/Design/Combat/" +
+                "ProjectGuide/Features/Combat/" +
                 "SPINNING_AOE_LONG_PRESS_LIGHT_ATTACK_V1.md";
 
             string[] requiredFiles =

@@ -49,7 +49,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Editor/Validation/" +
                 "BDPrototypeHazardSceneInstaller.cs";
             const string designRelative =
-                "Assets/_Project/Design/Horse/" +
+                "ProjectGuide/Features/Horse/" +
                 "HORSE_EXHAUSTED_FOLLOW_AND_PET_INTERACTION.md";
 
             ValidateRequiredFile(result, root, interactionRelative);

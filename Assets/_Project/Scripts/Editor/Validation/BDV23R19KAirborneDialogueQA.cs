@@ -40,14 +40,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
+                "ProjectGuide/Features/Characters/GIRL_FATHER_BOSS_META_PROGRESSION_HE_V1.md",
                 "V23R19K_CHARACTER_HOOK_RULE_MISSING",
                 "הילד אינו יכול להשתמש בוו בזמן רכיבה",
                 "הילדה תוכל להשתמש בוו"
             );
 
             Require(result, root,
-                "Assets/_Project/Design/Cinematics/OPENING_DIALOGUE_WORDLESS_CHARACTER_VOICE_HE_V1.md",
+                "ProjectGuide/Features/Cinematics/OPENING_DIALOGUE_WORDLESS_CHARACTER_VOICE_HE_V1.md",
                 "V23R19K_OPENING_DIALOGUE_SPEC_MISSING",
                 "REQUIRED / LATER / NOT IMPLEMENTED",
                 "I’m bored.",

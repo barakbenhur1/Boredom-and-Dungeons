@@ -58,7 +58,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "Assets/_Project/Design/UI/DAMAGE_NUMBERS_AND_TEST_LABEL_VISIBILITY_V1.md",
+                "ProjectGuide/Features/UI/DAMAGE_NUMBERS_AND_TEST_LABEL_VISIBILITY_V1.md",
                 "V23R14_DESIGN_MISSING",
                 "Damage-number implementation — DONE IN CODE",
                 "Prototype-label visibility — DONE IN CODE",
@@ -67,7 +67,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             );
 
             Require(result, root,
-                "PROJECT_STATUS.md",
+                "ProjectGuide/Status/CURRENT.md",
                 "V23R14_STATUS_MISSING",
                 "C01/C03/C11.RUNTIME.V23R14",
                 "Animated damage numbers — IMPLEMENTED",
