@@ -59,6 +59,8 @@ namespace BoredomAndDungeons
                     BestFit(text, 13, text.fontSize);
                 else if (text.name == "Control Legend")
                     BestFit(text, 9, 12);
+                else if (text.name == "Subtitle")
+                    BestFit(text, 10, text.fontSize);
                 else if (text.name == "Label" ||
                          text.name == "Badge")
                     BestFit(text, 12, text.fontSize);
