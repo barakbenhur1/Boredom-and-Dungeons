@@ -1,5 +1,11 @@
 # Boredom & Dungeons — Canonical Art Direction and Interface Conventions
 
+## Modern handheld contextual artwork
+
+The handheld is a premium physical product. Runtime must use real molded geometry plus a high-resolution blue→violet→orange micro-surface material; never paste a full-face image across the shell or controls. The supplied orthographic texture sheet is a source/reference for color and ornament, not a flat Runtime replacement for volume.
+
+Only New Game / New Run may show the selected Boy or Girl with the horse. Progression uses an arcane memory hall, Settings uses a magical mechanism/workshop, Credits uses a creator library/worktable, Quit/Return uses an open moonlit gate, and Resume/Pause uses a neutral castle/run atmosphere. Non-New-Game artwork must remain character-neutral.
+
 > **Canonical root source.** Canonical file path: `ProjectGuide/Product/ART_DIRECTION.md`. All visual, interface, model, material, texture, animation and presentation work reads this maintained owner.
 
 > **Canonical root source, organized under ProjectGuide.** Every art, UI, VFX, model, material, texture, animation, menu, HUD, icon, typography and presentation change must read this file.
@@ -153,7 +159,19 @@ The approved Main and Escape/Pause presentation is no longer satisfied by a flat
 
 ### Boy/Girl image parity
 
-Every interface/reference/promotional image that depicts the Boy must ship with a matched Girl version in the same asset change. The pair keeps identical dimensions, crop, camera, background, lighting, horse pose, safe areas, grading and import settings. Runtime shows the variant matching the active playable character. A Boy image without its Girl pair fails the visual acceptance gate.
+Every interface/reference/promotional image that depicts the Boy must ship with a matched Girl version in the same asset change. The pair keeps identical dimensions, crop, camera, background, lighting, horse pose, safe areas, grading and import settings. Runtime shows the variant matching the active playable character: Boy gameplay shows Boy art and Girl gameplay shows Girl art. The choice is never random, and a saved preference is fallback only when no active identity exists. A Boy image without its Girl pair fails the visual acceptance gate.
 
 Full specification: `ProjectGuide/Production/ModernHandheld/MODERN_HANDHELD_3D_SPEC.md`.
+
+### Physical product-shot composition
+
+The approved in-game menu scene presents the actual modeled handheld on the supplied dark-wood table, not a rendered handheld picture. Use the approved orthographic artwork as a masked shell decal while preserving real depth and interactive parts. The device is almost front-facing with a slight backward pitch, lit from upper-right, with a short soft shadow to the left and a tight contact shadow. Focus stays on the device and glass-covered screen; wood detail fades progressively out of focus toward near/far frame regions. Every dialog and page transition remains inside the screen aperture.
 <!-- B&D MODERN 3D HANDHELD ART DIRECTION END -->
+
+### V4 physical-product lighting and material gate
+
+- Readable rear thickness, outer bevel and side mold seams are mandatory from the approved slight angle.
+- The supplied wood receives a short soft shadow to the left and a tight contact shadow, consistent with one upper-right key light.
+- The glass may glint only along the upper-right edge/diagonal at low opacity. It must not cross or veil important screen content.
+- Decorative surface detail belongs in the molded material/geometry; it may not overlap interactive controls as a full-face decal.
+- The small New Game card is text-only and temporary to that selection. Character identity is communicated by the large New Game artwork, not labels such as Boy/Girl route or Mother status.

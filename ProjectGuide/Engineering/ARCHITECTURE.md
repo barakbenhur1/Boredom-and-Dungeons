@@ -1,4 +1,25 @@
+## Handheld live-screen reliability
+
+## Modern handheld V4 presentation ownership
+
+- `BDModernHandheld3DPresenter` owns generated physical geometry, screen RenderTexture, hardware interaction, contextual art, product-shot shadow layers and glass presentation.
+- `BDMainMenuFlow` remains the semantic state/action owner; V4 does not duplicate navigation decisions.
+- The shell is a real mesh/material system. A full-face transparent image is forbidden as a Runtime geometry substitute.
+- The supplied texture sheet remains a visual/source reference; production Runtime uses the shell micro-surface texture and generated geometry.
+- The New Game memory card is a selection-dependent view only and has no gameplay/state authority.
+
+
+## Handheld artwork ownership
+
+`BDModernHandheld3DPresenter.ResolveContextArtwork` is the single presentation resolver for menu imagery. It derives artwork from the displayed page and selected semantic row. `BDPlayableCharacterIdentity` is consulted only for Main Menu Start Game / New Run. No other page may branch on character identity. This avoids duplicated neutral art and prevents unrelated pages from inheriting New Game imagery.
+
+The internal menu Canvas uses `RenderMode.ScreenSpaceCamera` at the exact RenderTexture resolution. This avoids world-space orientation/scale drift and guarantees deterministic rasterization into the physical display. The screen camera renders before the product camera consumes the texture, and page rebuilds request one immediate render. Physical button meshes remain visual/tactile parts; separate invisible hit targets own pointer reliability and forward actions to the existing menu authority.
+
 # Architecture — Stable System Map
+
+## Modern handheld screen UI dependency
+
+`BDModernHandheld3DPresenter` owns only presentation and input translation. Its internal live screen is a ScreenSpaceCamera uGUI Canvas (`com.unity.ugui` `2.0.0`) captured by one isolated screen camera into one cached RenderTexture. `BDMainMenuFlow` remains the semantic page/action authority; the presenter must not duplicate run, settings, progression or pause state.
 
 This document explains durable ownership and integration boundaries. It does not track current task status; `ProjectGuide/Status/CURRENT.md` owns that information.
 
@@ -229,7 +250,7 @@ When implemented:
 - Shell and content remain in one ordered IMGUI composition; no second competing menu canvas or OnGUI owner is introduced.
 
 <!-- B&D MODERN 3D HANDHELD TARGET ARCHITECTURE START -->
-## Approved target architecture — upright 3D handheld (not yet implemented)
+## Implemented rollout architecture — upright 3D handheld
 
 The approved final menu presentation requires a real 3D device while preserving one semantic menu owner.
 
@@ -239,6 +260,37 @@ The approved final menu presentation requires a real 3D device while preserving 
 - The screen view submits semantic commands to `BDMainMenuFlow`; it does not own navigation state.
 - One input adapter merges pointer, keyboard/controller and physical-device hit targets into Navigate/Confirm/Back/OpenSettings/OpenProgression commands.
 - Main, Settings, Progression, Pause, Abandon and Loading reuse the same device instance/system.
-- Runtime character identity selects matched Boy/Girl screen art.
-- Until implemented, the current one-pass IMGUI shell remains current Runtime truth; documentation must not claim the 3D presenter exists.
+- Runtime character identity selects the matched Boy/Girl pair only for Start Game / New Run; every other option/page resolves a dedicated character-neutral image.
+- The presenter now exists as an additive rollout path. Legacy IMGUI remains a fallback only and is suppressed while the 3D presenter visibly owns the menu.
 <!-- B&D MODERN 3D HANDHELD TARGET ARCHITECTURE END -->
+
+## Modern 3D handheld menu architecture
+
+```mermaid
+flowchart LR
+    F[BDMainMenuFlow
+state and actions] --> P[BDModernHandheld3DPresenter
+presentation/input bridge]
+    C[BDPlayableCharacterIdentity
+active Boy/Girl] --> P
+    P --> SC[Isolated screen camera]
+    SC --> RT[Single cached RenderTexture]
+    RT --> DP[Recessed 3D display plane]
+    P --> GL[Independent glass/reflection meshes]
+    P --> HW[3D D-pad / A B X Y / Settings / Progression]
+    M[Mouse + keyboard/gamepad] --> P
+```
+
+Ownership rules:
+
+- `BDMainMenuFlow` continues to own Main/Pause/Settings/Progression/Abandon/Loading state and run transitions.
+- `BDModernHandheld3DPresenter` owns only 3D construction, screen composition, focus, pointer raycasts, hardware-style input translation and tactile presentation.
+- The presenter never becomes a gameplay movement, combat, health, save or scene-flow owner.
+- The screen uses one camera and one cached RenderTexture per presenter.
+- The device camera renders only the dedicated device layer; screen content renders only the isolated screen layer.
+- `BDPlayableCharacterIdentity` is consulted only for the Start Game / New Run preview pair. Active Boy selects Boy art and active Girl selects Girl art; saved preference is fallback only when no active identity exists. All other artwork bypasses character identity and resolves from shared neutral assets.
+- Legacy IMGUI/backdrop remain fallback paths and are suppressed only while the new presenter is visible.
+- The device view uses isolated unnamed layers `29` (physical product scene) and `30` (screen Canvas) rather than the built-in UI layer, preventing unrelated UI colliders/renderers from entering device raycasts.
+- The uploaded orthographic front artwork is a visual/source reference only. Runtime uses a molded shell material and independent live display/tactile control geometry; no full-face decal is rendered.
+- The table environment uses the uploaded wood source and one material blending matching sharp/defocused textures around a configurable focal band. Device, table and shadows share the same rest transform/contact plane.
+- Each D-pad direction owns a separate moving cap and hit target; no four-way component competes over one transform.

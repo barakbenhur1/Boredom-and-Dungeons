@@ -18,7 +18,7 @@ For AI/Codex work, root [`../AGENTS.md`](../AGENTS.md) must be read first.
 - The handheld is a real 3D object, not a flat image: modeled shell, recessed display, clear glass/plastic, tactile buttons and physical press feedback.
 - Input contract: mouse and D-pad navigation; `A` confirm, `B` back, `X` Settings, `Y` Progression; physical Settings and Progression shortcut buttons.
 - User-facing label: `Progression`, always on one line where supported.
-- Every image containing the Boy requires a composition-matched Girl version in the same change.
+- Only the New Game / New Run preview uses protagonist art: active Boy shows the Boy image and active Girl shows the Girl image. Progression, Settings, Credits, Quit, Resume/Pause and confirmation artwork must remain character-neutral and use one shared asset each.
 - Existing runtime/QA/target-outline bugs remain open until their own Unity and user-verification gates pass.
 
 ## Source-of-truth map

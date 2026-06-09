@@ -1,7 +1,27 @@
 # Modern Upright Handheld — 3D Asset and Interactive UI Specification V1
 
+## Context artwork matrix
+
+| Context | Artwork rule | Character variants |
+|---|---|---|
+| Start Game / New Run | Boy or Girl with horse, selected from active route | Required pair |
+| Resume / Pause | Neutral current-adventure/castle atmosphere | One shared asset |
+| Progression | Character-neutral arcane memory hall | One shared asset |
+| Settings | Character-neutral magical mechanism/workshop | One shared asset |
+| Credits | Character-neutral creator library/worktable | One shared asset |
+| Quit / Return / Confirm | Character-neutral moonlit exit gate | One shared asset |
+
+Main and Pause selection must update the preview artwork before activation. Entered pages retain the same matching context image.
+
+## Texture quality floor
+
+- Shell source: minimum 2048×2048, high-quality/uncrunched import, anisotropic filtering.
+- Runtime shell: real rounded geometry with rear depth, outer bevel and side mold seams.
+- Surface: minimum 2048×2048 microtexture combined with an object-space blue→violet→orange molded-material shader.
+- Full-face Runtime decals/stickers are forbidden because they flatten volume and can overlap modeled controls. The orthographic texture sheet remains a source/reference asset only.
+
 ```text
-Status: APPROVED DESIGN / CURRENT SPECIFICATION / NOT YET IMPLEMENTED
+Status: V4 PHYSICAL-MATERIAL REPAIR IMPLEMENTED / UNITY VERIFICATION REQUIRED
 Task ID: C11.UI.MODERN_HANDHELD_3D.V1
 Captured: 2026-06-09
 Primary owners: BDMainMenuFlow (state/input), 3D handheld presenter (presentation), menu-screen view (screen content)
@@ -14,6 +34,21 @@ This document is the complete asset breakdown and implementation contract for th
 The approved presentation is an original upright, portrait-oriented, modern handheld device inspired by the emotional memory of a classic Game Boy silhouette without copying a commercial device. The screen sits in the upper half. The physical controls sit in the lower half. The device is a real three-dimensional object with material depth, a tactile body, separate pressable controls and a real layered display assembly behind clear glass or transparent plastic.
 
 The approved device replaces the idea of a flat decorative frame. It must read as a physical fantasy-tech object that could exist inside the game world.
+
+
+## Implemented Runtime architecture
+
+- `BDModernHandheld3DPresenter` owns presentation only and is installed once after scene load.
+- `BDMainMenuFlow` remains the state, pause, reload and action authority.
+- One isolated screen camera renders a World-Space Canvas to one cached `960×1080` RenderTexture.
+- The RenderTexture is shown on a recessed display plane behind independent glass/reflection geometry.
+- The shell, bezel, backing, controls and speaker inserts are generated once as real 3D meshes and cached until teardown.
+- Mouse interaction uses bounded raycasts only while the menu is visible.
+- Keyboard/gamepad D-pad and A/B/X/Y actions share the same action bridge as physical device clicks.
+- `BDPlayableCharacterIdentity` selects the Boy/Girl texture pair from the active player identity, with deterministic saved fallback only when no active identity exists.
+- Legacy IMGUI remains as a fallback but is suppressed while the presenter is ready and visible.
+
+This implementation is not accepted until Unity compile, automated QA, focused Play Mode, performance and visual approval pass.
 
 ## 2. Approved visual identity
 
@@ -88,18 +123,29 @@ The parallel Girl version must preserve:
 
 Only the player character representation changes. The Girl version must not be treated as an optional later marketing variant.
 
-Required naming pattern:
+### 3.1 Active-route display rule
+
+Active-character selection applies only to Start Game / New Run, because that is the only handheld option allowed to depict the playable protagonist. The New Game hero image and its small preview must change together. A Girl route may never show the Boy for one frame while identity resolves; unresolved identity uses the persisted deterministic preference, then refreshes immediately when an active identity appears. Missing route art produces a neutral/black-safe surface rather than displaying the other character.
+
+Required naming pattern for protagonist art:
 
 ```text
 <AssetName>_Boy_V###
 <AssetName>_Girl_V###
 ```
 
-Runtime selection must use the active character identity. It must never choose a random gendered image or show Boy art for the Girl route.
+Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation use dedicated character-neutral assets. They do not branch on active character and must not be duplicated by route.
 
-When a new Boy image is added, its matching Girl image is part of the same Definition of Done. A Boy image without its Girl pair is incomplete and blocks acceptance.
+When a new Boy image is added, its matching Girl image is part of the same Definition of Done. Neutral option artwork is complete as one shared asset only when it contains neither playable protagonist.
 
-The current approved main-menu concept includes both Boy-and-horse and Girl-and-horse variants. The Girl-and-horse version is the primary reference for the current 3D product renders, while the Boy version remains required as a matched runtime asset.
+## 3.2 Table, camera, light and shadow composition
+
+- The handheld rests on the supplied dark-wood table surface.
+- The camera sees the device primarily front-on with a restrained perspective angle; the upper device edge is slightly farther from camera than the lower edge.
+- The table and device must share a believable contact plane. The device may not float above a background quad.
+- Key light reads from above/right. The principal cast shadow is short, soft and leftward, with a tighter contact shadow at the base.
+- Focus is on the handheld and its screen. Table blur is depth-like and progressive: a relatively sharp focal/contact band transitions smoothly to stronger defocus toward near and far areas. A uniform pre-blurred background is not acceptable.
+- The supplied wood image remains the source texture; generated sharp/blur variants must share crop, dimensions and color.
 
 ## 4. Terminology and labels
 
@@ -629,7 +675,7 @@ The approved reference images are stored under:
 
 `ProjectGuide/References/Visual/ModernHandheld3D/`
 
-They are direction references, not textures to project directly onto the final model.
+The product renders remain direction references. The separately supplied orthographic/front texture sheet is approved as a masked front-surface decal on the real shell, with transparent cutouts for the live screen and all modeled controls. It may not replace the mesh, glass, display or physical controls, and it may not bake live menu text into the shell.
 
 ## 16. Implementation phases
 
@@ -736,4 +782,13 @@ The task is complete only when all of the following are true:
 
 ## 19. Exact continuation point
 
-After this specification package is installed and reviewed, the next requested step is implementation planning and then the actual 3D vertical slice. Before changing Runtime code, inspect the exact local menu/input/presentation implementation and record any conflict between the current one-pass IMGUI shell and the approved 3D screen-rendering target. Do not invent missing APIs or claim that the 3D device already exists.
+The procedural vertical slice, screen RenderTexture, glass, physical controls, masked shell decal, uploaded wood table, gradual focus shader, contained screen pages/transitions and deterministic Boy/Girl artwork are implemented in the current working tree. The next step is not additional speculative design: install the full-project ZIP, let Unity import/compile, run `TEST EVERYTHING`, and complete the focused visual/input/performance/user acceptance gate. Any failure reopens this task and is repaired before returning to the saved Runtime queue.
+
+## V4 selection-card and input addendum
+
+- The small memory card exists only when a fresh Start Game/New Run row is selected.
+- It is text-only: no duplicate artwork and no Boy/Girl route or Mother state.
+- Only the large New Game hero panel resolves the active Boy/Girl pair.
+- W/A/S/D navigate identically to arrow keys.
+- Glass glint is limited to the upper-right light-facing region and remains subordinate to UI readability.
+- Shadow stack: soft left penumbra, denser short core and tight contact shadow.

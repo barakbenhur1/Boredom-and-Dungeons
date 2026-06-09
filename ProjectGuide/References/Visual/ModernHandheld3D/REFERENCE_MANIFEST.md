@@ -2,7 +2,7 @@
 
 Status: approved visual references for `C11.UI.MODERN_HANDHELD_3D.V1`.
 
-These images define direction for form, material, screen depth, physical controls and menu composition. They are not production textures and must not be projected directly onto a one-piece flat model.
+These files define form, material, screen depth, physical controls, menu composition and approved source surfaces. Product renders remain references. The orthographic texture sheet and wood source are approved production inputs only through the masking/material rules below; neither may flatten the live 3D device or bake menu behavior into a screenshot.
 
 ## Files
 
@@ -11,6 +11,8 @@ These images define direction for form, material, screen depth, physical control
 - `HANDHELD_3D_MATERIAL_CLOSEUP_GIRL_V1.png` — tactile button, plastic, perforation, glass and surface-material reference.
 - `HANDHELD_MENU_BOY_V1.png` — Boy-and-horse main-menu art/layout variant.
 - `HANDHELD_MENU_GIRL_V1.png` — Girl-and-horse main-menu art/layout variant.
+- `HANDHELD_ORTHOGRAPHIC_TEXTURE_SHEET_V1.png` — user-supplied multi-view/front device source. It guides color, ornament and proportions; Runtime does not paste it as a full-face decal and keeps screen/controls as real independent geometry.
+- `HANDHELD_TABLE_DARK_WOOD_SOURCE_V1.png` — exact user-supplied table source. Runtime sharp/defocused variants preserve this crop and color.
 
 ## Character parity rule
 
@@ -26,3 +28,11 @@ Every reference or production image that depicts the Boy requires a matched Girl
 - X = Settings, Y = Progression, A = Select, B = Back;
 - mouse and D-pad navigation;
 - user-facing label `Progression`, never `Meta Progression` in this redesigned UI.
+
+
+## Production-use limits
+
+- The orthographic sheet may contribute shell stickers/decals and material detail only. It never replaces shell volume, glass, display or modeled controls.
+- The screen region is cut out and displays live UI through the RenderTexture.
+- D-pad, A/B/X/Y, Settings and Progression areas are cut out so the 3D interactive parts remain visible and clickable.
+- The wood source is used for both sharp and defocused matching textures; focus falloff is performed by the table material, not by replacing the entire scene with one blurred image.

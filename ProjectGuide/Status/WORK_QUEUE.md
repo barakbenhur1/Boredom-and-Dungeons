@@ -1,8 +1,79 @@
 # Master Active Work Sequence V1
 
+## Current blocking slice — V4 handheld physical-product repair
+
+1. Install and compile the V4 package.
+2. Run TEST EVERYTHING; automated status must remain 0/0/0.
+3. In Main Menu verify no full-face decal crosses controls, body depth/bevels read clearly, and the short soft shadow falls left.
+4. Verify the New Game-only text card appears only for fresh Start Game/New Run and contains no image, Boy/Girl route or Mother text.
+5. Verify arrows and WASD are equivalent, including input release gating.
+6. Verify the upper-right glass glint is visible but never obscures labels or artwork.
+7. Only after user visual approval return to the previously preserved Runtime repair queue.
+
+
+## Priority -6 — Premium handheld texture, layout and contextual option artwork
+
+**Status:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+1. Superseded: V3 upgraded the front decal, but V4 removes that rejected approach and uses molded material/geometry instead.
+2. Remove duplicate center-button labels and keep one clean label owner.
+3. Prevent long titles from colliding with artwork.
+4. Give Main/Pause options dedicated context artwork.
+5. Restrict Boy/Girl switching to Start Game / New Run; keep every other image character-neutral.
+6. Compile, run TEST EVERYTHING and complete focused Play Mode/user visual acceptance before advancing.
+
+## Priority -5 — Repair first Play Mode handheld regressions
+
+**Status:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+1. Render the live uGUI menu reliably into the physical screen RenderTexture.
+2. Prevent the Escape press that opens Pause from closing it again during presenter activation.
+3. Remove oversized/duplicated hardware labels and preserve correct X/Y/A/B orientation.
+4. Give every physical face/shortcut button an independent, forgiving hit target while animating its real 3D mesh.
+5. Run TEST EVERYTHING, then focused Main/Pause and six-button mouse checks before any cinematic transition work.
+
+## Priority -4 — Restore handheld compilation
+
+**Status:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+1. Install the corrected project package.
+2. Let Unity Package Manager resolve `com.unity.ugui` `2.0.0`.
+3. Require zero compiler errors for `BDModernHandheld3DPresenter`.
+4. Rerun TEST EVERYTHING and require `0 blockers / 0 warnings / 0 info`.
+5. Do not begin visual tuning or transition implementation while compilation is blocked.
+
+## Priority -3.5 — Seamless handheld-to-gameplay transition
+
+**Status:** `CAPTURED / BLOCKED BY BASE HANDHELD VERIFICATION`
+
+After the 3D handheld is compiled and visually verified, implement the expanded professional opening/exit contract in `ProjectGuide/Tasks/QUEUED/PROFESSIONAL_OPENING_CINEMATIC.md`:
+
+- live gameplay inside the device screen before zoom-in;
+- frame-matched menu-camera to gameplay-camera handoff;
+- high-sky gameplay-camera starting pose and hidden HUD;
+- opening dive only after handoff;
+- reverse exit/abandon transition back into the handheld;
+- no cut, black frame, snap, double transition, early HUD or fixed-delay state drift.
+
+## Priority -3 — Modern 3D handheld Main/Pause verification
+
+**Status:** `IMPLEMENTED / STATIC PASS / UNITY VERIFICATION REQUIRED`
+
+1. Install the full-project implementation package.
+2. Wait for Unity compilation and resolve every compiler/Console issue before testing behavior.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require 0 blockers, 0 warnings and 0 info unless the user explicitly accepts a finding.
+4. Verify Main Menu visual hierarchy, real 3D shell volume, screen recess, glass thickness/reflection and blue-orange material response.
+5. Verify mouse selection, D-pad/arrow navigation, A select, B back, X Settings, Y Progression and both physical shortcut buttons.
+6. Start as Boy and verify Start Game / New Run shows Boy art; start as Girl and verify only that option switches to the matched Girl art. No random or stale image is allowed.
+7. Verify Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation each use the correct character-neutral image; Pause resumes safely and returns to a clean main menu only after confirmation.
+8. Repeat open/close/reload and inspect Console, RenderTexture cleanup, materials, listeners, idle GC and frame pacing.
+9. Record real evidence in Current/Bugs/Verification. Only then move this task out of ACTIVE and return to the preserved Runtime repair order.
+
+Implementation-specific focused checks also include the uploaded masked front texture, exact uploaded wood source, progressive near/far table defocus, slight top-away camera angle, upper-right light response, short left shadow, page transitions contained inside the screen and direction-specific D-pad travel.
+
 ## Priority -2 — Project Guide reorganization
 
-**Status:** `IMPLEMENTED IN PACKAGE / LOCAL + UNITY VALIDATION REQUIRED`
+**Status:** `AUTOMATED VERIFIED / MIGRATION COMPLETE`
 
 - Move maintained project knowledge out of Unity `Assets/` into `ProjectGuide/`.
 - Provide a concise mandatory entry page and organized topic hierarchy.
@@ -13,7 +84,7 @@
 
 ## Priority -1 — Clear ProjectGuide Unity discovery blockers
 
-**Status:** `IMPLEMENTED IN V1.2 / AUTOMATED RERUN REQUIRED`
+**Status:** `VERIFIED — TEST EVERYTHING 0/0/0 AT 2026-06-09T00:13:48.3411810Z`
 
 - TEST EVERYTHING at `2026-06-09T00:06:07.0833090Z` reported 9 documentation-only blockers after the reorganization.
 - Restore stable V23R8/V23R9/V23R10 discovery language in the new index/art owner.
@@ -24,7 +95,7 @@
 <!-- B&D USER-PRIORITIZED MODERN 3D HANDHELD START -->
 ## User priority override — upright 3D Main/Pause device before Priority 0
 
-**Status:** `CURRENT / SPECIFICATION COMPLETE / IMPLEMENTATION REQUIRED`
+**Status:** `CURRENT / IMPLEMENTED / UNITY VERIFICATION REQUIRED`
 
 The user explicitly requested this stage before returning to the prior repair and enemy-animation sequence.
 
@@ -36,7 +107,7 @@ Required order:
 4. implement screen depth/glass and tactile physical controls;
 5. implement mouse + D-pad + A/B/X/Y + Settings/Progression shortcuts;
 6. adapt Main and Escape/Pause without inventing unsupported pages/data;
-7. implement deterministic Boy/Girl paired art selection;
+7. implement deterministic Boy/Girl paired art selection only for Start Game / New Run and character-neutral art routing elsewhere;
 8. run static, compilation, TEST EVERYTHING, focused Play Mode, performance and user acceptance gates;
 9. only then return to the saved prior blocker/repair sequence below unless the user reprioritizes again.
 
@@ -70,8 +141,8 @@ This document must be updated whenever:
 - a future requirement is added or clarified;
 - the exact resume point changes.
 
-`ProjectGuide/Status/CURRENT.md` remains the global summary.  
-`OPEN_BUG_TRACKER.md` remains the current open-defect ledger.  
+`ProjectGuide/Status/CURRENT.md` remains the global summary.
+`OPEN_BUG_TRACKER.md` remains the current open-defect ledger.
 This file owns the complete ordered execution sequence and the distinction between implemented, verified, unverified, and future work.
 
 ---
@@ -439,7 +510,7 @@ Keep all approved inventory, room placement, refresh, reroll, hostility, death, 
 
 **Status:** `FUTURE / OPEN DESIGN`
 
-End-of-run points based on progress/performance.  
+End-of-run points based on progress/performance.
 Future unlock area/name, exact rewards, costs, skins, characters, bosses, and progression balance remain open.
 
 ---

@@ -1,3 +1,88 @@
+# QA Checklist
+
+## Modern handheld V4 focused Play Mode gate
+
+- [ ] Full-face texture/decal does not render over D-pad, shortcuts, face buttons, speakers or lower shell.
+- [ ] Shell reads as molded 3D plastic with visible rear depth, outer bevel and side seam from the approved slight angle.
+- [ ] Upper-right light produces a short soft shadow to the left plus a tight contact shadow; shadow is visible but not long.
+- [ ] Glass has a restrained upper-right glint and edge reflection without hiding menu text/art.
+- [ ] W/A/S/D navigate exactly like Up/Left/Down/Right, including after opening Pause with Escape.
+- [ ] New Game-only memory card is visible only for fresh Start Game/New Run selection.
+- [ ] That card is text-only and contains no Boy, Girl, route or Mother wording.
+- [ ] Non-New-Game options keep character-neutral artwork; only the large New Game art changes with active character.
+- [ ] Repeated page changes do not create duplicate labels, shadows, meshes or materials.
+
+
+## Modern handheld premium art/layout gate
+
+- [ ] Shell gradient source is at least 2048×2048.
+- [ ] Front decal is at least 2048×3000, has alpha transparency and leaves screen/control apertures open.
+- [ ] Dedicated decal shader blends alpha and does not flatten the product lighting.
+- [ ] Settings/Progression hardware labels appear once, separated and centered.
+- [ ] `PROGRESSION` and other long titles remain within the left title zone.
+- [ ] New Game / New Run shows Boy art for Boy and Girl art for Girl.
+- [ ] Progression, Settings, Credits, Quit/Return and Resume/Pause each show their own character-neutral image.
+- [ ] Hover, D-pad selection and page entry all update the right artwork consistently.
+
+## Active modern-handheld first Play Mode repair gate
+
+1. Unity compiles and TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
+2. Main Menu content is visibly rendered inside the physical device display; the screen is not only its clear/background color.
+3. Pause opened by Escape remains visible after the initiating Escape press is released and closes only on a later deliberate Resume/Back action.
+4. Settings and Progression center labels are compact, separated and readable.
+5. X, Y, A and B letters appear once, in the approved orientation: X top, Y left, A right, B bottom.
+6. Mouse clicks independently activate X=Settings, Y=Progression, A=Select and B=Back.
+7. Both center hardware buttons independently open Settings and Progression.
+8. Keyboard/gamepad D-pad, confirm, back and shortcuts remain consistent with physical clicks.
+9. Page transitions remain contained inside the device screen; no legacy menu appears above it.
+10. Only Start Game / New Run is protagonist-aware: Boy route shows Boy art and Girl route shows Girl art. Every other option/page uses its dedicated character-neutral image.
+
+
+## Modern handheld package and compilation gate
+
+- `Packages/manifest.json` declares `"com.unity.ugui": "2.0.0"`.
+- Unity Package Manager resolves the dependency without errors.
+- `BDModernHandheld3DPresenter` compiles with `UnityEngine.UI`, `Image`, `Text`, `RawImage` and `Outline`.
+- `BDModernHandheld3DQA` reports `HANDHELD_UGUI_PACKAGE_MISSING` if the dependency is removed or changed.
+- No focused visual/input testing begins until Console compiler errors are zero.
+
+## Modern 3D handheld Main/Pause gate
+
+1. Unity compiles with no project-generated error or unexplained warning.
+2. `TEST EVERYTHING` reports 0 blockers, 0 warnings and 0 info.
+3. Main Menu is rendered inside one real upright 3D handheld, not a flat device screenshot.
+4. Shell thickness, screen opening, bezel, backing, transparent glass thickness/reflection and recessed lit display are visible from the real camera.
+5. Blue-to-orange texture follows the shell and remains readable under the menu lighting.
+6. D-pad, A/B/X/Y, Settings and Progression are separate 3D controls with hover/press/release feedback.
+7. Mouse hover and click select the same rows/actions as D-pad and A.
+8. Arrow/gamepad D-pad navigates; A selects; B backs out; X opens Settings; Y opens Progression.
+9. Physical Settings and Progression buttons open those exact pages.
+10. User-facing label is `Progression` on one line; `Meta Progression` is absent from the new Runtime UI.
+11. Pause uses the same device and interaction system, resumes safely and requests a confirmed clean reload before returning to Main Menu.
+12. Main, Pause, Settings, Progression, Credits, Abandon and Loading do not create competing state owners.
+13. Start Game / New Run shows Boy art while playing Boy and the matched Girl art while playing Girl. No other menu option/page depicts either protagonist.
+14. New Game character-art selection is deterministic, never random, and re-resolves correctly after scene reload/page transitions; neutral art remains unchanged by character selection.
+15. The New Game Boy/Girl pair has equal dimensions and matching import settings; all neutral option images share their required dimensions/import contract.
+16. Repeated open/close/reload leaves one presenter, one screen camera, one device camera and no orphan RenderTexture/material/listener.
+17. Idle menu and navigation show no recurring GC allocation attributable to the presenter; glass/display cost is profiled on desktop and landscape mobile.
+18. Legacy menu/backdrop are hidden only while the 3D presenter owns the menu and remain a functional fallback if presenter creation fails.
+19. User visually approves Main Menu and Pause before the task is marked verified.
+
+## Modern handheld product-shot focused Play Mode gate
+
+1. Confirm the game renders complete generated 3D shell geometry with rear depth, outer bevel, side seams, glass, display and controls.
+2. Confirm there is no full-face Runtime decal/sticker object and no texture layer crosses the live screen, D-pad, A/B/X/Y, Settings, Progression or speaker openings.
+3. Confirm the exact supplied wood source is visible under the device. Detail is relatively sharp around the focal/contact band and becomes smoothly more defocused toward both near and far table regions; no uniform blur seam is visible.
+4. Confirm the upper device edge is slightly farther from camera, while the device remains readable and does not look severely foreshortened.
+5. Confirm the principal highlight reads from upper-right and the short soft cast shadow falls left with a tighter contact shadow; no long floating shadow.
+6. Confirm screen display, glass thickness, edge Fresnel and reflection are separate layers and text remains readable.
+7. Confirm Main, Pause, Settings, Progression, Credits, Loading and the existing abandon confirmation replace content inside the same screen. No external overlay appears over the device.
+8. Confirm every page change uses one short contained modern-handheld transition with no duplicate page, stuck shutter, black frame or lost focus.
+9. Confirm mouse hover/click and D-pad/arrows share the same selection. Each visible D-pad cap depresses and recovers in the activated direction.
+10. Confirm A/physical A selects once, B backs once, X and the Settings center button open Settings, Y and the Progression center button open Progression.
+11. Run as Boy and confirm only Start Game / New Run shows Boy; run as Girl and confirm only that same option shows Girl. Confirm Pause/Resume, Progression, Settings, Credits, Quit/Return and confirmation remain character-neutral after reload and scene transition.
+12. Inspect Console and Profiler during repeated Main↔Settings↔Progression and gameplay↔Pause cycles: no duplicate presenter/camera, orphan RenderTexture, stuck input, recurring idle GC or per-press GameObject/material allocation.
+
 ## Active V23R19F semantic-QA compatibility gate
 
 1. Guardian same-room QA validates the active V23R19E owner names and behavior: `TryResolvePlayerRoomFallback`, `spawnRoom.ContainsWorldPosition(`, and `playerTransform.position`.
@@ -660,8 +745,8 @@ Content and parity:
 
 22. Main and Pause/Escape use the same device system;
 23. unsupported concept-art values/pages are omitted rather than fabricated;
-24. active Boy uses Boy artwork and active Girl uses the exact matched Girl artwork;
-25. every newly added Boy image has its Girl pair in the same change;
+24. Start Game / New Run uses Boy artwork for Boy and the exact matched Girl artwork for Girl;
+25. every newly added protagonist image has its matched pair in the same change, while neutral option artwork contains neither protagonist and remains single-source;
 26. `Progression` remains on one line at supported resolutions;
 27. all existing real menu options/settings/true-victory behavior remain.
 

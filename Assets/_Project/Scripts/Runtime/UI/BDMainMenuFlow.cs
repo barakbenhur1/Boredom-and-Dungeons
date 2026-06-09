@@ -12,10 +12,21 @@ namespace BoredomAndDungeons
     [DisallowMultipleComponent]
     public sealed class BDMainMenuFlow : MonoBehaviour
     {
+        public enum HandheldPage
+        {
+            MainMenu,
+            Settings,
+            Progression,
+            Pause,
+            AbandonConfirm,
+            Loading
+        }
+
         private enum OverlayMode
         {
             MainMenu,
             Settings,
+            Progression,
             Pause,
             AbandonConfirm,
             Loading
@@ -101,10 +112,45 @@ namespace BoredomAndDungeons
             runActive &&
             !pausedFromGameplay &&
             mode != OverlayMode.Settings &&
+            mode != OverlayMode.Progression &&
             mode != OverlayMode.Loading &&
             !resultSequenceActive;
         public bool IsMenuOverlayVisible =>
             !IsGameplayHudVisible;
+
+        public bool ShouldPresentModernHandheld =>
+            IsMenuOverlayVisible &&
+            !BDBBHBootIntro.IsPlaying;
+
+        public HandheldPage CurrentHandheldPage
+        {
+            get
+            {
+                switch (mode)
+                {
+                    case OverlayMode.Settings:
+                        return HandheldPage.Settings;
+                    case OverlayMode.Progression:
+                        return HandheldPage.Progression;
+                    case OverlayMode.Pause:
+                        return HandheldPage.Pause;
+                    case OverlayMode.AbandonConfirm:
+                        return HandheldPage.AbandonConfirm;
+                    case OverlayMode.Loading:
+                        return HandheldPage.Loading;
+                    default:
+                        return HandheldPage.MainMenu;
+                }
+            }
+        }
+
+        public bool IsPausedFromGameplay => pausedFromGameplay;
+        public string PrimaryRunActionLabel =>
+            runNeedsReload ? "NEW RUN" : "START GAME";
+        public float ReloadProgress =>
+            reloadOperation != null
+                ? Mathf.Clamp01(reloadOperation.progress / 0.9f)
+                : 0f;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStaticState()
@@ -189,6 +235,9 @@ namespace BoredomAndDungeons
                 RefreshRuntimeBindings();
             }
 
+            if (BDModernHandheld3DPresenter.OwnsMenuInput)
+                return;
+
             if (!enableEscapePause ||
                 !runActive ||
                 resultSequenceActive ||
@@ -200,7 +249,8 @@ namespace BoredomAndDungeons
             if (!ReadEscapePressed())
                 return;
 
-            if (mode == OverlayMode.Settings)
+            if (mode == OverlayMode.Settings ||
+                mode == OverlayMode.Progression)
             {
                 mode = pausedFromGameplay
                     ? OverlayMode.Pause
@@ -482,6 +532,95 @@ namespace BoredomAndDungeons
                 : OverlayMode.MainMenu;
         }
 
+        private void OpenProgression(bool fromPause)
+        {
+            pausedFromGameplay = fromPause;
+            mode = OverlayMode.Progression;
+        }
+
+        private void CloseProgression()
+        {
+            mode = pausedFromGameplay
+                ? OverlayMode.Pause
+                : OverlayMode.MainMenu;
+        }
+
+        public void HandleModernPrimaryAction()
+        {
+            if (mode == OverlayMode.Pause)
+                ResumeGame();
+            else if (mode == OverlayMode.AbandonConfirm)
+                BeginConfirmedAbandonToMainMenu();
+            else if (mode == OverlayMode.MainMenu)
+                StartGamePressed();
+        }
+
+        public void HandleModernOpenSettings()
+        {
+            if (mode == OverlayMode.Loading ||
+                mode == OverlayMode.AbandonConfirm)
+            {
+                return;
+            }
+
+            OpenSettings(runActive || pausedFromGameplay);
+        }
+
+        public void HandleModernOpenProgression()
+        {
+            if (mode == OverlayMode.Loading ||
+                mode == OverlayMode.AbandonConfirm)
+            {
+                return;
+            }
+
+            OpenProgression(runActive || pausedFromGameplay);
+        }
+
+        public void HandleModernBack()
+        {
+            switch (mode)
+            {
+                case OverlayMode.Settings:
+                    CloseSettings();
+                    break;
+                case OverlayMode.Progression:
+                    CloseProgression();
+                    break;
+                case OverlayMode.AbandonConfirm:
+                    mode = OverlayMode.Pause;
+                    break;
+                case OverlayMode.Pause:
+                    ResumeGame();
+                    break;
+            }
+        }
+
+        public void HandleModernRequestMainMenu()
+        {
+            if (!runActive)
+                return;
+
+            mode = OverlayMode.AbandonConfirm;
+        }
+
+        public void HandleModernCancelAbandon()
+        {
+            if (mode == OverlayMode.AbandonConfirm)
+                mode = OverlayMode.Pause;
+        }
+
+        public void HandleModernQuit()
+        {
+#if !UNITY_IOS && !UNITY_ANDROID && !UNITY_WEBGL
+            if (!showQuitButtonOnDesktop || runActive)
+                return;
+
+            BDGameSettings.Save();
+            Application.Quit();
+#endif
+        }
+
         private void RefreshRuntimeBindings()
         {
             BDPlayerMarker marker =
@@ -603,6 +742,9 @@ namespace BoredomAndDungeons
 
         private void OnGUI()
         {
+            if (BDModernHandheld3DPresenter.SuppressLegacyMenu)
+                return;
+
             if (runActive &&
                 !pausedFromGameplay &&
                 mode != OverlayMode.Settings)
@@ -687,6 +829,8 @@ namespace BoredomAndDungeons
 
             if (mode == OverlayMode.Settings)
                 DrawSettings();
+            else if (mode == OverlayMode.Progression)
+                DrawProgression();
             else if (mode == OverlayMode.Pause)
                 DrawPause();
             else if (mode == OverlayMode.AbandonConfirm)
@@ -734,6 +878,8 @@ namespace BoredomAndDungeons
             {
                 case OverlayMode.Settings:
                     return "SYSTEM // SETTINGS";
+                case OverlayMode.Progression:
+                    return "MEMORY // PROGRESSION";
                 case OverlayMode.Pause:
                     return "RUN // PAUSED";
                 case OverlayMode.AbandonConfirm:
@@ -782,6 +928,16 @@ namespace BoredomAndDungeons
                     60f))
             {
                 StartGamePressed();
+            }
+
+            GUILayout.Space(14f);
+
+            if (DrawActionButton(
+                    "PROGRESSION",
+                    MenuActionVisual.Neutral,
+                    52f))
+            {
+                OpenProgression(fromPause: false);
             }
 
             GUILayout.Space(14f);
@@ -1284,6 +1440,16 @@ namespace BoredomAndDungeons
             GUILayout.Space(14f);
 
             if (DrawActionButton(
+                    "PROGRESSION",
+                    MenuActionVisual.Neutral,
+                    52f))
+            {
+                OpenProgression(fromPause: true);
+            }
+
+            GUILayout.Space(14f);
+
+            if (DrawActionButton(
                     "SETTINGS",
                     MenuActionVisual.Settings,
                     52f))
@@ -1436,6 +1602,38 @@ namespace BoredomAndDungeons
                 new Color(0.66f, 0.92f, 0.82f, 0.34f),
                 1f
             );
+        }
+
+        private void DrawProgression()
+        {
+            GUILayout.Space(24f);
+            GUILayout.Label("PROGRESSION", titleStyle);
+            GUILayout.Space(18f);
+
+            GUILayout.Label(
+                BDGameProgress.MotherDefeated
+                    ? "Mother restored: YES"
+                    : "Mother restored: NO",
+                sectionStyle
+            );
+
+            GUILayout.Space(12f);
+            GUILayout.Label(
+                "Persistent upgrades are not available yet. This page is the stable entry point for future cross-run progression.",
+                subtitleStyle
+            );
+
+            GUILayout.FlexibleSpace();
+
+            if (DrawActionButton(
+                    "BACK",
+                    MenuActionVisual.Progress,
+                    54f))
+            {
+                CloseProgression();
+            }
+
+            GUILayout.Space(24f);
         }
 
         private void DrawSettings()

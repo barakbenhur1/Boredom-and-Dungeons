@@ -1,5 +1,14 @@
 # Performance Guidelines — Measurement and Optimization Contract
 
+## Modern handheld V4 material and shadow budget
+
+- The shell uses one cached generated mesh set and one object-gradient material; no full-face transparent decal draw is allowed.
+- Shadow presentation uses three cached quads/materials (penumbra, core, contact) and performs no per-frame allocation.
+- Glass glint is evaluated in the existing glass shader and does not spawn lights, particles or textures.
+- WASD checks reuse the existing input poll and allocate nothing per frame.
+- Page selection only toggles the cached New Game card and changes existing texture references.
+
+
 This document defines how performance-sensitive work is evaluated. It does not invent unapproved numeric budgets. Approved platform budgets and current performance blockers belong in `ProjectGuide/Status/CURRENT.md`.
 
 ## Current platform context
@@ -82,3 +91,18 @@ Each measured optimization should record in `ProjectGuide/Status/CURRENT.md`:
 - Menu close/reload cleans listeners, RenderTextures and presenter references deterministically.
 - Import visual reference images as documentation assets only; they are not loaded by Runtime.
 <!-- B&D MODERN 3D HANDHELD PERFORMANCE END -->
+
+## Implemented handheld performance boundaries
+
+- One presenter instance survives scene loads; duplicate instances self-destruct.
+- Meshes, materials, rounded UI texture, click clip and the screen RenderTexture are created once and released deterministically.
+- The screen RenderTexture is fixed at `960×1080` for this verification slice; mobile tiering remains a profiling follow-up.
+- Pointer raycasts occur only while the device is visible and use one dedicated layer mask.
+- Menu screen hierarchy rebuilds only on page transitions, not each frame.
+- Button motion and material-property feedback use cached transforms and cached `MaterialPropertyBlock` instances.
+- Character textures load once from `Resources`; route changes swap cached references rather than reloading each frame.
+- Loading percentage is the only intentionally live text update; idle Main/Pause must show no recurring allocation from navigation or button animation in the Profiler.
+- Table depth-of-field styling is one material sampling a sharp and a prefiltered version of the same source texture; it does not allocate render targets or run a per-frame CPU blur.
+- Shell microtexture, glass reflection, shadow masks and contextual artwork are loaded once from `Resources`. The obsolete full-face decal asset/shader are removed so they cannot add a draw call, build size or overlap risk.
+- `BDPlayableCharacterIdentity` performs scene discovery only on explicit scene/visibility refresh, not every presenter frame.
+- Four D-pad targets animate four separate cached cap transforms; no Rigidbody/physics simulation or temporary object is created per press.

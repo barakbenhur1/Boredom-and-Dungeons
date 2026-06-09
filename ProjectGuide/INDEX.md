@@ -163,4 +163,6 @@ This section preserves stable discovery phrases required by older automated QA a
 - [`References/Visual/ModernHandheld3D/HANDHELD_3D_THREE_QUARTER_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_3D_THREE_QUARTER_GIRL_V1.png)
 - [`References/Visual/ModernHandheld3D/HANDHELD_MENU_BOY_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_MENU_BOY_V1.png)
 - [`References/Visual/ModernHandheld3D/HANDHELD_MENU_GIRL_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_MENU_GIRL_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_ORTHOGRAPHIC_TEXTURE_SHEET_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_ORTHOGRAPHIC_TEXTURE_SHEET_V1.png)
+- [`References/Visual/ModernHandheld3D/HANDHELD_TABLE_DARK_WOOD_SOURCE_V1.png`](References/Visual/ModernHandheld3D/HANDHELD_TABLE_DARK_WOOD_SOURCE_V1.png)
 - [`References/Visual/ModernHandheld3D/REFERENCE_MANIFEST.md`](References/Visual/ModernHandheld3D/REFERENCE_MANIFEST.md)

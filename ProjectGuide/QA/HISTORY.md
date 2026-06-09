@@ -1,5 +1,9 @@
 # Historical QA Reports
 
+## 2026-06-09 — Handheld premium texture and contextual artwork repair
+
+User Play Mode feedback confirmed the live screen/input repair was much better, then rejected low-quality shell/decal presentation, overlapping center labels, long-title pressure and reuse of the New Game character image on unrelated pages. The follow-up package upgrades shell/decal resolution and shader integration, removes duplicate label ownership, adds adaptive titles and routes unique character-neutral artwork for every non-New-Game option. Unity verification remains open.
+
 Detailed one-off stage reports were removed from the maintained tree after their durable contracts were preserved in current feature specifications, status and Git history.
 
 Removed historical reports:

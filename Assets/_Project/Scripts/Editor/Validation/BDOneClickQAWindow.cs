@@ -106,6 +106,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Run entrance, authored exit, pause, and menu",
                 "The mounted entrance uses a farther/higher room camera, locks every input including mouse aim, then the horse turns, fully stops, and only then returns camera/control. Pause -> Abandon requires confirmation. After confirmed abandon, the next mounted entrance keeps the current player visibly attached to the horse for the full sequence. Death restarts stay on foot and the authored exit remains authoritative."),
             new ManualCheck(
+                "modern_handheld",
+                "Modern 3D handheld Main and Pause",
+                "The menu is a real upright 3D device on the supplied dark-wood table, with a slight top-away angle, upper-right light, short soft left shadow, progressive near/far table defocus, live screen behind readable glass, and no flat device screenshot. Mouse and D-pad share focus; A/B/X/Y plus Settings/Progression physical buttons trigger one action; every page and abandon confirmation stays inside the screen; Boy shows Boy art and Girl shows the matched Girl art."),
+            new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
                 "Closed walls remain complete visibility boundaries. Standing beside any wall and rotating through diagonal angles, on foot or mounted, never reveals the adjacent room."),
@@ -517,6 +521,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDV23R19OCriticalIntroOutlineWallJumpQA.Scan(result);
             BDV23R19PQaSemanticCaterpillarSpecQA.Scan(result);
             BDV23R19QProfessionalMemoryHandheldUiQA.Scan(result);
+            BDModernHandheld3DQA.Scan(result);
             BDV23R19RMenuContractAndWorkLedgerQA.Scan(result);
             BDV23R19SContinuitySemanticQA.Scan(result);
             BDV23R19TPhaseAgnosticStatusQA.Scan(result);

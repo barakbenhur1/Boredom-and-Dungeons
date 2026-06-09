@@ -1,5 +1,48 @@
 # Technical Decisions — Durable Project Choices
 
+### TD-034 — Molded handheld surface replaces full-face decal
+
+**Decision:** Do not render a full-device transparent sticker over the 3D model. Use generated molded geometry plus an object-space blue→violet→orange surface shader. The original texture sheet remains reference input, not a flat Runtime shell replacement.
+
+**Reason:** The full-face decal passed automation but visibly crossed controls, flattened material depth and failed the product-realism gate.
+
+### TD-035 — Product shadow and glass obey one upper-right key light
+
+- A cached soft penumbra, denser core and tight contact shadow are cast to the left.
+- Glass receives a low-opacity glint only in the upper-right region; central UI readability wins over spectacle.
+
+### TD-036 — New Game-only identity and keyboard navigation parity
+
+- Active-character art appears only in the large Start Game/New Run hero panel.
+- The small card is fresh-New-Game-only, text-only and contains no route/Mother identity.
+- W/A/S/D and arrow keys are equivalent navigation inputs under the same release gate.
+
+
+## TD-HANDHELD-ART-ROUTING — protagonist pair only for New Game
+
+**Decision:** Keep one Boy/Girl pair only for Start Game / New Run. Resolve all other option/page images from shared character-neutral assets.
+
+**Reason:** The protagonist identity matters when starting a route, but duplicating Progression, Settings, Credits, Quit and Pause artwork creates unnecessary asset cost and risks visual drift without adding product meaning.
+
+## TD-HANDHELD-DECAL-QUALITY — high-resolution masked lit decal
+
+**Superseded V3 decision:** A 2048×3220 transparent front decal was attempted, passed automated QA and failed visual acceptance. TD-034 replaces it with molded geometry and an object-space shell material.
+
+**Reason:** A low-resolution unlit sticker looked soft and disconnected from the physical shell. The dedicated shader preserves crisp detail while responding subtly to the same product-light direction.
+
+## TD-HANDHELD-UI-002 — Declare uGUI explicitly for the live device screen
+
+**Decision:** The 3D handheld's internal screen uses Unity's GameObject-based uGUI package (`com.unity.ugui` `2.0.0`) for `Canvas`, `Image`, `Text`, `RawImage` and `Outline`, rendered by the isolated screen camera into the cached RenderTexture.
+
+**Reason:** The presenter already uses those components, and `com.unity.modules.ui` does not supply the `UnityEngine.UI` namespace. Explicit package ownership prevents environment-dependent compilation and keeps the existing live-screen architecture intact.
+
+**Constraints:**
+
+- Do not remove or silently downgrade the dependency while the presenter uses uGUI.
+- Do not add a second UI framework for the same screen without a documented migration plan.
+- Package presence is enforced by TEST EVERYTHING.
+- Package resolution is not considered verified until Unity compiles and automated QA reruns.
+
 This file records long-lived choices and rationale. Current implementation status and open work remain in `ProjectGuide/Status/CURRENT.md`.
 
 ## Active decisions
@@ -444,6 +487,28 @@ For the current grounded arc mesh, local X is the visible left-to-right long axi
 - Physical controls, mouse, keyboard and controller map to the same semantic commands.
 - Settings and Progression center buttons are direct shortcuts; X opens Settings and Y opens Progression; A confirms and B returns.
 - The user-facing label is `Progression`.
-- Character-bearing UI art is paired Boy/Girl content with deterministic active-character selection.
+- Character-bearing UI art is allowed only for Start Game / New Run and uses one deterministic Boy/Girl pair. All other menu art is character-neutral.
 - Flat one-piece screenshot projection is rejected as the final implementation because it cannot provide tactile depth, true glass layering or physical button interaction.
 <!-- B&D TD-053 MODERN 3D HANDHELD END -->
+
+### TD-034 — One real 3D handheld presenter with active-character art authority
+
+- `BDMainMenuFlow` remains the authoritative menu/run-state owner.
+- `BDModernHandheld3DPresenter` is a presentation and input-translation layer only.
+- One cached screen camera and RenderTexture feed a real recessed display behind separate glass.
+- Device controls are modeled objects with bounded transform/material feedback; they do not use gameplay physics.
+- Mouse, D-pad, A/B/X/Y and physical shortcut clicks resolve to the same flow actions.
+- `BDPlayableCharacterIdentity` is authoritative only for the Start Game / New Run pair: Boy identity selects Boy art and Girl identity selects Girl art. Selection is never random, and persisted fallback cannot override an active identity. Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation never consult protagonist identity.
+- Paired assets must match dimensions/import settings and are validated by TEST EVERYTHING.
+- Legacy IMGUI is retained only as a safe fallback during rollout, not as a simultaneous visual owner.
+
+
+### TD-054 — Masked shell decal and product-shot focus without flattening the device
+
+- The supplied handheld texture sheet may be used as a front-surface decal only after masking the screen and control regions transparent. It is visual surface detail, not a substitute for shell volume, glass, display or controls.
+- The supplied wood image is the table source. Progressive focus is implemented by blending matched sharp/defocused versions in one table shader around the device focal band, avoiding dependency on a global post-processing package and avoiding a uniform fake blur.
+- Device, table and shadow share one product-shot rest transform; the device upper edge reads slightly farther from the camera.
+- Surface lighting is authored to read from upper-right and shadow assets are short/leftward.
+- Physical-device raycasts use a dedicated high-number layer, not Unity's built-in UI layer.
+- Each D-pad direction animates a separate visible cap so pointer and keyboard/controller activation produce the same tactile result.
+- New Game character-art resolution is event-driven/cached. Active route always wins; missing Girl art never falls back visually to Boy. Neutral option art remains single-source and route-independent.

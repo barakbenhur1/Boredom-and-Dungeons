@@ -49,7 +49,8 @@ namespace BoredomAndDungeons
 
             if (flow == null ||
                 flow.IsRunActive ||
-                BDBBHBootIntro.IsPlaying)
+                BDBBHBootIntro.IsPlaying ||
+                BDModernHandheld3DPresenter.SuppressLegacyMenu)
             {
                 return;
             }

@@ -4,10 +4,11 @@ This is a readable roadmap. Exact current truth and resume point remain in `../S
 
 ## Current
 
-1. Complete Project Guide reorganization and validate every reference.
-2. Implement the real 3D upright handheld for Main Menu and Pause/Escape.
+1. Repair the missing `com.unity.ugui` dependency and restore clean Unity compilation.
+2. Verify the real 3D upright handheld for Main Menu and Pause/Escape.
 3. Verify mouse, D-pad, A/B/X/Y and physical Settings/Progression controls.
-4. Verify Boy/Girl paired art selection and responsive screen readability.
+4. Verify the Boy/Girl pair only on Start Game / New Run, dedicated neutral artwork on every other option/page, and responsive screen readability.
+5. Implement the seamless handheld-screen → gameplay opening handoff and reverse gameplay → handheld return.
 
 ## Return immediately afterward
 
@@ -18,7 +19,7 @@ This is a readable roadmap. Exact current truth and resume point remain in `../S
 ## Next production stages
 
 1. Enemy attack animations for every active attack-capable archetype.
-2. Professional opening cinematic and reusable wordless dialogue system.
+2. Complete any retained opening-cinematic/dialogue polish not already delivered by the handheld-to-gameplay transition stage.
 3. Retained UI, performance and device verification.
 4. Resume architecture/gameplay/camera audit.
 

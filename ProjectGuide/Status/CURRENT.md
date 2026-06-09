@@ -1,12 +1,135 @@
 # Current Development Snapshot
 
 ```text
-Classification: CURRENT
-Active item: Project Guide reorganization, then real 3D handheld Main/Pause implementation
-Source basis: latest supplied local repository plus approved 3D handheld specification package
-Unity verification for this documentation migration: BLOCKED — 9 documentation compatibility findings; V1.2 repair prepared, rerun required
-Exact resume point: install V1.2, rerun TEST EVERYTHING to clear the 9 documentation blockers, then inspect menu/pause/input ownership and build the smallest real-3D handheld vertical slice
+Classification: FOCUSED PHYSICAL-MODEL REPAIR INSIDE CURRENT HANDHELD TASK
+Active item: Replace the flat full-face decal treatment with a real molded 3D shell, restore a visible short left shadow, simplify the New Game-only memory card, add WASD navigation, and add a restrained upper-right glass glint
+Source basis: latest local project, successful automated TEST EVERYTHING result, user Play Mode screenshot and direct visual/interaction corrections
+Latest Unity result: AUTOMATED PASS; user visual acceptance failed because the device still looked flat/fake, the full-face texture overlapped modeled controls, no readable device shadow appeared, the small card exposed route/Mother data and duplicated art, and WASD/glass-light behavior were incomplete
+Implementation state: V4 PHYSICAL MATERIAL / DEPTH / SHADOW / CARD / INPUT / GLASS REPAIR IMPLEMENTED / UNITY VERIFICATION REQUIRED
+Exact resume point: install this full-project package, compile, run TEST EVERYTHING, then inspect the molded shell depth, left-cast shadow, absence of any front decal over controls, New Game-only text card, neutral top bar, WASD parity and upper-right glass glint before any commit
 ```
+
+## 2026-06-09 — Automated pass followed by user visual rejection; V4 repair
+
+The post-V3 build reached `B&D TEST EVERYTHING: AUTOMATED PASS`, proving compilation and the automated contract were intact. The user nevertheless rejected the actual product shot in Play Mode. Automated success is not visual acceptance.
+
+Observed defects:
+
+- the full-face transparent sticker still read as a flat image and visibly crossed/covered modeled lower controls;
+- the device lacked convincing side thickness, mold separation and product-volume cues;
+- the requested short shadow to the left was not visibly readable on the wood;
+- the small lower-right run card duplicated artwork and exposed `BOY/GIRL ROUTE` and `MOTHER` text that does not belong there;
+- the small card should exist only for a fresh Start Game/New Run selection and be text-only;
+- `WASD` must navigate exactly like the arrow keys;
+- glass must receive a restrained upper-right directional glint matching the key light without obscuring screen content.
+
+Implemented V4 response:
+
+- removes the runtime full-face decal entirely; the supplied design now informs a molded shell material rather than being pasted across controls;
+- upgrades the shell shader to an object-space blue→violet→orange molded gradient with micro-surface variation, side darkening, specular response and controlled rim light;
+- increases physical body depth, adds a rear core, outer molded edge bevel and side mold seams, and moves screen/control layers to real front-surface depths;
+- adds a dedicated shadow shader plus separate soft penumbra, core shadow and contact shadow, offset left under the approved upper-right key light;
+- keeps the small memory card only on a fresh New Game/Start Game selection, removes its image, route identity and Mother status, and removes character labels from the top bar;
+- adds W/A/S/D to input-release gating and directional navigation for both Input System and legacy input;
+- adds a subtle animated upper-right glass glint with low opacity and no center-screen washout;
+- removes the obsolete runtime decal shader/asset and updates QA/documentation ownership accordingly.
+
+This is not verified until Unity compilation, TEST EVERYTHING and focused visual/interaction inspection pass.
+
+
+## 2026-06-09 — Superseded V3 refinement: texture, layout and contextual artwork
+
+The user confirmed that the previous repair is much closer, then identified three remaining production defects: the shell/front texture looked low quality, the center shortcut labels and some screen layout elements were still visually broken, and the New Game character artwork was reused on unrelated pages.
+
+Implemented repair now present:
+
+- replaces the 512px shell source with a 2048px premium blue→violet→orange micro-textured surface;
+- replaces the front sticker with a 2048×3220 high-resolution masked decal and a dedicated lit transparent decal shader;
+- replaces the broken merged shortcut text with two compact, separately positioned 3D labels—`SETTINGS` and `PROGRESSION`—while keeping both buttons fully modeled and interactive;
+- reduces long single-line title sizing so `PROGRESSION` cannot collide with the right artwork panel;
+- adds dedicated character-neutral artwork for Progression, Settings, Credits, Quit/Return and Resume/Pause;
+- changes the right artwork on Main and Pause as selection changes;
+- keeps Boy/Girl switching exclusively on Start Game / New Run. Every other option uses one character-neutral asset and therefore does not require duplicate Boy/Girl production.
+
+This V3 repair reached automated PASS but its full-face decal approach was rejected visually and is superseded by the V4 physical-material repair above.
+
+## 2026-06-09 — First Play Mode handheld rejection and focused repair
+
+The first runtime visual reached Play Mode, proving the uGUI compilation dependency was resolved, but it was not acceptable. The live menu RenderTexture remained at its clear color, the Pause page closed again immediately after Escape, 3D TextMesh labels were oversized/duplicated around the controls, and only one face-button hit area responded reliably.
+
+Focused repair now present:
+
+- the internal UI Canvas uses `ScreenSpaceCamera` at the exact `960×1080` RenderTexture size instead of a fragile world-space alignment;
+- the screen camera is explicitly rendered after page construction and before the product camera consumes the texture;
+- new menu input is armed only after the opening Escape/mouse/gamepad press has been released, preventing Pause from instantly resuming;
+- X/Y/A/B use separate enlarged invisible hit targets that animate the real modeled buttons;
+- hardware letters and Settings/Progression labels are small, front-facing siblings rather than oversized children inheriting rotated button transforms;
+- TEST EVERYTHING now guards the screen-render, input-arming and physical-hit-target contracts.
+
+This is not verified until Unity shows real live menu content in the screen and all focused interactions pass.
+
+
+## 2026-06-09 — Handheld compilation blocker and repair
+
+Unity compilation failed because `BDModernHandheld3DPresenter` uses the GameObject-based UI types `Image`, `Text`, `RawImage` and `Outline`, while `Packages/manifest.json` did not declare the `com.unity.ugui` package that supplies those Runtime components. The project only declared `com.unity.modules.ui`, which is not the uGUI package.
+
+Repair now present:
+
+- `Packages/manifest.json` declares `com.unity.ugui` version `2.0.0`;
+- `BDModernHandheld3DQA` blocks future removal or version drift of that dependency;
+- no menu behavior, visual requirement, input mapping or existing state authority was changed;
+- Unity must resolve the package and compile before this repair can be verified.
+
+## Newly captured follow-up — seamless handheld/gameplay camera transition
+
+After the base 3D handheld compiles and passes focused Play Mode, the next approved presentation stage expands the existing professional opening-cinematic task:
+
+- gameplay is already visible inside the handheld screen before entering;
+- the menu camera zooms into the physical screen without a visible cut, black frame, perspective jump or post-processing mismatch;
+- the gameplay camera is prepositioned high above the map, with gameplay HUD hidden, before handoff;
+- the gameplay opening dive starts only after the screen fills the viewport and camera handoff is complete;
+- exit/abandon performs the reverse sequence back into the handheld screen and then zooms out to the table product shot;
+- state transitions are completion-driven and input-locked, not based on fragile fixed delays;
+- the existing handheld, menu, gameplay, camera and UI designs remain protected.
+
+The full requirement is merged into `ProjectGuide/Tasks/QUEUED/PROFESSIONAL_OPENING_CINEMATIC.md`; it is not implemented in this compile-repair package.
+
+## Modern 3D handheld implementation
+
+Status: **IMPLEMENTED / UNITY VERIFICATION REQUIRED**.
+
+The Runtime now contains a real 3D menu device rather than a flat device image:
+
+- procedural upright shell geometry with real thickness and a physical screen opening;
+- approved blue→violet→orange shell texture;
+- separate bezel, backing, emissive display, transparent glass and reflection layer;
+- real modeled D-pad, A/B/X/Y, Settings, Progression, speaker inserts and status light;
+- one isolated screen camera and one cached screen RenderTexture;
+- Main Menu, Pause, Settings, Progression, Credits, Abandon confirmation and Loading pages inside the screen;
+- mouse hover/click on screen rows and physical buttons;
+- D-pad/arrow navigation; A select; B back; X Settings; Y Progression;
+- tactile transform/material feedback and a cached click sound;
+- contextual artwork: only Start Game / New Run uses active-character art—Boy shows Boy and Girl shows Girl; every other option/page uses one dedicated character-neutral image; selection is never random;
+- legacy flat menu and backdrop are suppressed only while the 3D presenter owns the menu;
+- new TEST EVERYTHING coverage validates the presenter, flow bridge, shaders, paired art and documentation truth.
+
+No claim is made yet for Unity compilation, visual quality, input behavior, cleanup, performance or user acceptance.
+
+## Latest approved physical-scene refinement
+
+The user clarified that the in-game result must not be a rendered screenshot or a flat picture of a handheld. The implemented scene now follows this exact production contract:
+
+- the uploaded orthographic handheld sheet is used only as a masked front-surface decal on the generated 3D shell; transparent cutouts leave the live screen and modeled controls unobstructed;
+- the shell, back, bezel, display, glass, reflection, D-pad arms, face buttons, center shortcuts and speaker inserts remain separate 3D parts;
+- the uploaded dark-wood image is the actual table source texture; a paired sharp/defocused texture set is blended in the table shader so focus falls off gradually toward the near and far table regions instead of applying one uniform blur;
+- device, table and shadow share the same product-shot plane; the upper edge of the handheld is slightly farther from the camera;
+- the key-light response comes from above/right and the short soft shadow falls left;
+- all Main, Pause, Settings, Progression, Credits, abandon-confirmation and loading content stays inside the physical screen behind glass;
+- page changes use a short modern-handheld shutter/flash/scanline transition inside the display;
+- active Boy identity displays Boy art and active Girl identity displays Girl art only while Start Game / New Run is selected; Pause/Resume, Progression, Settings, Credits, Quit/Return and confirmation use dedicated character-neutral art;
+- each D-pad direction now has its own modeled moving cap and tactile feedback rather than an invisible click target only.
+
+Static source checks pass after removing obsolete intermediate texture exports. Fresh Unity compilation, TEST EVERYTHING, Play Mode, profiling and user approval remain mandatory.
 
 ## Documentation/tooling change in this package
 
@@ -16,7 +139,7 @@ Exact resume point: install V1.2, rerun TEST EVERYTHING to clear the 9 documenta
 - The stability scanner incorrectly treated nested helper types such as `State`, `Runner` and `Bootstrap` as duplicate namespace-level types. The scanner now ignores declarations nested deeper than the project's namespace-level indentation. The source scan passes with 0 blockers and 0 warnings after this repair.
 - No gameplay/runtime behavior is intentionally changed by the Project Guide migration.
 - Package V1.1 repairs the validation chain discovered during local application/testing: macOS `.DS_Store` metadata blocked hygiene after installation, a brittle exact-phrase token rejected the valid `real upright 3D handheld` requirement, and the hygiene tool rejected the package manifest before validation could finish. The corrected sequence removes OS metadata first, validates stable concepts, permits only its own transient package files during validator execution, performs a strict final hygiene pass after cleanup, runs fail-fast, and deletes the ZIP only after all checks pass.
-- Unity `TEST EVERYTHING` ran at `2026-06-09T00:06:07.0833090Z` after the ProjectGuide migration and reported 9 blockers, 0 warnings and 0 info. All nine findings are documentation-discovery compatibility gaps: historical scanners require stable V23R8/V23R9/V23R10 phrases and three V23R19Q task-record headings. No gameplay/runtime failure was reported by this run. Package V1.2 restores the required discovery language in the new canonical owners without recreating deleted duplicate documents or weakening QA. Unity rerun remains required.
+- Unity `TEST EVERYTHING` reran at `2026-06-09T00:13:48.3411810Z` after V1.2 and passed with 0 blockers, 0 warnings and 0 info. The ProjectGuide migration and historical QA discovery compatibility are verified at the automated level.
 
 ## Current user decisions
 
@@ -26,6 +149,7 @@ Exact resume point: install V1.2, rerun TEST EVERYTHING to clear the 9 documenta
 - The in-game Main and Pause device is real 3D, not a flat image.
 - Every Boy image requires a matched Girl image.
 - User-facing label is `Progression`.
+- Active character identity controls the paired Start Game / New Run art only: Boy gameplay shows Boy art and Girl gameplay shows Girl art; the selection is never random. Every other option remains character-neutral.
 
 ---
 
@@ -38,10 +162,10 @@ Status date: 2026-06-09
 Classification: CURRENT / USER-APPROVED 3D HANDHELD MENU SPECIFICATION
 Active work: C11.UI.MODERN_HANDHELD_3D.V1
 Current truth: The user explicitly reprioritized the main menu and Escape/Pause presentation before returning to the previously saved Runtime/QA repair sequence. The approved direction is an original upright portrait handheld with a real 3D shell, blue-to-orange molded-plastic gradient, separate tactile 3D controls, and a lit display recessed behind clear glass/transparent plastic with visible depth. Mouse and D-pad navigation are both required. A selects, B returns, X and the physical Settings shortcut open Settings, and Y and the physical Progression shortcut open Progression. The user-facing label is `Progression`, not `Meta Progression`.
-Implementation truth: This change package documents the complete asset breakdown, interaction contract, target architecture, performance constraints, QA gate and approved reference images. It does not claim that the 3D prefab, screen RenderTexture view, tactile button animations or redesigned Runtime menus are already implemented.
-Character-art truth: Every UI/reference image that depicts the Boy requires a matched Girl version with identical dimensions, crop, composition, lighting, horse/background placement, safe areas and import settings. A Boy image without its Girl pair is incomplete.
-Verification truth: Documentation and reference-asset validation can run in this package. Unity compilation, TEST EVERYTHING, Play Mode, target-device performance and user acceptance remain required after Runtime implementation.
-Current action: review/install this specification package, then inspect the exact local menu/input/presentation implementation before building the 3D vertical slice. Do not return to enemy animation or the prior repair queue until this user-prioritized UI stage is completed or explicitly deferred.
+Implementation truth: The full Runtime vertical slice is implemented with generated 3D device geometry, cached screen RenderTexture, recessed display, glass/reflection layers, modeled controls, tactile feedback, Main/Pause/Settings/Progression/Credits/Abandon/Loading pages, mouse and hardware-style navigation, premium shell/decal sources and context-specific option artwork. Active-character Boy/Girl selection is restricted to Start Game / New Run.
+Character-art truth: Any image that depicts the playable Boy requires a matched Girl version with identical dimensions, crop, composition, lighting, horse/background placement, safe areas and import settings. In the handheld, only Start Game / New Run uses this pair. Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation are character-neutral, single-source assets. Active identity is authoritative only for the New Game pair and selection is never random.
+Verification truth: ProjectGuide V1.2 passed TEST EVERYTHING at 2026-06-09T00:13:48.3411810Z. That pass predates this Runtime implementation. Fresh Unity compilation, TEST EVERYTHING, focused Play Mode, target-device performance and user acceptance are required.
+Current action: install the premium texture/layout/context-art full-project package, run Unity compilation and TEST EVERYTHING, then verify Main/Pause visuals, all mouse/D-pad/A-B-X-Y/shortcut interactions, cleanup/performance, unique option artwork, and Boy→Boy / Girl→Girl selection only on Start Game / New Run. Do not return to enemy animation or the prior repair queue until this UI stage is verified or explicitly deferred.
 Saved interrupted resume point: ProjectGuide/Status/WORK_QUEUE.md retains the previous QA/target-outline/animation order for later return.
 ```
 
