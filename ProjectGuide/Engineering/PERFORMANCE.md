@@ -1,3 +1,8 @@
+
+## V5 control and glass cost contract
+
+Button-cap and glass-glint materials/textures are loaded once from Resources and cached. No texture cropping, material creation, mesh creation or label generation occurs per frame. Press feedback moves cached transforms only. The dedicated glint is one transparent quad and must remain confined to the upper-right screen edge.
+
 # Performance Guidelines — Measurement and Optimization Contract
 
 ## Modern handheld V4 material and shadow budget

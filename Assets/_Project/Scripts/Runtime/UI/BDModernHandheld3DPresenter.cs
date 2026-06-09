@@ -23,7 +23,6 @@ namespace BoredomAndDungeons
         private const float DeviceDepth = 0.92f;
         private const float FrontSurfaceZ = -0.46f;
         private const float ControlCenterZ = -0.52f;
-        private const float HardwareLabelZ = -0.68f;
         private const float HitTargetZ = -0.58f;
         private const float ScreenWidth = 7.82f;
         private const float ScreenHeight = 9.04f;
@@ -38,6 +37,8 @@ namespace BoredomAndDungeons
         // physically seated on the surface while its upper edge reads farther
         // from the camera.
         private static readonly Vector3 DeviceRestPosition =
+            new Vector3(0f, 0.62f, 0f);
+        private static readonly Vector3 TableRestPosition =
             new Vector3(0f, -0.16f, 0f);
         private static readonly Quaternion DeviceRestRotation =
             Quaternion.Euler(9.4f, -2.35f, -0.42f);
@@ -47,7 +48,8 @@ namespace BoredomAndDungeons
         private enum LocalPage
         {
             None,
-            Credits
+            Credits,
+            QuitConfirm
         }
 
         private enum EffectivePage
@@ -57,6 +59,7 @@ namespace BoredomAndDungeons
             Settings,
             Progression,
             Credits,
+            QuitConfirm,
             AbandonConfirm,
             Loading
         }
@@ -71,6 +74,8 @@ namespace BoredomAndDungeons
             Quit,
             ReturnToMainMenu,
             Back,
+            ConfirmQuit,
+            CancelQuit,
             ConfirmAbandon,
             CancelAbandon,
             MasterVolume,
@@ -133,6 +138,16 @@ namespace BoredomAndDungeons
         private Material contactShadowMaterial;
         private Material coreShadowMaterial;
         private Material accentMaterial;
+        private Material buttonCapXMaterial;
+        private Material buttonCapYMaterial;
+        private Material buttonCapAMaterial;
+        private Material buttonCapBMaterial;
+        private Material dpadUpCapMaterial;
+        private Material dpadDownCapMaterial;
+        private Material dpadLeftCapMaterial;
+        private Material dpadRightCapMaterial;
+        private Material dpadCenterCapMaterial;
+        private Material shortcutCapMaterial;
 
         private readonly List<Mesh> generatedMeshes =
             new List<Mesh>();
@@ -146,6 +161,7 @@ namespace BoredomAndDungeons
 
         private Texture2D shellTexture;
         private Texture2D glassReflectionTexture;
+        private Texture2D glassGlintTexture;
         private Texture2D tableTexture;
         private Texture2D tableBlurTexture;
         private Texture2D softShadowTexture;
@@ -159,6 +175,16 @@ namespace BoredomAndDungeons
         private Texture2D quitArtTexture;
         private Texture2D resumeArtTexture;
         private Texture2D roundedTexture;
+        private Texture2D buttonXTexture;
+        private Texture2D buttonYTexture;
+        private Texture2D buttonATexture;
+        private Texture2D buttonBTexture;
+        private Texture2D dpadUpTexture;
+        private Texture2D dpadDownTexture;
+        private Texture2D dpadLeftTexture;
+        private Texture2D dpadRightTexture;
+        private Texture2D dpadCenterTexture;
+        private Texture2D shortcutButtonTexture;
         private Sprite roundedSprite;
         private Font uiFont;
 
@@ -359,6 +385,9 @@ namespace BoredomAndDungeons
             glassReflectionTexture = Resources.Load<Texture2D>(
                 "ModernHandheld/Textures/HANDHELD_GLASS_REFLECTION_V1"
             );
+            glassGlintTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Textures/HANDHELD_GLASS_GLINT_V2"
+            );
             tableTexture = Resources.Load<Texture2D>(
                 "ModernHandheld/Textures/HANDHELD_TABLE_DARK_WOOD_SHARP_V1"
             );
@@ -394,6 +423,37 @@ namespace BoredomAndDungeons
             );
             resumeArtTexture = Resources.Load<Texture2D>(
                 "ModernHandheld/UI/HANDHELD_ART_RESUME_V1"
+            );
+
+            buttonXTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_BUTTON_X_V1"
+            );
+            buttonYTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_BUTTON_Y_V1"
+            );
+            buttonATexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_BUTTON_A_V1"
+            );
+            buttonBTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_BUTTON_B_V1"
+            );
+            dpadUpTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_DPAD_UP_V1"
+            );
+            dpadDownTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_DPAD_DOWN_V1"
+            );
+            dpadLeftTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_DPAD_LEFT_V1"
+            );
+            dpadRightTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_DPAD_RIGHT_V1"
+            );
+            dpadCenterTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_DPAD_CENTER_V1"
+            );
+            shortcutButtonTexture = Resources.Load<Texture2D>(
+                "ModernHandheld/Controls/HANDHELD_SHORTCUT_BUTTON_V1"
             );
 
             uiFont = ResolveFont();
@@ -604,14 +664,17 @@ namespace BoredomAndDungeons
                     new Color(0.72f, 0.90f, 1f, 1f)
                 );
             if (glassMaterial.HasProperty("_GlintStrength"))
-                glassMaterial.SetFloat("_GlintStrength", 0.34f);
+                glassMaterial.SetFloat("_GlintStrength", 0.62f);
             if (glassMaterial.HasProperty("_GlintSpeed"))
                 glassMaterial.SetFloat("_GlintSpeed", 0.18f);
 
             reflectionMaterial = CreateMaterial(unlitTransparent);
             reflectionMaterial.name = "BD Handheld Reflection";
-            reflectionMaterial.mainTexture = glassReflectionTexture;
-            reflectionMaterial.color = new Color(1f, 1f, 1f, 0.09f);
+            reflectionMaterial.mainTexture =
+                glassGlintTexture != null
+                    ? glassGlintTexture
+                    : glassReflectionTexture;
+            reflectionMaterial.color = new Color(1f, 1f, 1f, 0.38f);
 
             tableMaterial = CreateMaterial(tableShader);
             tableMaterial.name = "BD Handheld Focused Wood Table";
@@ -650,7 +713,7 @@ namespace BoredomAndDungeons
                 softShadowTexture != null
                     ? softShadowTexture
                     : Texture2D.whiteTexture;
-            softShadowMaterial.color = new Color(0f, 0f, 0f, 0.62f);
+            softShadowMaterial.color = new Color(0f, 0f, 0f, 0.76f);
 
             coreShadowMaterial = CreateMaterial(resolvedShadowShader);
             coreShadowMaterial.name = "BD Handheld Core Left Shadow";
@@ -658,7 +721,7 @@ namespace BoredomAndDungeons
                 softShadowTexture != null
                     ? softShadowTexture
                     : Texture2D.whiteTexture;
-            coreShadowMaterial.color = new Color(0f, 0f, 0f, 0.78f);
+            coreShadowMaterial.color = new Color(0f, 0f, 0f, 0.72f);
 
             contactShadowMaterial = CreateMaterial(resolvedShadowShader);
             contactShadowMaterial.name = "BD Handheld Contact Shadow";
@@ -666,7 +729,56 @@ namespace BoredomAndDungeons
                 contactShadowTexture != null
                     ? contactShadowTexture
                     : Texture2D.whiteTexture;
-            contactShadowMaterial.color = new Color(0f, 0f, 0f, 0.90f);
+            contactShadowMaterial.color = new Color(0f, 0f, 0f, 0.94f);
+
+            Shader buttonCapShader = Shader.Find(
+                "BoredomAndDungeons/ModernHandheldButtonCap"
+            );
+            Shader resolvedButtonCapShader =
+                buttonCapShader != null
+                    ? buttonCapShader
+                    : unlitTransparent;
+
+            buttonCapXMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                buttonXTexture
+            );
+            buttonCapYMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                buttonYTexture
+            );
+            buttonCapAMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                buttonATexture
+            );
+            buttonCapBMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                buttonBTexture
+            );
+            dpadUpCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                dpadUpTexture
+            );
+            dpadDownCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                dpadDownTexture
+            );
+            dpadLeftCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                dpadLeftTexture
+            );
+            dpadRightCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                dpadRightTexture
+            );
+            dpadCenterCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                dpadCenterTexture
+            );
+            shortcutCapMaterial = CreateButtonCapMaterial(
+                resolvedButtonCapShader,
+                shortcutButtonTexture
+            );
 
             backgroundMaterial = CreateMaterial(unlitTransparent);
             backgroundMaterial.name = "BD Handheld Table Vignette";
@@ -682,6 +794,26 @@ namespace BoredomAndDungeons
 
             Material material = new Material(shader);
             generatedMaterials.Add(material);
+            return material;
+        }
+
+        private Material CreateButtonCapMaterial(
+            Shader shader,
+            Texture2D texture)
+        {
+            Material material = CreateMaterial(shader);
+            material.mainTexture =
+                texture != null ? texture : Texture2D.whiteTexture;
+            material.SetColor("_Color", Color.white);
+            if (material.HasProperty("_Highlight"))
+                material.SetFloat("_Highlight", 0.34f);
+            if (material.HasProperty("_EdgeGlow"))
+            {
+                material.SetColor(
+                    "_EdgeGlow",
+                    new Color(0.24f, 0.56f, 1f, 0.28f)
+                );
+            }
             return material;
         }
 
@@ -739,7 +871,7 @@ namespace BoredomAndDungeons
                 "Modern Handheld Table Environment"
             ).transform;
             tableRoot.SetParent(presentationRoot.transform, false);
-            tableRoot.localPosition = DeviceRestPosition;
+            tableRoot.localPosition = TableRestPosition;
             tableRoot.localRotation = DeviceRestRotation;
             SetLayerRecursively(tableRoot.gameObject, DeviceLayer);
 
@@ -790,11 +922,11 @@ namespace BoredomAndDungeons
             Destroy(softShadow.GetComponent<Collider>());
             softShadow.transform.SetParent(shadowRoot, false);
             softShadow.transform.localPosition =
-                new Vector3(-1.02f, -0.22f, 0.700f);
+                new Vector3(-2.05f, -0.20f, 0.515f);
             softShadow.transform.localRotation =
                 Quaternion.Euler(0f, 180f, -0.65f);
             softShadow.transform.localScale =
-                new Vector3(11.10f, 15.45f, 1f);
+                new Vector3(12.30f, 15.35f, 1f);
             softShadow.GetComponent<Renderer>().sharedMaterial =
                 softShadowMaterial;
             SetLayerRecursively(softShadow, DeviceLayer);
@@ -806,11 +938,11 @@ namespace BoredomAndDungeons
             Destroy(coreShadow.GetComponent<Collider>());
             coreShadow.transform.SetParent(shadowRoot, false);
             coreShadow.transform.localPosition =
-                new Vector3(-0.46f, -0.16f, 0.687f);
+                new Vector3(-1.28f, -0.14f, 0.495f);
             coreShadow.transform.localRotation =
                 Quaternion.Euler(0f, 180f, -0.42f);
             coreShadow.transform.localScale =
-                new Vector3(10.15f, 15.10f, 1f);
+                new Vector3(10.85f, 14.95f, 1f);
             coreShadow.GetComponent<Renderer>().sharedMaterial =
                 coreShadowMaterial;
             SetLayerRecursively(coreShadow, DeviceLayer);
@@ -822,11 +954,11 @@ namespace BoredomAndDungeons
             Destroy(contactShadow.GetComponent<Collider>());
             contactShadow.transform.SetParent(shadowRoot, false);
             contactShadow.transform.localPosition =
-                new Vector3(-0.30f, -6.52f, 0.675f);
+                new Vector3(-0.74f, -7.08f, 0.475f);
             contactShadow.transform.localRotation =
                 Quaternion.Euler(0f, 180f, -0.35f);
             contactShadow.transform.localScale =
-                new Vector3(9.40f, 2.75f, 1f);
+                new Vector3(9.65f, 2.35f, 1f);
             contactShadow.GetComponent<Renderer>().sharedMaterial =
                 contactShadowMaterial;
             SetLayerRecursively(contactShadow, DeviceLayer);
@@ -1190,7 +1322,7 @@ namespace BoredomAndDungeons
             Destroy(reflection.GetComponent<Collider>());
             reflection.transform.SetParent(deviceVisualRoot, false);
             reflection.transform.localPosition =
-                new Vector3(0f, ScreenCenterY, -0.690f);
+                new Vector3(0.10f, ScreenCenterY + 0.06f, -0.700f);
             reflection.transform.localRotation =
                 Quaternion.Euler(0f, 180f, 0f);
             reflection.transform.localScale =
@@ -1215,19 +1347,39 @@ namespace BoredomAndDungeons
             BuildStatusLight();
         }
 
+        private GameObject CreateCapQuad(
+            string name,
+            Transform parent,
+            Material material,
+            Vector2 size,
+            float localZ)
+        {
+            GameObject cap = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            cap.name = name;
+            Destroy(cap.GetComponent<Collider>());
+            cap.transform.SetParent(parent, false);
+            cap.transform.localPosition = new Vector3(0f, 0f, localZ);
+            cap.transform.localRotation = Quaternion.identity;
+            cap.transform.localScale = new Vector3(size.x, size.y, 1f);
+            cap.GetComponent<Renderer>().sharedMaterial = material;
+            SetLayerRecursively(cap, DeviceLayer);
+            return cap;
+        }
+
         private void BuildDPad()
         {
             Transform dpadRoot = new GameObject("DPadRoot").transform;
             dpadRoot.SetParent(deviceVisualRoot, false);
-            dpadRoot.localPosition = new Vector3(-2.58f, -4.52f, ControlCenterZ);
+            dpadRoot.localPosition =
+                new Vector3(-2.58f, -4.52f, ControlCenterZ);
             SetLayerRecursively(dpadRoot.gameObject, DeviceLayer);
 
             Mesh centerMesh = CreateRoundedPrismMesh(
                 0.88f,
                 0.88f,
-                0.22f,
+                0.28f,
                 0.18f,
-                6
+                8
             );
             GameObject center = CreateMeshObject(
                 "DPad Center",
@@ -1237,34 +1389,45 @@ namespace BoredomAndDungeons
                 Vector3.zero,
                 Quaternion.identity
             );
+            CreateCapQuad(
+                "DPad Center Textured Cap",
+                center.transform,
+                dpadCenterCapMaterial,
+                new Vector2(0.80f, 0.80f),
+                -0.155f
+            );
 
             GameObject up = CreateDPadArm(
                 dpadRoot,
                 "DPad Up Cap",
                 new Vector3(0f, 0.82f, 0f),
                 0.86f,
-                0.96f
+                0.96f,
+                dpadUpCapMaterial
             );
             GameObject down = CreateDPadArm(
                 dpadRoot,
                 "DPad Down Cap",
                 new Vector3(0f, -0.82f, 0f),
                 0.86f,
-                0.96f
+                0.96f,
+                dpadDownCapMaterial
             );
             GameObject left = CreateDPadArm(
                 dpadRoot,
                 "DPad Left Cap",
                 new Vector3(-0.82f, 0f, 0f),
                 0.96f,
-                0.86f
+                0.86f,
+                dpadLeftCapMaterial
             );
             GameObject right = CreateDPadArm(
                 dpadRoot,
                 "DPad Right Cap",
                 new Vector3(0.82f, 0f, 0f),
                 0.96f,
-                0.86f
+                0.86f,
+                dpadRightCapMaterial
             );
 
             GameObject accent = GameObject.CreatePrimitive(
@@ -1274,9 +1437,9 @@ namespace BoredomAndDungeons
             Destroy(accent.GetComponent<Collider>());
             accent.transform.SetParent(center.transform, false);
             accent.transform.localPosition =
-                new Vector3(0f, 0f, -0.16f);
+                new Vector3(0f, 0f, -0.19f);
             accent.transform.localScale =
-                new Vector3(0.22f, 0.22f, 0.08f);
+                new Vector3(0.18f, 0.18f, 0.07f);
             accent.GetComponent<Renderer>().sharedMaterial =
                 accentMaterial;
             SetLayerRecursively(accent, DeviceLayer);
@@ -1284,32 +1447,32 @@ namespace BoredomAndDungeons
             CreateDPadTarget(
                 dpadRoot,
                 "DPad Up",
-                new Vector3(0f, 0.82f, -0.16f),
-                new Vector3(0.78f, 0.94f, 0.30f),
+                new Vector3(0f, 0.82f, -0.18f),
+                new Vector3(0.82f, 0.98f, 0.34f),
                 BDModernHandheldControlTarget.ControlAction.DPadUp,
                 up
             );
             CreateDPadTarget(
                 dpadRoot,
                 "DPad Down",
-                new Vector3(0f, -0.82f, -0.16f),
-                new Vector3(0.78f, 0.94f, 0.30f),
+                new Vector3(0f, -0.82f, -0.18f),
+                new Vector3(0.82f, 0.98f, 0.34f),
                 BDModernHandheldControlTarget.ControlAction.DPadDown,
                 down
             );
             CreateDPadTarget(
                 dpadRoot,
                 "DPad Left",
-                new Vector3(-0.82f, 0f, -0.16f),
-                new Vector3(0.94f, 0.78f, 0.30f),
+                new Vector3(-0.82f, 0f, -0.18f),
+                new Vector3(0.98f, 0.82f, 0.34f),
                 BDModernHandheldControlTarget.ControlAction.DPadLeft,
                 left
             );
             CreateDPadTarget(
                 dpadRoot,
                 "DPad Right",
-                new Vector3(0.82f, 0f, -0.16f),
-                new Vector3(0.94f, 0.78f, 0.30f),
+                new Vector3(0.82f, 0f, -0.18f),
+                new Vector3(0.98f, 0.82f, 0.34f),
                 BDModernHandheldControlTarget.ControlAction.DPadRight,
                 right
             );
@@ -1320,16 +1483,17 @@ namespace BoredomAndDungeons
             string name,
             Vector3 position,
             float width,
-            float height)
+            float height,
+            Material capMaterial)
         {
             Mesh mesh = CreateRoundedPrismMesh(
                 width,
                 height,
-                0.22f,
+                0.28f,
                 0.18f,
-                6
+                8
             );
-            return CreateMeshObject(
+            GameObject arm = CreateMeshObject(
                 name,
                 parent,
                 mesh,
@@ -1337,6 +1501,14 @@ namespace BoredomAndDungeons
                 position,
                 Quaternion.identity
             );
+            CreateCapQuad(
+                name + " Texture",
+                arm.transform,
+                capMaterial,
+                new Vector2(width * 0.92f, height * 0.92f),
+                -0.155f
+            );
+            return arm;
         }
 
         private void CreateDPadTarget(
@@ -1366,99 +1538,97 @@ namespace BoredomAndDungeons
         {
             CreateFaceButton(
                 "Button X",
-                "X",
                 new Vector3(2.70f, -3.85f, ControlCenterZ),
                 purpleButtonMaterial,
-                BDModernHandheldControlTarget.ControlAction.Settings
+                buttonCapXMaterial,
+                BDModernHandheldControlTarget.ControlAction.Primary
             );
             CreateFaceButton(
                 "Button Y",
-                "Y",
                 new Vector3(1.88f, -4.68f, ControlCenterZ),
                 purpleButtonMaterial,
-                BDModernHandheldControlTarget.ControlAction.Progression
+                buttonCapYMaterial,
+                BDModernHandheldControlTarget.ControlAction.Credits
             );
             CreateFaceButton(
                 "Button A",
-                "A",
                 new Vector3(3.55f, -4.68f, ControlCenterZ),
                 warmButtonMaterial,
-                BDModernHandheldControlTarget.ControlAction.Confirm
+                buttonCapAMaterial,
+                BDModernHandheldControlTarget.ControlAction.Progression
             );
             CreateFaceButton(
                 "Button B",
-                "B",
                 new Vector3(2.72f, -5.52f, ControlCenterZ),
                 warmButtonMaterial,
-                BDModernHandheldControlTarget.ControlAction.Back
+                buttonCapBMaterial,
+                BDModernHandheldControlTarget.ControlAction.ContextBackSettings
             );
         }
 
         private void CreateFaceButton(
             string name,
-            string letter,
             Vector3 position,
-            Material material,
+            Material sideMaterial,
+            Material capMaterial,
             BDModernHandheldControlTarget.ControlAction action)
         {
+            GameObject root = new GameObject(name + " Root");
+            root.transform.SetParent(deviceVisualRoot, false);
+            root.transform.localPosition = position;
+            SetLayerRecursively(root, DeviceLayer);
+
             GameObject button = GameObject.CreatePrimitive(
                 PrimitiveType.Cylinder
             );
             button.name = name;
-            button.transform.SetParent(deviceVisualRoot, false);
-            button.transform.localPosition = position;
-            button.transform.localRotation =
-                Quaternion.Euler(90f, 0f, 0f);
-            button.transform.localScale =
-                new Vector3(0.48f, 0.12f, 0.48f);
+            button.transform.SetParent(root.transform, false);
+            button.transform.localPosition = Vector3.zero;
+            button.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            button.transform.localScale = new Vector3(0.54f, 0.24f, 0.54f);
 
             Collider primitiveCollider = button.GetComponent<Collider>();
             if (primitiveCollider != null)
                 Destroy(primitiveCollider);
 
             Renderer renderer = button.GetComponent<Renderer>();
-            renderer.sharedMaterial = material;
+            renderer.sharedMaterial = sideMaterial;
             SetLayerRecursively(button, DeviceLayer);
 
-            CreateHardwareLabel(
-                letter,
-                deviceVisualRoot,
-                new Vector3(position.x, position.y, HardwareLabelZ),
-                0.055f,
-                action ==
-                    BDModernHandheldControlTarget.ControlAction.Confirm ||
-                action ==
-                    BDModernHandheldControlTarget.ControlAction.Back
-                    ? new Color(1f, 0.47f, 0.10f, 1f)
-                    : new Color(0.78f, 0.36f, 1f, 1f)
+            CreateCapQuad(
+                name + " Textured Face",
+                root.transform,
+                capMaterial,
+                new Vector2(0.96f, 0.96f),
+                -0.255f
             );
 
             CreateControlTarget(
                 name + " Hit Target",
                 deviceVisualRoot,
                 new Vector3(position.x, position.y, HitTargetZ),
-                new Vector3(0.96f, 0.96f, 0.36f),
+                new Vector3(1.02f, 1.02f, 0.40f),
                 action,
                 -1,
-                button.transform,
+                root.transform,
                 renderer,
-                0.11f
+                0.12f
             );
         }
 
         private void BuildShortcutButtons()
         {
             CreateShortcutButton(
-                "Button Settings",
-                "SETTINGS",
-                new Vector3(-1.18f, -3.85f, ControlCenterZ),
-                BDModernHandheldControlTarget.ControlAction.Settings
+                "Button Select",
+                "SELECT",
+                new Vector3(-1.42f, -3.72f, ControlCenterZ),
+                BDModernHandheldControlTarget.ControlAction.Confirm
             );
             CreateShortcutButton(
-                "Button Progression",
-                "PROGRESSION",
-                new Vector3(1.18f, -3.85f, ControlCenterZ),
-                BDModernHandheldControlTarget.ControlAction.Progression
+                "Button Exit",
+                "EXIT",
+                new Vector3(1.42f, -3.72f, ControlCenterZ),
+                BDModernHandheldControlTarget.ControlAction.Exit
             );
         }
 
@@ -1469,10 +1639,10 @@ namespace BoredomAndDungeons
             BDModernHandheldControlTarget.ControlAction action)
         {
             Mesh mesh = CreateRoundedPrismMesh(
-                1.12f,
-                0.36f,
+                1.18f,
+                0.38f,
+                0.22f,
                 0.16f,
-                0.15f,
                 6
             );
             GameObject button = CreateMeshObject(
@@ -1484,16 +1654,23 @@ namespace BoredomAndDungeons
                 Quaternion.identity
             );
             Renderer renderer = button.GetComponent<Renderer>();
+            CreateCapQuad(
+                name + " Textured Face",
+                button.transform,
+                shortcutCapMaterial,
+                new Vector2(1.08f, 0.32f),
+                -0.145f
+            );
 
-            float labelSize = label == "PROGRESSION"
-                ? 0.020f
-                : 0.026f;
-            CreateHardwareLabel(
+            CreateRecessedHardwareLabel(
                 label,
                 deviceVisualRoot,
-                new Vector3(position.x, position.y - 0.42f, HardwareLabelZ),
-                labelSize,
-                new Color(1f, 0.56f, 0.18f, 1f)
+                new Vector3(
+                    position.x,
+                    position.y - 0.50f,
+                    FrontSurfaceZ - 0.025f
+                ),
+                0.024f
             );
 
             CreateControlTarget(
@@ -1505,7 +1682,7 @@ namespace BoredomAndDungeons
                 -1,
                 button.transform,
                 renderer,
-                0.08f
+                0.10f
             );
         }
 
@@ -1559,6 +1736,28 @@ namespace BoredomAndDungeons
             light.GetComponent<Renderer>().sharedMaterial =
                 accentMaterial;
             SetLayerRecursively(light, DeviceLayer);
+        }
+
+        private void CreateRecessedHardwareLabel(
+            string text,
+            Transform parent,
+            Vector3 localPosition,
+            float characterSize)
+        {
+            CreateHardwareLabel(
+                text,
+                parent,
+                localPosition + new Vector3(0f, -0.018f, 0.006f),
+                characterSize,
+                new Color(0.005f, 0.008f, 0.015f, 0.96f)
+            );
+            CreateHardwareLabel(
+                text,
+                parent,
+                localPosition + new Vector3(0f, 0.010f, -0.004f),
+                characterSize,
+                new Color(0.34f, 0.20f, 0.16f, 0.44f)
+            );
         }
 
         private TextMesh CreateHardwareLabel(
@@ -1699,8 +1898,18 @@ namespace BoredomAndDungeons
             BDMainMenuFlow.HandheldPage flowPage =
                 flow.CurrentHandheldPage;
 
-            if (flowPage != BDMainMenuFlow.HandheldPage.MainMenu)
-                localPage = LocalPage.None;
+            if (localPage == LocalPage.Credits &&
+                flowPage != BDMainMenuFlow.HandheldPage.Loading &&
+                flowPage != BDMainMenuFlow.HandheldPage.AbandonConfirm)
+            {
+                return EffectivePage.Credits;
+            }
+
+            if (localPage == LocalPage.QuitConfirm &&
+                flowPage == BDMainMenuFlow.HandheldPage.MainMenu)
+            {
+                return EffectivePage.QuitConfirm;
+            }
 
             switch (flowPage)
             {
@@ -1715,9 +1924,7 @@ namespace BoredomAndDungeons
                 case BDMainMenuFlow.HandheldPage.Loading:
                     return EffectivePage.Loading;
                 default:
-                    return localPage == LocalPage.Credits
-                        ? EffectivePage.Credits
-                        : EffectivePage.MainMenu;
+                    return EffectivePage.MainMenu;
             }
         }
 
@@ -1757,6 +1964,9 @@ namespace BoredomAndDungeons
                     break;
                 case EffectivePage.Credits:
                     BuildCreditsPage();
+                    break;
+                case EffectivePage.QuitConfirm:
+                    BuildQuitConfirmPage();
                     break;
                 case EffectivePage.AbandonConfirm:
                     BuildAbandonConfirmPage();
@@ -1890,6 +2100,8 @@ namespace BoredomAndDungeons
                     return "PROGRESSION";
                 case EffectivePage.Credits:
                     return "CREDITS";
+                case EffectivePage.QuitConfirm:
+                    return "EXIT CONFIRM";
                 case EffectivePage.AbandonConfirm:
                     return "CONFIRM";
                 case EffectivePage.Loading:
@@ -1915,7 +2127,7 @@ namespace BoredomAndDungeons
                 "Enter the maze and begin the adventure",
                 RowAction.Primary,
                 y,
-                "A"
+                "X"
             );
             y -= 82f;
             AddScreenRow(
@@ -1923,7 +2135,7 @@ namespace BoredomAndDungeons
                 "View persistent milestones and future upgrades",
                 RowAction.OpenProgression,
                 y,
-                "Y"
+                "A"
             );
             y -= 82f;
             AddScreenRow(
@@ -1931,7 +2143,7 @@ namespace BoredomAndDungeons
                 "Audio, controls, display and accessibility",
                 RowAction.OpenSettings,
                 y,
-                "X"
+                "B"
             );
             y -= 82f;
             AddScreenRow(
@@ -1939,7 +2151,7 @@ namespace BoredomAndDungeons
                 "The people and ideas behind the adventure",
                 RowAction.OpenCredits,
                 y,
-                string.Empty
+                "Y"
             );
             y -= 82f;
             AddScreenRow(
@@ -1947,7 +2159,7 @@ namespace BoredomAndDungeons
                 "Exit the game",
                 RowAction.Quit,
                 y,
-                string.Empty
+                "EXIT"
             );
 
             BuildRunCard(
@@ -1976,7 +2188,7 @@ namespace BoredomAndDungeons
                 "Return to the current run",
                 RowAction.Primary,
                 y,
-                "A"
+                "SELECT"
             );
             y -= 82f;
             AddScreenRow(
@@ -1984,7 +2196,7 @@ namespace BoredomAndDungeons
                 "Review persistent progress",
                 RowAction.OpenProgression,
                 y,
-                "Y"
+                "SELECT"
             );
             y -= 82f;
             AddScreenRow(
@@ -1992,7 +2204,7 @@ namespace BoredomAndDungeons
                 "Adjust the experience",
                 RowAction.OpenSettings,
                 y,
-                "X"
+                "SELECT"
             );
             y -= 82f;
             AddScreenRow(
@@ -2000,7 +2212,7 @@ namespace BoredomAndDungeons
                 "End this run after confirmation",
                 RowAction.ReturnToMainMenu,
                 y,
-                "B"
+                "EXIT"
             );
 
             BuildRunCard(
@@ -2078,7 +2290,7 @@ namespace BoredomAndDungeons
                 string.Empty,
                 RowAction.Fullscreen,
                 y,
-                "A"
+                "SELECT"
             );
             y -= 67f;
             AddScreenRow(
@@ -2086,7 +2298,7 @@ namespace BoredomAndDungeons
                 string.Empty,
                 RowAction.VSync,
                 y,
-                "A / ◀ ▶"
+                "SELECT / ◀ ▶"
             );
             y -= 67f;
             AddScreenRow(
@@ -2094,7 +2306,7 @@ namespace BoredomAndDungeons
                 "Restore the recommended settings",
                 RowAction.ResetDefaults,
                 y,
-                "A"
+                "SELECT"
             );
             y -= 67f;
             AddScreenRow(
@@ -2119,10 +2331,10 @@ namespace BoredomAndDungeons
             Image panel = CreatePanel(
                 pageRoot,
                 "Progression Panel",
-                -205f,
-                20f,
-                490f,
-                475f,
+                -215f,
+                65f,
+                430f,
+                420f,
                 new Color(0.018f, 0.035f, 0.075f, 0.94f)
             );
             AddOutline(
@@ -2137,9 +2349,9 @@ namespace BoredomAndDungeons
                 "PERSISTENT MEMORY",
                 0f,
                 178f,
-                420f,
-                52f,
-                28,
+                370f,
+                48f,
+                26,
                 TextAnchor.MiddleLeft,
                 Color.white,
                 FontStyle.Bold
@@ -2152,9 +2364,9 @@ namespace BoredomAndDungeons
                     : "MOTHER RESTORED // NOT YET",
                 0f,
                 105f,
-                420f,
-                52f,
-                22,
+                370f,
+                48f,
+                20,
                 TextAnchor.MiddleLeft,
                 new Color(0.54f, 0.86f, 1f, 1f),
                 FontStyle.Bold
@@ -2165,9 +2377,9 @@ namespace BoredomAndDungeons
                 "This is the permanent entry point for cross-run progress. Future upgrades, blessings and discoveries will appear here without changing the menu architecture.",
                 0f,
                 -20f,
-                420f,
-                190f,
-                21,
+                370f,
+                175f,
+                19,
                 TextAnchor.UpperLeft,
                 new Color(0.76f, 0.80f, 0.90f, 1f),
                 FontStyle.Normal
@@ -2177,7 +2389,7 @@ namespace BoredomAndDungeons
                 "BACK",
                 "Return to the previous page",
                 RowAction.Back,
-                -315f,
+                -305f,
                 "B"
             );
         }
@@ -2193,10 +2405,10 @@ namespace BoredomAndDungeons
             Image panel = CreatePanel(
                 pageRoot,
                 "Credits Panel",
-                -205f,
-                20f,
-                490f,
-                520f,
+                -215f,
+                55f,
+                430f,
+                440f,
                 new Color(0.018f, 0.035f, 0.075f, 0.94f)
             );
             AddOutline(
@@ -2211,9 +2423,9 @@ namespace BoredomAndDungeons
                 "CREATED BY BARAK\n\nA living production project built with Unity, original systems, iterative design and a commitment to preserving every approved idea.\n\nThank you for entering the maze.",
                 0f,
                 0f,
-                420f,
-                420f,
-                24,
+                370f,
+                350f,
+                22,
                 TextAnchor.MiddleCenter,
                 new Color(0.88f, 0.92f, 1f, 1f),
                 FontStyle.Normal
@@ -2223,7 +2435,59 @@ namespace BoredomAndDungeons
                 "BACK",
                 "Return to the main menu",
                 RowAction.Back,
-                -315f,
+                -305f,
+                "B"
+            );
+        }
+
+        private void BuildQuitConfirmPage()
+        {
+            CreateTitleBlock(
+                "EXIT THE GAME?",
+                "ARE YOU SURE YOU WANT TO LEAVE?"
+            );
+            BuildHeroCard(quitArtTexture);
+
+            Image panel = CreatePanel(
+                pageRoot,
+                "Quit Confirmation Panel",
+                -215f,
+                55f,
+                430f,
+                300f,
+                new Color(0.08f, 0.025f, 0.035f, 0.94f)
+            );
+            AddOutline(
+                panel.gameObject,
+                new Color(0.86f, 0.18f, 0.28f, 0.78f),
+                2f
+            );
+            CreateText(
+                panel.rectTransform,
+                "Quit Confirmation Text",
+                "Quit Boredom & Dungeons?\n\nUnsaved runtime state will be closed.",
+                0f,
+                0f,
+                370f,
+                220f,
+                24,
+                TextAnchor.MiddleCenter,
+                new Color(0.96f, 0.90f, 0.92f, 1f),
+                FontStyle.Normal
+            );
+
+            AddScreenRow(
+                "YES — EXIT GAME",
+                "Close the application",
+                RowAction.ConfirmQuit,
+                -235f,
+                "SELECT"
+            );
+            AddScreenRow(
+                "NO — STAY HERE",
+                "Return to the previous page",
+                RowAction.CancelQuit,
+                -320f,
                 "B"
             );
         }
@@ -2240,9 +2504,9 @@ namespace BoredomAndDungeons
             Image panel = CreatePanel(
                 pageRoot,
                 "Confirmation Panel",
-                -205f,
-                20f,
-                490f,
+                -215f,
+                55f,
+                430f,
                 300f,
                 new Color(0.08f, 0.025f, 0.035f, 0.94f)
             );
@@ -2257,9 +2521,9 @@ namespace BoredomAndDungeons
                 "Return to the main menu?\n\nThe scene will reload into a clean menu state.",
                 0f,
                 0f,
-                420f,
-                230f,
-                25,
+                370f,
+                220f,
+                24,
                 TextAnchor.MiddleCenter,
                 new Color(0.96f, 0.90f, 0.92f, 1f),
                 FontStyle.Normal
@@ -2270,7 +2534,7 @@ namespace BoredomAndDungeons
                 "Confirm abandon and reload",
                 RowAction.ConfirmAbandon,
                 -225f,
-                "A"
+                "SELECT"
             );
             AddScreenRow(
                 "NO — KEEP PLAYING",
@@ -2392,10 +2656,10 @@ namespace BoredomAndDungeons
             Image frame = CreatePanel(
                 pageRoot,
                 "Hero Art Frame",
-                242f,
-                176f,
-                410f,
-                520f,
+                275f,
+                218f,
+                320f,
+                408f,
                 new Color(0.012f, 0.025f, 0.055f, 0.96f)
             );
             AddOutline(
@@ -2409,8 +2673,8 @@ namespace BoredomAndDungeons
                 "Context Artwork",
                 0f,
                 0f,
-                390f,
-                500f,
+                304f,
+                392f,
                 initialTexture != null
                     ? initialTexture
                     : Texture2D.blackTexture,
@@ -2457,10 +2721,10 @@ namespace BoredomAndDungeons
             Image panel = CreatePanel(
                 pageRoot,
                 "New Game Memory Card",
-                245f,
-                -138f,
-                405f,
-                176f,
+                275f,
+                -78f,
+                320f,
+                128f,
                 new Color(0.014f, 0.030f, 0.065f, 0.97f)
             );
             newGameMemoryCard = panel.gameObject;
@@ -2475,9 +2739,9 @@ namespace BoredomAndDungeons
                 "New Game Card Heading",
                 heading,
                 0f,
-                44f,
-                340f,
-                40f,
+                34f,
+                272f,
+                34f,
                 18,
                 TextAnchor.MiddleCenter,
                 new Color(0.22f, 0.80f, 1f, 1f),
@@ -2488,9 +2752,9 @@ namespace BoredomAndDungeons
                 "New Game Card Status",
                 status,
                 0f,
-                -18f,
-                340f,
-                74f,
+                -20f,
+                272f,
+                58f,
                 25,
                 TextAnchor.MiddleCenter,
                 Color.white,
@@ -2528,9 +2792,9 @@ namespace BoredomAndDungeons
                 pageRoot,
                 "Next Card",
                 0f,
-                -352f,
+                -350f,
                 880f,
-                142f,
+                136f,
                 new Color(0.014f, 0.026f, 0.052f, 0.97f)
             );
             AddOutline(
@@ -2747,8 +3011,10 @@ namespace BoredomAndDungeons
                     return new Color(0.48f, 0.16f, 0.045f, 1f);
                 case RowAction.Quit:
                 case RowAction.ReturnToMainMenu:
+                case RowAction.ConfirmQuit:
                 case RowAction.ConfirmAbandon:
                     return new Color(0.52f, 0.05f, 0.12f, 1f);
+                case RowAction.CancelQuit:
                 case RowAction.CancelAbandon:
                 case RowAction.Back:
                     return new Color(0.05f, 0.26f, 0.42f, 1f);
@@ -2773,8 +3039,10 @@ namespace BoredomAndDungeons
                 case RowAction.ReturnToMainMenu:
                     return "↪";
                 case RowAction.Back:
+                case RowAction.CancelQuit:
                 case RowAction.CancelAbandon:
                     return "←";
+                case RowAction.ConfirmQuit:
                 case RowAction.ConfirmAbandon:
                     return "✓";
                 default:
@@ -2854,8 +3122,7 @@ namespace BoredomAndDungeons
                 1f
             );
 
-            string controls =
-                "MOUSE   •   D-PAD / ARROWS / WASD NAVIGATE   •   A SELECT   •   B BACK   •   X SETTINGS   •   Y PROGRESSION";
+            string controls = ResolveControlLegend();
 
             CreateText(
                 footer.rectTransform,
@@ -2863,13 +3130,24 @@ namespace BoredomAndDungeons
                 controls,
                 0f,
                 0f,
-                860f,
+                880f,
                 44f,
-                16,
+                12,
                 TextAnchor.MiddleCenter,
                 new Color(0.78f, 0.84f, 0.94f, 1f),
                 FontStyle.Bold
             );
+        }
+
+
+        private string ResolveControlLegend()
+        {
+            if (displayedPage == EffectivePage.MainMenu)
+            {
+                return "D-PAD / ARROWS / WASD NAVIGATE  •  SELECT ENTERS  •  EXIT CONFIRMS  •  X NEW GAME  •  A PROGRESSION  •  B SETTINGS  •  Y CREDITS";
+            }
+
+            return "D-PAD / ARROWS / WASD NAVIGATE  •  SELECT ENTERS  •  EXIT CONFIRMS  •  B BACK";
         }
 
         private void RefreshSettingsRowValues()
@@ -2997,6 +3275,8 @@ namespace BoredomAndDungeons
                     return settingsArtTexture;
                 case EffectivePage.Credits:
                     return creditsArtTexture;
+                case EffectivePage.QuitConfirm:
+                    return quitArtTexture;
                 case EffectivePage.AbandonConfirm:
                     return quitArtTexture;
                 default:
@@ -3105,13 +3385,20 @@ namespace BoredomAndDungeons
                     displayedPageInitialized = false;
                     break;
                 case RowAction.Quit:
-                    flow.HandleModernQuit();
+                    RequestExitShortcut();
                     break;
                 case RowAction.ReturnToMainMenu:
                     flow.HandleModernRequestMainMenu();
                     break;
                 case RowAction.Back:
                     HandleBack();
+                    break;
+                case RowAction.ConfirmQuit:
+                    flow.HandleModernQuit();
+                    break;
+                case RowAction.CancelQuit:
+                    localPage = LocalPage.None;
+                    displayedPageInitialized = false;
                     break;
                 case RowAction.ConfirmAbandon:
                     flow.HandleModernPrimaryAction();
@@ -3205,10 +3492,11 @@ namespace BoredomAndDungeons
         private void HandleBack()
         {
             PulsePersistentControl(
-                BDModernHandheldControlTarget.ControlAction.Back
+                BDModernHandheldControlTarget.ControlAction.ContextBackSettings
             );
 
-            if (localPage == LocalPage.Credits)
+            if (localPage == LocalPage.Credits ||
+                localPage == LocalPage.QuitConfirm)
             {
                 localPage = LocalPage.None;
                 displayedPageInitialized = false;
@@ -3222,13 +3510,34 @@ namespace BoredomAndDungeons
             PlayClick();
         }
 
+        private void ActivatePrimaryShortcut()
+        {
+            if (flow == null || displayedPage != EffectivePage.MainMenu)
+                return;
+
+            PulsePersistentControl(
+                BDModernHandheldControlTarget.ControlAction.Primary
+            );
+            localPage = LocalPage.None;
+            flow.HandleModernPrimaryAction();
+            PlayClick();
+        }
+
+        private void HandleContextBShortcut()
+        {
+            if (displayedPage == EffectivePage.MainMenu)
+                OpenSettingsShortcut();
+            else
+                HandleBack();
+        }
+
         private void OpenSettingsShortcut()
         {
             if (flow == null)
                 return;
 
             PulsePersistentControl(
-                BDModernHandheldControlTarget.ControlAction.Settings
+                BDModernHandheldControlTarget.ControlAction.ContextBackSettings
             );
             localPage = LocalPage.None;
             flow.HandleModernOpenSettings();
@@ -3237,7 +3546,7 @@ namespace BoredomAndDungeons
 
         private void OpenProgressionShortcut()
         {
-            if (flow == null)
+            if (flow == null || displayedPage != EffectivePage.MainMenu)
                 return;
 
             PulsePersistentControl(
@@ -3245,6 +3554,50 @@ namespace BoredomAndDungeons
             );
             localPage = LocalPage.None;
             flow.HandleModernOpenProgression();
+            PlayClick();
+        }
+
+        private void OpenCreditsShortcut()
+        {
+            if (flow == null || displayedPage != EffectivePage.MainMenu)
+                return;
+
+            PulsePersistentControl(
+                BDModernHandheldControlTarget.ControlAction.Credits
+            );
+            localPage = LocalPage.Credits;
+            displayedPageInitialized = false;
+            PlayClick();
+        }
+
+        private void RequestExitShortcut()
+        {
+            if (flow == null)
+                return;
+
+            PulsePersistentControl(
+                BDModernHandheldControlTarget.ControlAction.Exit
+            );
+
+            if (flow.IsRunActive || flow.IsPausedFromGameplay)
+            {
+                localPage = LocalPage.None;
+                flow.HandleModernRequestMainMenu();
+            }
+            else
+            {
+                if (flow.CurrentHandheldPage ==
+                        BDMainMenuFlow.HandheldPage.Settings ||
+                    flow.CurrentHandheldPage ==
+                        BDMainMenuFlow.HandheldPage.Progression)
+                {
+                    flow.HandleModernBack();
+                }
+
+                localPage = LocalPage.QuitConfirm;
+                displayedPageInitialized = false;
+            }
+
             PlayClick();
         }
 
@@ -3284,14 +3637,20 @@ namespace BoredomAndDungeons
             if (ReadConfirmPressed())
                 ActivateSelected();
 
-            if (ReadBackPressed())
-                HandleBack();
-
-            if (ReadSettingsPressed())
-                OpenSettingsShortcut();
+            if (ReadPrimaryPressed())
+                ActivatePrimaryShortcut();
 
             if (ReadProgressionPressed())
                 OpenProgressionShortcut();
+
+            if (ReadContextBPressed())
+                HandleContextBShortcut();
+
+            if (ReadCreditsPressed())
+                OpenCreditsShortcut();
+
+            if (ReadExitPressed())
+                RequestExitShortcut();
         }
 
         private void UpdatePointerInteraction()
@@ -3363,14 +3722,20 @@ namespace BoredomAndDungeons
                 case BDModernHandheldControlTarget.ControlAction.Confirm:
                     ActivateSelected();
                     break;
-                case BDModernHandheldControlTarget.ControlAction.Back:
-                    HandleBack();
+                case BDModernHandheldControlTarget.ControlAction.Exit:
+                    RequestExitShortcut();
                     break;
-                case BDModernHandheldControlTarget.ControlAction.Settings:
-                    OpenSettingsShortcut();
+                case BDModernHandheldControlTarget.ControlAction.Primary:
+                    ActivatePrimaryShortcut();
                     break;
                 case BDModernHandheldControlTarget.ControlAction.Progression:
                     OpenProgressionShortcut();
+                    break;
+                case BDModernHandheldControlTarget.ControlAction.ContextBackSettings:
+                    HandleContextBShortcut();
+                    break;
+                case BDModernHandheldControlTarget.ControlAction.Credits:
+                    OpenCreditsShortcut();
                     break;
             }
         }
@@ -3484,6 +3849,7 @@ namespace BoredomAndDungeons
             float alpha = page == EffectivePage.Pause ||
                           page == EffectivePage.Settings ||
                           page == EffectivePage.Progression ||
+                          page == EffectivePage.QuitConfirm ||
                           page == EffectivePage.AbandonConfirm
                 ? 0.30f
                 : 0.18f;
@@ -4293,6 +4659,8 @@ namespace BoredomAndDungeons
                  Keyboard.current.spaceKey.isPressed ||
                  Keyboard.current.xKey.isPressed ||
                  Keyboard.current.yKey.isPressed ||
+                 Keyboard.current.bKey.isPressed ||
+                 Keyboard.current.pKey.isPressed ||
                  Keyboard.current.upArrowKey.isPressed ||
                  Keyboard.current.downArrowKey.isPressed ||
                  Keyboard.current.leftArrowKey.isPressed ||
@@ -4310,6 +4678,8 @@ namespace BoredomAndDungeons
                  Gamepad.current.buttonEast.isPressed ||
                  Gamepad.current.buttonWest.isPressed ||
                  Gamepad.current.buttonNorth.isPressed ||
+                 Gamepad.current.startButton.isPressed ||
+                 Gamepad.current.selectButton.isPressed ||
                  Gamepad.current.dpad.up.isPressed ||
                  Gamepad.current.dpad.down.isPressed ||
                  Gamepad.current.dpad.left.isPressed ||
@@ -4332,6 +4702,8 @@ namespace BoredomAndDungeons
                    Input.GetKey(KeyCode.Space) ||
                    Input.GetKey(KeyCode.X) ||
                    Input.GetKey(KeyCode.Y) ||
+                   Input.GetKey(KeyCode.B) ||
+                   Input.GetKey(KeyCode.P) ||
                    Input.GetKey(KeyCode.UpArrow) ||
                    Input.GetKey(KeyCode.DownArrow) ||
                    Input.GetKey(KeyCode.LeftArrow) ||
@@ -4449,7 +4821,7 @@ namespace BoredomAndDungeons
                 return true;
             }
             if (Gamepad.current != null &&
-                Gamepad.current.buttonSouth.wasPressedThisFrame)
+                Gamepad.current.startButton.wasPressedThisFrame)
             {
                 return true;
             }
@@ -4463,30 +4835,7 @@ namespace BoredomAndDungeons
 #endif
         }
 
-        private static bool ReadBackPressed()
-        {
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null &&
-                (Keyboard.current.escapeKey.wasPressedThisFrame ||
-                 Keyboard.current.backspaceKey.wasPressedThisFrame))
-            {
-                return true;
-            }
-            if (Gamepad.current != null &&
-                Gamepad.current.buttonEast.wasPressedThisFrame)
-            {
-                return true;
-            }
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(KeyCode.Escape) ||
-                   Input.GetKeyDown(KeyCode.Backspace);
-#else
-            return false;
-#endif
-        }
-
-        private static bool ReadSettingsPressed()
+        private static bool ReadPrimaryPressed()
         {
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null &&
@@ -4511,6 +4860,48 @@ namespace BoredomAndDungeons
         {
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null &&
+                Keyboard.current.pKey.wasPressedThisFrame)
+            {
+                return true;
+            }
+            if (Gamepad.current != null &&
+                Gamepad.current.buttonSouth.wasPressedThisFrame)
+            {
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.P);
+#else
+            return false;
+#endif
+        }
+
+        private static bool ReadContextBPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null &&
+                Keyboard.current.bKey.wasPressedThisFrame)
+            {
+                return true;
+            }
+            if (Gamepad.current != null &&
+                Gamepad.current.buttonEast.wasPressedThisFrame)
+            {
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.B);
+#else
+            return false;
+#endif
+        }
+
+        private static bool ReadCreditsPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null &&
                 Keyboard.current.yKey.wasPressedThisFrame)
             {
                 return true;
@@ -4523,6 +4914,29 @@ namespace BoredomAndDungeons
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
             return Input.GetKeyDown(KeyCode.Y);
+#else
+            return false;
+#endif
+        }
+
+        private static bool ReadExitPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null &&
+                (Keyboard.current.escapeKey.wasPressedThisFrame ||
+                 Keyboard.current.backspaceKey.wasPressedThisFrame))
+            {
+                return true;
+            }
+            if (Gamepad.current != null &&
+                Gamepad.current.selectButton.wasPressedThisFrame)
+            {
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(KeyCode.Escape) ||
+                   Input.GetKeyDown(KeyCode.Backspace);
 #else
             return false;
 #endif

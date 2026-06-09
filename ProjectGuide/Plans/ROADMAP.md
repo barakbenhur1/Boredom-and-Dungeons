@@ -6,7 +6,7 @@ This is a readable roadmap. Exact current truth and resume point remain in `../S
 
 1. Repair the missing `com.unity.ugui` dependency and restore clean Unity compilation.
 2. Verify the real 3D upright handheld for Main Menu and Pause/Escape.
-3. Verify mouse, D-pad, A/B/X/Y and physical Settings/Progression controls.
+3. Verify mouse, D-pad, A/B/X/Y and the physical center SELECT/EXIT controls.
 4. Verify the Boy/Girl pair only on Start Game / New Run, dedicated neutral artwork on every other option/page, and responsive screen readability.
 5. Implement the seamless handheld-screen → gameplay opening handoff and reverse gameplay → handheld return.
 

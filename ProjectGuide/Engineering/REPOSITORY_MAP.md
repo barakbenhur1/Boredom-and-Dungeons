@@ -1,3 +1,10 @@
+
+## Modern handheld control surfaces
+
+- `Assets/_Project/Resources/ModernHandheld/Controls/` — cached button/D-pad cap textures from the approved source sheet.
+- `Assets/_Project/Shaders/BDModernHandheldButtonCap.shader` — transparent lit cap shader used above modeled control bodies.
+- `Assets/_Project/Resources/ModernHandheld/Textures/HANDHELD_GLASS_GLINT_V2.png` — restrained directional upper-right glass highlight.
+
 # Repository Map
 
 ## Modern handheld visual assets

@@ -268,8 +268,8 @@ The approved physical menu device requires restrained tactile audio synchronized
 - D-pad navigation uses one short, clean device click with controlled repeat behavior.
 - A/Confirm uses a slightly firmer press sound.
 - B/Back uses a softer return/cancel sound.
-- X/Settings and the physical Settings shortcut may share one recognizable settings-page cue.
-- Y/Progression and the physical Progression shortcut may share one recognizable progression-page cue.
+- Main Menu B opens Settings and uses the settings-page cue.
+- Main Menu A opens Progression and uses the progression-page cue; Y opens Credits; center SELECT/EXIT use distinct tactile click/confirmation cues.
 - Mouse clicks on screen items or physical-device controls use the same semantic action sound as the equivalent hardware input.
 - Button press animation and sound begin together; no delayed double-click layer.
 - Held navigation must not create uncontrolled sound spam.

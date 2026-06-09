@@ -1,3 +1,12 @@
+
+## Current immediate gate
+
+1. Install V5 full-project package.
+2. Run Unity compilation and TEST EVERYTHING.
+3. Capture Main, Progression, Credits, Pause, quit confirmation and abandon confirmation.
+4. Verify device height, visible left shadow, upper-right glass glint, aligned UI, stacked New Game cards, recessed labels and textured 3D controls.
+5. Do not resume queued Runtime repairs until the user accepts this visual/input gate.
+
 # Master Active Work Sequence V1
 
 ## Current blocking slice — V4 handheld physical-product repair
@@ -63,7 +72,7 @@ After the 3D handheld is compiled and visually verified, implement the expanded 
 2. Wait for Unity compilation and resolve every compiler/Console issue before testing behavior.
 3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require 0 blockers, 0 warnings and 0 info unless the user explicitly accepts a finding.
 4. Verify Main Menu visual hierarchy, real 3D shell volume, screen recess, glass thickness/reflection and blue-orange material response.
-5. Verify mouse selection, D-pad/arrow navigation, A select, B back, X Settings, Y Progression and both physical shortcut buttons.
+5. Verify mouse selection, D-pad/arrow/WASD navigation, Main Menu X New Game / A Progression / B Settings / Y Credits, non-main B Back, center SELECT and center EXIT.
 6. Start as Boy and verify Start Game / New Run shows Boy art; start as Girl and verify only that option switches to the matched Girl art. No random or stale image is allowed.
 7. Verify Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation each use the correct character-neutral image; Pause resumes safely and returns to a clean main menu only after confirmation.
 8. Repeat open/close/reload and inspect Console, RenderTexture cleanup, materials, listeners, idle GC and frame pacing.
@@ -105,7 +114,7 @@ Required order:
 2. inspect current local menu/input/presentation ownership;
 3. build a testable real-3D vertical slice of the upright device;
 4. implement screen depth/glass and tactile physical controls;
-5. implement mouse + D-pad + A/B/X/Y + Settings/Progression shortcuts;
+5. implement mouse + D-pad + final X/A/B/Y contextual shortcuts + SELECT/EXIT center buttons;
 6. adapt Main and Escape/Pause without inventing unsupported pages/data;
 7. implement deterministic Boy/Girl paired art selection only for Start Game / New Run and character-neutral art routing elsewhere;
 8. run static, compilation, TEST EVERYTHING, focused Play Mode, performance and user acceptance gates;
@@ -607,3 +616,12 @@ Exact resume point:
 - 0/0/0 → begin Priority 1 — Enemy Attack Animations;
 - any blocker → remain in Priority 0 and repair only the reported blocker.
 <!-- B&D V23R19T PRIORITY 0 REPAIR END -->
+
+## Immediate verification order — final control repair
+
+1. Compile and run TEST EVERYTHING.
+2. Verify Main Menu face-button mapping and center SELECT/EXIT.
+3. Verify B is Settings only on Main Menu and Back everywhere else.
+4. Verify all pages align to the shared grid, the footer remains one line, and the New Game cards do not overlap.
+5. Verify textured 3D control caps, visible short-left shadow, upper-right glass glint and raised device composition.
+6. Do not commit or resume earlier Runtime work until the user accepts this visual/input gate.

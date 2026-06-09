@@ -16,7 +16,7 @@ For AI/Codex work, root [`../AGENTS.md`](../AGENTS.md) must be read first.
 
 - Current user-prioritized work: organize and validate this Project Guide, then implement the real 3D upright handheld Main/Pause UI.
 - The handheld is a real 3D object, not a flat image: modeled shell, recessed display, clear glass/plastic, tactile buttons and physical press feedback.
-- Input contract: mouse and D-pad navigation; `A` confirm, `B` back, `X` Settings, `Y` Progression; physical Settings and Progression shortcut buttons.
+- Input contract: mouse, D-pad, arrows and WASD navigate; Main Menu `X` New Game, `A` Progression, `B` Settings, `Y` Credits; `B` Back elsewhere; center `SELECT` activates focus and center `EXIT` opens confirmation.
 - User-facing label: `Progression`, always on one line where supported.
 - Only the New Game / New Run preview uses protagonist art: active Boy shows the Boy image and active Girl shows the Girl image. Progression, Settings, Credits, Quit, Resume/Pause and confirmation artwork must remain character-neutral and use one shared asset each.
 - Existing runtime/QA/target-outline bugs remain open until their own Unity and user-verification gates pass.
@@ -47,3 +47,7 @@ For AI/Codex work, root [`../AGENTS.md`](../AGENTS.md) must be read first.
 - The assistant does not commit or push. It returns a tested ZIP and exact commands; the user verifies in Unity and pushes.
 - Every material request, correction, bug, status change, deferral and resume-point change is written into the maintained guide in the same package.
 - Git history is the archive. Maintained files contain current truth, not repeated package histories.
+
+## Current handheld control summary — 2026-06-09
+
+The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.

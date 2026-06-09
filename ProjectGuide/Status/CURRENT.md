@@ -1,4 +1,14 @@
+
+## V5 CONTROL, LAYOUT AND PRODUCT-SHOT REPAIR — IMPLEMENTED / UNITY VERIFICATION REQUIRED
+
+The latest user review accepted the overall direction but reopened control semantics, physical-control materials, page alignment, New Game card stacking, glass response, visible left shadow and composition height. V5 implements the final contract: Main Menu X=New Game, A=Progression, B=Settings, Y=Credits; B=Back on all non-main pages; center-left=SELECT; center-right=EXIT confirmation. It uses cleaned source-sheet textures on real 3D controls, separates page columns, stacks New Game cards, strengthens directional glass glint and short left shadow, and raises the device slightly higher on the table. Automated Unity verification has not yet been run on this revision.
+
 # Current Development Snapshot
+
+## 2026-06-09 — Final V5 control/layout/product-shot repair implemented
+
+The latest user correction supersedes all earlier prototype mappings. Main Menu now uses X=New Game, A=Progression, B=Settings and Y=Credits. B is Back on every non-main page. The left black center button is SELECT and the right black center button is EXIT with an in-screen confirmation. The revision also raises the device, cleans the approved control textures for use on real 3D caps, strengthens but constrains the left shadow and upper-right glass glint, aligns page columns/footer, and stacks the New Game hero/text cards without clipping. Status: `IMPLEMENTED / UNITY VERIFICATION REQUIRED`; no commit/push until TEST EVERYTHING and user visual acceptance.
+
 
 ```text
 Classification: FOCUSED PHYSICAL-MODEL REPAIR INSIDE CURRENT HANDHELD TASK
@@ -45,7 +55,7 @@ Implemented repair now present:
 
 - replaces the 512px shell source with a 2048px premium blue→violet→orange micro-textured surface;
 - replaces the front sticker with a 2048×3220 high-resolution masked decal and a dedicated lit transparent decal shader;
-- replaces the broken merged shortcut text with two compact, separately positioned 3D labels—`SETTINGS` and `PROGRESSION`—while keeping both buttons fully modeled and interactive;
+- replaces the broken merged shortcut text with two compact, separately positioned recessed 3D labels—`SELECT` and `EXIT`—while keeping both center buttons fully modeled and interactive;
 - reduces long single-line title sizing so `PROGRESSION` cannot collide with the right artwork panel;
 - adds dedicated character-neutral artwork for Progression, Settings, Credits, Quit/Return and Resume/Pause;
 - changes the right artwork on Main and Pause as selection changes;
@@ -63,7 +73,7 @@ Focused repair now present:
 - the screen camera is explicitly rendered after page construction and before the product camera consumes the texture;
 - new menu input is armed only after the opening Escape/mouse/gamepad press has been released, preventing Pause from instantly resuming;
 - X/Y/A/B use separate enlarged invisible hit targets that animate the real modeled buttons;
-- hardware letters and Settings/Progression labels are small, front-facing siblings rather than oversized children inheriting rotated button transforms;
+- hardware letters and SELECT/EXIT labels are small, front-facing siblings rather than oversized children inheriting rotated button transforms;
 - TEST EVERYTHING now guards the screen-render, input-arming and physical-hit-target contracts.
 
 This is not verified until Unity shows real live menu content in the screen and all focused interactions pass.
@@ -103,11 +113,11 @@ The Runtime now contains a real 3D menu device rather than a flat device image:
 - procedural upright shell geometry with real thickness and a physical screen opening;
 - approved blue→violet→orange shell texture;
 - separate bezel, backing, emissive display, transparent glass and reflection layer;
-- real modeled D-pad, A/B/X/Y, Settings, Progression, speaker inserts and status light;
+- real modeled D-pad, A/B/X/Y, SELECT, EXIT, speaker inserts and status light;
 - one isolated screen camera and one cached screen RenderTexture;
 - Main Menu, Pause, Settings, Progression, Credits, Abandon confirmation and Loading pages inside the screen;
 - mouse hover/click on screen rows and physical buttons;
-- D-pad/arrow navigation; A select; B back; X Settings; Y Progression;
+- D-pad/arrow/WASD navigation; Main Menu X=New Game, A=Progression, B=Settings, Y=Credits; B=Back elsewhere; center SELECT activates and center EXIT confirms exit;
 - tactile transform/material feedback and a cached click sound;
 - contextual artwork: only Start Game / New Run uses active-character art—Boy shows Boy and Girl shows Girl; every other option/page uses one dedicated character-neutral image; selection is never random;
 - legacy flat menu and backdrop are suppressed only while the 3D presenter owns the menu;
@@ -161,7 +171,7 @@ Static source checks pass after removing obsolete intermediate texture exports. 
 Status date: 2026-06-09
 Classification: CURRENT / USER-APPROVED 3D HANDHELD MENU SPECIFICATION
 Active work: C11.UI.MODERN_HANDHELD_3D.V1
-Current truth: The user explicitly reprioritized the main menu and Escape/Pause presentation before returning to the previously saved Runtime/QA repair sequence. The approved direction is an original upright portrait handheld with a real 3D shell, blue-to-orange molded-plastic gradient, separate tactile 3D controls, and a lit display recessed behind clear glass/transparent plastic with visible depth. Mouse and D-pad navigation are both required. A selects, B returns, X and the physical Settings shortcut open Settings, and Y and the physical Progression shortcut open Progression. The user-facing label is `Progression`, not `Meta Progression`.
+Current truth: The user explicitly reprioritized the main menu and Escape/Pause presentation before returning to the previously saved Runtime/QA repair sequence. The approved direction is an original upright portrait handheld with a real 3D shell, blue-to-orange molded-plastic gradient, separate tactile 3D controls, and a lit display recessed behind clear glass/transparent plastic with visible depth. Mouse, D-pad, arrows and WASD navigation are required. Main Menu X=New Game, A=Progression, B=Settings, Y=Credits; B=Back on every non-main page; center SELECT activates focus and center EXIT opens the legal confirmation. The user-facing label is `Progression`, not `Meta Progression`.
 Implementation truth: The full Runtime vertical slice is implemented with generated 3D device geometry, cached screen RenderTexture, recessed display, glass/reflection layers, modeled controls, tactile feedback, Main/Pause/Settings/Progression/Credits/Abandon/Loading pages, mouse and hardware-style navigation, premium shell/decal sources and context-specific option artwork. Active-character Boy/Girl selection is restricted to Start Game / New Run.
 Character-art truth: Any image that depicts the playable Boy requires a matched Girl version with identical dimensions, crop, composition, lighting, horse/background placement, safe areas and import settings. In the handheld, only Start Game / New Run uses this pair. Progression, Settings, Credits, Quit/Return, Resume/Pause and confirmation are character-neutral, single-source assets. Active identity is authoritative only for the New Game pair and selection is never random.
 Verification truth: ProjectGuide V1.2 passed TEST EVERYTHING at 2026-06-09T00:13:48.3411810Z. That pass predates this Runtime implementation. Fresh Unity compilation, TEST EVERYTHING, focused Play Mode, target-device performance and user acceptance are required.
@@ -219,7 +229,7 @@ The Main and Escape/Pause menus must be presented through one original upright 3
 - controls in the lower half;
 - continuous blue-left to orange-right shell gradient;
 - real modeled thickness and bevels;
-- real separate D-pad, A/B/X/Y, Settings and Progression controls;
+- real separate D-pad, A/B/X/Y, SELECT and EXIT controls;
 - tactile press/release interaction;
 - display recessed behind separate clear glass/transparent plastic with visible thickness and controlled reflections;
 - professional dark-fantasy screen design;
@@ -229,12 +239,13 @@ The Main and Escape/Pause menus must be presented through one original upright 3
 
 - mouse hover/click is supported;
 - D-pad/arrows navigate;
-- A selects/confirms;
-- B goes back;
-- X opens Settings;
-- Y opens Progression;
-- physical center `SETTINGS` opens Settings;
-- physical center `PROGRESSION` opens Progression;
+- Main Menu X starts New Game;
+- Main Menu A opens Progression;
+- Main Menu B opens Settings;
+- Main Menu Y opens Credits;
+- B goes back on every non-main page;
+- physical center `SELECT` activates the highlighted option;
+- physical center `EXIT` opens the correct quit/abandon confirmation;
 - all paths call the same semantic menu actions and cannot double-activate.
 
 ## Text and character-art correction

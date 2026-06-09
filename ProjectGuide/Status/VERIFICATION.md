@@ -1,3 +1,19 @@
+
+## V5 pending focused verification
+
+- compile with no warnings from the handheld scripts;
+- TEST EVERYTHING returns 0 blockers / 0 warnings / 0 info;
+- device sits slightly higher while remaining grounded on the wood;
+- short soft shadow is visible to the left and contact shadow remains tight;
+- upper-right glass glint is visible but never obscures title, rows or artwork;
+- Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits;
+- B returns on every non-main page;
+- center SELECT activates the highlighted option and center EXIT opens the correct confirmation;
+- SELECT/EXIT labels are equal-size, recessed and do not touch buttons;
+- New Game hero and memory cards are stacked with no clipping;
+- Progression, Credits, Settings and confirmation layouts stay inside safe margins;
+- all physical controls read as textured 3D parts and press independently.
+
 ## 2026-06-09 — Modern handheld first Play Mode rejection
 
 ## Latest evidence — V3 automated PASS, visual gate failed
@@ -14,7 +30,7 @@ Required V4 evidence: compiler clean, TEST EVERYTHING 0/0/0, screenshots of Main
 
 - [ ] Premium shell texture is sharp and stable at the actual camera angle.
 - [ ] No full-face Runtime decal exists; molded material and geometry remain clean around the live screen and controls.
-- [ ] Settings and Progression labels are separated, single-owned and readable.
+- [ ] SELECT and EXIT labels are separated, single-owned, recessed and readable.
 - [ ] Long page titles do not overlap the artwork panel.
 - [ ] Main/Pause selection swaps to the correct unique option image.
 - [ ] Start Game / New Run alone uses Boy/Girl active-character art.
@@ -23,7 +39,7 @@ Required V4 evidence: compiler clean, TEST EVERYTHING 0/0/0, screenshots of Main
 
 - Compilation reached Play Mode after the uGUI dependency repair.
 - User-observed failures: no live menu in the physical display, Escape Pause visible only momentarily, overlapping/repeated hardware labels, reversed-looking face-button lettering, and only one reliable XYAB click target.
-- Repair evidence required next: live Main and Pause pixels inside the glass, Pause remains open after the initiating Escape is released, compact correctly oriented labels, and separate successful mouse clicks on X, Y, A, B, Settings and Progression.
+- Repair evidence required next: live Main and Pause pixels inside the glass, Pause remains open after the initiating Escape is released, compact correctly oriented labels, and separate successful mouse clicks on X, Y, A, B, SELECT and EXIT.
 - Automated QA must pass before any visual acceptance claim.
 
 ## 2026-06-09 — Modern handheld compilation blocker
@@ -59,7 +75,7 @@ Required evidence:
 - real 3D device volume and glass layering visible;
 - Main Menu and Pause pages correct;
 - mouse and hardware-style controls correct;
-- Settings and Progression shortcuts correct;
+- SELECT and EXIT center controls correct;
 - Boy active character → Boy art on every relevant menu surface;
 - Girl active character → Girl art on every relevant menu surface;
 - no random, stale or mismatched paired art after scene reload;
@@ -98,7 +114,7 @@ No item is considered verified merely because code exists or automated checks pa
 
 - Main and Pause display inside the same real 3D upright device.
 - Mouse and D-pad navigation agree on focus.
-- A/B/X/Y and physical shortcut buttons trigger exactly one action.
+- X/A/B/Y and the SELECT/EXIT center buttons trigger exactly one context-correct action.
 - Glass depth and reflections do not reduce readability.
 - Buttons visibly press and recover without stuck state.
 - The Start Game / New Run Boy/Girl pair follows the active character; all other option images remain character-neutral.
@@ -119,3 +135,14 @@ No item is considered verified merely because code exists or automated checks pa
 - Install V1.2 and rerun `Boredom And Dungeons -> TEST EVERYTHING`.
 - Acceptance: none of `V23R10_DOCUMENTATION_MAP_MISSING`, `V23R19Q_TASK_RECORD_MISSING`, `V23R8_DOCUMENTATION_MAP_MISSING`, `V23R9_ART_DIRECTION_MIRROR_MISSING`, or `V23R9_DOCUMENTATION_INDEX_MISSING` returns.
 - Do not start the 3D vertical slice or commit until this automated documentation gate is clean.
+
+## V5 focused acceptance matrix
+
+1. Main Menu: X starts New Game, A opens Progression, B opens Settings, Y opens Credits.
+2. Every non-main page: B returns exactly once.
+3. Center SELECT activates the highlighted option; center EXIT opens the in-screen confirmation.
+4. WASD and arrows remain navigation-only; keyboard A is never reused as the face-button A shortcut.
+5. No control-cap texture contains neighboring buttons or square crop backgrounds.
+6. New Game hero card and text card are vertically separated.
+7. Left shadow is visible on wood; upper-right glass glint is visible without hiding UI.
+8. Footer and page columns do not wrap, clip or collide.

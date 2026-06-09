@@ -1,3 +1,8 @@
+
+## Modern handheld V5 ownership refinement
+
+`BDModernHandheld3DPresenter` remains presentation/input translation only. Main Menu face-button semantics are X=New Game, A=Progression, B=Settings and Y=Credits; B becomes Back on every non-main page. The left center button is SELECT and the right center button is EXIT. `BDMainMenuFlow` still owns run start/resume, settings/progression state, abandon confirmation and actual quit. Textured cap quads are children of modeled moving control roots, so visual texture and tactile travel remain synchronized without physics or duplicate semantic owners.
+
 ## Handheld live-screen reliability
 
 ## Modern handheld V4 presentation ownership
@@ -277,7 +282,7 @@ active Boy/Girl] --> P
     SC --> RT[Single cached RenderTexture]
     RT --> DP[Recessed 3D display plane]
     P --> GL[Independent glass/reflection meshes]
-    P --> HW[3D D-pad / A B X Y / Settings / Progression]
+    P --> HW[3D D-pad / A B X Y / SELECT / EXIT]
     M[Mouse + keyboard/gamepad] --> P
 ```
 
@@ -294,3 +299,7 @@ Ownership rules:
 - The uploaded orthographic front artwork is a visual/source reference only. Runtime uses a molded shell material and independent live display/tactile control geometry; no full-face decal is rendered.
 - The table environment uses the uploaded wood source and one material blending matching sharp/defocused textures around a configurable focal band. Device, table and shadows share the same rest transform/contact plane.
 - Each D-pad direction owns a separate moving cap and hit target; no four-way component competes over one transform.
+
+## Final handheld input ownership — 2026-06-09
+
+The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.

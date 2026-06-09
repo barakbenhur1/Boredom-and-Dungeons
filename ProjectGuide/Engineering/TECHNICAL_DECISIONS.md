@@ -1,3 +1,8 @@
+
+## Decision — textured caps over modeled control bodies
+
+Controls must not be a flat front-sheet overlay. Each D-pad direction, face button and center shortcut is a real moving 3D body. A small transparent textured cap, cropped from the approved orthographic source sheet, is parented to that moving body. This preserves tactile depth, independent hit targets and authentic surface detail while preventing any texture from covering neighboring controls.
+
 # Technical Decisions — Durable Project Choices
 
 ### TD-034 — Molded handheld surface replaces full-face decal
@@ -485,7 +490,7 @@ For the current grounded arc mesh, local X is the visible left-to-right long axi
 - The visual upgrade does not authorize a parallel menu controller: `BDMainMenuFlow` remains the semantic state/action owner.
 - Menu content should render to the physical screen through a dedicated view/RenderTexture architecture that can remain aligned under depth and approved device motion.
 - Physical controls, mouse, keyboard and controller map to the same semantic commands.
-- Settings and Progression center buttons are direct shortcuts; X opens Settings and Y opens Progression; A confirms and B returns.
+- Final physical mapping: Main Menu X=New Game, A=Progression, B=Settings, Y=Credits; B=Back on non-main pages; center SELECT activates focus; center EXIT opens the legal confirmation.
 - The user-facing label is `Progression`.
 - Character-bearing UI art is allowed only for Start Game / New Run and uses one deterministic Boy/Girl pair. All other menu art is character-neutral.
 - Flat one-piece screenshot projection is rejected as the final implementation because it cannot provide tactile depth, true glass layering or physical button interaction.
@@ -512,3 +517,7 @@ For the current grounded arc mesh, local X is the visible left-to-right long axi
 - Physical-device raycasts use a dedicated high-number layer, not Unity's built-in UI layer.
 - Each D-pad direction animates a separate visible cap so pointer and keyboard/controller activation produce the same tactile result.
 - New Game character-art resolution is event-driven/cached. Active route always wins; missing Girl art never falls back visually to Boy. Neutral option art remains single-source and route-independent.
+
+## Final handheld control decision — 2026-06-09
+
+The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.

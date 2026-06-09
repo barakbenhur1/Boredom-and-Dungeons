@@ -1,3 +1,17 @@
+
+## Modern Handheld V5 focused checks
+
+- Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits.
+- B returns on every non-main page.
+- Center SELECT activates the highlighted row and center EXIT opens the correct in-screen confirmation.
+- Arrow keys and WASD produce the same navigation.
+- SELECT/EXIT recessed labels use equal font size, separate placement and no overlap.
+- X/Y/A/B, D-pad and center buttons display approved source-sheet textures on real 3D bodies.
+- New Game hero and text-only memory card are stacked vertically without clipping.
+- Progression, Credits, Settings and confirmation screens stay within safe margins.
+- Device is slightly higher in frame but remains grounded.
+- Short left shadow and contact shadow are visible; upper-right glass glint is visible and non-obstructive.
+
 # QA Checklist
 
 ## Modern handheld V4 focused Play Mode gate
@@ -18,7 +32,7 @@
 - [ ] Shell gradient source is at least 2048×2048.
 - [ ] Front decal is at least 2048×3000, has alpha transparency and leaves screen/control apertures open.
 - [ ] Dedicated decal shader blends alpha and does not flatten the product lighting.
-- [ ] Settings/Progression hardware labels appear once, separated and centered.
+- [ ] SELECT/EXIT hardware labels appear once, use equal font size, and are recessed, separated and centered.
 - [ ] `PROGRESSION` and other long titles remain within the left title zone.
 - [ ] New Game / New Run shows Boy art for Boy and Girl art for Girl.
 - [ ] Progression, Settings, Credits, Quit/Return and Resume/Pause each show their own character-neutral image.
@@ -29,10 +43,10 @@
 1. Unity compiles and TEST EVERYTHING reports 0 blockers, 0 warnings and 0 info.
 2. Main Menu content is visibly rendered inside the physical device display; the screen is not only its clear/background color.
 3. Pause opened by Escape remains visible after the initiating Escape press is released and closes only on a later deliberate Resume/Back action.
-4. Settings and Progression center labels are compact, separated and readable.
+4. SELECT and EXIT center labels are compact, equal-size, recessed, separated and readable.
 5. X, Y, A and B letters appear once, in the approved orientation: X top, Y left, A right, B bottom.
-6. Mouse clicks independently activate X=Settings, Y=Progression, A=Select and B=Back.
-7. Both center hardware buttons independently open Settings and Progression.
+6. Mouse clicks independently activate Main X=New Game, A=Progression, B=Settings and Y=Credits; non-main B=Back.
+7. Center SELECT activates the highlighted row and center EXIT opens the correct confirmation.
 8. Keyboard/gamepad D-pad, confirm, back and shortcuts remain consistent with physical clicks.
 9. Page transitions remain contained inside the device screen; no legacy menu appears above it.
 10. Only Start Game / New Run is protagonist-aware: Boy route shows Boy art and Girl route shows Girl art. Every other option/page uses its dedicated character-neutral image.
@@ -53,10 +67,10 @@
 3. Main Menu is rendered inside one real upright 3D handheld, not a flat device screenshot.
 4. Shell thickness, screen opening, bezel, backing, transparent glass thickness/reflection and recessed lit display are visible from the real camera.
 5. Blue-to-orange texture follows the shell and remains readable under the menu lighting.
-6. D-pad, A/B/X/Y, Settings and Progression are separate 3D controls with hover/press/release feedback.
+6. D-pad, A/B/X/Y, SELECT and EXIT are separate 3D controls with hover/press/release feedback.
 7. Mouse hover and click select the same rows/actions as D-pad and A.
-8. Arrow/gamepad D-pad navigates; A selects; B backs out; X opens Settings; Y opens Progression.
-9. Physical Settings and Progression buttons open those exact pages.
+8. Arrow/gamepad D-pad/WASD navigates; Main X starts New Game, A opens Progression, B opens Settings, Y opens Credits; non-main B backs out; center SELECT/EXIT work.
+9. The center SELECT button activates the highlighted option and center EXIT opens the correct in-screen confirmation.
 10. User-facing label is `Progression` on one line; `Meta Progression` is absent from the new Runtime UI.
 11. Pause uses the same device and interaction system, resumes safely and requests a confirmed clean reload before returning to Main Menu.
 12. Main, Pause, Settings, Progression, Credits, Abandon and Loading do not create competing state owners.
@@ -71,7 +85,7 @@
 ## Modern handheld product-shot focused Play Mode gate
 
 1. Confirm the game renders complete generated 3D shell geometry with rear depth, outer bevel, side seams, glass, display and controls.
-2. Confirm there is no full-face Runtime decal/sticker object and no texture layer crosses the live screen, D-pad, A/B/X/Y, Settings, Progression or speaker openings.
+2. Confirm there is no full-face Runtime decal/sticker object and no texture layer crosses the live screen, D-pad, A/B/X/Y, SELECT, EXIT or speaker openings.
 3. Confirm the exact supplied wood source is visible under the device. Detail is relatively sharp around the focal/contact band and becomes smoothly more defocused toward both near and far table regions; no uniform blur seam is visible.
 4. Confirm the upper device edge is slightly farther from camera, while the device remains readable and does not look severely foreshortened.
 5. Confirm the principal highlight reads from upper-right and the short soft cast shadow falls left with a tighter contact shadow; no long floating shadow.
@@ -79,7 +93,7 @@
 7. Confirm Main, Pause, Settings, Progression, Credits, Loading and the existing abandon confirmation replace content inside the same screen. No external overlay appears over the device.
 8. Confirm every page change uses one short contained modern-handheld transition with no duplicate page, stuck shutter, black frame or lost focus.
 9. Confirm mouse hover/click and D-pad/arrows share the same selection. Each visible D-pad cap depresses and recovers in the activated direction.
-10. Confirm A/physical A selects once, B backs once, X and the Settings center button open Settings, Y and the Progression center button open Progression.
+10. Confirm Main X/A/B/Y invoke New Game/Progression/Settings/Credits once, non-main B backs once, center SELECT activates once and center EXIT opens one confirmation.
 11. Run as Boy and confirm only Start Game / New Run shows Boy; run as Girl and confirm only that same option shows Girl. Confirm Pause/Resume, Progression, Settings, Credits, Quit/Return and confirmation remain character-neutral after reload and scene transition.
 12. Inspect Console and Profiler during repeated Main↔Settings↔Progression and gameplay↔Pause cycles: no duplicate presenter/camera, orphan RenderTexture, stuck input, recurring idle GC or per-press GameObject/material allocation.
 
@@ -725,7 +739,7 @@ Documentation/static:
 7. shell has real depth, bevels and blue-to-orange material continuity;
 8. glass/transparent cover is separate from bezel and display and visibly has thickness;
 9. reflection/Fresnel never obscures text;
-10. D-pad, A/B/X/Y, Settings and Progression are separate physical parts;
+10. D-pad, A/B/X/Y, SELECT and EXIT are separate physical parts;
 11. all physical buttons show tactile press and release;
 12. screen content remains aligned behind glass during every approved device movement/transition.
 
@@ -734,10 +748,10 @@ Interaction:
 13. mouse hover/click works on screen controls;
 14. clickable physical controls work;
 15. D-pad/arrows navigate deterministically;
-16. A confirms/selects once;
+16. Main X/A/B/Y invoke New Game/Progression/Settings/Credits once; non-main B returns once; center SELECT/EXIT each invoke one action;
 17. B returns once;
-18. X and physical Settings open Settings;
-19. Y and physical Progression open Progression;
+18. Main B opens Settings; on non-main pages B returns;
+19. Main A opens Progression; Main Y opens Credits;
 20. changing between mouse and controller updates one shared focus without duplicate activation;
 21. Pause opens quickly, Resume is safe/default and abandon still requires confirmation.
 
@@ -769,3 +783,7 @@ Performance and release:
 3. Active task records expose explicit `Why this task exists`, `Protected content and behavior`, `Performance contract`, and `Exact resume point` sections.
 4. TEST EVERYTHING must report no documentation-map/task-record blocker before implementation continues.
 5. A compatibility repair must update Current, Bugs, Verification, QA History and Work Queue in the same package.
+
+## Modern handheld V5 focused QA — 2026-06-09
+
+The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.

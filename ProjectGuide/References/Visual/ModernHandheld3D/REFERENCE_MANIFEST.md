@@ -24,8 +24,8 @@ Every reference or production image that depicts the Boy requires a matched Girl
 - real 3D shell and controls;
 - blue-to-orange molded-plastic gradient;
 - screen recessed behind clear glass/transparent plastic with depth;
-- Settings and Progression center shortcuts;
-- X = Settings, Y = Progression, A = Select, B = Back;
+- SELECT and EXIT center buttons with equal-size recessed labels;
+- Main Menu X = New Game, A = Progression, B = Settings, Y = Credits; non-main B = Back; center SELECT activates; center EXIT confirms exit;
 - mouse and D-pad navigation;
 - user-facing label `Progression`, never `Meta Progression` in this redesigned UI.
 
@@ -34,5 +34,5 @@ Every reference or production image that depicts the Boy requires a matched Girl
 
 - The orthographic sheet may contribute shell stickers/decals and material detail only. It never replaces shell volume, glass, display or modeled controls.
 - The screen region is cut out and displays live UI through the RenderTexture.
-- D-pad, A/B/X/Y, Settings and Progression areas are cut out so the 3D interactive parts remain visible and clickable.
+- D-pad, A/B/X/Y, SELECT and EXIT areas remain separate so the 3D interactive parts stay visible and clickable.
 - The wood source is used for both sharp and defocused matching textures; focus falloff is performed by the table material, not by replacing the entire scene with one blurred image.

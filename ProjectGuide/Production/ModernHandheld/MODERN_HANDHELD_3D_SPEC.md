@@ -1,3 +1,19 @@
+
+## V5 approved physical/input details
+
+- The device sits slightly higher in the table composition than V4.
+- Main Menu X starts New Game.
+- Main Menu A opens Progression.
+- Main Menu B opens Settings.
+- Main Menu Y opens Credits.
+- B returns on every non-main page.
+- Center SELECT activates the highlighted option.
+- Center EXIT opens the correct in-screen quit/abandon confirmation.
+- Their labels are same-size recessed marks below separate buttons.
+- D-pad, face and center-button top surfaces use cropped textures from the approved source sheet over real modeled depth.
+- The screen glass shows a restrained upper-right key-light glint.
+- New Game hero art and its text-only memory card are stacked vertically.
+
 # Modern Upright Handheld — 3D Asset and Interactive UI Specification V1
 
 ## Context artwork matrix
@@ -152,12 +168,11 @@ When a new Boy image is added, its matching Girl image is part of the same Defin
 - The user-facing label is **`Progression`**.
 - Do not use `Meta Progression` in the redesigned device UI.
 - `Progression` must remain on one line at supported resolutions.
-- The left center physical shortcut button is labeled **`SETTINGS`**.
-- The right center physical shortcut button is labeled **`PROGRESSION`**.
-- X opens Settings.
-- Y opens Progression.
-- A selects/confirms.
-- B goes back.
+- The left center physical button is labeled **`SELECT`** and activates the highlighted option.
+- The right center physical button is labeled **`EXIT`** and opens the correct in-screen quit/abandon confirmation.
+- On Main Menu: X starts a new game, A opens Progression, B opens Settings, Y opens Credits.
+- On every non-main page: B goes back.
+- The center-button contract is independent of the face-button shortcuts.
 
 ## 5. Full 3D asset breakdown
 
@@ -194,12 +209,12 @@ BDModernHandheldDevice
 │   │   │   ├── ButtonX
 │   │   │   └── ButtonY
 │   │   ├── ShortcutButtons
-│   │   │   ├── ButtonSettings
-│   │   │   └── ButtonProgression
+│   │   │   ├── ButtonSelect
+│   │   │   └── ButtonExit
 │   │   └── OptionalHardwareAccents
 │   ├── Labels
-│   │   ├── LabelSettings
-│   │   ├── LabelProgression
+│   │   ├── LabelSelect
+│   │   ├── LabelExit
 │   │   ├── LabelA
 │   │   ├── LabelB
 │   │   ├── LabelX
@@ -213,8 +228,8 @@ BDModernHandheldDevice
 │   │   ├── ButtonBHitTarget
 │   │   ├── ButtonXHitTarget
 │   │   ├── ButtonYHitTarget
-│   │   ├── ButtonSettingsHitTarget
-│   │   └── ButtonProgressionHitTarget
+│   │   ├── ButtonSelectHitTarget
+│   │   └── ButtonExitHitTarget
 │   └── Effects
 │       ├── ScreenGlow
 │       ├── StatusLight
@@ -311,8 +326,8 @@ Preferred implementation:
 
 Two separate pill-like physical buttons:
 
-- left: `SETTINGS`;
-- right: `PROGRESSION`.
+- left: `SELECT`;
+- right: `EXIT`.
 
 They are not named Select and Start in the final design.
 
@@ -322,7 +337,7 @@ Both must be clickable with the mouse and usable through the input system. Their
 
 - Device labels must be authored as crisp decals, meshes or signed-distance-field text appropriate to the final camera.
 - Do not bake incorrect or obsolete labels into a shared shell texture.
-- `SETTINGS` and `PROGRESSION` need enough width and tracking to remain legible.
+- `SELECT` and `EXIT` use identical font size, tracking, depth and recessed two-tone treatment.
 - Labels should not glow strongly; the controls provide the feedback.
 
 ## 6. Material and texture breakdown
@@ -453,12 +468,13 @@ Unsupported pages must not be added as dead buttons merely because they exist in
 
 - Mouse hover and click.
 - D-pad/arrow navigation.
-- A = Select / Confirm.
-- B = Back.
-- X = open Settings.
-- Y = open Progression.
-- physical `SETTINGS` shortcut button = open Settings.
-- physical `PROGRESSION` shortcut button = open Progression.
+- center `SELECT` = activate the focused item.
+- center `EXIT` = open the correct quit/abandon confirmation.
+- Main Menu X = Start/New Game.
+- Main Menu A = Progression.
+- Main Menu B = Settings.
+- Main Menu Y = Credits.
+- On non-main pages B = Back.
 
 ### 9.2 One focus model
 
@@ -468,9 +484,10 @@ Mouse and controller/keyboard navigation share one selected item.
 - Mouse click activates the hovered item once.
 - D-pad/arrow input moves focus through the deterministic navigation graph.
 - After D-pad/arrow input, focus remains visible even when the pointer is elsewhere.
-- A activates the focused item once.
-- B returns to the previous page or resumes/closes according to the current menu contract.
-- X and Y shortcuts are available only when their target page is legal.
+- center SELECT activates the focused item once.
+- center EXIT opens the legal quit/abandon confirmation once.
+- B opens Settings only on Main Menu and returns on every non-main page.
+- X/A/Y direct shortcuts are legal only on Main Menu.
 - Input from two devices in the same frame must not double-activate an action.
 
 ### 9.3 Physical-device hit testing
@@ -478,12 +495,12 @@ Mouse and controller/keyboard navigation share one selected item.
 The visible physical controls may be clicked directly with the mouse.
 
 - Clicking D-pad directions performs navigation.
-- Clicking A confirms.
-- Clicking B goes back.
-- Clicking X opens Settings.
-- Clicking Y opens Progression.
-- Clicking the center Settings button opens Settings.
-- Clicking the center Progression button opens Progression.
+- Clicking X starts the Main Menu game action.
+- Clicking A opens Progression from Main Menu.
+- Clicking B opens Settings on Main Menu and goes Back elsewhere.
+- Clicking Y opens Credits from Main Menu.
+- Clicking center SELECT activates the highlighted option.
+- Clicking center EXIT opens the appropriate exit or abandon confirmation.
 
 Physical-device clicks and on-screen UI clicks call the same semantic actions. They must not create parallel menu state logic.
 
@@ -511,7 +528,7 @@ All values below are starting ranges and must be tuned in Unity at the final cam
 ### 10.3 Center-button response
 
 - short pill-button travel;
-- Settings and Progression use the same tactile language;
+- SELECT and EXIT use the same tactile language;
 - button can highlight on pointer hover before press;
 - visible pressed state persists for at least one rendered frame.
 
@@ -535,7 +552,7 @@ All values below are starting ranges and must be tuned in Unity at the final cam
 - Hover/navigation uses a short restrained device click.
 - Confirm uses a slightly firmer click.
 - Back uses a distinct softer return click.
-- Settings and Progression shortcuts may have subtle differentiated tones.
+- SELECT and EXIT center buttons may have subtle differentiated hover feedback but retain one shared physical material family.
 - Physical button animation and sound start together.
 - Repeated held navigation follows the input repeat policy and does not create audio spam.
 - Haptics may be used on supported controllers/mobile devices, but must respect settings and never be required for meaning.
@@ -641,7 +658,7 @@ No individual view creates a second navigation state.
 - bezel and display meshes;
 - D-pad;
 - A/B/X/Y buttons;
-- Settings/Progression shortcut buttons;
+- Select/Exit center buttons;
 - speaker/perforation geometry or approved optimized substitute;
 - collision/hit-target meshes;
 - menu camera anchors;
@@ -749,10 +766,10 @@ The task is complete only when all of the following are true:
 6. Main and Pause/Escape use the same device system.
 7. Mouse hover/click works.
 8. D-pad/arrow navigation works.
-9. A confirms/selects.
-10. B goes back.
-11. X and the Settings shortcut button open Settings.
-12. Y and the Progression shortcut button open Progression.
+9. Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits.
+10. B goes back on every non-main page.
+11. Center SELECT activates the highlighted row.
+12. Center EXIT opens the correct quit/abandon confirmation.
 13. Physical controls visibly press and release.
 14. On-screen and physical controls call the same semantic actions.
 15. No duplicate activation occurs when devices overlap.
@@ -792,3 +809,12 @@ The procedural vertical slice, screen RenderTexture, glass, physical controls, m
 - W/A/S/D navigate identically to arrow keys.
 - Glass glint is limited to the upper-right light-facing region and remains subordinate to UI readability.
 - Shadow stack: soft left penumbra, denser short core and tight contact shadow.
+
+## V5 final control/layout/product-shot addendum
+
+- The device sits slightly higher in the table composition.
+- The left shadow stack and upper-right glass glint are strengthened but remain short/readable and non-obscuring.
+- Main Menu hero art and its small text card are stacked vertically with a deliberate gap and no clipping.
+- Page layouts use a common left-content/right-art grid and a concise footer that does not wrap.
+- Control textures are alpha-cleaned from the approved source sheet so each 3D cap shows only its own button surface rather than neighboring controls or square crop backgrounds.
+- This final addendum supersedes V4/prototype control labels and mappings.

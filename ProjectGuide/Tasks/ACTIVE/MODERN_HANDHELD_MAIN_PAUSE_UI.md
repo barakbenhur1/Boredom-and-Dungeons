@@ -1,5 +1,25 @@
 # Active Task — Real 3D Handheld Main Menu and Pause UI
 
+## V5 control, layout and product-shot repair
+
+**Status:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+User Play Mode accepted the direction but rejected the remaining production details. This pass keeps all screens inside the live handheld and addresses the exact findings:
+
+- the device is raised slightly higher in the table composition while preserving the supplied wood surface and backward tilt;
+- on Main Menu: X starts New Game, A opens Progression, B opens Settings and Y opens Credits;
+- on every non-main page B returns;
+- the left center physical button is SELECT and activates the highlighted option;
+- the right center physical button is EXIT and opens the in-screen quit/abandon confirmation;
+- SELECT and EXIT hardware labels use identical sizing and a recessed/engraved two-tone treatment below their own buttons;
+- New Game hero art and its text-only memory card are vertically stacked with a deliberate gap; all information pages use separated left-content and right-art columns;
+- X/Y/A/B, D-pad pieces and center buttons use cropped control textures from the approved orthographic source sheet on top of independently modeled 3D control bodies;
+- a stronger but still restrained upper-right glass glint follows the key-light direction without covering central UI;
+- the short left penumbra/core/contact shadows are moved forward and farther left so they remain visible against the wood;
+- keyboard arrows and WASD remain navigation peers.
+
+Acceptance still requires a fresh Unity compile, TEST EVERYTHING and focused screenshots of Main, Progression, Credits, Pause and both confirmation pages.
+
 ## V4 active repair — physical product acceptance after automated PASS
 
 **Status:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
@@ -45,11 +65,11 @@ Replace the flat/prototype menu presentation with a real upright 3D handheld dev
 - Upright classic handheld silhouette: screen above, controls below.
 - Blue-to-orange molded-plastic gradient shell.
 - Recessed emissive screen behind separate clear glass/plastic with visible thickness and restrained reflections.
-- Separate modeled D-pad, A/B/X/Y, Settings and Progression buttons.
+- Separate modeled D-pad, A/B/X/Y, SELECT and EXIT buttons.
 - Tactile hover/press/release motion, material response, sound and optional haptic feedback.
 - Mouse and D-pad navigation.
-- `A` confirm, `B` back, `X` Settings, `Y` Progression.
-- Physical Settings and Progression shortcut buttons open those pages.
+- Main Menu `X` starts New Game, `A` opens Progression, `B` opens Settings and `Y` opens Credits; on every non-main page `B` goes Back.
+- Center SELECT activates the highlighted option and center EXIT opens the legal confirmation.
 - User-facing `Progression` label on one line.
 - Main and Pause share one visual and interaction system while retaining their different actions/state.
 - No flat screenshot is used as the in-game device.
@@ -95,7 +115,7 @@ The focused repair changes presentation only and preserves `BDMainMenuFlow` as s
 - every X/Y/A/B and center shortcut has its own enlarged invisible collider/hit target and animates the visible modeled control;
 - face letters and shortcut labels are compact front-facing siblings and do not inherit the cylinder rotation.
 
-Focused acceptance requires Main and Pause content visible inside the glass, stable Pause persistence, no overlapping labels, and successful independent clicks on X, Y, A, B, Settings and Progression.
+Focused acceptance requires Main and Pause content visible inside the glass, stable Pause persistence, no overlapping labels, and successful independent clicks on X, Y, A, B, SELECT and EXIT.
 
 ## Implemented vertical slice
 
@@ -106,8 +126,8 @@ The first complete runtime vertical slice is now present in code and assets:
 - The display is recessed behind separate transparent glass and reflection layers.
 - Main Menu, Pause, Settings, Progression, Credits, Abandon confirmation and Loading render inside the device screen.
 - Mouse raycasts can hover/click screen rows and physical controls.
-- Arrow/gamepad D-pad navigation, A confirm, B back, X Settings and Y Progression are wired through the existing `BDMainMenuFlow` owner.
-- Physical `SETTINGS` and `PROGRESSION` controls use the same actions.
+- Arrow/gamepad D-pad/WASD navigation is preserved. Main Menu X/A/B/Y map to New Game/Progression/Settings/Credits; B is Back on every non-main page; center SELECT/EXIT map to activate/confirmation through the existing `BDMainMenuFlow` owner.
+- Physical center `SELECT` activates the highlighted option; physical center `EXIT` opens the correct quit/abandon confirmation.
 - Button meshes have bounded tactile press/hover motion and cached material feedback.
 - `BDPlayableCharacterIdentity` deterministically selects the paired hero image only for Start Game / New Run.
 - Boy play uses Boy New Game art; Girl play uses Girl New Game art. The choice is never random and is refreshed when active character identity changes.
@@ -120,7 +140,7 @@ Implementation is not verified until Unity compilation, automated QA, focused Pl
 ## Approved physical product-shot scene
 
 - Build a rounded 3D rectangular handheld with the approved portrait proportions; do not place a flat device image in the game.
-- Apply the uploaded multi-view/front artwork as a masked surface decal on the shell only. The screen aperture, D-pad, A/B/X/Y, Settings, Progression and speaker areas remain live 3D geometry.
+- Apply the uploaded multi-view/front artwork as a masked surface decal on the shell only. The screen aperture, D-pad, A/B/X/Y, SELECT, EXIT and speaker areas remain live 3D geometry.
 - Put the live menu RenderTexture in the physical screen dimensions, recessed behind a separate glass/plastic cover with thickness.
 - Place the device on the uploaded dark-wood table texture. The device faces the camera with a small backward tilt so the upper edge is farther away.
 - Light from above/right and keep the device shadow soft, short and leftward.
@@ -175,4 +195,18 @@ All other options and pages—Progression, Settings, Credits, Quit/Return, Resum
 
 ## Exact resume point
 
-Install the V4 physical-material repair ZIP, compile and rerun `TEST EVERYTHING`. Verify molded shell depth/bevels/seams, no full-face decal or texture overlap, visible short left shadow, restrained upper-right glass glint, separate Settings/Progression labels, correct contextual artwork, fresh-New-Game-only text card, WASD/arrow parity, live screen, Pause persistence, all controls, table focus, transitions and cleanup. Only after user visual acceptance may the queued seamless handheld-to-gameplay transition begin.
+Install the V4 physical-material repair ZIP, compile and rerun `TEST EVERYTHING`. Verify molded shell depth/bevels/seams, no full-face decal or texture overlap, visible short left shadow, restrained upper-right glass glint, separate recessed SELECT/EXIT labels, correct contextual artwork, fresh-New-Game-only text card, WASD/arrow parity, live screen, Pause persistence, all controls, table focus, transitions and cleanup. Only after user visual acceptance may the queued seamless handheld-to-gameplay transition begin.
+
+## Latest user correction — final mapping and visual repair
+
+The prior X-select/Y-exit/A-credits mapping is superseded. This revision also raises the device, cleans the face/D-pad/center texture alpha, increases real control depth, makes the left shadow and upper-right glass glint more readable, standardizes page alignment, prevents footer wrapping, and stacks the New Game hero and text card without clipping. Status remains `IMPLEMENTED / UNITY VERIFICATION REQUIRED`.
+
+### Final semantic tokens for QA
+
+- Main Menu X starts New Game.
+- Main Menu A opens Progression.
+- Main Menu B opens Settings.
+- Main Menu Y opens Credits.
+- B returns on every non-main page.
+- center SELECT activates the highlighted option.
+- center EXIT opens the legal quit/abandon confirmation.

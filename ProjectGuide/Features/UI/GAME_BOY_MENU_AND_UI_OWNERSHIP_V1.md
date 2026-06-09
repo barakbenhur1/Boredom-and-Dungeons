@@ -41,8 +41,12 @@
 - The 3D device presenter owns only device model visibility, screen/glass/body materials, camera framing, physical hit targets and tactile button animation.
 - The screen-content view renders real menu data and reports semantic actions to `BDMainMenuFlow`; it does not create a second menu state machine.
 - Mouse, D-pad/arrows, A/B/X/Y and clickable physical controls resolve through the same action map.
-- The physical Settings and Progression center buttons invoke the same actions as X and Y.
+- The physical center SELECT button activates the highlighted row; center EXIT opens the legal quit/abandon confirmation. They are not aliases for the face buttons.
 - The user-facing page/shortcut label is `Progression`.
 - Every Boy image has a matched Girl variant selected from active-character identity.
 - The exact asset/render/input contract is owned by `MODERN_HANDHELD_3D_ASSET_AND_INTERACTIVE_UI_SPEC_V1.md`.
 <!-- B&D MODERN 3D HANDHELD OWNERSHIP END -->
+
+## Final physical control contract — 2026-06-09
+
+The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.

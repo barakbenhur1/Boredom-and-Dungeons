@@ -1,3 +1,8 @@
+
+## Modern handheld material acceptance
+
+The handheld must read as a photographed physical product: molded blue-purple-orange shell, real control depth, source-sheet control textures, visible short left shadow, grounded contact shadow and a narrow upper-right glass glint. Hardware labels are recessed and never printed across buttons. The device sits slightly high in the composition while the supplied wood remains the environmental anchor.
+
 # Boredom & Dungeons — Canonical Art Direction and Interface Conventions
 
 ## Modern handheld contextual artwork
@@ -149,9 +154,11 @@ The approved Main and Escape/Pause presentation is no longer satisfied by a flat
 - The molded-plastic shell transitions from rich blue on the left through violet/indigo to warm orange on the right.
 - Model real thickness, rounded edges, screen recess, bezel, speaker perforations and material separation.
 - The display sits behind a separate glossy glass/transparent-plastic cover with visible edge thickness, controlled reflection and a shallow physical gap.
-- D-pad, A/B/X/Y, Settings and Progression are separate tactile 3D parts with visible press/release response.
-- Left center shortcut: `SETTINGS`. Right center shortcut: `PROGRESSION`.
-- A = Select/Confirm; B = Back; X = Settings; Y = Progression.
+- D-pad, A/B/X/Y, SELECT and EXIT are separate tactile 3D parts with visible press/release response.
+- Left center physical button: `SELECT`, used to enter the currently highlighted option.
+- Right center physical button: `EXIT`, used to open the in-screen quit/abandon confirmation.
+- On the Main Menu: X = Start/New Game, A = Progression, B = Settings, Y = Credits.
+- On every non-main page: B = Back. The main-page shortcut mapping never overrides that back contract.
 - Mouse and D-pad navigation share one visual focus language.
 - Use the single-line label `Progression`; do not use `Meta Progression` in this redesigned interface.
 - Main, Settings, Progression, Pause, Abandon and Loading share the same device, screen-material and interaction language.
@@ -175,3 +182,7 @@ The approved in-game menu scene presents the actual modeled handheld on the supp
 - The glass may glint only along the upper-right edge/diagonal at low opacity. It must not cross or veil important screen content.
 - Decorative surface detail belongs in the molded material/geometry; it may not overlap interactive controls as a full-face decal.
 - The small New Game card is text-only and temporary to that selection. Character identity is communicated by the large New Game artwork, not labels such as Boy/Girl route or Mother status.
+
+## Final physical-control identity — 2026-06-09
+
+The two center labels are equal-size recessed shell engravings, not bright floating UI labels. `SELECT` and `EXIT` are centered below their own pill buttons and never overlap the button meshes. X/Y/A/B use the approved source-sheet face textures on separate raised 3D bodies with visible skirt, cap, highlight and press travel. The final mapping above supersedes every earlier prototype mapping.

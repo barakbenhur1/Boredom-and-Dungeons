@@ -14,9 +14,11 @@ namespace BoredomAndDungeons
             DPadLeft,
             DPadRight,
             Confirm,
-            Back,
-            Settings,
-            Progression
+            Exit,
+            Primary,
+            Progression,
+            ContextBackSettings,
+            Credits
         }
 
         [SerializeField]

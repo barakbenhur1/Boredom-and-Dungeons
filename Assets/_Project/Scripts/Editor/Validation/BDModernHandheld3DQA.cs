@@ -25,8 +25,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BD Modern Upright Handheld",
                 "BD Modern Handheld Screen RT",
                 "Screen Glass",
-                "Button Settings",
-                "Button Progression",
+                "Button Select",
+                "Button Exit",
                 "HANDHELD_HERO_BOY_V1",
                 "HANDHELD_HERO_GIRL_V1",
                 "HANDHELD_ART_PROGRESSION_V1",
@@ -38,14 +38,18 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Only Start Game / New Run is protagonist-aware",
                 "DPadUp",
                 "ControlAction.Confirm",
-                "ControlAction.Back",
-                "ControlAction.Settings",
+                "ControlAction.Exit",
+                "ControlAction.Primary",
                 "ControlAction.Progression",
+                "ControlAction.ContextBackSettings",
+                "ControlAction.Credits",
                 "PROGRESSION",
                 "HANDHELD_TABLE_DARK_WOOD_SHARP_V1",
                 "HANDHELD_TABLE_DARK_WOOD_BLUR_V1",
                 "DeviceLayer = 29",
                 "DeviceRestRotation",
+                "TableRestPosition",
+                "new Vector3(0f, 0.62f, 0f)",
                 "FrontSurfaceZ",
                 "Molded Outer Edge Bevel",
                 "Short Core Shadow To Left",
@@ -61,6 +65,29 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "ForceScreenRender",
                 "IsMenuInputReady",
                 "ReadAnyMenuControlHeld",
+                "X NEW GAME",
+                "A PROGRESSION",
+                "B SETTINGS",
+                "Y CREDITS",
+                "BuildQuitConfirmPage",
+                "RequestExitShortcut",
+                "ActivatePrimaryShortcut",
+                "HandleContextBShortcut",
+                "OpenProgressionShortcut",
+                "OpenCreditsShortcut",
+                "ResolveControlLegend",
+                "CreateRecessedHardwareLabel",
+                "CreateCapQuad",
+                "HANDHELD_BUTTON_X_V1",
+                "HANDHELD_BUTTON_A_V1",
+                "HANDHELD_BUTTON_B_V1",
+                "HANDHELD_BUTTON_Y_V1",
+                "HANDHELD_SHORTCUT_BUTTON_V1",
+                "ReadPrimaryPressed",
+                "ReadProgressionPressed",
+                "ReadContextBPressed",
+                "Gamepad.current.startButton",
+                "Gamepad.current.selectButton",
                 " Hit Target"
             );
 
@@ -154,6 +181,17 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "mask.a * _Color.a"
             );
 
+            Require(
+                result,
+                root,
+                "Assets/_Project/Shaders/BDModernHandheldButtonCap.shader",
+                "HANDHELD_BUTTON_CAP_SHADER_MISSING",
+                "ModernHandheldButtonCap",
+                "Button Texture",
+                "clip(tex.a - 0.025)",
+                "Edge Glow"
+            );
+
             Forbid(
                 result,
                 root,
@@ -172,9 +210,25 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "CHARACTER //"
             );
 
+
+            Forbid(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.cs",
+                "HANDHELD_OBSOLETE_CONTROL_MAPPING_REMAINS",
+                "X SELECT",
+                "Y EXIT",
+                "A CREDITS",
+                "Button Settings",
+                "Button Progression",
+                "ControlAction.Back",
+                "ControlAction.Settings"
+            );
+
             ValidatePackageDependencies(result, root);
             ValidateCharacterPair(result);
             ValidateOptionArtwork(result);
+            ValidateControlTextures(result);
             ValidateSurfaceAssets(result);
             ValidateSourceReferences(result, root);
             ValidateDocumentation(result, root);
@@ -328,11 +382,66 @@ namespace BoredomAndDungeons.EditorTools.Validation
             }
         }
 
+        private static void ValidateControlTextures(
+            BDOneClickQAResult result)
+        {
+            string[] paths =
+            {
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_BUTTON_X_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_BUTTON_Y_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_BUTTON_A_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_BUTTON_B_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_DPAD_UP_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_DPAD_DOWN_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_DPAD_LEFT_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_DPAD_RIGHT_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_DPAD_CENTER_V1.png",
+                "Assets/_Project/Resources/ModernHandheld/Controls/HANDHELD_SHORTCUT_BUTTON_V1.png"
+            };
+
+            foreach (string path in paths)
+            {
+                Texture2D texture =
+                    AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if (texture == null)
+                {
+                    Add(
+                        result,
+                        "HANDHELD_CONTROL_TEXTURE_MISSING",
+                        "Missing modeled-control texture: " + path
+                    );
+                    continue;
+                }
+
+                if (texture.width < 256 || texture.height < 128)
+                {
+                    Add(
+                        result,
+                        "HANDHELD_CONTROL_TEXTURE_TOO_SMALL",
+                        "Control texture is below production minimum: " + path
+                    );
+                }
+
+                TextureImporter importer =
+                    AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null || !importer.alphaIsTransparency)
+                {
+                    Add(
+                        result,
+                        "HANDHELD_CONTROL_TEXTURE_ALPHA_INVALID",
+                        "Modeled-control caps require transparent crop edges: " + path
+                    );
+                }
+            }
+        }
+
         private static void ValidateSurfaceAssets(
             BDOneClickQAResult result)
         {
             const string shellPath =
                 "Assets/_Project/Resources/ModernHandheld/Textures/HANDHELD_SHELL_GRADIENT_V1.png";
+            const string glintPath =
+                "Assets/_Project/Resources/ModernHandheld/Textures/HANDHELD_GLASS_GLINT_V2.png";
             const string sharpPath =
                 "Assets/_Project/Resources/ModernHandheld/Textures/HANDHELD_TABLE_DARK_WOOD_SHARP_V1.png";
             const string blurPath =
@@ -344,6 +453,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Texture2D shell =
                 AssetDatabase.LoadAssetAtPath<Texture2D>(shellPath);
+            Texture2D glint =
+                AssetDatabase.LoadAssetAtPath<Texture2D>(glintPath);
             Texture2D sharp =
                 AssetDatabase.LoadAssetAtPath<Texture2D>(sharpPath);
             Texture2D blur =
@@ -359,6 +470,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     result,
                     "HANDHELD_SHELL_SURFACE_TEXTURE_INVALID",
                     "The molded shell micro-surface texture must remain at least 2048x2048."
+                );
+            }
+
+            if (glint == null)
+            {
+                Add(
+                    result,
+                    "HANDHELD_GLASS_GLINT_TEXTURE_MISSING",
+                    "The upper-right directional glass glint texture is required."
                 );
             }
 
@@ -428,6 +548,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "short left shadow",
                 "WASD",
                 "upper-right glass glint",
+                "Main Menu X starts New Game",
+                "center SELECT",
+                "center EXIT",
+                "B returns on every non-main page",
                 "Boy",
                 "Girl",
                 "Exact resume point"
@@ -451,10 +575,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 root,
                 "ProjectGuide/Status/CURRENT.md",
                 "HANDHELD_CURRENT_STATUS_NOT_SYNCHRONIZED",
-                "V4 PHYSICAL MATERIAL",
+                "V5 CONTROL, LAYOUT AND PRODUCT-SHOT REPAIR",
+                "Main Menu X=New Game",
+                "center-left=SELECT",
+                "center-right=EXIT",
                 "AUTOMATED PASS",
                 "UNITY VERIFICATION REQUIRED",
-                "upper-right glass glint"
+                "raises the device slightly higher"
             );
         }
 
