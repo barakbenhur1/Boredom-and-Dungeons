@@ -26,9 +26,20 @@ namespace BoredomAndDungeons
                 bool supportsGear =
                     glyph.font != null &&
                     glyph.font.HasCharacter('\u2699');
+                bool supportsMenuMark =
+                    glyph.font != null &&
+                    glyph.font.HasCharacter('\u2261');
 
-                glyph.text = supportsGear ? "\u2699" : "S";
-                glyph.fontSize = supportsGear ? 24 : 22;
+                glyph.text = supportsGear
+                    ? "\u2699"
+                    : supportsMenuMark
+                        ? "\u2261"
+                        : "S";
+                glyph.fontSize = supportsGear
+                    ? 24
+                    : supportsMenuMark
+                        ? 27
+                        : 22;
                 glyph.alignment = TextAnchor.MiddleCenter;
                 BestFit(glyph, 18, glyph.fontSize);
             }
