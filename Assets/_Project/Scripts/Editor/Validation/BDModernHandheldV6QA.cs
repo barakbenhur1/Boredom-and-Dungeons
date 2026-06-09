@@ -86,7 +86,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "SYSTEM CONFIGURATION",
                 "BEHIND THE ADVENTURE",
                 "LEAVE THE HANDHELD",
-                "THE MAZE AWAITS",
+                "Next Card",
                 "EnsureSettingsGear",
                 "Pause Internal Menu Panel",
                 "RUN PAUSED",
