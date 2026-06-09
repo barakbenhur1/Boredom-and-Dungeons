@@ -52,17 +52,24 @@ namespace BoredomAndDungeons
 
         private void PolishPhysicalControls()
         {
+            // The original control target owns press travel on local Z and was
+            // configured before V6 moved these controls. Keep only the approved
+            // X/Y layout pinned every LateUpdate so its tactile Z animation and
+            // return timing remain untouched.
+            EnforcePlanarPosition(
+                "Button Select",
+                -0.66f,
+                -3.82f
+            );
+            EnforcePlanarPosition(
+                "Button Exit",
+                0.66f,
+                -3.82f
+            );
+
             if (controlsReady)
                 return;
 
-            MovePart(
-                "Button Select",
-                new Vector3(-0.66f, -3.82f, -0.52f)
-            );
-            MovePart(
-                "Button Exit",
-                new Vector3(0.66f, -3.82f, -0.52f)
-            );
             MovePart(
                 "Button Select " + "Hit Target",
                 new Vector3(-0.66f, -3.82f, -0.58f)
@@ -96,6 +103,21 @@ namespace BoredomAndDungeons
             }
 
             controlsReady = true;
+        }
+
+        private void EnforcePlanarPosition(
+            string name,
+            float x,
+            float y)
+        {
+            Transform part = Find(deviceRoot, name);
+            if (part == null)
+                return;
+
+            Vector3 position = part.localPosition;
+            position.x = x;
+            position.y = y;
+            part.localPosition = position;
         }
 
         private void MovePart(string name, Vector3 position)
