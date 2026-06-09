@@ -12,6 +12,26 @@ namespace BoredomAndDungeons.EditorTools.Validation
     {
         public int callbackOrder => 90;
 
+        public static void Scan(BDOneClickQAResult result)
+        {
+            if (result == null)
+                return;
+
+            string error = ValidateProject();
+            if (string.IsNullOrEmpty(error))
+                return;
+
+            result.findings.Add(
+                new BDOneClickQAFinding(
+                    BDOneClickQASeverity.Blocker,
+                    "HANDHELD_V6_CONTRACT_INVALID",
+                    string.Empty,
+                    string.Empty,
+                    error
+                )
+            );
+        }
+
         [MenuItem(
             "Boredom And Dungeons/Validate Modern Handheld V6 Polish")]
         private static void ValidateFromMenu()
