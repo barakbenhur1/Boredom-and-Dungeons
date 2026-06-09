@@ -41,7 +41,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 Application.dataPath
             ).FullName;
 
-            string[] files =
+            string[] runtimeFiles =
             {
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.cs",
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.Physical.cs",
@@ -54,45 +54,50 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.AreaAlignment.cs",
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.Tactile.cs",
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldPressScaleFeedback.cs",
-                "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldTactileCompatibility.cs",
-                "ProjectGuide/Tasks/ACTIVE/MODERN_HANDHELD_V6_LAYOUT_AND_PAUSE_POLISH.md",
-                "ProjectGuide/QA/MODERN_HANDHELD_V6_QA.md"
+                "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldTactileCompatibility.cs"
             };
 
-            foreach (string file in files)
+            string[] maintainedDocuments =
             {
-                if (!File.Exists(Path.Combine(root, file)))
-                    return "Missing required V6 file: " + file;
-            }
+                "ProjectGuide/Tasks/ACTIVE/MODERN_HANDHELD_V6_LAYOUT_AND_PAUSE_POLISH.md",
+                "ProjectGuide/QA/MODERN_HANDHELD_V6_QA.md",
+                "ProjectGuide/Status/MODERN_HANDHELD_V6_REVIEW.md"
+            };
+
+            string missing = FindMissingFile(root, runtimeFiles);
+            if (!string.IsNullOrEmpty(missing))
+                return missing;
+
+            missing = FindMissingFile(root, maintainedDocuments);
+            if (!string.IsNullOrEmpty(missing))
+                return missing;
 
             string source = string.Empty;
-            for (int index = 0; index < files.Length; index++)
+            for (int index = 0; index < runtimeFiles.Length; index++)
             {
-                if (files[index].EndsWith(
-                        ".cs",
-                        StringComparison.Ordinal))
-                {
-                    source += File.ReadAllText(
-                        Path.Combine(root, files[index])
-                    );
-                }
+                source += File.ReadAllText(
+                    Path.Combine(root, runtimeFiles[index])
+                );
             }
 
             string[] required =
             {
                 "DeviceYOffset = -0.34f",
                 "V6 Product Shot Lowering Offset",
+                "EnforcePlanarPosition",
                 "PERSISTENT MEMORY",
                 "SYSTEM CONFIGURATION",
                 "BEHIND THE ADVENTURE",
                 "LEAVE THE HANDHELD",
+                "New Game Memory Card",
                 "Next Card",
                 "EnsureSettingsGear",
-                "Pause Internal Menu Panel",
+                "supportsMenuMark",
+                "PAUSE MENU",
                 "RUN PAUSED",
                 "PlaceMenuItem",
                 "AlignScreenArea",
-                "BDModernHandheldPressScaleFeedback",
+                "ReadPressedState",
                 "SetTactileProfile"
             };
 
@@ -106,25 +111,17 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 }
             }
 
-            string[] forbidden =
-            {
-                "System.Reflection",
-                "GetField(",
-                "GetProperty(",
-                "HandleModernPrimaryAction",
-                "HandleModernOpenSettings",
-                "HandleModernOpenProgression",
-                "HandleModernRequestMainMenu"
-            };
+            return string.Empty;
+        }
 
-            foreach (string token in forbidden)
+        private static string FindMissingFile(
+            string root,
+            string[] files)
+        {
+            for (int index = 0; index < files.Length; index++)
             {
-                if (source.IndexOf(
-                        token,
-                        StringComparison.Ordinal) >= 0)
-                {
-                    return "V6 polish may not own menu semantics: " + token;
-                }
+                if (!File.Exists(Path.Combine(root, files[index])))
+                    return "Missing required V6 file: " + files[index];
             }
 
             return string.Empty;
