@@ -26,7 +26,7 @@ This task records the focused Play Mode corrections requested on 2026-06-09:
 - `BDModernHandheld3DPresenter` remains the generated device and screen owner.
 - V6 does not create a second menu state machine, alter input mappings, change gameplay, delete assets, replace approved artwork or modify run behavior.
 - The work is additive. Existing files and approved assets remain intact.
-- No success claim is allowed before Unity compilation, `TEST EVERYTHING`, focused Play Mode inspection and user visual acceptance.
+- No success claim is allowed before Unity compilation, both handheld QA commands, focused Play Mode inspection and user visual acceptance.
 
 ## Implementation
 
@@ -61,23 +61,23 @@ The card remains text-only. Only the large Start Game hero image may use the act
 
 - SELECT moves to local X `-0.66`, EXIT to `+0.66`.
 - Both move to local Y `-3.82`.
-- Their click colliders move with them.
-- Their recessed labels move to the matching centered positions below the buttons.
+- Their click colliders and recessed labels move with them.
+- V6 pins only their planar X/Y positions after the original control update, preserving the original Z-axis press/release animation and preventing drift back to the old layout.
 
 ### Settings icon
 
-The Settings row first requests the gear glyph. If the active Runtime font does not contain it, the polish layer supplies a visible deterministic fallback instead of leaving an empty colored square.
+The Settings row requests the gear glyph first, then a menu/settings mark, then a guaranteed visible text fallback. An unsupported Runtime font can no longer leave an empty colored square.
 
 ### Unified tactile response
 
-The existing control target still owns press timing. V6 adds `BDModernHandheldPressScaleFeedback` to each generated physical moving part through a compatibility bridge. D-pad directions, SELECT, EXIT and X/Y/A/B therefore share:
+The existing control target remains the owner of pulse timing, hover state, emission and release travel. V6 adds a compatible visual layer to the generated moving parts. It reads the existing pressed emission state, distinguishes it from hover, and normalizes:
 
-- `0.12` visible press depth;
+- `0.12` visible pressed depth;
 - `8.5` response speed;
 - `7.5%` pressed scale compression;
-- unscaled-time animation so Pause remains responsive.
+- unscaled-time response while paused.
 
-Screen rows are excluded from physical compression.
+The visual layer never owns release position, so controls cannot remain stuck after a pulse. Screen rows are excluded from physical compression.
 
 ### Escape/Pause internal menu
 
@@ -98,31 +98,46 @@ Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.AreaAlignment.cs
 Assets/_Project/Scripts/Runtime/UI/BDModernHandheldV6Polish.Tactile.cs
 Assets/_Project/Scripts/Runtime/UI/BDModernHandheldPressScaleFeedback.cs
 Assets/_Project/Scripts/Runtime/UI/BDModernHandheldTactileCompatibility.cs
+Assets/_Project/Scripts/Editor/Validation/BDModernHandheldV6QA.cs
+ProjectGuide/Tasks/ACTIVE/MODERN_HANDHELD_V6_LAYOUT_AND_PAUSE_POLISH.md
+ProjectGuide/QA/MODERN_HANDHELD_V6_QA.md
+ProjectGuide/Status/MODERN_HANDHELD_V6_REVIEW.md
 ```
 
-## Files changed or deleted
+Every new Unity C# source has a tracked `.meta` file.
 
-- Existing gameplay and menu-authority files: unchanged.
-- Existing artwork, textures, shaders and prefabs: unchanged.
-- Deleted production files: none.
+## Existing files changed
+
+- `ProjectGuide/INDEX.md`: adds the V6 task and QA records to the maintained index.
+- Existing gameplay, `BDMainMenuFlow`, `BDModernHandheld3DPresenter`, scenes, prefabs, artwork, textures and shaders remain unchanged.
+
+## Deleted files
+
+- Production files deleted: none.
+- No existing asset or document was replaced.
+
+## Verification tooling
+
+`Boredom And Dungeons → Validate Modern Handheld V6 Polish` checks the actual Runtime sources and maintained V6 documents rather than validating its own token list. It is also a build preprocessor gate. This focused check complements, but does not replace, the project-wide `TEST EVERYTHING` command.
 
 ## Required verification
 
 1. Open the project in Unity and wait for a clean compile.
-2. Run `Boredom And Dungeons → TEST EVERYTHING` outside Play Mode.
-3. Require `0 blockers`, `0 warnings`, `0 info` unless a newly documented unrelated infrastructure warning is explicitly accepted.
-4. Inspect Main Menu at the real target aspect ratios:
+2. Run `Boredom And Dungeons → Validate Modern Handheld V6 Polish`.
+3. Run `Boredom And Dungeons → TEST EVERYTHING` outside Play Mode.
+4. Require `0 blockers`, `0 warnings`, `0 info` unless a newly documented unrelated infrastructure warning is explicitly accepted.
+5. Inspect Main Menu at the real target aspect ratios:
    - device lower but not clipped;
    - image top aligned to Start Game row top;
    - contextual card visible and correct for all five selections;
    - `THE MAZE AWAITS` and all other card text fully contained;
    - Settings icon visible;
    - SELECT/EXIT centered, close and unobstructed.
-5. Press every D-pad direction, SELECT, EXIT, X, Y, A and B by mouse and keyboard/gamepad paths. Confirm equal tactile depth, compression and return.
-6. Enter gameplay and press Escape. Confirm Pause reads as an internal handheld menu and all four actions retain correct semantics and click areas.
-7. Recheck Settings, Progression, Credits, exit confirmation and abandon confirmation for clipping at narrow and wide resolutions.
-8. Confirm no gameplay HUD leaks above menu pages and no legacy menu competes with the 3D presenter.
+6. Press every D-pad direction, SELECT, EXIT, X, Y, A and B by mouse and keyboard/gamepad paths. Confirm equal tactile depth, compression, release and rapid-repeat recovery.
+7. Enter gameplay and press Escape. Confirm Pause reads as an internal handheld menu and all four actions retain correct semantics and click areas.
+8. Recheck Settings, Progression, Credits, exit confirmation and abandon confirmation for clipping at narrow and wide resolutions.
+9. Confirm no gameplay HUD leaks above menu pages and no legacy menu competes with the 3D presenter.
 
 ## Exact resume point
 
-Do not merge this branch into `main` yet. First complete Unity compilation, `TEST EVERYTHING`, focused Play Mode verification and user visual approval. Record the real results in `ProjectGuide/Status/CURRENT.md`, `ProjectGuide/Status/VERIFICATION.md`, `ProjectGuide/QA/HISTORY.md` and the acceptance checklist before merge.
+Do not merge this branch into `main` yet. First complete Unity compilation, both QA commands, focused Play Mode verification and user visual approval. Record real results in `ProjectGuide/Status/CURRENT.md`, `ProjectGuide/Status/VERIFICATION.md`, `ProjectGuide/QA/HISTORY.md` and the V6 checklist before merge.
