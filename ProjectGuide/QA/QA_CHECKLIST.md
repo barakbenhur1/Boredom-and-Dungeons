@@ -1,3 +1,12 @@
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 latest-commit alignment and partial-source regression check
+
+- `BDModernHandheld3DQA` must validate base presenter behavior in `BDModernHandheld3DPresenter.cs` and generated set/shadow behavior in `BDModernHandheld3DPresenter.CinematicEnvironment.cs`.
+- The focused check requires the complete tabletop, front edge/apron, four legs, floor, cyclorama, three device contact-shadow layers, four leg contact shadows and the three-light rig.
+- The retired `Short Core Shadow To Left`, `Professional Blurred Wood Table` and `Table Cinematic Vignette` contracts may not be restored merely to satisfy old QA.
+- Acceptance requires a fresh Unity compile and `TEST EVERYTHING` at `0/0/0`.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Post-intro cinematic director gate V10.9
 

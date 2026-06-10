@@ -18,9 +18,11 @@ namespace BoredomAndDungeons
         private const float IntroMainMenuCameraFarClip = 120f;
 
         private static readonly Vector3 RegularMainMenuCameraPosition =
-            new Vector3(0f, 0.44f, -25.2f);
+            new Vector3(0f, 1.50f, -3.19f);
+        private static readonly Vector3 RegularMainMenuLookTarget =
+            new Vector3(0f, -7.17f, -3.19f);
         private static readonly Quaternion RegularMainMenuCameraRotation =
-            Quaternion.Euler(1.35f, 0f, 0f);
+            Quaternion.Euler(90f, 0f, 0f);
         private static readonly float[] IntroMainMenuSplineTimes =
         {
             0f,
@@ -52,12 +54,14 @@ namespace BoredomAndDungeons
         private float introToMainMenuTransitionStartedAt;
         private float introToMainMenuStartFieldOfView;
         private float introToMainMenuFinalFieldOfView;
+        private bool introToMainMenuStartPosePrimed;
 
         private void InitializeIntroToMainMenuTransition()
         {
             currentMainMenuEntryMode = MainMenuEntryMode.RegularMainMenuEntry;
             introToMainMenuTransitionActive = false;
             introToMainMenuTransitionStartedAt = 0f;
+            introToMainMenuStartPosePrimed = false;
         }
 
         private void DisposeIntroToMainMenuTransition()
@@ -73,6 +77,7 @@ namespace BoredomAndDungeons
             introToMainMenuTransitionActive = false;
             currentMainMenuEntryMode = MainMenuEntryMode.RegularMainMenuEntry;
             introToMainMenuTransitionStartedAt = 0f;
+            introToMainMenuStartPosePrimed = false;
         }
 
         private bool IsIntroToMainMenuTransitionBlockingInput()
@@ -89,8 +94,16 @@ namespace BoredomAndDungeons
 
             if (!introToMainMenuTransitionActive)
             {
-                if (BDBBHBootIntro.IsPlaying ||
-                    !IsEligiblePostIntroLandingPage(displayedPage) ||
+                // Prime the exact opening pose while the BBH overlay still owns
+                // the frame. This prevents the ordinary/final menu camera from
+                // leaking through the final BBH fade before cinematic frame 0.
+                if (BDBBHBootIntro.IsPlaying)
+                {
+                    PrimeIntroToMainMenuFirstFrame();
+                    return;
+                }
+
+                if (!IsEligiblePostIntroLandingPage(displayedPage) ||
                     !BDBBHBootIntro.TryConsumeIntroToMainMenuTransition())
                 {
                     return;
@@ -114,7 +127,19 @@ namespace BoredomAndDungeons
             currentMainMenuEntryMode =
                 MainMenuEntryMode.IntroToMainMenuTransition;
             introToMainMenuTransitionActive = true;
+
+            PrimeIntroToMainMenuFirstFrame();
+            menuInputUnlockAt = float.PositiveInfinity;
+            menuInputNeedsRelease = true;
+            ForceScreenRender();
+
+            // Start timing only after the authoritative opening camera and live
+            // screen have already been applied to the hidden/covered frame.
             introToMainMenuTransitionStartedAt = Time.unscaledTime;
+        }
+
+        private void PrimeIntroToMainMenuFirstFrame()
+        {
             introToMainMenuFinalFieldOfView =
                 ResolveRegularMainMenuFieldOfView();
             introToMainMenuStartFieldOfView = Mathf.Clamp(
@@ -123,14 +148,14 @@ namespace BoredomAndDungeons
                 52.4f
             );
 
-            RestoreStaticIntroScenePose();
-            PrepareIntroToMainMenuSplines();
+            if (!introToMainMenuStartPosePrimed)
+            {
+                PrepareIntroToMainMenuSplines();
+                introToMainMenuStartPosePrimed = true;
+            }
 
-            entryProgress = 1f;
+            RestoreStaticIntroScenePose();
             ApplyIntroToMainMenuCameraPose(0f);
-            menuInputUnlockAt = float.PositiveInfinity;
-            menuInputNeedsRelease = true;
-            ForceScreenRender();
         }
 
         private void UpdateIntroToMainMenuTransition()
@@ -158,28 +183,25 @@ namespace BoredomAndDungeons
         private void PrepareIntroToMainMenuSplines()
         {
             introToMainMenuCameraSpline[0] =
-                new Vector3(-14.8f, 10.8f, -47.5f);
+                new Vector3(-15.2f, 10.0f, -45.5f);
             introToMainMenuCameraSpline[1] =
-                new Vector3(-13.6f, 10.1f, -45.6f);
+                new Vector3(-14.3f, 9.2f, -43.0f);
             introToMainMenuCameraSpline[2] =
-                new Vector3(-5.2f, 5.4f, -34.8f);
+                new Vector3(-5.2f, 5.4f, -22.0f);
             introToMainMenuCameraSpline[3] =
-                new Vector3(-0.75f, 1.7f, -28.3f);
+                new Vector3(-0.75f, 1.70f, -6.70f);
             introToMainMenuCameraSpline[4] =
                 RegularMainMenuCameraPosition;
 
-            Vector3 finalLookTarget =
-                RegularMainMenuCameraPosition +
-                RegularMainMenuCameraRotation * Vector3.forward * 25f;
             introToMainMenuLookSpline[0] =
-                new Vector3(0f, -4.30f, 2.40f);
+                new Vector3(0f, -8.80f, -2.60f);
             introToMainMenuLookSpline[1] =
-                new Vector3(-0.20f, -3.70f, 2.20f);
+                new Vector3(-0.15f, -8.40f, -2.80f);
             introToMainMenuLookSpline[2] =
-                new Vector3(-0.15f, -1.70f, 1.20f);
+                new Vector3(-0.12f, -7.70f, -3.00f);
             introToMainMenuLookSpline[3] =
-                new Vector3(0f, -0.40f, 0.10f);
-            introToMainMenuLookSpline[4] = finalLookTarget;
+                new Vector3(0f, -7.25f, -3.15f);
+            introToMainMenuLookSpline[4] = RegularMainMenuLookTarget;
 
             PrepareNaturalCubicSpline(
                 introToMainMenuCameraSpline,
@@ -235,9 +257,31 @@ namespace BoredomAndDungeons
                 introToMainMenuLookSecondDerivatives,
                 lookClock
             );
-            Quaternion cameraRotation = Quaternion.LookRotation(
-                lookTarget - cameraPosition,
-                Vector3.up
+            Vector3 cameraDirection = lookTarget - cameraPosition;
+            float verticalAlignment = Mathf.InverseLerp(
+                0.86f,
+                0.995f,
+                Mathf.Abs(Vector3.Dot(
+                    cameraDirection.normalized,
+                    Vector3.up
+                ))
+            );
+            Vector3 cameraUp = Vector3.Slerp(
+                Vector3.up,
+                Vector3.forward,
+                SmoothestStep01(verticalAlignment)
+            ).normalized;
+            Quaternion trackedRotation = Quaternion.LookRotation(
+                cameraDirection,
+                cameraUp
+            );
+            float finalRotationBlend = SmoothestStep01(
+                Mathf.InverseLerp(0.72f, 1f, normalized)
+            );
+            Quaternion cameraRotation = Quaternion.Slerp(
+                trackedRotation,
+                RegularMainMenuCameraRotation,
+                finalRotationBlend
             );
 
             deviceCamera.transform.localPosition = cameraPosition;
@@ -257,7 +301,7 @@ namespace BoredomAndDungeons
             {
                 deviceVisualRoot.localPosition = DeviceRestPosition;
                 deviceVisualRoot.localRotation = DeviceRestRotation;
-                deviceVisualRoot.localScale = Vector3.one;
+                deviceVisualRoot.localScale = DeviceRestScale;
             }
 
             if (tableRoot != null)
@@ -279,6 +323,7 @@ namespace BoredomAndDungeons
         {
             RestoreRegularMainMenuCameraPose();
             introToMainMenuTransitionActive = false;
+            introToMainMenuStartPosePrimed = false;
             currentMainMenuEntryMode =
                 MainMenuEntryMode.RegularMainMenuEntry;
             menuInputUnlockAt = Time.unscaledTime + 0.14f;

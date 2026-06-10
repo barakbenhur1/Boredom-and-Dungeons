@@ -1,3 +1,15 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## V10.9.11 active QA-contract repair
+
+The current task remains the post-intro cinematic. Automated verification is blocked only because `BDModernHandheld3DQA` requires the retired centered key-light target instead of the three current `DeviceRestPosition.z`-relative targets. Apply the QA-only repair, obtain `TEST EVERYTHING 0/0/0`, and resume the pending visual confirmation. Do not modify the approved camera movement, device placement, table, lighting runtime or tutorial mechanics in this repair.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 interruption and exact resume point
+
+Commit `ebe0eb6c40eb2ba291fd5cc23edcd4eac2ecf572` is the required package baseline and its agent-system/cinematic changes are protected by preflight, before/after hashes and post-write validation. The first Unity gate after V10.9.1 compiled and ran, then stopped on one stale focused-QA token: `Short Core Shadow To Left`. V10.9.3 subsequently stopped before writing because it looked for skill identifiers in the wrong owner (`AGENTS.md`). V10.9.4 validates the actual root contract plus the two authoritative skill files, changes only `BDModernHandheld3DQA` and synchronized documentation, then resumes immediately at Unity recompilation and `TEST EVERYTHING`. After `0/0/0`, return to the preserved cinematic Play Mode review. No tutorial mechanics, camera tuning or queued task order changed.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## V10.9 focused interruption — post-intro camera and set completion
 

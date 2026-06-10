@@ -1,3 +1,28 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## V10.9.11 cinematic-lighting contract gate
+
+The automated validator must require the same three light targets as the runtime:
+
+```text
+new Vector3(0f, -7.15f, DeviceRestPosition.z + 0.40f)
+new Vector3(0f, -7.12f, DeviceRestPosition.z + 0.45f)
+new Vector3(0f, -7.05f, DeviceRestPosition.z + 0.60f)
+```
+
+The validator must not require the retired centered target:
+
+```text
+new Vector3(0f, -7.15f, 0f)
+```
+
+Acceptance remains:
+
+1. Unity compiles without errors.
+2. `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
+3. Runtime cinematic files remain byte-identical during this QA-only repair.
+4. Visual checks still confirm safe front-edge spacing, no clipping and a direct original-menu final view.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## V10.9 director-pass focused Play Mode matrix
 

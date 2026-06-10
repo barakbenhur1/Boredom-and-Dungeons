@@ -1,3 +1,44 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## V10.9.11 verification truth — 2026-06-11
+
+### Incoming automated evidence
+
+```text
+Unity: 6000.0.76f1
+Automated status: BLOCKED
+Blockers: 1
+Warnings: 0
+Info: 0
+
+HANDHELD_3D_CINEMATIC_ENVIRONMENT_MISSING
+Missing required contract: new Vector3(0f, -7.15f, 0f)
+```
+
+### Root cause
+
+The runtime light targets correctly follow the forward device position:
+
+- key: `DeviceRestPosition.z + 0.40f`
+- fill: `DeviceRestPosition.z + 0.45f`
+- separation: `DeviceRestPosition.z + 0.60f`
+
+The standalone handheld validator still required the retired centered key-light target.
+
+### Required next evidence
+
+A fresh Unity compile and `TEST EVERYTHING` result of `0 blockers / 0 warnings / 0 info`, followed by the pending visual acceptance of V10.9.9 placement and final angle.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 verification record — 2026-06-10
+
+Unity `TEST EVERYTHING` at `2026-06-10T19:16:43.2950910Z` produced exactly one blocker: `HANDHELD_3D_PRESENTER_MISSING — Missing required contract: Short Core Shadow To Left`. Compilation reached the QA run; there were no warning or info findings.
+
+Static inspection confirmed a QA ownership drift rather than a missing Runtime shadow: V10.9's authoritative `CinematicEnvironment` partial contains the grounded device penumbra/core/base shadows and four table-leg contact shadows, while the older focused validator scanned only `BDModernHandheld3DPresenter.cs` and required the retired object name.
+
+V10.9.3 then stopped safely before writing because its package preflight searched `AGENTS.md` for literal skill identifiers that the real commit stores in `.agents/skills`. V10.9.4 validates the actual `AGENTS.md` prose contract, validates each named skill in its own `SKILL.md`, includes `REPOSITORY_RULES.md`, and verifies protected latest-commit files remain byte-for-byte unchanged. A new Unity compile and `TEST EVERYTHING` run remain mandatory; no automated or visual acceptance is claimed yet.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## V10.9 post-intro cinematic verification truth — 2026-06-10
 

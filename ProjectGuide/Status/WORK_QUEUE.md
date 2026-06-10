@@ -1,3 +1,28 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## Current immediate gate — V10.9.11
+
+1. Apply the focused lighting-QA contract repair over installed V10.9.10.
+2. Let Unity compile.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+4. Require `0 blockers / 0 warnings / 0 info`.
+5. Confirm the cinematic runtime files are unchanged by this QA-only repair.
+6. Resume the pending visual confirmation of:
+   - device position near the lower/front edge with a safe margin;
+   - no table clipping;
+   - final camera directly facing the device like the original menu.
+7. Do not start the queued retro tutorial redesign until explicit cinematic acceptance.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## Current immediate gate — V10.9.4 latest-commit-aligned QA repair
+
+1. Apply the V10.9.4 package without resetting the installed V10.9.1 cinematic work.
+2. Let Unity recompile `BDModernHandheld3DQA.cs`.
+3. Run only `Boredom And Dungeons -> TEST EVERYTHING` and require `0 blockers / 0 warnings / 0 info`.
+4. If clean, continue the existing V10.9 shot review at 0.0s, 1.3s, 2.2s, 3.3s and the final frame.
+5. Do not commit before the automated gate and visual acceptance pass.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Current immediate gate — V10.9 post-intro cinematic director pass
 

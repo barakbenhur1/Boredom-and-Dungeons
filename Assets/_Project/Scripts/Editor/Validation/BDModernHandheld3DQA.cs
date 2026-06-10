@@ -48,11 +48,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "HANDHELD_TABLE_DARK_WOOD_BLUR_V1",
                 "DeviceLayer = 29",
                 "DeviceRestRotation",
+                "DeviceRealWorldScale = 0.16f",
+                "DeviceRestScale",
+                "deviceCamera.fieldOfView =",
+                "ResolveRegularMainMenuFieldOfView();",
+                "new Vector3(0f, -7.27f, -3.60f)",
+                "Quaternion.Euler(90f, 0f, 0f)",
                 "TableRestPosition",
-                "new Vector3(0f, 0.28f, 0f)",
                 "FrontSurfaceZ",
                 "Molded Outer Edge Bevel",
-                "Short Core Shadow To Left",
+                "BuildCinematicProductEnvironment",
                 "New Game Memory Card",
                 "UpdateNewGameMemoryCardVisibility",
                 "ADVENTURE SYSTEM",
@@ -89,6 +94,84 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Gamepad.current.startButton",
                 "Gamepad.current.selectButton",
                 " Hit Target"
+            );
+
+            Require(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.CinematicEnvironment.cs",
+                "HANDHELD_3D_CINEMATIC_ENVIRONMENT_MISSING",
+                "BuildCinematicProductEnvironment",
+                "Full 3D Tabletop",
+                "Table Front Edge Lip",
+                "Table Front Apron",
+                "Table Front Left Leg",
+                "Table Front Right Leg",
+                "Table Back Left Leg",
+                "Table Back Right Leg",
+                "Cinematic Floor",
+                "Cinematic Cyclorama",
+                "Device Soft Contact Penumbra",
+                "Device Core Contact Shadow",
+                "Device Base Contact Shadow",
+                "Table Leg Contact Shadow",
+                "new Vector2(1.62f, 2.55f)",
+                "DeviceRestPosition.z + 0.10f",
+                "DeviceRestPosition.z + 0.04f",
+                "new Vector3(0f, -7.15f, DeviceRestPosition.z + 0.40f)",
+                "new Vector3(0f, -7.12f, DeviceRestPosition.z + 0.45f)",
+                "new Vector3(0f, -7.05f, DeviceRestPosition.z + 0.60f)",
+                "Cinematic Key Light",
+                "Cinematic Camera Fill",
+                "Cinematic Separation Light"
+            );
+
+            Forbid(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.CinematicEnvironment.cs",
+                "HANDHELD_FLAT_CINEMATIC_ENVIRONMENT_REMAINS",
+                "Professional Blurred Wood Table",
+                "Table Cinematic Vignette",
+                "new Vector2(10.9f, 3.85f)",
+                "new Vector2(8.55f, 1.42f)"
+            );
+
+            Require(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs",
+                "HANDHELD_3D_PHYSICAL_STAGING_MISSING",
+                "PrimeIntroToMainMenuFirstFrame",
+                "introToMainMenuStartPosePrimed",
+                "RegularMainMenuLookTarget",
+                "new Vector3(0f, 1.50f, -3.19f)",
+                "Mathf.Lerp(49f, 36.4f, fit)",
+                "deviceVisualRoot.localScale = DeviceRestScale"
+            );
+
+            Forbid(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs",
+                "HANDHELD_3D_OLD_CAMERA_REMAINS",
+                "new Vector3(0f, 0.44f, -25.2f)",
+                "new Vector3(0f, 1.50f, -14.0f)",
+                "Mathf.Lerp(17f, 15f, fit)",
+                "deviceVisualRoot.localScale = Vector3.Lerp"
+            );
+
+            Forbid(
+                result,
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.cs",
+                "HANDHELD_RETIRED_ENTRY_STATE_REMAINS",
+                "entryProgress",
+                "new Vector3(0f, -7.27f, 0f)"
             );
 
             Require(

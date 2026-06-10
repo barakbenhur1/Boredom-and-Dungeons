@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 latest-commit-aligned QA ownership boundary
+
+`BDModernHandheld3DPresenter` remains one Runtime presentation owner implemented through cohesive partial source files. The base partial owns common device/menu construction; `CinematicEnvironment` owns the complete table, floor, cyclorama, lighting and grounded shadow geometry; `IntroToMainMenuTransition` owns camera choreography. Editor validators must inspect the partial that owns each contract instead of requiring migrated implementation tokens from the base file.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## V10.9 cinematic environment and camera ownership
 

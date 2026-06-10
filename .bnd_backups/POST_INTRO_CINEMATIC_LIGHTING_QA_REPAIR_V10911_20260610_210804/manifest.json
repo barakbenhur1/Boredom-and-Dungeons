@@ -1,0 +1,11 @@
+{
+  "files": {
+    "Assets/_Project/Scripts/Editor/Validation/BDModernHandheld3DQA.cs": true,
+    "ProjectGuide/Status/CURRENT.md": true,
+    "ProjectGuide/Status/BUGS.md": true,
+    "ProjectGuide/Status/WORK_QUEUE.md": true,
+    "ProjectGuide/Status/VERIFICATION.md": true,
+    "ProjectGuide/QA/INTRO_TO_MAIN_MENU_CINEMATIC_V105_QA.md": true,
+    "ProjectGuide/Tasks/ACTIVE/FIRST_LAUNCH_TUTORIAL_AND_HANDHELD_PRODUCTION_REPAIR.md": true
+  }
+}

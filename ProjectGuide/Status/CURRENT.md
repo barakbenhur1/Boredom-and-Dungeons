@@ -1,3 +1,44 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## 2026-06-11 — Post-intro cinematic lighting QA contract repair V10.9.11
+
+**Classification:** `CURRENT / AUTOMATED-QA CONTRACT REPAIR`
+
+The V10.9.10 C# syntax repair compiled, allowing `TEST EVERYTHING` to run again. The incoming automated result is still `BLOCKED` with one focused finding:
+
+```text
+HANDHELD_3D_CINEMATIC_ENVIRONMENT_MISSING
+Missing required contract: new Vector3(0f, -7.15f, 0f)
+```
+
+This is a stale validator requirement. V10.9.9 intentionally moved the handheld toward the lower/front table edge and changed all three cinematic light targets to follow `DeviceRestPosition.z`. The runtime contains the new targets; only `BDModernHandheld3DQA.cs` still requires the retired center-table target.
+
+V10.9.11 updates the QA contract to require all three current light targets:
+
+- `new Vector3(0f, -7.15f, DeviceRestPosition.z + 0.40f)`
+- `new Vector3(0f, -7.12f, DeviceRestPosition.z + 0.45f)`
+- `new Vector3(0f, -7.05f, DeviceRestPosition.z + 0.60f)`
+
+The runtime presenter, camera transition, cinematic environment, first-launch tutorial QA and gameplay remain unchanged.
+
+**Exact resume point:** apply V10.9.11 over the installed V10.9.10 working tree, allow Unity to compile, run `Boredom And Dungeons -> TEST EVERYTHING`, require `0 blockers / 0 warnings / 0 info`, then resume visual confirmation of the forward device placement and direct final camera angle.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## 2026-06-10 — V10.9.4 latest-commit-aligned QA ownership repair
+
+**Latest repository baseline:** this package is rebuilt from commit `ebe0eb6c40eb2ba291fd5cc23edcd4eac2ecf572` (`prepare for codax`). It preserves the new 30-agent/5-skill Codex routing system, `.codex/config.toml`, `docs/agent-system/*`, `scripts/agent-system/validate_codex_agent_system.py`, the committed V10.9.1 cinematic Runtime files and all unrelated commit content. The installer owns only the focused QA file and synchronized maintained documentation; it refuses to run when the latest baseline is absent.
+
+**Observed Unity truth:** `TEST EVERYTHING` ran at `2026-06-10T19:16:43.2950910Z` and reported `1 blocker / 0 warnings / 0 info`. The only blocker was `HANDHELD_3D_PRESENTER_MISSING`, claiming that `Short Core Shadow To Left` was absent.
+
+**Root cause:** V10.9 intentionally retired the old vertical-product-shot shadow name and moved the grounded shadow geometry into `BDModernHandheld3DPresenter.CinematicEnvironment.cs` as `Device Soft Contact Penumbra`, `Device Core Contact Shadow`, `Device Base Contact Shadow` and `Table Leg Contact Shadow`. `BDModernHandheld3DQA` still scanned only the base presenter partial and required the retired token.
+
+**Implemented:** the focused handheld validator now keeps base-presenter checks in the base partial, validates the complete table/floor/cyclorama/light/shadow contract in the cinematic-environment partial, and explicitly rejects the retired plane-table objects there. No Runtime behavior, camera path, model, material, input or tutorial mechanic is changed.
+
+**Package-alignment correction:** V10.9.3 correctly stopped before writing, but its preflight incorrectly expected the literal skill identifiers `requirement-ledger` and `final-integration-gate` inside `AGENTS.md`. In the actual latest commit, `AGENTS.md` expresses those responsibilities as prose while the identifiers live in their own `SKILL.md` files. V10.9.4 validates each responsibility in its authoritative file, adds `docs/agent-system/REPOSITORY_RULES.md` to the baseline, and hashes all protected agent-system, scene and cinematic Runtime files before writing and after validation.
+
+**Verification truth:** package/static validation is complete. Unity compilation and a fresh `TEST EVERYTHING` result are required. The exact resume point is to apply V10.9.4, wait for Unity compilation, rerun the single QA command, and require `0 blockers / 0 warnings / 0 info` before visual review or commit.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## 2026-06-10 — Post-intro cinematic director pass V10.9
 

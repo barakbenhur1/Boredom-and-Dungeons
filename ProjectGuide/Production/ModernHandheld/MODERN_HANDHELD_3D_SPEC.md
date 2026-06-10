@@ -1,3 +1,19 @@
+<!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:BEGIN -->
+## V10.9.9 physical table placement and direct viewing geometry
+
+Authoritative persistent device transform:
+
+```text
+position = (0, -7.27, -3.60)
+rotation = (90, 0, 0)
+scale    = (0.16, 0.16, 0.16)
+```
+
+The table spans `z = -7.20 ... +5.20`. The device's long-axis half-extent is approximately `7.70 × 0.16 = 1.232`, so the nearest edge is `-3.60 - 1.232 = -4.832`. The remaining front margin is `-4.832 - (-7.20) = 2.368` units. This is the approved near-front placement: clearly forward of center, but not attached to or overhanging the edge.
+
+The screen center is approximately `DeviceRestPosition.z + ScreenCenterY × scale = -3.60 + 2.56 × 0.16 = -3.1904`. The final camera and target use `z ≈ -3.19`, producing a view normal to the horizontal screen. Contact shadows and light aim points must be offset from `DeviceRestPosition.z`, not hard-coded to the old table center.
+<!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Post-BBH product-set requirement V10.9
 

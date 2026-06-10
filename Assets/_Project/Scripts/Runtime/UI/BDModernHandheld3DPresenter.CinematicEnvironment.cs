@@ -292,24 +292,27 @@ namespace BoredomAndDungeons
 
             float tableSurfaceWorldY =
                 TableRestPosition.y + CinematicTableTopSurfaceY;
+            // The flat handheld has a stable 1.568 × 2.464 unit footprint.
+            // Keep the masks close to that footprint instead of the superseded
+            // full-size upright projection.
             CreateHorizontalShadowQuad(
                 "Device Soft Contact Penumbra",
-                new Vector3(-0.74f, tableSurfaceWorldY + 0.020f, 0.48f),
-                new Vector2(10.9f, 3.85f),
-                -4f,
+                new Vector3(-0.12f, tableSurfaceWorldY + 0.020f, DeviceRestPosition.z + 0.10f),
+                new Vector2(2.35f, 3.45f),
+                -3f,
                 softShadowMaterial
             );
             CreateHorizontalShadowQuad(
                 "Device Core Contact Shadow",
-                new Vector3(-0.34f, tableSurfaceWorldY + 0.026f, 0.20f),
-                new Vector2(9.35f, 2.15f),
-                -2f,
+                new Vector3(-0.06f, tableSurfaceWorldY + 0.026f, DeviceRestPosition.z + 0.04f),
+                new Vector2(1.95f, 2.95f),
+                -1.5f,
                 coreShadowMaterial
             );
             CreateHorizontalShadowQuad(
                 "Device Base Contact Shadow",
-                new Vector3(0f, tableSurfaceWorldY + 0.032f, -0.10f),
-                new Vector2(8.55f, 1.42f),
+                new Vector3(0f, tableSurfaceWorldY + 0.032f, DeviceRestPosition.z),
+                new Vector2(1.62f, 2.55f),
                 0f,
                 contactShadowMaterial
             );
@@ -370,8 +373,8 @@ namespace BoredomAndDungeons
         {
             CreateCinematicSpotLight(
                 "Cinematic Key Light",
-                new Vector3(-10f, 14f, -13f),
-                new Vector3(0f, -3.4f, -0.5f),
+                new Vector3(-8f, 10f, -10f),
+                new Vector3(0f, -7.15f, DeviceRestPosition.z + 0.40f),
                 new Color(1f, 0.87f, 0.72f, 1f),
                 4.2f,
                 65f,
@@ -380,8 +383,8 @@ namespace BoredomAndDungeons
             );
             CreateCinematicSpotLight(
                 "Cinematic Camera Fill",
-                new Vector3(8f, 5f, -18f),
-                new Vector3(0f, -3.2f, 0f),
+                new Vector3(7f, 1f, -14f),
+                new Vector3(0f, -7.12f, DeviceRestPosition.z + 0.45f),
                 new Color(0.46f, 0.58f, 0.78f, 1f),
                 0.95f,
                 60f,
@@ -390,8 +393,8 @@ namespace BoredomAndDungeons
             );
             CreateCinematicSpotLight(
                 "Cinematic Separation Light",
-                new Vector3(2f, 12f, 15f),
-                new Vector3(0f, -2f, 0f),
+                new Vector3(3f, 8f, 12f),
+                new Vector3(0f, -7.05f, DeviceRestPosition.z + 0.60f),
                 new Color(0.38f, 0.50f, 0.72f, 1f),
                 0.72f,
                 55f,

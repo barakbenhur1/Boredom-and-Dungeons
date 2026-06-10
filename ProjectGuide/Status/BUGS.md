@@ -1,3 +1,25 @@
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
+## Post-intro cinematic V10.9.11 — stale lighting QA contract
+
+| ID | Area | Status | Current truth / acceptance condition |
+|---|---|---|---|
+| `CINEMATIC-V10911-001` | Automated QA | `FIX IMPLEMENTED / UNITY VERIFICATION REQUIRED` | `BDModernHandheld3DQA` required the retired centered key-light target `new Vector3(0f, -7.15f, 0f)`. It now requires the three current `DeviceRestPosition.z`-relative targets. |
+| `CINEMATIC-V10911-002` | Regression prevention | `IMPLEMENTED` | The installer verifies all three current lighting targets in both runtime and QA and forbids the retired target in the QA source. |
+| `CINEMATIC-V1099-001` | Front-edge placement | `IMPLEMENTED / VISUAL CONFIRMATION REQUIRED` | Device remains near the lower/front table edge with a visible wood margin. |
+| `CINEMATIC-V1099-002` | Final camera | `IMPLEMENTED / VISUAL CONFIRMATION REQUIRED` | Final camera remains directly aligned with the device like the original menu. |
+
+Incoming evidence: Unity `6000.0.76f1`, generated UTC `2026-06-10T21:04:17.8385590Z`, automated `BLOCKED`, one blocker and no warnings/info.
+<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 latest-commit-aligned QA defect
+
+| ID | Area | Status | Current truth / acceptance condition |
+|---|---|---|---|
+| `QA-CINEMATIC-V1094-001` | Modern handheld partial-source ownership | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | `BDModernHandheld3DQA` required the retired `Short Core Shadow To Left` token only from the base presenter after V10.9 moved the grounded shadow system into `BDModernHandheld3DPresenter.CinematicEnvironment.cs`. The validator now checks the authoritative partial and its new contact-shadow names. Close only after a fresh Unity compile and `TEST EVERYTHING` return `0/0/0`. |
+| `DELIVERY-CINEMATIC-V1094-002` | Latest-commit preflight | `FIXED IN PACKAGE / INSTALL REQUIRED` | V10.9.3 required skill identifiers inside `AGENTS.md`, although the committed contract keeps them in `.agents/skills/*/SKILL.md` and describes the responsibilities in prose in `AGENTS.md`. The package correctly wrote nothing. V10.9.4 validates each source at its real owner and protects unrelated latest-commit files by before/after SHA-256 comparison. |
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Post-intro cinematic director defects — V10.9 implementation supplied, Unity verification pending
 

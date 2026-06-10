@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:BEGIN -->
+## Post-intro product-shot final alignment V10.9.9
+
+The approved movement now resolves into the original menu's direct object relationship: the lens faces the screen plane rather than observing it obliquely. The handheld sits forward on the table so the composition feels intentional and reachable, while a substantial wood margin prevents edge contact. Preserve the accepted realistic scale, contact, full-table set and camera movement. Do not fake the placement through object scale, crop or table movement.
+<!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Post-intro product-shot art direction V10.9
 

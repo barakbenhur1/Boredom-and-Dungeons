@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
+## V10.9.4 decision — preserve latest commit and validate authoritative partials
+
+When a production owner is split across C# partial files, QA follows responsibility boundaries. A migrated geometry or presentation token is validated in its authoritative partial. Dead object names are not reintroduced as comments, duplicate objects or fake strings to satisfy stale scans. This decision repaired the `Short Core Shadow To Left` false blocker without changing Runtime behavior.
+<!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## Decision — generated full 3D product set and one natural-cubic camera
 

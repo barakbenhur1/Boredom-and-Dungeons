@@ -30,6 +30,7 @@ namespace BoredomAndDungeons
         private const float ScreenTransitionDuration = 0.24f;
         private const float TableEnvironmentWidth = 46f;
         private const float TableEnvironmentHeight = 30f;
+        private const float DeviceRealWorldScale = 0.16f;
 
         private static readonly Vector2 CanvasSize =
             new Vector2(960f, 1080f);
@@ -39,11 +40,13 @@ namespace BoredomAndDungeons
         // physically seated on the surface while its upper edge reads farther
         // from the camera.
         private static readonly Vector3 DeviceRestPosition =
-            new Vector3(0f, 0.28f, 0f);
+            new Vector3(0f, -7.27f, -3.60f);
+        private static readonly Vector3 DeviceRestScale =
+            Vector3.one * DeviceRealWorldScale;
         private static readonly Vector3 TableRestPosition =
             new Vector3(0f, -0.16f, 0f);
         private static readonly Quaternion DeviceRestRotation =
-            Quaternion.Euler(9.4f, 0f, 0f);
+            Quaternion.Euler(90f, 0f, 0f);
 
         private static BDModernHandheld3DPresenter instance;
 
@@ -197,7 +200,6 @@ namespace BoredomAndDungeons
         private bool displayedPageInitialized;
         private bool presentationReady;
         private bool visible;
-        private float entryProgress;
         private float nextFlowLookupAt;
         private int selectedIndex;
         private int lastScreenWidth;
@@ -392,7 +394,6 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            entryProgress = 0f;
             displayedPageInitialized = false;
             menuInputUnlockAt = Time.unscaledTime + 0.12f;
             menuInputNeedsRelease = true;
@@ -1094,6 +1095,9 @@ namespace BoredomAndDungeons
                 presentationRoot.transform,
                 false
             );
+            deviceVisualRoot.localPosition = DeviceRestPosition;
+            deviceVisualRoot.localRotation = DeviceRestRotation;
+            deviceVisualRoot.localScale = DeviceRestScale;
             SetLayerRecursively(
                 deviceVisualRoot.gameObject,
                 DeviceLayer
@@ -3823,28 +3827,12 @@ namespace BoredomAndDungeons
             if (deviceVisualRoot == null)
                 return;
 
-            entryProgress = Mathf.MoveTowards(
-                entryProgress,
-                1f,
-                Time.unscaledDeltaTime * 2.65f
-            );
-
-            float eased = 1f - Mathf.Pow(1f - entryProgress, 3f);
-            deviceVisualRoot.localPosition = Vector3.Lerp(
-                DeviceRestPosition + new Vector3(0f, -0.56f, 0.32f),
-                DeviceRestPosition,
-                eased
-            );
-            deviceVisualRoot.localRotation = Quaternion.Slerp(
-                DeviceRestRotation * Quaternion.Euler(-2.2f, -5.6f, 0f),
-                DeviceRestRotation,
-                eased
-            );
-            deviceVisualRoot.localScale = Vector3.Lerp(
-                Vector3.one * 0.94f,
-                Vector3.one,
-                eased
-            );
+            // The handheld is physical set dressing, not a UI card. Generic
+            // menu-entry animation must never override its authoritative
+            // tabletop position, rotation or real-world scale.
+            deviceVisualRoot.localPosition = DeviceRestPosition;
+            deviceVisualRoot.localRotation = DeviceRestRotation;
+            deviceVisualRoot.localScale = DeviceRestScale;
         }
 
         private void UpdateScreenResolution()
@@ -3858,16 +3846,11 @@ namespace BoredomAndDungeons
             lastScreenWidth = Screen.width;
             lastScreenHeight = Screen.height;
 
-            float aspect = Mathf.Max(
-                0.75f,
-                Screen.width / Mathf.Max(1f, Screen.height)
-            );
-
             if (deviceCamera != null &&
                 !introToMainMenuTransitionActive)
             {
-                float fit = Mathf.InverseLerp(0.78f, 1.55f, aspect);
-                deviceCamera.fieldOfView = Mathf.Lerp(49f, 36.4f, fit);
+                deviceCamera.fieldOfView =
+                    ResolveRegularMainMenuFieldOfView();
             }
 
         }
