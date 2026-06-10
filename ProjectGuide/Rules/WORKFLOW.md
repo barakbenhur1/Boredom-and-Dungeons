@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Current-shell package handoff correction V10.9.1
+
+Material package installation must be invoked from the user's existing Terminal as a child process. Do not require the user to double-click a `.command` file, and do not leave `set -e`, `set -u` or `pipefail` enabled in the parent interactive shell. When fail-fast shell behavior is useful, contain it inside a child shell/subshell so a package failure returns to the normal prompt rather than ending the Terminal session. The installer remains responsible for backup, validation, rollback and cleanup.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 # Boredom & Dungeons — Mandatory Development Workflow
 
 This document defines **how work must be performed** on the project.

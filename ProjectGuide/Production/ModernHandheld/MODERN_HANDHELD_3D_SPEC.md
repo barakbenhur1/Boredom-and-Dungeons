@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Post-BBH product-set requirement V10.9
+
+The approved handheld is staged on a complete premium dark-wood table, not a vertical texture plane. The set includes a thick top, front edge/lip, apron/frame, four connected legs/feet, matte charcoal floor, curved charcoal cyclorama, device contact shadow, leg contact shadows and restrained key/fill/separation lighting. The device sits straight on the table axis and remains stationary. In the final Main Menu frame the legs may be outside the viewport, but the tabletop top plane plus front thickness/apron must remain visible so the table still reads as physical furniture.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 
 ## V5 approved physical/input details
 

@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Post-intro product-shot art direction V10.9
+
+Treat the table/handheld reveal as a premium cinematic product shot: dark charcoal environment rather than a black void, premium dark wood with restrained lacquer, soft contact grounding, subtle warm key/cool fill separation and a readable emissive screen without bloom washout. Do not use ghosting, heavy vignette, chromatic aberration, exaggerated depth of field, visible fog concealment, handheld noise, decorative room clutter or arcade-color spectacle. The opening proves complete furniture; the final top/front-edge silhouette preserves volume.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDESIGN_CAPTURE_V1:BEGIN -->
 ## Queued first-launch tutorial retro redesign
 

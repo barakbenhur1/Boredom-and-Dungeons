@@ -1,3 +1,18 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 authoritative director and staging contract
+
+The post-BBH transition is a 4.40-second, one-camera, one-scene product reveal based on the supplied 100-frame/24 FPS motion reference and the later director instructions.
+
+- Opening: high, farther away and left-offset; a complete table and floor establish physical scale.
+- Environment: real thick tabletop, front lip, apron/frame, four legs/feet, charcoal floor and curved cyclorama. No plane-only table or black void.
+- Device: the approved existing handheld remains stationary, centered on the table depth and active from the first frame.
+- Path: five natural-cubic knots provide continuous position/acceleration; horizontal alignment finishes before forward/downward travel; look and FOV use separate jerk-limited clocks.
+- Lens: perspective only, restrained start-to-final FOV change, no zoom substitution, no roll, no camera noise and no exposure transition.
+- Final: exact ordinary Main Menu transform/FOV/clip state, device centered, no legs, but the tabletop front edge, thickness and shadowed apron remain visible.
+- Handoff: input unlocks only after the exact final pose. No correction frame, screen swap, camera swap, cut, fade or internal-menu replay is permitted.
+- Development: an editor/development-build context command may replay the shot without altering production one-shot persistence.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 # Intro-to-Main-Menu Cinematic V1
 
 Status: `IMPLEMENTED / UNITY VERIFICATION REQUIRED`.
@@ -34,7 +49,7 @@ The one-shot cinematic is tied to completion of BBH, not to Main Menu specifical
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
 ## V10.8 full-screen real-3D presentation correction
 
-The special transition is rendered by the normal full-screen product camera looking at the actual 3D handheld/table scene. It may animate the cached camera transform/FOV and the real device/shadow roots. It may not approximate the shot with screen-space scale, a 2D card, a flat overlay, a slide transition or a cropped image of the device.
+The special transition is rendered by the normal full-screen product camera looking at the actual 3D handheld/table scene. It may animate only the cached camera transform, FOV and clip values. The device, table, floor, cyclorama and every shadow root remain static. It may not approximate the shot with screen-space scale, a 2D card, a flat overlay, a slide transition or a cropped image.
 
-The opening pose exposes more of the real table from a distinct angle. A bounded cubic path and continuously recomputed look target move toward the ordinary menu pose. The final interval restores the exact cached camera, device and shadow transforms so there is no corrective snap. Screen content remains live and input remains locked until the exact restoration is complete.
+The opening pose exposes the complete table and grounded set from a distinct high/left angle. A natural-cubic path and continuously recomputed look target move toward the ordinary menu pose. The final interval reaches the same centralized camera state directly, so no device/shadow restore or corrective frame is required. Screen content remains live and input remains locked through completion.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

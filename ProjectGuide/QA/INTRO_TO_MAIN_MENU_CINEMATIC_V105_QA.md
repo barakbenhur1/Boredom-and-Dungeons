@@ -1,3 +1,21 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 director-pass focused Play Mode matrix
+
+1. Confirm total movement is approximately 4.40 seconds and begins subtly on the first rendered frame.
+2. Opening frame: complete tabletop, apron/frame, at least three readable legs, floor before/behind, dark non-black cyclorama and the existing active handheld.
+3. At 1.3 seconds: forward/downward motion is clear, legs remain visible and there is no cut, ghosting, duplicate furniture or object-scale change.
+4. At 2.2 seconds: camera is materially closer/less left-offset; perspective and table scale remain physically coherent.
+5. At 3.3 seconds: horizontal alignment is almost complete; legs leave only through framing; tabletop thickness/front lip remain readable.
+6. Final frame: exact Main Menu composition, centered device, zero roll, readable screen, no legs, visible top plus front edge/apron occupying a meaningful lower-frame band.
+7. Inspect frame by frame for continuous position, rotation, FOV, focus/exposure appearance and screen content. Reject any late correction or snap.
+8. Verify device/table/floor/cyclorama/shadows remain static by logging or inspecting transforms during playback.
+9. Verify input is locked through the final stable frame and enabled exactly once without auto-activating a menu item.
+10. Verify Settings, Progression, Credits, Pause/gameplay return and submenu close never replay the shot.
+11. Verify the development-only replay command works in Editor/Development Build and is absent from production behavior.
+12. Repeat at 30 FPS and 60 FPS and capture a 24 FPS review recording. Motion and final state must be identical.
+13. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 # Intro-to-Main-Menu Cinematic V10.5 QA
 
 Status: `UNITY PLAY MODE REQUIRED`.
@@ -19,6 +37,6 @@ Status: `UNITY PLAY MODE REQUIRED`.
 
 12. Confirm the shot occupies the complete application viewport and contains the real 3D table, handheld, live screen, glass and shadow.
 13. Confirm camera perspective changes through actual 3D position/look/FOV, not a screen-space slide or scale.
-14. Confirm the real device and its shadow perform only restrained physical settle motion and end at their exact regular transforms.
+14. Confirm the real device, table, floor, cyclorama and every shadow remain completely static; only the existing product camera moves.
 15. Confirm there is no flat image/card, crop, black correction frame, wrong-page frame or PowerPoint-like easing.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

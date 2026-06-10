@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Decision — generated full 3D product set and one natural-cubic camera
+
+The existing presenter already owns generated product geometry and the product camera, so V10.9 extends that owner rather than adding Timeline, Cinemachine, a second camera or a pre-rendered clip. A five-knot non-uniform natural cubic spline is used because it provides continuous velocity/acceleration through the establish, descent, alignment and settle regions. Independent jerk-limited clocks tune X, Y, Z, look and FOV; X reaches the final center first. Regular and cinematic completion poses share centralized position/rotation/FOV/clip values. The full table and cyclorama are runtime-generated from existing approved wood assets to preserve repository architecture and avoid an unrelated asset/package dependency.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## Decision — impact-owned tutorial progression and camera-only product-scene landing
 

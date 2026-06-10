@@ -1,0 +1,646 @@
+{
+  "version": "1.0.0",
+  "main_manager": {
+    "type": "root Codex session",
+    "instructions": "AGENTS.md",
+    "reason": "Avoids an extra model call and retains authority to spawn specialists."
+  },
+  "resource_defaults": {
+    "max_threads": 3,
+    "max_depth": 1,
+    "job_max_runtime_seconds": 900,
+    "default_model": "gpt-5.5",
+    "default_reasoning_effort": "medium",
+    "default_verbosity": "low"
+  },
+  "roles": [
+    {
+      "name": "creative_director",
+      "title": "Creative Director",
+      "scope": "Own game identity, fantasy, tone, and cross-discipline creative coherence.",
+      "owns": [
+        "creative pillars",
+        "tone and emotional target",
+        "fantasy and identity",
+        "cross-discipline creative consistency"
+      ],
+      "routes": {
+        "game-wide experience": "game_director",
+        "visual execution": "art_director",
+        "story": "narrative_director",
+        "schedule/scope": "producer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "game_director",
+      "title": "Game Director",
+      "scope": "Own the complete player experience and resolve cross-system design tradeoffs.",
+      "owns": [
+        "overall player experience",
+        "game-wide pacing",
+        "cross-system priority",
+        "feature-level product decisions"
+      ],
+      "routes": {
+        "creative identity": "creative_director",
+        "detailed rules": "lead_game_designer",
+        "technical feasibility": "technical_director",
+        "delivery": "producer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "producer",
+      "title": "Producer",
+      "scope": "Own execution planning, dependencies, scope control, milestones, and project status.",
+      "owns": [
+        "task decomposition",
+        "dependency order",
+        "scope and milestone tracking",
+        "status documentation",
+        "risk register"
+      ],
+      "routes": {
+        "product decision": "game_director",
+        "design decision": "lead_game_designer",
+        "technical plan": "technical_director",
+        "release quality": "qa_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "lead_game_designer",
+      "title": "Lead Game Designer",
+      "scope": "Own gameplay rules, system contracts, and acceptance criteria across the game.",
+      "owns": [
+        "core loop",
+        "game rules",
+        "system interactions",
+        "design specifications",
+        "design acceptance criteria"
+      ],
+      "routes": {
+        "combat feel": "combat_gamefeel_designer",
+        "enemies/bosses": "enemy_boss_designer",
+        "run structure": "roguelite_systems_designer",
+        "implementation": "technical_director"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "combat_gamefeel_designer",
+      "title": "Combat and Game Feel Designer",
+      "scope": "Own controls, combat rules, timing, readability, responsiveness, and moment-to-moment feel.",
+      "owns": [
+        "movement feel",
+        "attack and defense rules",
+        "input timing",
+        "hit feedback requirements",
+        "combat fairness and telegraphs"
+      ],
+      "routes": {
+        "enemy behavior": "enemy_boss_designer",
+        "animation": "animation_rigging_lead",
+        "code": "gameplay_combat_programmer",
+        "camera": "camera_cinematics_programmer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "enemy_boss_designer",
+      "title": "Enemy and Boss Designer",
+      "scope": "Own enemy roles, behaviors, attacks, boss phases, weaknesses, and difficulty introduction.",
+      "owns": [
+        "enemy tactical roles",
+        "attack patterns",
+        "boss phases",
+        "telegraphs and weaknesses",
+        "enemy difficulty placement"
+      ],
+      "routes": {
+        "AI code": "ai_procedural_programmer",
+        "encounter placement": "level_encounter_designer",
+        "numbers": "economy_balance_designer",
+        "assets": "character_creature_art_lead"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "roguelite_systems_designer",
+      "title": "Roguelite Systems Designer",
+      "scope": "Own run structure, procedural design rules, progression, unlocks, and risk-reward.",
+      "owns": [
+        "run topology",
+        "room category cadence",
+        "procedural design constraints",
+        "in-run progression",
+        "meta progression and unlocks"
+      ],
+      "routes": {
+        "room layout": "level_encounter_designer",
+        "economy": "economy_balance_designer",
+        "generation code": "ai_procedural_programmer",
+        "save data": "ui_tools_save_programmer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "level_encounter_designer",
+      "title": "Level and Encounter Designer",
+      "scope": "Own spatial flow, whitebox, combat arenas, enemy compositions, waves, and 2.5D readability.",
+      "owns": [
+        "whitebox and traversal flow",
+        "arena composition",
+        "spawn and wave design",
+        "sightlines and depth readability",
+        "encounter pacing"
+      ],
+      "routes": {
+        "enemy kit": "enemy_boss_designer",
+        "run cadence": "roguelite_systems_designer",
+        "environment art": "environment_art_lead",
+        "camera": "camera_cinematics_programmer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "economy_balance_designer",
+      "title": "Economy and Balance Designer",
+      "scope": "Own numerical balance, power curves, prices, rarity, drop rates, and difficulty curves.",
+      "owns": [
+        "damage and health curves",
+        "economy and prices",
+        "drop rates and rarity",
+        "difficulty curve",
+        "run-duration targets"
+      ],
+      "routes": {
+        "system rule": "lead_game_designer",
+        "enemy behavior": "enemy_boss_designer",
+        "telemetry": "data_playtest_lead",
+        "implementation": "ui_tools_save_programmer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "ux_ui_accessibility_designer",
+      "title": "UX, UI and Accessibility Designer",
+      "scope": "Own user flows, HUD information hierarchy, onboarding UI, controls accessibility, and clarity.",
+      "owns": [
+        "menu and HUD flows",
+        "wireframes",
+        "feedback hierarchy",
+        "tutorial presentation",
+        "accessibility behavior"
+      ],
+      "routes": {
+        "visual styling": "art_director",
+        "UI code": "ui_tools_save_programmer",
+        "text": "narrative_director",
+        "localization": "localization_certification_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "narrative_director",
+      "title": "Narrative Director and Writer",
+      "scope": "Own lore, characters, dialogue, item text, narrative tone, and story integration.",
+      "owns": [
+        "world and lore",
+        "character voice",
+        "dialogue and copy",
+        "environmental story",
+        "narrative continuity"
+      ],
+      "routes": {
+        "cinematic staging": "cinematic_director",
+        "game rule": "lead_game_designer",
+        "audio/voice": "audio_director",
+        "translation": "localization_certification_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "cinematic_director",
+      "title": "Cinematic Director",
+      "scope": "Own scene blocking, shot design, pacing, camera intent, and gameplay-to-cinematic continuity.",
+      "owns": [
+        "blocking and shot plan",
+        "cinematic pacing",
+        "camera intent",
+        "previsualization requirements",
+        "transition intent"
+      ],
+      "routes": {
+        "story text": "narrative_director",
+        "camera implementation": "camera_cinematics_programmer",
+        "animation": "animation_rigging_lead",
+        "lighting/VFX": "technical_art_vfx_lighting_lead"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "art_director",
+      "title": "Art Director",
+      "scope": "Own visual language, color, form, readability, consistency, and asset approval.",
+      "owns": [
+        "visual style guide",
+        "color and shape language",
+        "readability standards",
+        "cross-asset consistency",
+        "visual approval"
+      ],
+      "routes": {
+        "environment assets": "environment_art_lead",
+        "characters": "character_creature_art_lead",
+        "VFX/lighting": "technical_art_vfx_lighting_lead",
+        "animation": "animation_rigging_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "environment_art_lead",
+      "title": "Environment, Prop and Material Art Lead",
+      "scope": "Own environment models, props, textures, materials, modular kits, and set dressing.",
+      "owns": [
+        "environment meshes",
+        "props",
+        "UVs and textures",
+        "materials and decals",
+        "set dressing and LOD inputs"
+      ],
+      "routes": {
+        "layout": "level_encounter_designer",
+        "style": "art_director",
+        "shader/lighting": "technical_art_vfx_lighting_lead",
+        "performance": "rendering_performance_engineer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "character_creature_art_lead",
+      "title": "Character and Creature Art Lead",
+      "scope": "Own player, NPC, enemy, and boss models prepared for deformation and animation.",
+      "owns": [
+        "character and creature models",
+        "topology and UVs",
+        "character textures",
+        "costumes and variants",
+        "rig-ready geometry"
+      ],
+      "routes": {
+        "behavior": "enemy_boss_designer",
+        "rig/animation": "animation_rigging_lead",
+        "style": "art_director",
+        "performance": "rendering_performance_engineer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "technical_art_vfx_lighting_lead",
+      "title": "Technical Art, VFX and Lighting Lead",
+      "scope": "Own asset integration, shaders, VFX, lighting, post-processing, and art-side optimization.",
+      "owns": [
+        "asset import and prefab pipeline",
+        "VFX and gameplay readability effects",
+        "lighting and post-processing",
+        "art tools",
+        "LOD/instancing/batching guidance"
+      ],
+      "routes": {
+        "style": "art_director",
+        "source asset": "environment_art_lead",
+        "rendering code": "rendering_performance_engineer",
+        "gameplay trigger": "gameplay_combat_programmer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "animation_rigging_lead",
+      "title": "Animation and Rigging Lead",
+      "scope": "Own skeletons, joints, skinning, IK, gameplay animation, combat animation, and cinematic motion.",
+      "owns": [
+        "rig and skinning",
+        "locomotion animation",
+        "combat animation",
+        "enemy/boss animation",
+        "animation readability and transitions"
+      ],
+      "routes": {
+        "combat rules": "combat_gamefeel_designer",
+        "enemy intent": "enemy_boss_designer",
+        "model": "character_creature_art_lead",
+        "runtime integration": "gameplay_combat_programmer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "audio_director",
+      "title": "Audio Director",
+      "scope": "Own music, SFX, ambience, voice direction, mix hierarchy, and runtime audio behavior.",
+      "owns": [
+        "music direction",
+        "combat and UI SFX",
+        "ambience and Foley",
+        "voice direction",
+        "mix and dynamic audio rules"
+      ],
+      "routes": {
+        "dialogue text": "narrative_director",
+        "cinematic timing": "cinematic_director",
+        "gameplay hooks": "gameplay_combat_programmer",
+        "UI hooks": "ui_tools_save_programmer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "technical_director",
+      "title": "Technical Director and Software Architect",
+      "scope": "Own architecture, subsystem boundaries, technical risk, code standards, and integration strategy.",
+      "owns": [
+        "architecture and dependencies",
+        "technical design",
+        "code standards",
+        "technical risk and debt",
+        "cross-system integration strategy"
+      ],
+      "routes": {
+        "game rule": "lead_game_designer",
+        "priority": "game_director",
+        "implementation": "relevant programmer agent",
+        "release quality": "qa_lead"
+      },
+      "model": "gpt-5.5",
+      "effort": "high",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "gameplay_combat_programmer",
+      "title": "Gameplay and Combat Programmer",
+      "scope": "Implement player movement, combat, abilities, damage, interactions, animation hooks, VFX hooks, and audio hooks.",
+      "owns": [
+        "character controller code",
+        "combat state and damage pipeline",
+        "weapons and abilities",
+        "hitbox/hurtbox implementation",
+        "gameplay integration tests"
+      ],
+      "routes": {
+        "missing rule": "combat_gamefeel_designer",
+        "architecture": "technical_director",
+        "AI": "ai_procedural_programmer",
+        "camera": "camera_cinematics_programmer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "ai_procedural_programmer",
+      "title": "AI and Procedural Systems Programmer",
+      "scope": "Implement enemy AI, navigation, perception, boss logic, seeded generation, and generation validation.",
+      "owns": [
+        "AI state/behavior implementation",
+        "navigation and perception",
+        "boss runtime logic",
+        "seeded procedural generation",
+        "generation debug and validation tools"
+      ],
+      "routes": {
+        "enemy design": "enemy_boss_designer",
+        "run rules": "roguelite_systems_designer",
+        "room design": "level_encounter_designer",
+        "architecture": "technical_director"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "ui_tools_save_programmer",
+      "title": "UI, Tools, Data and Save Programmer",
+      "scope": "Implement UI, editor tools, data-driven content, save migration, settings, inventory, and progression persistence.",
+      "owns": [
+        "UI runtime implementation",
+        "save/profile/migration",
+        "editor tools and validators",
+        "data schemas",
+        "settings and remapping implementation"
+      ],
+      "routes": {
+        "UX behavior": "ux_ui_accessibility_designer",
+        "system rule": "lead_game_designer",
+        "architecture": "technical_director",
+        "platform cloud save": "build_release_platform_engineer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "camera_cinematics_programmer",
+      "title": "Camera and Cinematics Programmer",
+      "scope": "Implement gameplay camera, rails, blending, occlusion, Timeline/Sequencer, skip/resume, and seamless transitions.",
+      "owns": [
+        "gameplay camera code",
+        "camera collision and occlusion",
+        "camera blends and rails",
+        "cinematic runtime and Timeline",
+        "gameplay/cinematic transition code"
+      ],
+      "routes": {
+        "shot intent": "cinematic_director",
+        "combat camera feel": "combat_gamefeel_designer",
+        "level constraints": "level_encounter_designer",
+        "animation": "animation_rigging_lead"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "rendering_performance_engineer",
+      "title": "Rendering and Performance Engineer",
+      "scope": "Own profiling, frame time, memory, loading, rendering architecture, streaming, pooling, and performance budgets.",
+      "owns": [
+        "CPU/GPU profiling",
+        "memory and loading",
+        "rendering pipeline changes",
+        "pooling/streaming/GC",
+        "performance acceptance evidence"
+      ],
+      "routes": {
+        "visual tradeoff": "art_director",
+        "gameplay tradeoff": "game_director",
+        "art asset issue": "technical_art_vfx_lighting_lead",
+        "build target": "build_release_platform_engineer"
+      },
+      "model": "gpt-5.5",
+      "effort": "high",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "build_release_platform_engineer",
+      "title": "Build, Release and Platform Engineer",
+      "scope": "Own CI/CD, builds, versioning, platform APIs, packaging, symbols, crash artifacts, and release candidates.",
+      "owns": [
+        "build automation",
+        "CI/CD",
+        "version and branch release flow",
+        "platform integration",
+        "packaging and release artifacts"
+      ],
+      "routes": {
+        "architecture": "technical_director",
+        "save integration": "ui_tools_save_programmer",
+        "performance": "rendering_performance_engineer",
+        "release approval": "qa_lead"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "workspace-write"
+    },
+    {
+      "name": "qa_lead",
+      "title": "QA Lead",
+      "scope": "Own acceptance verification, regression strategy, defect severity, reproduction evidence, and release gates.",
+      "owns": [
+        "test strategy",
+        "acceptance verification",
+        "regression matrix",
+        "bug reproduction and severity",
+        "release quality gate"
+      ],
+      "routes": {
+        "ambiguous expected behavior": "lead_game_designer",
+        "technical root cause": "technical_director",
+        "release compromise": "game_director and producer",
+        "build issue": "build_release_platform_engineer"
+      },
+      "model": "gpt-5.5",
+      "effort": "medium",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "data_playtest_lead",
+      "title": "Data, Telemetry and Playtest Lead",
+      "scope": "Own telemetry design, dashboards, playtest plans, behavioral evidence, and actionable findings.",
+      "owns": [
+        "telemetry events",
+        "playtest design",
+        "behavioral analysis",
+        "difficulty and retention evidence",
+        "data quality"
+      ],
+      "routes": {
+        "balance decision": "economy_balance_designer",
+        "UX finding": "ux_ui_accessibility_designer",
+        "product decision": "game_director",
+        "implementation": "ui_tools_save_programmer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "localization_certification_lead",
+      "title": "Localization, Accessibility QA, Certification and Legal Lead",
+      "scope": "Own localization workflow, RTL, certification checklists, accessibility compliance, licensing, and privacy requirements.",
+      "owns": [
+        "localization pipeline",
+        "RTL and font requirements",
+        "platform certification checklist",
+        "accessibility compliance review",
+        "asset licensing and privacy checks"
+      ],
+      "routes": {
+        "UX design": "ux_ui_accessibility_designer",
+        "source text": "narrative_director",
+        "platform code": "build_release_platform_engineer",
+        "test execution": "qa_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "marketing_store_community_lead",
+      "title": "Marketing, Store and Community Lead",
+      "scope": "Own positioning, store page, trailer brief, screenshots, launch communication, and community messaging.",
+      "owns": [
+        "positioning and audience",
+        "store copy and assets brief",
+        "trailer and capture brief",
+        "launch communication",
+        "community updates"
+      ],
+      "routes": {
+        "creative message": "creative_director",
+        "game claims": "game_director",
+        "key art": "art_director",
+        "review build": "build_release_platform_engineer"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    },
+    {
+      "name": "liveops_support_lead",
+      "title": "Live Ops and Player Support Lead",
+      "scope": "Own post-launch events, support flows, incident intake, hotfix communication, and operational cadence.",
+      "owns": [
+        "live event plan",
+        "support workflow",
+        "incident intake",
+        "known-issues communication",
+        "post-launch operational priorities"
+      ],
+      "routes": {
+        "balance": "economy_balance_designer",
+        "code fix": "technical_director",
+        "hotfix build": "build_release_platform_engineer",
+        "quality gate": "qa_lead"
+      },
+      "model": "gpt-5.4-mini",
+      "effort": "low",
+      "sandbox": "read-only"
+    }
+  ]
+}

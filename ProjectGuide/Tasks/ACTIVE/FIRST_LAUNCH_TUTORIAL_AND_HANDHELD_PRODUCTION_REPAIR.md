@@ -1,3 +1,11 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 focused interruption — post-intro camera and set completion
+
+The user supplied a final director/staging contract and required this shot to be completed before later work. V10.9 replaces the plane-based table with a complete grounded 3D set and replaces the short single-ease move with the specified 4.40-second one-camera path. This is a focused improvement-only interruption: tutorial mechanics, screen/menu behavior, device design and the saved later queue remain unchanged.
+
+**Resume after package application:** Unity compile -> TEST EVERYTHING `0/0/0` -> focused five-timepoint cinematic review -> mounted-shot regression check -> user acceptance. After acceptance return to the queued retro tutorial visual redesign.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## V10.8.1 interruption and exact resume point
 

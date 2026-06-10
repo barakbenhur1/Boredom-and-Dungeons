@@ -1,3 +1,13 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Installer-session and conflict-marker correction V10.9.1
+
+- Installation runs as a child Python process from the operator's existing Terminal; no double-clickable `.command` launcher is required.
+- Completion or failure must return control to the existing shell prompt.
+- Git conflict detection is line-anchored. Block only full-line `<<<<<<< ...`, `||||||| ...`, `=======`, or `>>>>>>> ...` markers.
+- Inline prose such as ``decorative `=======` strings`` is valid maintained documentation and must not be rejected.
+- The package validator must self-test one harmless inline separator and every real full-line marker family.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_TERMINAL_OUTPUT_V1081_REGRESSION_GATE:BEGIN -->
 ## Regression verification
 

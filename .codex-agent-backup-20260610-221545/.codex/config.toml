@@ -1,0 +1,53 @@
+# המודל החזק ביותר הזמין כרגע ב-Codex
+model = "gpt-5.5"
+
+# חשיבה עמוקה למשימות מורכבות:
+# ארכיטקטורה, gameplay, debugging, performance ו-refactoring
+model_reasoning_effort = "xhigh"
+
+# Codex יכול לעבוד בתוך הפרויקט ולערוך קבצים,
+# אך לא מקבל גישה בלתי מוגבלת לכל המחשב
+sandbox_mode = "workspace-write"
+
+# מבקש אישור רק לפעולות חריגות או מסוכנות
+approval_policy = "on-request"
+
+# חיפוש עדכני עבור Unity APIs, packages ותיעוד
+web_search = "live"
+
+# סגנון תשובה ממוקד ומעשי
+personality = "pragmatic"
+
+# מאפשר מסמכי הוראות גדולים יחסית לפרויקט משחק מלא
+project_doc_max_bytes = 65536
+
+# שמות נוספים ש-Codex יזהה כמסמכי הוראות
+project_doc_fallback_filenames = [
+  "PROJECT_RULES.md",
+  "GAME_ARCHITECTURE.md",
+  "DEVELOPMENT_WORKFLOW.md"
+]
+
+[features]
+# מאיץ הרצות חוזרות של פקודות shell
+shell_snapshot = true
+
+[agents]
+# מספיק סוכנים מקבילים ללא עומס מופרז
+max_threads = 6
+
+# מונע שרשרת אינסופית של סוכנים שיוצרים סוכנים
+max_depth = 1
+
+# זמן מקסימלי לעבודת סוכן בודד
+job_max_runtime_seconds = 1800
+
+[shell_environment_policy]
+include_only = [
+  "PATH",
+  "HOME",
+  "USER",
+  "SHELL",
+  "TMPDIR",
+  "UNITY_PATH"
+]

@@ -1,3 +1,18 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Current immediate gate — V10.9 post-intro cinematic director pass
+
+1. Apply the V10.9.1 backup-aware package from the existing Terminal session without resetting or discarding V10.8.1 work; the parent shell must remain open on success or failure.
+2. Compile in Unity `6000.0.76f1` and run `Boredom And Dungeons -> TEST EVERYTHING`; require `0/0/0`.
+3. Reset first launch and let BBH land on the tutorial-choice or Main Menu destination.
+4. At 0.0s verify a complete grounded table, visible floor and high/far/left framing.
+5. At 1.3s and 2.2s verify continuous descent/advance, no duplicates and legs still readable.
+6. At 3.3s verify near-frontal alignment, natural leg exit and preserved tabletop thickness.
+7. At the final frame verify exact Main Menu framing, readable live screen, visible front edge/apron, zero movement or correction and seamless input enable.
+8. Repeat at 24-equivalent capture, 30 FPS and 60 FPS; return from Settings, Progression and Credits and verify no replay.
+9. Recheck mounted-shot progression and all prior V10.8.1 acceptance items to prove no regression.
+10. Commit only after user acceptance, then continue with the already queued retro tutorial visual redesign.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## Current immediate gate — V10.8.1 cumulative hotfix
 

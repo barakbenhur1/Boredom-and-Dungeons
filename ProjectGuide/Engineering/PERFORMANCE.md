@@ -1,3 +1,14 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 post-intro cinematic performance contract
+
+- Product-set meshes/materials/lights are created once in `BuildPresentation` and released by the existing generated-resource lifecycle.
+- Spline point arrays and Thomas-solver scratch buffers are persistent fields; second derivatives are prepared once at shot start.
+- Per-frame cinematic work is bounded arithmetic plus one camera transform/FOV update. No LINQ, scene search, material/mesh creation, coroutine fan-out or frame-count timing is allowed.
+- Timing uses `Time.unscaledTime`; output is deterministic at 24, 30, 60 and higher frame rates.
+- The camera near/far range is fixed at 0.05/120 for both cinematic and ordinary Main Menu states, preventing start-set clipping without a handoff change.
+- Focused verification must inspect idle allocations and frame pacing; static/package checks do not prove rendered performance.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## V10.8.1 performance constraints
 

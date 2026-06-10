@@ -1,3 +1,21 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## 2026-06-10 — Post-intro cinematic director pass V10.9
+
+**Classification:** `CURRENT / EARLIER-BLOCKING VISUAL-ARCHITECTURE REPAIR INSIDE THE FIRST-LAUNCH GATE`
+
+**User correction:** the previous camera-only repair still built the visible "table" as one oversized vertical `Quad`, used a short UI-like interpolation and did not establish a complete grounded piece of furniture. The new supplied director/staging contract requires a real table, floor and cyclorama, one physical camera path, approximately 4.4 seconds at the 24 FPS reference cadence, early horizontal alignment, a long settle, and a final visible tabletop edge/thickness.
+
+**Implemented in this package:** `BDModernHandheld3DPresenter` keeps the approved device unchanged and generates a full table with a thick top, front lip, four aprons, four connected legs and feet; a charcoal floor; a curved cyclorama; restrained product lighting; device contact shadows; and leg contact shadows. `IntroToMainMenuTransition` now uses a precomputed allocation-free five-knot natural cubic spline with independent horizontal, vertical, forward, look and FOV clocks. The camera begins high/far/left, moves from the first frame, aligns horizontally before the final settle and ends on the same centralized Main Menu position/rotation/FOV/clip state used by regular entry.
+
+**Preservation:** the table, device, screen, shadows, floor and backdrop are static for the entire shot. No cut, camera swap, fade, scale animation, object movement, ghosting, model replacement, package upgrade or unrelated gameplay change is introduced. All V10.8.1 tutorial mechanics and terminal semantic colors remain protected.
+
+**Delivery V10.9.1 correction:** the first real V10.9 application correctly wrote into a backup-protected working tree, but its post-write validator falsely treated the bug ledger's inline decorative `` `=======` `` prose as a Git merge conflict. Automatic rollback restored the repository byte-for-byte and removed the failed-attempt backup/package residue. V10.9.1 now recognizes only actual full-line Git conflict markers, includes a regression self-test for the existing bug-ledger wording, and removes double-clickable `.command` launchers. Installation is run as a child Python process inside the user's existing Terminal, so completion or failure returns to the normal prompt.
+
+**QA truth:** V10.9.1 package tooling, full-line conflict-parser regression tests, structural source validation, C# delimiter/preprocessor checks, terminal-color compatibility tests, first install, idempotent install, unknown-transition-content blocking, rollback and `git diff --check` are package/static gates only. Unity compilation, TEST EVERYTHING, frame-by-frame rendering, 24/30/60 FPS behavior and user visual acceptance are not claimed.
+
+**Exact resume point:** apply V10.9.1 to the current repository from the existing Terminal session, open Unity `6000.0.76f1`, require a clean compile and `Boredom And Dungeons -> TEST EVERYTHING` at `0 blockers / 0 warnings / 0 info`, then review the shot at 0.0s, 1.3s, 2.2s, 3.3s and the final frame. Confirm the full table/floor at the start, natural leg exit, visible front edge/thickness at the end, live readable screen, zero handoff jump and no replay on internal menu returns. Do not commit before user acceptance.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## 2026-06-10 — V10.8.1 shooting progression, camera-only landing and terminal-output compliance
 

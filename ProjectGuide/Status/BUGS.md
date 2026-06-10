@@ -1,3 +1,14 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Post-intro cinematic director defects — V10.9 implementation supplied, Unity verification pending
+
+| ID | Area | Status | Current truth / acceptance condition |
+|---|---|---|---|
+| `CINEMATIC-V109-001` | Table/environment geometry | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The prior visible table was a vertical `Quad`. The replacement must render a complete thick tabletop, apron/frame, four connected legs/feet, grounded floor and curved dark cyclorama. At the opening at least three legs and floor must read clearly; the final frame must retain the front edge and thickness. |
+| `CINEMATIC-V109-002` | Camera path and pacing | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | One existing camera now runs for 4.40 seconds through a five-knot natural cubic path. It starts high/far/left, descends and advances, completes horizontal alignment before the long settle, uses no roll/noise/cut and ends at the exact ordinary Main Menu camera state. |
+| `CINEMATIC-V109-003` | Static scene ownership and handoff | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Device, table, floor, cyclorama and shadows remain at authoritative rest transforms. Input stays locked until the exact final frame. Internal Main Menu returns must not replay the shot. Acceptance requires no visible position/FOV/exposure/screen jump at handoff. |
+| `DELIVERY-V1091-001` | False merge-conflict detection and dead Terminal launcher | `PACKAGE VERIFIED` | The first V10.9 real application rolled back safely because inline bug-ledger prose containing `` `=======` `` was misclassified as a conflict marker. V10.9.1 accepts decorative inline separators, blocks only full-line Git markers, self-tests both cases, and uses a child Python installer from the existing Terminal instead of a double-clickable `.command` process. |
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## First-launch tutorial V10.8.1 hotfixes — implementation supplied, Unity verification pending
 

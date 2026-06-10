@@ -43,7 +43,7 @@ namespace BoredomAndDungeons
         private static readonly Vector3 TableRestPosition =
             new Vector3(0f, -0.16f, 0f);
         private static readonly Quaternion DeviceRestRotation =
-            Quaternion.Euler(9.4f, -2.35f, -0.42f);
+            Quaternion.Euler(9.4f, 0f, 0f);
 
         private static BDModernHandheld3DPresenter instance;
 
@@ -875,126 +875,25 @@ namespace BoredomAndDungeons
                 false
             );
             cameraObject.transform.localPosition =
-                new Vector3(0f, 0.44f, -25.2f);
+                ResolveRegularMainMenuCameraPosition();
             cameraObject.transform.localRotation =
-                Quaternion.Euler(1.35f, 0f, 0f);
+                ResolveRegularMainMenuCameraRotation();
 
             deviceCamera = cameraObject.AddComponent<Camera>();
             deviceCamera.orthographic = false;
-            deviceCamera.fieldOfView = 36.4f;
+            deviceCamera.fieldOfView =
+                ResolveRegularMainMenuFieldOfView();
             deviceCamera.clearFlags = CameraClearFlags.SolidColor;
             deviceCamera.backgroundColor =
                 new Color(0.006f, 0.003f, 0.006f, 1f);
             deviceCamera.cullingMask = 1 << DeviceLayer;
             deviceCamera.depth = 90f;
-            deviceCamera.nearClipPlane = 0.01f;
-            deviceCamera.farClipPlane = 60f;
+            deviceCamera.nearClipPlane = IntroMainMenuCameraNearClip;
+            deviceCamera.farClipPlane = IntroMainMenuCameraFarClip;
             deviceCamera.allowHDR = false;
             deviceCamera.allowMSAA = true;
 
-            tableRoot = new GameObject(
-                "Modern Handheld Table Environment"
-            ).transform;
-            tableRoot.SetParent(presentationRoot.transform, false);
-            tableRoot.localPosition = TableRestPosition;
-            tableRoot.localRotation = DeviceRestRotation;
-            SetLayerRecursively(tableRoot.gameObject, DeviceLayer);
-
-            GameObject table = GameObject.CreatePrimitive(
-                PrimitiveType.Quad
-            );
-            table.name = "Professional Blurred Wood Table";
-            Destroy(table.GetComponent<Collider>());
-            table.transform.SetParent(tableRoot, false);
-            table.transform.localPosition =
-                new Vector3(0f, 0f, 0.76f);
-            table.transform.localRotation =
-                Quaternion.Euler(0f, 180f, 0f);
-            table.transform.localScale =
-                new Vector3(
-                    TableEnvironmentWidth,
-                    TableEnvironmentHeight,
-                    1f
-                );
-            table.GetComponent<Renderer>().sharedMaterial =
-                tableMaterial;
-            SetLayerRecursively(table, DeviceLayer);
-
-            GameObject vignette = GameObject.CreatePrimitive(
-                PrimitiveType.Quad
-            );
-            vignette.name = "Table Cinematic Vignette";
-            Destroy(vignette.GetComponent<Collider>());
-            vignette.transform.SetParent(tableRoot, false);
-            vignette.transform.localPosition =
-                new Vector3(0f, 0f, 0.735f);
-            vignette.transform.localRotation =
-                Quaternion.Euler(0f, 180f, 0f);
-            vignette.transform.localScale =
-                new Vector3(
-                    TableEnvironmentWidth,
-                    TableEnvironmentHeight,
-                    1f
-                );
-            vignette.GetComponent<Renderer>().sharedMaterial =
-                backgroundMaterial;
-            SetLayerRecursively(vignette, DeviceLayer);
-
-            shadowRoot = new GameObject(
-                "Modern Handheld Table Shadows"
-            ).transform;
-            shadowRoot.SetParent(presentationRoot.transform, false);
-            shadowRoot.localPosition = DeviceRestPosition;
-            shadowRoot.localRotation = DeviceRestRotation;
-            SetLayerRecursively(shadowRoot.gameObject, DeviceLayer);
-
-            GameObject softShadow = GameObject.CreatePrimitive(
-                PrimitiveType.Quad
-            );
-            softShadow.name = "Short Soft Shadow To Left";
-            Destroy(softShadow.GetComponent<Collider>());
-            softShadow.transform.SetParent(shadowRoot, false);
-            softShadow.transform.localPosition =
-                new Vector3(-2.05f, -0.20f, 0.515f);
-            softShadow.transform.localRotation =
-                Quaternion.Euler(0f, 180f, -0.65f);
-            softShadow.transform.localScale =
-                new Vector3(12.30f, 15.35f, 1f);
-            softShadow.GetComponent<Renderer>().sharedMaterial =
-                softShadowMaterial;
-            SetLayerRecursively(softShadow, DeviceLayer);
-
-            GameObject coreShadow = GameObject.CreatePrimitive(
-                PrimitiveType.Quad
-            );
-            coreShadow.name = "Short Core Shadow To Left";
-            Destroy(coreShadow.GetComponent<Collider>());
-            coreShadow.transform.SetParent(shadowRoot, false);
-            coreShadow.transform.localPosition =
-                new Vector3(-1.28f, -0.14f, 0.495f);
-            coreShadow.transform.localRotation =
-                Quaternion.Euler(0f, 180f, -0.42f);
-            coreShadow.transform.localScale =
-                new Vector3(10.85f, 14.95f, 1f);
-            coreShadow.GetComponent<Renderer>().sharedMaterial =
-                coreShadowMaterial;
-            SetLayerRecursively(coreShadow, DeviceLayer);
-
-            GameObject contactShadow = GameObject.CreatePrimitive(
-                PrimitiveType.Quad
-            );
-            contactShadow.name = "Device Contact Shadow";
-            Destroy(contactShadow.GetComponent<Collider>());
-            contactShadow.transform.SetParent(shadowRoot, false);
-            contactShadow.transform.localPosition =
-                new Vector3(-0.74f, -7.08f, 0.475f);
-            contactShadow.transform.localRotation =
-                Quaternion.Euler(0f, 180f, -0.35f);
-            contactShadow.transform.localScale =
-                new Vector3(9.65f, 2.35f, 1f);
-            contactShadow.GetComponent<Renderer>().sharedMaterial =
-                contactShadowMaterial;
-            SetLayerRecursively(contactShadow, DeviceLayer);
+            BuildCinematicProductEnvironment();
         }
 
         private void BuildScreenRenderer()

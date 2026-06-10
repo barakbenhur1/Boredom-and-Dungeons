@@ -1,3 +1,16 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Post-intro cinematic director gate V10.9
+
+- [ ] `BDModernHandheld3DPresenter.CinematicEnvironment.cs` exists and builds the complete table, floor, cyclorama, grounded shadows and restrained lights.
+- [ ] Runtime source contains no `Professional Blurred Wood Table`, `Table Cinematic Vignette`, `EvaluateCubicBezier`, old 3.05-second travel or object-motion cinematic ownership.
+- [ ] Camera path duration/stage constants are 4.40 / 0.55 / 2.10 / 3.35 seconds.
+- [ ] Natural cubic second derivatives are prepared once; no per-frame arrays, scene searches, LINQ or material creation occur.
+- [ ] Horizontal camera alignment ends before the final forward/downward settle.
+- [ ] Main Menu position, rotation, FOV, near clip and far clip use one centralized authoritative state for build, completion and ordinary restoration.
+- [ ] Opening/final frame composition and 24/30/60 FPS focused checks pass.
+- [ ] TEST EVERYTHING returns `0/0/0` and the user accepts the rendered shot.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## First-launch tutorial V10.8.1 regression gate
 

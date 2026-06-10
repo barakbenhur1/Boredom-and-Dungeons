@@ -1,3 +1,13 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 post-intro cinematic verification truth — 2026-06-10
+
+The first V10.9 real application exposed one delivery defect after writes: its broad substring scan interpreted the maintained bug-ledger phrase `` `=======` `` as a conflict. The installer then performed the intended automatic byte-for-byte rollback, verified restoration, removed the failed-attempt backup and cleaned the downloaded/extracted package. V10.9.1 replaces that scan with full-line Git-marker recognition and explicitly tests that the real decorative phrase passes while `<<<<<<<`, `|||||||`, `=======` and `>>>>>>>` full-line markers fail.
+
+Package/static verification covers source-anchor preflight, backup creation, atomic writes, exact target validation, first and idempotent application, unknown transition-content blocking, byte-for-byte rollback, semantic terminal colors on a pseudo-terminal, ANSI suppression for `NO_COLOR=1`, `TERM=dumb` and redirected output, existing-shell installer cleanup, C# brace/preprocessor balance, forbidden old plane/spline tokens, documentation synchronization and `git diff --check` where Git is available.
+
+Not yet verified: Unity compilation, `TEST EVERYTHING`, actual 3D lighting/shadows, screen readability, table proportions, 24/30/60 FPS frame pacing, frame-by-frame continuity, final handoff or user visual acceptance. These remain mandatory and must not be inferred from static checks.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## V10.8.1 verification contract
 

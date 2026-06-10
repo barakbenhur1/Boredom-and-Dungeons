@@ -35,6 +35,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
             "BDModernHandheld3DPresenter.LaunchPresentationGate.cs",
             "Assets/_Project/Scripts/Runtime/UI/" +
             "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.CinematicEnvironment.cs",
             "Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialEditorTools.cs",
             "ProjectGuide/Features/UI/FIRST_LAUNCH_TUTORIAL_V1.md",
             "ProjectGuide/Features/UI/" +
@@ -148,10 +150,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
             "IntroToMainMenuTransition",
             "TryConsumeIntroToMainMenuTransition",
             "IsEligiblePostIntroLandingPage",
-            "SmootherStep01",
-            "EvaluateCubicBezier",
-            "IntroMainMenuEstablishSeconds",
-            "IntroMainMenuCinematicSeconds",
+            "SmoothestStep01",
+            "EvaluateNaturalCubicSplineComponent",
+            "IntroMainMenuTotalSeconds = 4.40f",
+            "IntroMainMenuEstablishSeconds = 0.55f",
+            "IntroMainMenuDescentEndsAtSeconds = 2.10f",
+            "IntroMainMenuAlignmentEndsAtSeconds = 3.35f",
+            "BuildCinematicProductEnvironment",
+            "Full 3D Tabletop",
+            "Cinematic Floor",
+            "Cinematic Cyclorama",
             "RuntimeInitializeLoadType.BeforeSceneLoad",
             "CreateFirstLaunchTutorialPixelText",
             "FirstLaunchTutorialPixelGlyphs",
@@ -259,6 +267,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/UI/" +
                 "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs"
             );
+            string cinematicEnvironmentPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.CinematicEnvironment.cs"
+            );
             string bootIntroPath = Path.Combine(
                 root,
                 "Assets/_Project/Scripts/Runtime/UI/BDBBHBootIntro.cs"
@@ -278,6 +291,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                              ReadIfPresent(targetPath) +
                              ReadIfPresent(launchGatePath) +
                              introMainMenu +
+                             ReadIfPresent(cinematicEnvironmentPath) +
                              ReadIfPresent(bootIntroPath);
 
             for (int index = 0; index < RequiredRuntimeTokens.Length; index++)
@@ -413,21 +427,27 @@ namespace BoredomAndDungeons.EditorTools.Validation
             RequireRuntimeContract(
                 runtime,
                 errors,
-                "camera-only intro-to-main-menu cinematic",
+                "camera-only full-set intro-to-main-menu cinematic",
                 "MainMenuEntryMode.IntroToMainMenuTransition",
                 "TryConsumeIntroToMainMenuTransition",
                 "IsEligiblePostIntroLandingPage",
                 "page == EffectivePage.MainMenu",
                 "page == EffectivePage.FirstLaunchTutorial",
-                "IntroMainMenuEstablishSeconds",
-                "IntroMainMenuCinematicSeconds",
-                "ApplyIntroToMainMenuCameraPose",
-                "RestoreStaticIntroScenePose",
-                "TableEnvironmentWidth = 46f",
-                "TableEnvironmentHeight = 30f",
+                "IntroMainMenuTotalSeconds = 4.40f",
+                "IntroMainMenuEstablishSeconds = 0.55f",
+                "IntroMainMenuDescentEndsAtSeconds = 2.10f",
+                "IntroMainMenuAlignmentEndsAtSeconds = 3.35f",
+                "PrepareNaturalCubicSpline",
+                "EvaluateNaturalCubicSplineComponent",
+                "SmoothestStep01",
+                "BuildCinematicProductEnvironment",
+                "Full 3D Tabletop",
+                "Table Front Apron",
+                "Table Front Left Leg",
+                "Cinematic Floor",
+                "Cinematic Cyclorama",
                 "deviceCamera.transform.localPosition = cameraPosition",
-                "EvaluateCubicBezier",
-                "SmootherStep01",
+                "tableRoot.localRotation = Quaternion.identity",
                 "menuInputUnlockAt = float.PositiveInfinity"
             );
             RequireRuntimeContract(
@@ -579,7 +599,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "deviceVisualRoot.localPosition = devicePosition",
                 "deviceVisualRoot.localScale = Vector3.one * deviceScale",
                 "shadowRoot.localPosition = Vector3.Lerp",
-                "ApplyIntroToMainMenuThreeDimensionalPose"
+                "ApplyIntroToMainMenuThreeDimensionalPose",
+                "EvaluateCubicBezier",
+                "SmootherStep01",
+                "IntroMainMenuCinematicSeconds"
             };
 
             for (int index = 0;
@@ -598,6 +621,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             string[] forbiddenRuntimeTokens =
             {
+                "Professional Blurred Wood Table",
+                "Table Cinematic Vignette",
                 "Tutorial Visible Lesson Gate",
                 "UpdateFirstLaunchTutorialLessonGateVisual",
                 "COMPLETE THE CURRENT LESSON TO OPEN THE GATE",

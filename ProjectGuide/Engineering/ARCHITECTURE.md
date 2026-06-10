@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## V10.9 cinematic environment and camera ownership
+
+`BDModernHandheld3DPresenter` remains the sole owner of the generated Main/Pause product scene. Its `CinematicEnvironment` partial builds static table/floor/cyclorama/light/shadow geometry once during presentation construction. `IntroToMainMenuTransition` remains the sole post-BBH choreography owner and may mutate only the existing product camera transform and lens/clip state. It precomputes spline coefficients at transition start and performs allocation-free evaluation in `Update`. `BDMainMenuFlow` remains semantic menu/input authority; the cinematic only gates input until completion.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## V10.8.1 ownership clarification
 

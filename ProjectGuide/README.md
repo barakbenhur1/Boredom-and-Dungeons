@@ -1,3 +1,9 @@
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
+## Current V10.9 cinematic-director truth
+
+The active focused repair replaces the post-BBH plane-based product backdrop with a complete generated 3D table, grounded floor and dark cyclorama, while keeping the approved handheld unchanged. One existing camera performs a continuous 4.40-second C2 natural-cubic move from high/far/left to the exact ordinary Main Menu pose. The device, table, floor, backdrop and shadows never move or scale. Unity compilation, TEST EVERYTHING and focused rendered review are still required before acceptance.
+<!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## Current V10.8.1 hotfix truth
 
