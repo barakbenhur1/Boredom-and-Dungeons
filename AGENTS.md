@@ -8,11 +8,15 @@ The root Codex session is the **Main Manager**. Do not spawn a manager subagent:
 
 Complete the user's request end to end, preserve every explicit requirement, avoid unsupported claims, and use the least Codex time and tokens that can still produce production-quality work.
 
+## Repository contract
+
+Follow [`docs/agent-system/REPOSITORY_RULES.md`](docs/agent-system/REPOSITORY_RULES.md) for the project's source-of-truth documents, Unity/QA rules, Git safety, and real validation commands. Explicit user instructions may authorize a scoped commit or push; they never authorize destructive Git operations implicitly.
+
 ## Start sequence
 
 1. Read this file.
 2. Run `git status --short`.
-3. Read only the smallest relevant project maps/status docs listed by the repository.
+3. Read `docs/agent-system/REPOSITORY_RULES.md`, then only the smallest relevant project maps/status docs it lists.
 4. Convert the request into a compact requirement ledger: `REQ-001`, `REQ-002`, ...
 5. Identify likely files/symbols with targeted `rg`/`rg --files`; do not begin with a full repository scan.
 6. Choose the cheapest valid execution path below.
@@ -133,5 +137,6 @@ Return only:
 Load on demand, not by default:
 - `docs/agent-system/ROUTING.md`
 - `docs/agent-system/RESOURCE_POLICY.md`
+- `docs/agent-system/REPOSITORY_RULES.md`
 - `docs/agent-system/TASK_PACKET.md`
 - `docs/agent-system/ROLE_REGISTRY.json`

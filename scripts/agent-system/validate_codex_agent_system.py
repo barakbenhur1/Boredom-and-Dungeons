@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 AGENTS_DIR = ROOT / ".codex" / "agents"
 CONFIG = ROOT / ".codex" / "config.toml"
 REGISTRY = ROOT / "docs" / "agent-system" / "ROLE_REGISTRY.json"
+REPOSITORY_RULES = ROOT / "docs" / "agent-system" / "REPOSITORY_RULES.md"
 SKILLS_DIR = ROOT / ".agents" / "skills"
 errors = []
 
@@ -25,9 +26,13 @@ def scalar(text, key):
         return None
     return match.group(1) if match.group(1) is not None else match.group(2)
 
-for path in (ROOT / "AGENTS.md", CONFIG, REGISTRY, AGENTS_DIR, SKILLS_DIR):
+for path in (ROOT / "AGENTS.md", CONFIG, REGISTRY, REPOSITORY_RULES, AGENTS_DIR, SKILLS_DIR):
     if not path.exists():
         errors.append("Missing required path: {}".format(path))
+
+agents_contract = read_text(ROOT / "AGENTS.md")
+if "docs/agent-system/REPOSITORY_RULES.md" not in agents_contract:
+    errors.append("AGENTS.md must reference docs/agent-system/REPOSITORY_RULES.md")
 
 config = read_text(CONFIG)
 if scalar(config, "max_depth") != "1":
