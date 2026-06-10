@@ -208,3 +208,8 @@ releases/
 # Local rich-text duplicate of the canonical Codex operating contract
 # -----------------------------------------------------------------------------
 /AGENTS.rtf
+
+
+# B&D local patch/audit extraction safety V2
+/.package_payload/
+/.repository_size_audit_tmp/

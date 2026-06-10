@@ -1,0 +1,16 @@
+{
+  "packageId": "BND_UNITY_UI_PACKAGE_RECOVERY_V3",
+  "appliedUtc": "20260609T180445Z",
+  "requiredDependencies": {
+    "com.unity.ugui": "2.0.0",
+    "com.unity.modules.ui": "1.0.0"
+  },
+  "movedPackageOverlays": [],
+  "removedGeneratedCaches": [
+    "Library/ScriptAssemblies",
+    "Library/Bee",
+    "Library/StateCache"
+  ],
+  "packageLockWillRegenerate": false,
+  "unityCompilation": "NOT RUN — reopen Unity and run TEST EVERYTHING"
+}

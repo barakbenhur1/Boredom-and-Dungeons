@@ -31,18 +31,23 @@ namespace BoredomAndDungeons
         private Transform movingPart;
 
         [SerializeField]
-        private Renderer feedbackRenderer;
+        private float pressDistance = 0.12f;
 
         [SerializeField]
-        private float pressDistance = 0.10f;
+        private float pressSpeed = 8.5f;
 
         [SerializeField]
-        private float pressSpeed = 2.4f;
+        [Range(0f, 0.20f)]
+        private float pressedScaleCompression = 0.075f;
+
+        [SerializeField]
+        [Range(0f, 0.08f)]
+        private float tutorialHighlightScale = 0.025f;
 
         private Vector3 restLocalPosition;
+        private Vector3 restLocalScale;
         private float pressedUntil;
-        private bool hovered;
-        private MaterialPropertyBlock propertyBlock;
+        private bool tutorialHighlighted;
 
         public ControlAction Action => action;
         public int Index => index;
@@ -57,57 +62,77 @@ namespace BoredomAndDungeons
             action = newAction;
             index = newIndex;
             movingPart = newMovingPart;
-            feedbackRenderer = newFeedbackRenderer;
             pressDistance = Mathf.Max(0f, newPressDistance);
-
+            _ = newFeedbackRenderer;
             CaptureRestPose();
-            EnsurePropertyBlock();
-            ApplyFeedback();
+        }
+
+        public void SetTactileProfile(
+            float newPressDistance,
+            float newPressSpeed,
+            float newPressedScaleCompression)
+        {
+            pressDistance = Mathf.Max(0f, newPressDistance);
+            pressSpeed = Mathf.Max(0.01f, newPressSpeed);
+            pressedScaleCompression = Mathf.Clamp(
+                newPressedScaleCompression,
+                0f,
+                0.20f
+            );
+            CaptureRestPose();
+        }
+
+        public void SetTutorialHighlighted(bool value)
+        {
+            tutorialHighlighted = value;
         }
 
         private void Awake()
         {
             CaptureRestPose();
-            EnsurePropertyBlock();
         }
 
         private void OnDisable()
         {
-            hovered = false;
             pressedUntil = 0f;
+            tutorialHighlighted = false;
 
-            if (movingPart != null)
-                movingPart.localPosition = restLocalPosition;
+            if (movingPart == null)
+                return;
 
-            ApplyFeedback();
+            movingPart.localPosition = restLocalPosition;
+            movingPart.localScale = restLocalScale;
         }
 
         private void Update()
         {
             if (movingPart == null || pressDistance <= 0f)
-            {
-                ApplyFeedback();
                 return;
-            }
 
             bool pressed = Time.unscaledTime < pressedUntil;
-            float depth = pressed
-                ? pressDistance
-                : hovered
-                    ? pressDistance * 0.18f
-                    : 0f;
+            Vector3 targetPosition = restLocalPosition +
+                Vector3.forward * (pressed ? pressDistance : 0f);
 
-            Vector3 target =
-                restLocalPosition + Vector3.forward * depth;
+            float guidePulse = tutorialHighlighted && !pressed
+                ? (Mathf.Sin(Time.unscaledTime * 4.2f) * 0.5f + 0.5f) *
+                  tutorialHighlightScale
+                : 0f;
+            float scaleFactor = pressed
+                ? 1f - pressedScaleCompression
+                : 1f + guidePulse;
+            Vector3 targetScale = restLocalScale * scaleFactor;
+            float step = pressSpeed * Time.unscaledDeltaTime;
 
-            movingPart.localPosition =
-                Vector3.MoveTowards(
-                    movingPart.localPosition,
-                    target,
-                    pressSpeed * Time.unscaledDeltaTime
-                );
-
-            ApplyFeedback();
+            movingPart.localPosition = Vector3.MoveTowards(
+                movingPart.localPosition,
+                targetPosition,
+                step
+            );
+            movingPart.localScale = Vector3.MoveTowards(
+                movingPart.localScale,
+                targetScale,
+                step
+            );
         }
 
         public void Pulse(float duration = 0.12f)
@@ -116,16 +141,14 @@ namespace BoredomAndDungeons
                 pressedUntil,
                 Time.unscaledTime + Mathf.Max(0.04f, duration)
             );
-            ApplyFeedback();
         }
 
         public void SetHovered(bool value)
         {
-            if (hovered == value)
-                return;
-
-            hovered = value;
-            ApplyFeedback();
+            // Pointer hover intentionally has no blue frame, emission or depth.
+            // Selection remains visible on the handheld screen; the hardware only
+            // moves when it is actually pressed or tutorial-guided.
+            _ = value;
         }
 
         private void CaptureRestPose()
@@ -134,38 +157,7 @@ namespace BoredomAndDungeons
                 movingPart = transform;
 
             restLocalPosition = movingPart.localPosition;
-        }
-
-        private void EnsurePropertyBlock()
-        {
-            if (propertyBlock == null)
-                propertyBlock = new MaterialPropertyBlock();
-        }
-
-        private void ApplyFeedback()
-        {
-            if (feedbackRenderer == null)
-                return;
-
-            EnsurePropertyBlock();
-
-            bool pressed = Time.unscaledTime < pressedUntil;
-            float strength = pressed
-                ? 0.85f
-                : hovered
-                    ? 0.34f
-                    : 0f;
-
-            Color emission = new Color(
-                0.12f,
-                0.46f,
-                1f,
-                1f
-            ) * strength;
-
-            feedbackRenderer.GetPropertyBlock(propertyBlock);
-            propertyBlock.SetColor("_EmissionColor", emission);
-            feedbackRenderer.SetPropertyBlock(propertyBlock);
+            restLocalScale = movingPart.localScale;
         }
     }
 }

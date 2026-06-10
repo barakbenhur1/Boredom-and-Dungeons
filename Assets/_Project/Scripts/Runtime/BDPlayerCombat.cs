@@ -139,6 +139,8 @@ namespace BoredomAndDungeons
         private BDChargedShotChargeVisual chargedShotChargeVisual;
         private bool rangedPressPending;
         private float rangedPressStartedAtUnscaled;
+        // BD CONTEXTUAL AMMO HUD INPUT STATE V2
+        private bool rangedInputHeld;
         private static readonly Collider[] MeleeHitBuffer = new Collider[64];
         private static readonly BDHealth[] MeleeHealthBuffer = new BDHealth[32];
         private static readonly Collider[] MeleeAssistBuffer = new Collider[32];
@@ -284,6 +286,7 @@ namespace BoredomAndDungeons
                     Mathf.Max(0.01f, spinningAttackCooldown)
                 );
         public bool IsChargingRangedShot => chargedShotCharging;
+        public bool IsRangedInputHeld => rangedInputHeld;
         public int ChargedShotReservedAmmo => chargedShotReservedAmmo;
         public float ChargedShotRequiredDuration =>
             chargedShotRequiredDuration;
@@ -319,6 +322,7 @@ namespace BoredomAndDungeons
 
         public void ResetTransientCombatInputState()
         {
+            rangedInputHeld = false;
             ClearPendingLightPress();
             ClearPendingHeavyPress();
             ClearPendingRangedPress();
@@ -344,6 +348,7 @@ namespace BoredomAndDungeons
         }
         private void OnDisable()
         {
+            rangedInputHeld = false;
             ClearPendingLightPress();
             ClearPendingHeavyPress();
             ClearPendingRangedPress();
@@ -353,12 +358,14 @@ namespace BoredomAndDungeons
         {
             if (BDMountedRunIntro.IsGameplayInputLocked)
             {
+                rangedInputHeld = false;
                 ResetTransientCombatInputState();
                 return;
             }
 
             if (BDNewRunFeedbackReset.IsCombatInputSuppressed)
             {
+                rangedInputHeld = false;
                 ResetTransientCombatInputState();
                 return;
             }
@@ -367,6 +374,8 @@ namespace BoredomAndDungeons
 
             bool mounted = IsMountedOnHorse();
             TickMeleeInput(mounted);
+
+            rangedInputHeld = ReadRangedAttackHeld();
 
             TickChargedRangedAttack();
             EnsureAutomaticReloadForEmptyMagazine();

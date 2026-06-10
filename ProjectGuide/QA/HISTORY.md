@@ -1,3 +1,15 @@
+<!-- B&D 2026-06-09 PACKAGE IMPLEMENTATION RECORD START -->
+## 2026-06-09 — Local package implementation record
+
+- Migrated merged V6 companion behavior into real handheld/control owners.
+- Retired companion/compatibility source and temporary V6 review documents.
+- Implemented one-time deterministic first-launch tutorial and terminal persistence states.
+- Integrated supplied BBH cinematic side task.
+- Added TEST EVERYTHING scanners/manual checks and synchronized maintained documentation.
+- Added permanent local patch delivery and production-code contracts.
+- Packaging environment result: static/package checks only; Unity and user acceptance pending.
+<!-- B&D 2026-06-09 PACKAGE IMPLEMENTATION RECORD END -->
+
 # Historical QA Reports
 
 ## 2026-06-09 — Handheld premium texture and contextual artwork repair
@@ -29,3 +41,54 @@ Removed historical reports:
 - Findings were limited to historical documentation-discovery phrases/headings after the production reorganization.
 - Repair owner: ProjectGuide V1.2 compatibility map and active-task contract headings.
 - Runtime implementation was not started by this repair.
+
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP V2 PACKAGE RECORD START -->
+## Local package implementation record
+
+A cumulative V2 patch was generated with backup, rollback, idempotent structural transforms, real-line merge-marker validation, repository-size audit and no Git/GitHub write operation. Runtime success remains pending local Unity evidence.
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP V2 PACKAGE RECORD END -->
+
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:BEGIN -->
+## 2026-06-09 — Unity UI dependency recovery prepared
+
+TEST EVERYTHING was blocked by one compilation blocker: the UGUI assembly was unavailable to the handheld presenter and first-launch tutorial. Recovery V3 preserves source and Git state, removes only untracked generated package overlays and reproducible caches, and adds a repeatable package-repair tool. Unity verification remains pending after the Editor rebuild.
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:END -->
+
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:BEGIN -->
+## 2026-06-09 — Horse healing presentation compiler hotfix
+
+- Fixed malformed `EndHealing(bool completed)` code introduced by the cumulative horse/HUD/minimap package.
+- Preserved the method contract and all gameplay ownership boundaries.
+- Added a focused static validator and documented Unity/Play Mode gates.
+- No Git write operation was performed by the patch.
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:BEGIN -->
+## 2026-06-09 — QA contract realignment after production integration
+
+- Corrected six automated blockers caused by stale or overly literal regression anchors.
+- Kept the approved lower handheld composition and bottom horse-context strip.
+- Added explicit maintained summaries for BBH `H landing`, horse speed bands, and reserved shop/NPC minimap markers.
+- No gameplay behavior, scene, prefab, art asset, Git branch, commit, push, pull, reset, stash, clean, checkout, PR, or merge was performed.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## 2026-06-10 — tutorial reference-led V3 package prepared
+
+- translated the supplied visual references into a restrained indigo/teal/warm-path palette;
+- rebuilt instructional bindings as large parallel keyboard/mouse and handheld cards;
+- preserved simultaneous input operation;
+- reduced world animation to stepped basic motion;
+- enforced separate non-overlapping screen regions;
+- added focused QA and documentation;
+- performed no Git write operation.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:BEGIN -->
+## 2026-06-10 — tutorial validator contract corrected
+
+- removed the false contiguous `HANDHELD  HOLD Y` check;
+- added semantic validation for `GRAPPLE → HOLD Y`;
+- left Runtime and visual behavior unchanged;
+- performed no Git write operation.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->

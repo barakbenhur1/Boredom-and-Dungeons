@@ -14,6 +14,21 @@
 
 # QA Checklist
 
+<!-- B&D BBH CINEMATIC SIDE TASK V1 START -->
+## BBH cinematic boot-intro side-task gate
+
+- [ ] The active handheld priority remains unchanged; this remains a side-task verification slice.
+- [ ] First rendered frame is fully black and input remains blocked.
+- [ ] B, B, H still begin strictly one at a time.
+- [ ] First B reads as careful; second B reads as confident and causes a subtle first-B reaction.
+- [ ] H landing creates restrained shared weight without a harsh shake or exaggerated bounce.
+- [ ] Circle starts only after all three primary entrances complete and gathers from a small point.
+- [ ] The circle is clearly larger than before, remains filled with a visible rim, stays behind BBH, and never crops at tested aspect ratios.
+- [ ] Completed logo performs one deterministic micro-settle/breath and does not idle-bounce continuously.
+- [ ] Intro still plays once per application session and does not replay on same-session New Game.
+- [ ] Desktop 16:9, 16:10, ultrawide and landscape-mobile framing remain centered and readable.
+<!-- B&D BBH CINEMATIC SIDE TASK V1 END -->
+
 ## Modern handheld V4 focused Play Mode gate
 
 - [ ] Full-face texture/decal does not render over D-pad, shortcuts, face buttons, speakers or lower shell.
@@ -787,3 +802,57 @@ Performance and release:
 ## Modern handheld V5 focused QA — 2026-06-09
 
 The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.
+
+<!-- B&D FIRST LAUNCH + HANDHELD DIRECT REPAIR QA START -->
+## First-launch tutorial and direct handheld repair gate
+
+- [ ] Clean tutorial state: white boot light appears inside glass; Main Menu never flashes first.
+- [ ] Opening sequence: mount, scripted enemy arrival, guaranteed horse hit/dismount/retreat, one-hit enemy defeat, injured horse return and heal occur in order.
+- [ ] Every tutorial lesson waits for its correct action; early/repeated inputs cannot skip future steps.
+- [ ] Keyboard, gamepad, physical device, mouse and touch each complete the tutorial; prompt copy follows the last input source.
+- [ ] EXIT opens the tutorial-native confirmation; activity pauses; Continue is default; opening input cannot confirm; EXIT/Back closes; Continue resumes exact state.
+- [ ] Confirmed Leave stores Skipped before transition and never auto-replays. Completion stores Completed. Interrupted InProgress restarts safely.
+- [ ] Tutorial creates no reward, run, progression, statistics or production-scene mutation and cleans every local object/highlight/target.
+- [ ] Main context image aligns with title; all five context-card copies are correct and text-only.
+- [ ] `THE MAZE AWAITS` and every affected screen/card remain contained at target aspect ratios.
+- [ ] Physical hover adds no blue frame/emission/depth; actual presses animate D-Pad, SELECT, EXIT and X/Y/A/B consistently.
+- [ ] SELECT/EXIT are centered/inward and do not overlap labels, D-Pad, face buttons or speakers.
+- [ ] Settings icon is always visible.
+- [ ] Pause is an internal handheld screen menu with correct Resume/Progression/Settings/Return semantics and hit areas.
+- [ ] BBH cinematic side-task checklist passes without changing current task order.
+<!-- B&D FIRST LAUNCH + HANDHELD DIRECT REPAIR QA END -->
+
+<!-- B&D HORSE HUD MINIMAP V2 QA START -->
+## Horse, contextual HUD, minimap and maintenance gate
+
+- [ ] Horse speed is 100/92/84/76% at exact missing-health thresholds and is applied once to all horizontal movement.
+- [ ] No icon/card/health bar floats above the horse.
+- [ ] Horse bar appears only near or mounted and fades cleanly.
+- [ ] Healing is slower and the ring/motes clearly begin, pulse and finish.
+- [ ] Player health appears stationary, on damage and on heal, then fades; movement hides it.
+- [ ] Ammo appears on ranged press including long hold and fades on release.
+- [ ] Horse green dot, regular red dot, mini-boss larger red dot, boss red hexagon render and rotate/clamp correctly.
+- [ ] Minimap dims to 38% while safely idle and wakes on movement/threat/discovery/toggle.
+- [ ] Repository report contains before/after sizes, largest files/directories/types, duplicates, history/LFS proposals and removed generated paths.
+- [ ] Unity compile, TEST EVERYTHING, PlayMode and clean-clone/build evidence recorded.
+<!-- B&D HORSE HUD MINIMAP V2 QA END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## First-launch tutorial V3 focused checks
+
+- [ ] action title is the largest text in the tutorial;
+- [ ] short explanation remains readable without shrinking below its minimum;
+- [ ] keyboard/mouse and handheld cards appear side by side;
+- [ ] both routes remain visible after either route is used;
+- [ ] active-route emphasis is subtle and never hides the inactive route;
+- [ ] title, progress, feedback, world and instruction card do not overlap;
+- [ ] edge decorations never cover lesson actors;
+- [ ] world palette reads as indigo/purple, teal and warm path accents;
+- [ ] world actors use point-filtered pixel sprites;
+- [ ] scripted world movement is visibly stepped;
+- [ ] animation remains basic and subordinate to instructions;
+- [ ] keyboard/mouse-only completion passes;
+- [ ] handheld-only completion passes;
+- [ ] mixed-input completion passes;
+- [ ] exit confirmation and first-launch persistence remain correct.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->

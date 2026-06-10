@@ -9,10 +9,16 @@ namespace BoredomAndDungeons
         private const int LetterCount = 3;
         private const string IntroText = "BBH";
         private const float VerticalScreenPositionFromTop = 0.45f;
+        private const float CircleDiameterScale = 1.16f;
+        private const float CircleMaximumScreenWidth = 0.78f;
+        private const float CircleMaximumScreenHeight = 0.72f;
+        private const float CircleSafeEdgeInset = 18f;
+        private const float CircleActivationGatherFraction = 0.14f;
 
         // BD BBH SINGLE-LETTER SEQUENCE + VISIBLE GROWING FILLED CIRCLE V14
         // BD BBH GRAPHITE STEEL CIRCLE STYLE V16R
         // BD FIRST RENDER FRAME BLACK CLOCK V20
+        // BD CINEMATIC CHARACTER MOTION + LARGER RESPONSIVE CIRCLE SIDE TASK V1
         private const float InitialBlackHold = 0.52f;
         private const float LetterDuration = 0.72f;
         private const float GapAfterLetter = 0.12f;
@@ -359,6 +365,35 @@ namespace BoredomAndDungeons
                 Screen.height * VerticalScreenPositionFromTop
             );
 
+            float secondBProgress = Mathf.Clamp01(
+                (Elapsed - LetterStartTime(1)) /
+                LetterDuration
+            );
+            float hProgress = Mathf.Clamp01(
+                (Elapsed - LetterStartTime(2)) /
+                LetterDuration
+            );
+            float circleProgress = Mathf.Clamp01(
+                (Elapsed - LettersEndTime) /
+                Mathf.Max(0.01f, CircleGrowthDuration)
+            );
+
+            float secondBBump = ResolvePulse(
+                secondBProgress,
+                0.56f,
+                0.96f
+            );
+            float hImpact = ResolvePulse(
+                hProgress,
+                0.68f,
+                1.00f
+            );
+            float circleLift = ResolvePulse(
+                circleProgress,
+                0.12f,
+                0.78f
+            );
+
             // The circle is deliberately drawn before the letters so it always
             // grows behind the complete BBH mark, never over it.
             DrawGrowingFilledCircleBehindText(
@@ -379,9 +414,8 @@ namespace BoredomAndDungeons
                     (Elapsed - LetterStartTime(index)) /
                     LetterDuration;
 
-                // Strict sequence: a later letter does not draw at all before
-                // its own start time. Compact depth copies stay visually inside
-                // the same glyph and cannot look like another letter.
+                // Preserve the strict B -> B -> H entrance contract. A later
+                // letter is never drawn before its own start time.
                 if (localProgress <= 0f)
                     continue;
 
@@ -390,17 +424,51 @@ namespace BoredomAndDungeons
                     compositionCenter.x +
                     (index - 1) * spacing;
 
-                Vector2 center = new Vector2(
-                    finalX,
-                    compositionCenter.y
+                ResolveLetterMotion(
+                    index,
+                    progress,
+                    finalFontSize,
+                    out Vector2 authoredOffset,
+                    out float authoredScale,
+                    out float authoredRotation
                 );
+
+                Vector2 center =
+                    new Vector2(finalX, compositionCenter.y) +
+                    authoredOffset +
+                    ResolveInteractionOffset(
+                        index,
+                        finalFontSize,
+                        secondBBump,
+                        hImpact,
+                        circleLift
+                    );
+
+                float scale =
+                    authoredScale *
+                    ResolveInteractionScale(
+                        index,
+                        secondBBump,
+                        hImpact,
+                        circleLift
+                    );
+
+                float rotation =
+                    authoredRotation +
+                    ResolveInteractionRotation(
+                        index,
+                        secondBBump,
+                        hImpact
+                    );
 
                 DrawCompactDepth(
                     IntroText[index].ToString(),
                     center,
                     finalFontSize,
                     progress,
-                    globalAlpha
+                    globalAlpha,
+                    scale,
+                    rotation
                 );
 
                 DrawFrontLetter(
@@ -410,7 +478,9 @@ namespace BoredomAndDungeons
                     progress,
                     globalAlpha,
                     shimmerProgress,
-                    index
+                    index,
+                    scale,
+                    rotation
                 );
             }
 
@@ -426,15 +496,173 @@ namespace BoredomAndDungeons
             }
         }
 
+        // BD CINEMATIC CHARACTER MOTION + LARGER RESPONSIVE CIRCLE SIDE TASK V1
+        private static void ResolveLetterMotion(
+            int index,
+            float progress,
+            float finalFontSize,
+            out Vector2 offset,
+            out float scale,
+            out float rotation)
+        {
+            float smooth = SmoothStep01(progress);
+            float settleWindow = Mathf.Clamp01(
+                (progress - 0.46f) / 0.54f
+            );
+            float settleWave = Mathf.Sin(settleWindow * Mathf.PI);
+
+            switch (index)
+            {
+                case 0:
+                    // First B: careful, curious and slightly searching.
+                    scale = Mathf.LerpUnclamped(
+                        0.035f,
+                        1f,
+                        EaseOutBackTuned(progress, 1.18f)
+                    );
+                    offset = new Vector2(
+                        -finalFontSize * 0.080f * (1f - smooth) +
+                        finalFontSize * 0.018f * settleWave,
+                        finalFontSize * 0.045f * (1f - smooth) -
+                        finalFontSize * 0.012f * settleWave
+                    );
+                    rotation =
+                        Mathf.Lerp(-7.5f, 0f, smooth) +
+                        settleWave * 1.35f;
+                    break;
+
+                case 1:
+                    // Second B: faster and more confident, with a small rebound.
+                    scale = Mathf.LerpUnclamped(
+                        0.040f,
+                        1f,
+                        EaseOutBackTuned(progress, 1.62f)
+                    );
+                    offset = new Vector2(
+                        finalFontSize * 0.160f * (1f - smooth) -
+                        finalFontSize * 0.018f * settleWave,
+                        -finalFontSize * 0.020f * (1f - smooth)
+                    );
+                    rotation =
+                        Mathf.Lerp(6.5f, 0f, smooth) -
+                        settleWave * 0.75f;
+                    break;
+
+                default:
+                    // H: heavier, straighter and stabilizing.
+                    float landingWeight = ResolvePulse(
+                        progress,
+                        0.62f,
+                        0.98f
+                    );
+                    scale = Mathf.LerpUnclamped(
+                        0.030f,
+                        1f,
+                        EaseOutBackTuned(progress, 0.82f)
+                    );
+                    offset = new Vector2(
+                        0f,
+                        -finalFontSize * 0.105f * (1f - smooth) +
+                        finalFontSize * 0.028f * landingWeight
+                    );
+                    rotation = Mathf.Lerp(-2.4f, 0f, smooth);
+                    break;
+            }
+        }
+
+        private static Vector2 ResolveInteractionOffset(
+            int index,
+            float finalFontSize,
+            float secondBBump,
+            float hImpact,
+            float circleLift)
+        {
+            Vector2 offset = Vector2.zero;
+
+            if (index == 0)
+                offset.x -= finalFontSize * 0.055f * secondBBump;
+            else if (index == 1)
+                offset.x += finalFontSize * 0.020f * secondBBump;
+
+            offset.y += finalFontSize * 0.025f * hImpact;
+            if (index < 2)
+            {
+                offset.x +=
+                    (index == 0 ? -1f : 1f) *
+                    finalFontSize * 0.012f * hImpact;
+            }
+
+            // The circle expansion gently pushes the completed letters forward.
+            // In this screen-space presenter, that depth cue is represented by a
+            // tiny lift plus scale response rather than a second camera owner.
+            offset.y -= finalFontSize * 0.014f * circleLift;
+            return offset;
+        }
+
+        private static float ResolveInteractionScale(
+            int index,
+            float secondBBump,
+            float hImpact,
+            float circleLift)
+        {
+            float scale = 1f;
+
+            if (index == 0)
+                scale *= 1f - secondBBump * 0.018f;
+            else if (index == 1)
+                scale *= 1f + secondBBump * 0.024f;
+
+            scale *= index == 2
+                ? 1f + hImpact * 0.032f
+                : 1f - hImpact * 0.024f;
+
+            scale *= 1f + circleLift * 0.018f;
+            return scale;
+        }
+
+        private static float ResolveInteractionRotation(
+            int index,
+            float secondBBump,
+            float hImpact)
+        {
+            float rotation = 0f;
+
+            if (index == 0)
+                rotation -= secondBBump * 2.8f;
+            else if (index == 1)
+                rotation += secondBBump * 1.2f;
+
+            if (index == 0)
+                rotation -= hImpact * 1.4f;
+            else if (index == 1)
+                rotation += hImpact * 1.4f;
+
+            return rotation;
+        }
+
+        private static float ResolvePulse(
+            float value,
+            float start,
+            float end)
+        {
+            if (end <= start || value <= start || value >= end)
+                return 0f;
+
+            float local = Mathf.Clamp01(
+                (value - start) / (end - start)
+            );
+            return Mathf.Sin(local * Mathf.PI);
+        }
+
         private void DrawCompactDepth(
             string letter,
             Vector2 center,
             float finalFontSize,
             float progress,
-            float globalAlpha)
+            float globalAlpha,
+            float scale,
+            float rotationDegrees)
         {
-            float eased = EaseOutBack(progress);
-            float scale = Mathf.Lerp(0.055f, 1f, eased);
             float appear = SmoothStep01(
                 Mathf.Clamp01(progress / 0.58f)
             );
@@ -469,7 +697,7 @@ namespace BoredomAndDungeons
                     finalFontSize,
                     scale,
                     new Color(0.10f, 0.16f, 0.27f, alpha),
-                    (1f - progress) * 3.2f
+                    rotationDegrees * 0.60f
                 );
             }
         }
@@ -481,10 +709,10 @@ namespace BoredomAndDungeons
             float progress,
             float globalAlpha,
             float shimmerProgress,
-            int letterIndex)
+            int letterIndex,
+            float scale,
+            float rotation)
         {
-            float eased = EaseOutBack(progress);
-            float scale = Mathf.Lerp(0.055f, 1f, eased);
             float alpha =
                 globalAlpha *
                 SmoothStep01(
@@ -496,18 +724,18 @@ namespace BoredomAndDungeons
                 center,
                 finalFontSize,
                 scale,
-                alpha
+                alpha,
+                rotation
             );
 
-            float rotation = (1f - progress) * 5.2f;
+            // One authored completion breath replaces the previous perpetual
+            // real-time pulse, keeping the finished logo composed and deterministic.
             float pulse =
                 progress >= 1f
-                    ? 0.5f +
-                      0.5f *
-                      Mathf.Sin(
-                          Time.realtimeSinceStartup * 2.6f +
-                          letterIndex * 0.7f
-                      )
+                    ? Mathf.Sin(
+                        Mathf.Clamp01(shimmerProgress) *
+                        Mathf.PI
+                    )
                     : 0f;
 
             DrawCenteredLabel(
@@ -573,7 +801,8 @@ namespace BoredomAndDungeons
             Vector2 center,
             float finalFontSize,
             float scale,
-            float alpha)
+            float alpha,
+            float rotationDegrees)
         {
             Vector2 direction = new Vector2(0.45f, 0.89f);
             float distance =
@@ -590,7 +819,7 @@ namespace BoredomAndDungeons
                 finalFontSize,
                 scale * 1.015f,
                 new Color(0f, 0f, 0f, alpha * 0.20f),
-                0f
+                rotationDegrees * 0.55f
             );
         }
 
@@ -612,20 +841,99 @@ namespace BoredomAndDungeons
                 CircleGrowthDuration
             );
 
-            float eased = EaseOutCubic(progress);
             float desiredDiameter = Mathf.Max(
                 finalFontSize * 3.15f,
                 spacing * 4.15f
+            ) * CircleDiameterScale;
+
+            float screenFractionLimit = Mathf.Min(
+                Screen.width * CircleMaximumScreenWidth,
+                Screen.height * CircleMaximumScreenHeight
             );
 
-            float maximumDiameter = Mathf.Min(
-                Screen.width * 0.68f,
-                Screen.height * 0.62f
+            float horizontalBoundsLimit =
+                2f * Mathf.Max(
+                    0f,
+                    Mathf.Min(
+                        center.x - CircleSafeEdgeInset,
+                        Screen.width - center.x - CircleSafeEdgeInset
+                    )
+                );
+            float verticalBoundsLimit =
+                2f * Mathf.Max(
+                    0f,
+                    Mathf.Min(
+                        center.y - CircleSafeEdgeInset,
+                        Screen.height - center.y - CircleSafeEdgeInset
+                    )
+                );
+
+            float maximumDiameter = Mathf.Max(
+                1f,
+                Mathf.Min(
+                    screenFractionLimit,
+                    Mathf.Min(
+                        horizontalBoundsLimit,
+                        verticalBoundsLimit
+                    )
+                )
             );
 
-            float diameter =
-                Mathf.Min(desiredDiameter, maximumDiameter) *
-                eased;
+            // Leave a small physical margin so the authored overshoot remains
+            // visible without ever clipping against the responsive clamp.
+            float settledDiameter = Mathf.Min(
+                desiredDiameter,
+                maximumDiameter / 1.055f
+            );
+            float pointDiameter = Mathf.Max(
+                2f,
+                finalFontSize * 0.028f
+            );
+
+            float diameter;
+            if (progress < CircleActivationGatherFraction)
+            {
+                float gather = Mathf.Clamp01(
+                    progress /
+                    Mathf.Max(0.001f, CircleActivationGatherFraction)
+                );
+                float gatherPulse = Mathf.Sin(gather * Mathf.PI);
+                diameter = pointDiameter *
+                    (0.74f + gatherPulse * 0.38f);
+            }
+            else
+            {
+                float growth = Mathf.Clamp01(
+                    (progress - CircleActivationGatherFraction) /
+                    Mathf.Max(
+                        0.001f,
+                        1f - CircleActivationGatherFraction
+                    )
+                );
+                float eased = EaseOutBackTuned(growth, 1.22f);
+                diameter = Mathf.Min(
+                    maximumDiameter,
+                    Mathf.LerpUnclamped(
+                        pointDiameter,
+                        settledDiameter,
+                        eased
+                    )
+                );
+            }
+
+            if (Elapsed >= CircleGrowthEndTime)
+            {
+                float holdProgress = Mathf.Clamp01(
+                    (Elapsed - CircleGrowthEndTime) /
+                    Mathf.Max(0.01f, CircleFullHoldDuration)
+                );
+                float composedPulse =
+                    Mathf.Sin(holdProgress * Mathf.PI) * 0.012f;
+                diameter = Mathf.Min(
+                    maximumDiameter,
+                    diameter * (1f + composedPulse)
+                );
+            }
 
             if (diameter <= 0.5f)
                 return;
@@ -638,7 +946,9 @@ namespace BoredomAndDungeons
             );
 
             Color previous = GUI.color;
-            float appear = globalAlpha * Mathf.Lerp(0.12f, 1f, progress);
+            float appear =
+                globalAlpha *
+                Mathf.Lerp(0.22f, 1f, progress);
 
             // Graphite outer plate: same dark metallic family as the BBH depth.
             GUI.color = new Color(
@@ -1121,9 +1431,16 @@ namespace BoredomAndDungeons
 
         private static float EaseOutBack(float value)
         {
+            return EaseOutBackTuned(value, 1.85f);
+        }
+
+        private static float EaseOutBackTuned(
+            float value,
+            float overshoot)
+        {
             float t = Mathf.Clamp01(value);
-            const float c1 = 1.85f;
-            const float c3 = c1 + 1f;
+            float c1 = Mathf.Max(0f, overshoot);
+            float c3 = c1 + 1f;
             float shifted = t - 1f;
 
             return 1f +

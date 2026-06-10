@@ -1,3 +1,21 @@
+<!-- B&D 2026-06-09 FIRST LAUNCH + HANDHELD PRODUCTION PATCH START -->
+## 2026-06-09 — First-launch tutorial, direct handheld repair and local-delivery correction
+
+**Classification:** `CURRENT + EARLIER/BLOCKING PROCESS/ARCHITECTURE REPAIR`
+
+**Previous:** merged V6 companion implementation and user visual review.
+
+**Current:** local patch package migrates accepted V6 behavior into authoritative owners, restores title-aligned context art, removes physical blue hover, implements unified tactile controls, repairs all relevant text/card bounds, supplies internal Pause, implements the complete first-launch tutorial contract, and integrates the supplied BBH cinematic side task.
+
+**Next:** user applies package, opens Unity, runs `TEST EVERYTHING`, executes the focused Play Mode list and returns real output/screenshots. No commit before acceptance.
+
+**Process correction:** assistant Git/GitHub writes are permanently prohibited. Delivery is local patch ZIP only, with backup, rollback, validator and user-owned commit.
+
+**QA truth:** package/static validation only. Unity compilation, TEST EVERYTHING, runtime performance and visual acceptance are not yet claimed.
+
+**Exact resume point:** apply the package with `apply_patch.command`; after PASS, open Unity `6000.0.76f1`, run `Boredom And Dungeons -> TEST EVERYTHING`, then follow `VERIFY_AFTER_APPLY.txt`.
+<!-- B&D 2026-06-09 FIRST LAUNCH + HANDHELD PRODUCTION PATCH END -->
+
 
 ## V5 CONTROL, LAYOUT AND PRODUCT-SHOT REPAIR — IMPLEMENTED / UNITY VERIFICATION REQUIRED
 
@@ -18,6 +36,25 @@ Latest Unity result: AUTOMATED PASS; user visual acceptance failed because the d
 Implementation state: V4 PHYSICAL MATERIAL / DEPTH / SHADOW / CARD / INPUT / GLASS REPAIR IMPLEMENTED / UNITY VERIFICATION REQUIRED
 Exact resume point: install this full-project package, compile, run TEST EVERYTHING, then inspect the molded shell depth, left-cast shadow, absence of any front decal over controls, New Game-only text card, neutral top bar, WASD parity and upper-right glass glint before any commit
 ```
+
+<!-- B&D BBH CINEMATIC SIDE TASK V1 START -->
+## 2026-06-09 — Side task: cinematic BBH boot-intro motion
+
+**Classification:** `SIDE TASK / DOES NOT CHANGE ACTIVE HANDHELD PRIORITY`
+
+The user requested a more cinematic, premium-family-animation feeling for the BBH boot intro, with the letters behaving like expressive physical elements and with a somewhat larger circle when it appears. The existing active handheld item, blocker state, work queue and exact resume point remain unchanged.
+
+Implementation supplied for integration:
+
+- distinct motion profiles for the careful first B, confident second B and heavy stabilizing H;
+- subtle second-B contact reaction, H shared landing reaction and circle-expansion lift;
+- one deterministic completion breath instead of perpetual real-time pulsing;
+- circle activation from a gathered point with controlled overshoot;
+- desired circle diameter increased by 16%, with responsive width/height/edge clamps;
+- focused TEST EVERYTHING coverage and maintained documentation updates.
+
+Verification truth: package/static validation can be performed outside Unity, but Unity compilation, TEST EVERYTHING and focused Play Mode across aspect ratios are still required. No verified visual claim is made yet.
+<!-- B&D BBH CINEMATIC SIDE TASK V1 END -->
 
 ## 2026-06-09 — Automated pass followed by user visual rejection; V4 repair
 
@@ -1846,3 +1883,31 @@ Historical bug IDs remain available in Git and status history, but old QA scanne
 
 After a clean 0/0/0 automated result, begin Enemy Attack Animations.
 <!-- B&D V23R19T PHASE-AGNOSTIC QA REPAIR END -->
+
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP + REPO MAINTENANCE V2 START -->
+## Local V2 package — Unity verification required
+
+Implemented locally through a no-Git-write patch package: exact horse injury speed bands, slower healing with explicit presentation, removal of above-horse icons, proximity horse health, contextual player-health/ammo visibility, minimap rank markers and professional idle dimming. A safe repository-size audit/cleanup tool records before/after measurements without history rewriting or lossy asset changes.
+
+### Exact resume point
+
+After package application: open Unity, clear compiler errors, run `Boredom And Dungeons → TEST EVERYTHING`, then complete `VERIFY_AFTER_APPLY.txt`. Only after all checks pass should the user make the local commit and resume the existing work queue without reordering it.
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP + REPO MAINTENANCE V2 END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## Current local refinement — first-launch tutorial V3
+
+```text
+Reference-led pixel world: IMPLEMENTED IN LOCAL PACKAGE
+Modern dominant instruction card: IMPLEMENTED IN LOCAL PACKAGE
+Parallel input cards: IMPLEMENTED IN LOCAL PACKAGE
+Unity compilation: REQUIRED
+TEST EVERYTHING: REQUIRED
+Keyboard/mouse-only run: REQUIRED
+Physical-handheld-only run: REQUIRED
+Mixed-input run: REQUIRED
+Visual approval: REQUIRED
+```
+
+The ordered work queue remains unchanged and must resume only after this focused tutorial gate passes.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->

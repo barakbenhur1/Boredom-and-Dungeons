@@ -68,6 +68,11 @@ namespace BoredomAndDungeons
         [SerializeField] private float interactionRange = 3.25f;
         [SerializeField] private float healPerSecond = 28f;
 
+        [Header("Injury Speed Bands")]
+        // BD DISCRETE HORSE INJURY SPEED BANDS V2
+        [SerializeField, Range(0f, 0.20f)]
+        private float speedPenaltyPerThirtyPercentMissing = 0.08f;
+
         [Header("Start Beside Player")]
         // BD HORSE START-BESIDE-PLAYER FIX
         [SerializeField] private bool placeBesidePlayerOnStart = true;
@@ -171,6 +176,7 @@ namespace BoredomAndDungeons
         private CharacterController playerCharacterController;
         private BDPlayerDismountLeap playerDismountLeap;
         private BDHorseHazardSafety hazardSafety;
+        private BDHorseHealingPresentation healingPresentation;
 
         private HorseState state = HorseState.Idle;
         private bool playerInRange;
@@ -195,9 +201,13 @@ namespace BoredomAndDungeons
 
         public bool IsMounted => state == HorseState.Mounted;
         public float CurrentMountedPlanarSpeed =>
-            smoothedMountedHorizontalVelocity.magnitude;
+            smoothedMountedHorizontalVelocity.magnitude *
+            HealthMovementSpeedMultiplier;
         public float MountedMaximumMoveSpeed =>
-            Mathf.Max(0.1f, mountedMoveSpeed);
+            Mathf.Max(
+                0.1f,
+                mountedMoveSpeed * HealthMovementSpeedMultiplier
+            );
         public Vector3 CurrentMountedTravelDirection
         {
             get
@@ -272,6 +282,9 @@ namespace BoredomAndDungeons
             externalControlReason;
         public bool IsFainted =>
             health != null && health.IsFainted;
+        public bool IsHealing => healingSessionActive;
+        public float HealthMovementSpeedMultiplier =>
+            ResolveHealthMovementSpeedMultiplier();
 
         public void ResetForCleanGameStart(
             float calmSeconds)
@@ -536,6 +549,14 @@ namespace BoredomAndDungeons
             mountedMouseAimTargetSmoothing = 9f;
             mountedMousePointAimSmoothing = 18f;
             mountedMouseImmediateYaw = false;
+
+            // Slower, readable healing profile. State and health ownership stay
+            // unchanged; only the authored rate curve is tuned here.
+            healPerSecond = 14f;
+            minHealSpeedMultiplier = 0.24f;
+            maxHealSpeedMultiplier = 1.15f;
+            healRampSeconds = 3.0f;
+            finalHealSpeedMultiplier = 0.24f;
         }
 
 
@@ -551,6 +572,7 @@ namespace BoredomAndDungeons
             if (hazardSafety == null)
                 hazardSafety = gameObject.AddComponent<BDHorseHazardSafety>();
             health = GetComponent<BDHorseHealth>();
+            EnsureHealingPresentation();
             EnsureContextActionPrompts();
             if (GetComponent<BDHorseImpactAttack>() == null)
                 gameObject.AddComponent<BDHorseImpactAttack>();
@@ -561,6 +583,18 @@ namespace BoredomAndDungeons
             ResetForCleanGameStart(
                 startupCalmSeconds
             );
+        }
+
+
+        private void EnsureHealingPresentation()
+        {
+            healingPresentation =
+                GetComponent<BDHorseHealingPresentation>();
+            if (healingPresentation == null)
+            {
+                healingPresentation = gameObject.AddComponent<
+                    BDHorseHealingPresentation>();
+            }
         }
 
         private void EnsureContextActionPrompts()
@@ -1953,7 +1987,7 @@ namespace BoredomAndDungeons
 
             verticalVelocity += horseGravity * Time.deltaTime;
 
-            float injuryMultiplier = Mathf.Lerp(1f, 0.45f, health.Injury01);
+            float injuryMultiplier = 1f;
             Vector3 horizontal = SmoothMountedHorizontalVelocity(move, wantsRideMove, injuryMultiplier);
             Vector3 velocity = horizontal + Vector3.up * verticalVelocity;
 
@@ -2031,7 +2065,7 @@ namespace BoredomAndDungeons
             }
 
             Vector3 direction = toSpot.sqrMagnitude > 0.001f ? toSpot.normalized : Vector3.zero;
-            float injuryMultiplier = Mathf.Lerp(1f, 0.45f, health.Injury01);
+            float injuryMultiplier = 1f;
 
             Vector3 velocity = direction * baseMoveSpeed * injuryMultiplier + Vector3.up * verticalVelocity;
             MoveHorse(velocity * Time.deltaTime);
@@ -2083,7 +2117,20 @@ namespace BoredomAndDungeons
             // The healing system only heals. It never applies damage or drain.
             health.ClearHealingFloorLock();
             health.BeginHealingProtection(healingProtectionRefresh);
+            float healthBeforeHeal = health.CurrentHealth;
             health.Heal(healAmount);
+            float appliedHeal = Mathf.Max(
+                0f,
+                health.CurrentHealth - healthBeforeHeal
+            );
+            if (healingPresentation != null)
+            {
+                healingPresentation.NotifyHealApplied(
+                    appliedHeal,
+                    health.CurrentHealth /
+                    Mathf.Max(1f, health.MaxHealth)
+                );
+            }
 
             healingHeldFloor = health.CurrentHealth;
             lastAction = $"healing curved +{healAmount:0.00}";
@@ -2100,6 +2147,8 @@ namespace BoredomAndDungeons
             healingStartHealth = health.CurrentHealth;
             healingHeldFloor = health.CurrentHealth;
             health.ClearHealingFloorLock();
+            if (healingPresentation != null)
+                healingPresentation.BeginHealing();
             lastAction = "healing started";
         }
 
@@ -2115,6 +2164,12 @@ namespace BoredomAndDungeons
             // Releasing F must not reduce HP. Lock the floor at the reached value.
             health.LockHealingFloor(healingHeldFloor);
             health.BeginHealingProtection(releasedHealingProtectionRefresh);
+            if (healingPresentation != null)
+            {
+                healingPresentation.EndHealing(
+                    health.CurrentHealth >= health.MaxHealth - 0.01f
+                );
+            }
             lastAction = $"healing ended - HP stays at {healingHeldFloor:0.0}";
         }
 
@@ -2343,13 +2398,8 @@ namespace BoredomAndDungeons
 
             if (desiredMoveDirection.sqrMagnitude > 0.001f)
             {
-                float injuryMultiplier = Mathf.Lerp(
-                    1f,
-                    0.45f,
-                    health != null
-                        ? health.Injury01
-                        : 0f
-                );
+                float injuryMultiplier =
+                    HealthMovementSpeedMultiplier;
 
                 horizontalVelocity =
                     desiredMoveDirection.normalized *
@@ -2386,10 +2436,20 @@ namespace BoredomAndDungeons
             if (controller == null)
                 return;
 
+            // Injury affects only horizontal travel. Gravity, jumping and
+            // recovery arcs keep their authored vertical timing.
+            float speedMultiplier =
+                HealthMovementSpeedMultiplier;
+            Vector3 adjusted = new Vector3(
+                motion.x * speedMultiplier,
+                motion.y,
+                motion.z * speedMultiplier
+            );
+
             Vector3 filtered =
                 hazardSafety != null
-                    ? hazardSafety.FilterMovement(motion)
-                    : motion;
+                    ? hazardSafety.FilterMovement(adjusted)
+                    : adjusted;
 
             filtered = BDQuicksandStatus.FilterMotion(
                 gameObject,
@@ -2399,6 +2459,38 @@ namespace BoredomAndDungeons
             controller.Move(filtered);
         }
 
+
+
+        private float ResolveHealthMovementSpeedMultiplier()
+        {
+            if (health == null || health.MaxHealth <= 0f)
+                return 1f;
+
+            float missingHealth01 = Mathf.Clamp01(
+                1f - health.CurrentHealth / health.MaxHealth
+            );
+            int missingThirtyPercentBands;
+            if (missingHealth01 >= 0.90f)
+                missingThirtyPercentBands = 3;
+            else if (missingHealth01 >= 0.60f)
+                missingThirtyPercentBands = 2;
+            else if (missingHealth01 >= 0.30f)
+                missingThirtyPercentBands = 1;
+            else
+                missingThirtyPercentBands = 0;
+
+            return Mathf.Clamp(
+                1f -
+                missingThirtyPercentBands *
+                Mathf.Clamp(
+                    speedPenaltyPerThirtyPercentMissing,
+                    0f,
+                    0.20f
+                ),
+                0.10f,
+                1f
+            );
+        }
 
         private void RotateToward(Vector3 direction)
         {

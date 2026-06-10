@@ -13,7 +13,7 @@ namespace BoredomAndDungeons
 {
     [DefaultExecutionOrder(-810)]
     [DisallowMultipleComponent]
-    public sealed class BDModernHandheld3DPresenter : MonoBehaviour
+    public sealed partial class BDModernHandheld3DPresenter : MonoBehaviour
     {
         private const int DeviceLayer = 29;
         private const int ScreenLayer = 30;
@@ -37,7 +37,7 @@ namespace BoredomAndDungeons
         // physically seated on the surface while its upper edge reads farther
         // from the camera.
         private static readonly Vector3 DeviceRestPosition =
-            new Vector3(0f, 0.62f, 0f);
+            new Vector3(0f, 0.28f, 0f);
         private static readonly Vector3 TableRestPosition =
             new Vector3(0f, -0.16f, 0f);
         private static readonly Quaternion DeviceRestRotation =
@@ -54,6 +54,7 @@ namespace BoredomAndDungeons
 
         private enum EffectivePage
         {
+            FirstLaunchTutorial,
             MainMenu,
             Pause,
             Settings,
@@ -202,6 +203,8 @@ namespace BoredomAndDungeons
         private BDModernHandheldControlTarget hoveredTarget;
         private RawImage heroImage;
         private GameObject newGameMemoryCard;
+        private Text newGameMemoryHeadingText;
+        private Text newGameMemoryStatusText;
         private Text loadingPercentText;
         private Image loadingFill;
         private float screenTransitionStartedAt;
@@ -251,6 +254,7 @@ namespace BoredomAndDungeons
 
             LoadResources();
             BuildPresentation();
+            InitializeFirstLaunchTutorial();
             SetVisible(false);
         }
 
@@ -269,6 +273,7 @@ namespace BoredomAndDungeons
             BDPlayableCharacterIdentity.ActiveCharacterChanged -=
                 HandleCharacterChanged;
 
+            DisposeFirstLaunchTutorial();
             ReleaseGeneratedResources();
         }
 
@@ -280,6 +285,7 @@ namespace BoredomAndDungeons
             localPage = LocalPage.None;
             displayedPageInitialized = false;
             nextFlowLookupAt = 0f;
+            ResetFirstLaunchTutorialForScene();
             SetVisible(false);
         }
 
@@ -314,6 +320,16 @@ namespace BoredomAndDungeons
             UpdateEntryAnimation();
             UpdateScreenResolution();
             RefreshPageIfNeeded();
+
+            if (displayedPage == EffectivePage.FirstLaunchTutorial)
+            {
+                UpdateFirstLaunchTutorial();
+                UpdatePointerInteraction();
+                UpdateFirstLaunchTutorialNavigationInput();
+                UpdateScreenTransition();
+                return;
+            }
+
             RefreshCharacterArt(force: false);
             UpdatePointerInteraction();
             UpdateNavigationInput();
@@ -1530,7 +1546,7 @@ namespace BoredomAndDungeons
                 movingArm != null
                     ? movingArm.GetComponent<Renderer>()
                     : null,
-                0.075f
+                0.12f
             );
         }
 
@@ -1621,13 +1637,13 @@ namespace BoredomAndDungeons
             CreateShortcutButton(
                 "Button Select",
                 "SELECT",
-                new Vector3(-1.42f, -3.72f, ControlCenterZ),
+                new Vector3(-0.66f, -3.82f, ControlCenterZ),
                 BDModernHandheldControlTarget.ControlAction.Confirm
             );
             CreateShortcutButton(
                 "Button Exit",
                 "EXIT",
-                new Vector3(1.42f, -3.72f, ControlCenterZ),
+                new Vector3(0.66f, -3.82f, ControlCenterZ),
                 BDModernHandheldControlTarget.ControlAction.Exit
             );
         }
@@ -1682,7 +1698,7 @@ namespace BoredomAndDungeons
                 -1,
                 button.transform,
                 renderer,
-                0.10f
+                0.12f
             );
         }
 
@@ -1895,6 +1911,9 @@ namespace BoredomAndDungeons
             if (flow == null)
                 return EffectivePage.MainMenu;
 
+            if (ShouldPresentFirstLaunchTutorial())
+                return EffectivePage.FirstLaunchTutorial;
+
             BDMainMenuFlow.HandheldPage flowPage =
                 flow.CurrentHandheldPage;
 
@@ -1953,6 +1972,9 @@ namespace BoredomAndDungeons
 
             switch (page)
             {
+                case EffectivePage.FirstLaunchTutorial:
+                    BuildFirstLaunchTutorialPage();
+                    break;
                 case EffectivePage.Pause:
                     BuildPausePage();
                     break;
@@ -1979,7 +2001,8 @@ namespace BoredomAndDungeons
                     break;
             }
 
-            BuildFooter();
+            if (page != EffectivePage.FirstLaunchTutorial)
+                BuildFooter();
             selectedIndex = Mathf.Clamp(
                 selectedIndex,
                 0,
@@ -2002,6 +2025,8 @@ namespace BoredomAndDungeons
             rows.Clear();
             heroImage = null;
             newGameMemoryCard = null;
+            newGameMemoryHeadingText = null;
+            newGameMemoryStatusText = null;
             loadingFill = null;
             loadingPercentText = null;
             pageCanvasGroup = null;
@@ -2092,6 +2117,8 @@ namespace BoredomAndDungeons
         {
             switch (page)
             {
+                case EffectivePage.FirstLaunchTutorial:
+                    return "FIRST LAUNCH";
                 case EffectivePage.Pause:
                     return "RUN PAUSED";
                 case EffectivePage.Settings:
@@ -2178,11 +2205,25 @@ namespace BoredomAndDungeons
         {
             CreateTitleBlock(
                 "PAUSED",
-                "BOREDOM & DUNGEONS"
+                "RUN CONTROL"
             );
-            BuildHeroCard();
 
-            float y = 236f;
+            Image panel = CreatePanel(
+                pageRoot,
+                "Pause Internal Menu Panel",
+                0f,
+                18f,
+                720f,
+                600f,
+                new Color(0.010f, 0.024f, 0.052f, 0.97f)
+            );
+            AddOutline(
+                panel.gameObject,
+                new Color(0.16f, 0.46f, 0.90f, 0.64f),
+                2f
+            );
+
+            float y = 170f;
             AddScreenRow(
                 "RESUME",
                 "Return to the current run",
@@ -2190,7 +2231,7 @@ namespace BoredomAndDungeons
                 y,
                 "SELECT"
             );
-            y -= 82f;
+            y -= 98f;
             AddScreenRow(
                 "PROGRESSION",
                 "Review persistent progress",
@@ -2198,7 +2239,7 @@ namespace BoredomAndDungeons
                 y,
                 "SELECT"
             );
-            y -= 82f;
+            y -= 98f;
             AddScreenRow(
                 "SETTINGS",
                 "Adjust the experience",
@@ -2206,7 +2247,7 @@ namespace BoredomAndDungeons
                 y,
                 "SELECT"
             );
-            y -= 82f;
+            y -= 98f;
             AddScreenRow(
                 "RETURN TO MAIN MENU",
                 "End this run after confirmation",
@@ -2215,13 +2256,18 @@ namespace BoredomAndDungeons
                 "EXIT"
             );
 
-            BuildRunCard(
-                "CURRENT RUN",
-                ResolveHealthSummary()
-            );
-            BuildNextCard(
-                "CURRENT OBJECTIVE",
-                "Explore the maze, survive the room and reach the next safe opening."
+            CreateText(
+                panel.rectTransform,
+                "Pause Internal Status",
+                "RUN PAUSED  //  SELECT AN OPTION",
+                0f,
+                -245f,
+                620f,
+                54f,
+                18,
+                TextAnchor.MiddleCenter,
+                new Color(0.72f, 0.88f, 1f, 1f),
+                FontStyle.Bold
             );
         }
 
@@ -2734,7 +2780,7 @@ namespace BoredomAndDungeons
                 2f
             );
 
-            CreateText(
+            newGameMemoryHeadingText = CreateText(
                 panel.rectTransform,
                 "New Game Card Heading",
                 heading,
@@ -2747,7 +2793,7 @@ namespace BoredomAndDungeons
                 new Color(0.22f, 0.80f, 1f, 1f),
                 FontStyle.Bold
             );
-            CreateText(
+            newGameMemoryStatusText = CreateText(
                 panel.rectTransform,
                 "New Game Card Status",
                 status,
@@ -2771,17 +2817,47 @@ namespace BoredomAndDungeons
             if (newGameMemoryCard == null)
                 return;
 
-            bool selectedPrimary =
-                selectedIndex >= 0 &&
-                selectedIndex < rows.Count &&
-                rows[selectedIndex].action == RowAction.Primary;
-            bool isFreshStart = flow == null || !flow.IsRunActive;
-            bool shouldShow =
-                displayedPage == EffectivePage.MainMenu &&
-                selectedPrimary &&
-                isFreshStart;
-
+            bool shouldShow = displayedPage == EffectivePage.MainMenu;
             newGameMemoryCard.SetActive(shouldShow);
+            if (!shouldShow ||
+                selectedIndex < 0 ||
+                selectedIndex >= rows.Count)
+            {
+                return;
+            }
+
+            string heading;
+            string status;
+            switch (rows[selectedIndex].action)
+            {
+                case RowAction.OpenProgression:
+                    heading = "PERSISTENT MEMORY";
+                    status = "Milestones and future upgrades";
+                    break;
+                case RowAction.OpenSettings:
+                    heading = "SYSTEM CONFIGURATION";
+                    status = "Audio, controls and display";
+                    break;
+                case RowAction.OpenCredits:
+                    heading = "BEHIND THE ADVENTURE";
+                    status = "People, ideas and production";
+                    break;
+                case RowAction.Quit:
+                    heading = "LEAVE THE HANDHELD";
+                    status = "Exit only after confirmation";
+                    break;
+                default:
+                    heading = "ADVENTURE MEMORY";
+                    status = flow != null && flow.IsRunActive
+                        ? "A run is active"
+                        : "A new path is ready";
+                    break;
+            }
+
+            if (newGameMemoryHeadingText != null)
+                newGameMemoryHeadingText.text = heading;
+            if (newGameMemoryStatusText != null)
+                newGameMemoryStatusText.text = status;
         }
 
         private void BuildNextCard(
@@ -2793,8 +2869,8 @@ namespace BoredomAndDungeons
                 "Next Card",
                 0f,
                 -350f,
-                880f,
-                136f,
+                860f,
+                132f,
                 new Color(0.014f, 0.026f, 0.052f, 0.97f)
             );
             AddOutline(
@@ -2807,10 +2883,10 @@ namespace BoredomAndDungeons
                 panel.rectTransform,
                 "Next Heading",
                 heading,
-                -370f,
-                36f,
-                190f,
-                38f,
+                -305f,
+                30f,
+                210f,
+                42f,
                 18,
                 TextAnchor.MiddleLeft,
                 new Color(0.68f, 0.42f, 1f, 1f),
@@ -2820,10 +2896,10 @@ namespace BoredomAndDungeons
                 panel.rectTransform,
                 "Next Body",
                 body,
-                40f,
-                -16f,
-                700f,
-                86f,
+                82f,
+                -18f,
+                590f,
+                76f,
                 20,
                 TextAnchor.MiddleLeft,
                 new Color(0.78f, 0.82f, 0.91f, 1f),
@@ -2881,15 +2957,23 @@ namespace BoredomAndDungeons
             string badge)
         {
             int index = rows.Count;
+            bool isPauseInternalMenu =
+                displayedPage == EffectivePage.Pause;
             float width = displayedPage == EffectivePage.Settings
                 ? 560f
-                : 470f;
+                : isPauseInternalMenu
+                    ? 620f
+                    : 470f;
             float x = displayedPage == EffectivePage.Settings
                 ? -150f
-                : -215f;
+                : isPauseInternalMenu
+                    ? 0f
+                    : -215f;
             float height = displayedPage == EffectivePage.Settings
                 ? 58f
-                : 72f;
+                : isPauseInternalMenu
+                    ? 78f
+                    : 72f;
 
             Image background = CreatePanel(
                 pageRoot,
@@ -3032,7 +3116,7 @@ namespace BoredomAndDungeons
                 case RowAction.OpenProgression:
                     return "✦";
                 case RowAction.OpenSettings:
-                    return "⚙";
+                    return ResolveSupportedGlyph("⚙", "≡", "S");
                 case RowAction.OpenCredits:
                     return "▣";
                 case RowAction.Quit:
@@ -3048,6 +3132,18 @@ namespace BoredomAndDungeons
                 default:
                     return "•";
             }
+        }
+
+        private string ResolveSupportedGlyph(
+            string preferred,
+            string secondary,
+            string fallback)
+        {
+            if (uiFont != null && uiFont.HasCharacter(preferred[0]))
+                return preferred;
+            if (uiFont != null && uiFont.HasCharacter(secondary[0]))
+                return secondary;
+            return fallback;
         }
 
         private void CreateScreenItemTarget(
@@ -3142,6 +3238,11 @@ namespace BoredomAndDungeons
 
         private string ResolveControlLegend()
         {
+            if (displayedPage == EffectivePage.FirstLaunchTutorial)
+            {
+                return "FOLLOW THE ON-SCREEN LESSON  •  PHYSICAL CONTROLS / KEYBOARD / GAMEPAD / TOUCH  •  EXIT OPENS CONFIRMATION";
+            }
+
             if (displayedPage == EffectivePage.MainMenu)
             {
                 return "D-PAD / ARROWS / WASD NAVIGATE  •  SELECT ENTERS  •  EXIT CONFIRMS  •  X NEW GAME  •  A PROGRESSION  •  B SETTINGS  •  Y CREDITS";
@@ -3694,6 +3795,9 @@ namespace BoredomAndDungeons
             if (target == null)
                 return;
 
+            if (HandleFirstLaunchTutorialControl(target))
+                return;
+
             switch (target.Action)
             {
                 case BDModernHandheldControlTarget.ControlAction.ScreenItem:
@@ -3750,6 +3854,13 @@ namespace BoredomAndDungeons
                 hoveredTarget.SetHovered(false);
 
             hoveredTarget = target;
+
+            if (HandleFirstLaunchTutorialHover(target))
+            {
+                if (hoveredTarget != null)
+                    hoveredTarget.SetHovered(true);
+                return;
+            }
 
             if (hoveredTarget != null)
             {
@@ -4040,6 +4151,9 @@ namespace BoredomAndDungeons
             text.color = color;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = Mathf.Max(9, fontSize - 8);
+            text.resizeTextMaxSize = fontSize;
             text.supportRichText = false;
             text.raycastTarget = false;
             return text;
@@ -4622,6 +4736,12 @@ namespace BoredomAndDungeons
                 position = Mouse.current.position.ReadValue();
                 return true;
             }
+            if (Touchscreen.current != null &&
+                Touchscreen.current.primaryTouch.press.isPressed)
+            {
+                position = Touchscreen.current.primaryTouch.position.ReadValue();
+                return true;
+            }
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
             position = Input.mousePosition;
@@ -4637,6 +4757,11 @@ namespace BoredomAndDungeons
 #if ENABLE_INPUT_SYSTEM
             if (Mouse.current != null &&
                 Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                return true;
+            }
+            if (Touchscreen.current != null &&
+                Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
             {
                 return true;
             }

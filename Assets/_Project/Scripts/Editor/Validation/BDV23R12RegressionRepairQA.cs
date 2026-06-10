@@ -80,15 +80,18 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root,
                 "Assets/_Project/Scripts/Runtime/Horse/BDHorseContextActionPrompts.cs",
-                "V23R12_HORSE_PROMPT_HEIGHT_MISSING",
-                "worldHeight = 4.20f",
-                "new Vector2(0f, 4f)"
+                "V23R12_HORSE_CONTEXT_STRIP_MISSING",
+                "BD HORSE BOTTOM CONTEXT STRIP V2",
+                "bottomMargin",
+                "No icon, label, health bar, or interaction card is drawn",
+                "EaseOutCubic"
             );
-            Require(result, root,
-                "Assets/_Project/Scripts/Runtime/BDHorseWorldStatusIndicator.cs",
-                "V23R12_SINGLE_HORSE_PROMPT_OWNER_MISSING",
-                "BD SINGLE HORSE ACTION PROMPT OWNER V23R12",
-                "contextPrompts"
+            Forbid(result, root,
+                "Assets/_Project/Scripts/Runtime/Horse/BDHorseContextActionPrompts.cs",
+                "V23R12_WORLD_HORSE_PROMPT_REMAINS",
+                "WorldToScreenPoint",
+                "worldHeight",
+                "screenOffset"
             );
 
             Require(result, root,

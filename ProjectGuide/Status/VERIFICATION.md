@@ -1,3 +1,42 @@
+<!-- B&D FIRST LAUNCH + HANDHELD PRODUCTION VERIFICATION START -->
+## Pending verification — first launch, handheld direct repair and BBH cinematic side task
+
+Current evidence is limited to package structure, installer idempotency, source-contract scans, repository hygiene and diff whitespace checks. Unity has not been run in the packaging environment.
+
+Required evidence:
+
+- clean Unity compile;
+- TEST EVERYTHING: 0 blockers / 0 warnings / 0 info;
+- title-aligned context image and correct context card for all Main selections;
+- no blue hardware hover, equal press family across all physical controls;
+- SELECT/EXIT positions, labels and click areas align without overlap;
+- all screen text remains contained at narrow, standard and wide landscape ratios;
+- Escape/Pause is an internal screen menu and every action preserves semantics;
+- first clean-install tutorial appears before Main, supports all input routes and completes the full scripted lesson list;
+- EXIT popup pauses tutorial, guards opening input, Continue resumes exactly, confirmed Leave persists Skipped before transition;
+- Completed/Skipped do not automatically replay; interrupted InProgress restarts safely;
+- BBH first frame/order/session gate remains valid and new authored motion/circle is visually accepted;
+- no run reward, progression, scene actor or normal-game state changes are caused by tutorial.
+<!-- B&D FIRST LAUNCH + HANDHELD PRODUCTION VERIFICATION END -->
+
+<!-- B&D BBH CINEMATIC SIDE TASK V1 START -->
+## Pending side-task verification — cinematic BBH boot intro
+
+This side task does not change the active handheld priority or resume point. Required evidence before it is verified:
+
+- Unity compilation has zero project compiler errors;
+- TEST EVERYTHING reports 0 blockers / 0 warnings / 0 info;
+- first frame is fully black and strict B -> B -> H order remains intact;
+- first B, second B and H have visibly different but restrained personalities;
+- the second-B nudge and H landing reaction are readable without slapstick;
+- the circle gathers only after the letters settle, is clearly larger, remains filled/behind the text and does not crop;
+- the completion breath occurs once and no perpetual idle bounce remains;
+- same-session New Game does not replay the intro;
+- 16:9, 16:10, ultrawide and landscape-mobile framing are visually accepted.
+
+Current truth: implementation/package validation only; Unity and user visual acceptance are pending.
+<!-- B&D BBH CINEMATIC SIDE TASK V1 END -->
+
 
 ## V5 pending focused verification
 
@@ -146,3 +185,73 @@ No item is considered verified merely because code exists or automated checks pa
 6. New Game hero card and text card are vertically separated.
 7. Left shadow is visible on wood; upper-right glass glint is visible without hiding UI.
 8. Footer and page columns do not wrap, clip or collide.
+
+<!-- B&D HORSE HUD MINIMAP V2 PENDING VERIFICATION START -->
+## Pending verification — horse, contextual HUD, minimap and repository maintenance
+
+Static package checks are provided. Unity compilation, Editor/PlayMode tests, `TEST EVERYTHING`, supported builds, clean-clone build, visual timing and user acceptance remain required locally. No automated-pass claim is recorded before that evidence exists.
+<!-- B&D HORSE HUD MINIMAP V2 PENDING VERIFICATION END -->
+
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:BEGIN -->
+## Unity UI package recovery V3 verification gate
+
+Static recovery validates the package manifest, package lock, protected package ownership, source references, documentation, and rollback state. It does not claim Unity compilation. Reopen Unity 6000.0.76f1, wait for package resolution/import, clear the Console, and rerun `Boredom And Dungeons → TEST EVERYTHING`. Record the resulting blocker/warning/info counts before committing.
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:END -->
+
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:BEGIN -->
+## Horse healing presentation compile-fix verification
+
+```text
+Static patch validation: PASS
+Unity compilation after fix: NOT YET RECORDED
+TEST EVERYTHING after fix: NOT YET RECORDED
+Horse-healing Play Mode check: NOT YET RECORDED
+```
+
+Required evidence is defined in `ProjectGuide/QA/HORSE_HEALING_PRESENTATION_COMPILE_FIX_V1.md`.
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:BEGIN -->
+## QA contract realignment V5
+
+```text
+Patch integrity: PASS
+Static source/document validation: PASS
+Unity compilation after V5: NOT YET RECORDED
+TEST EVERYTHING after V5: NOT YET RECORDED
+Play Mode visual acceptance: NOT YET RECORDED
+```
+
+The verification contract is defined in `ProjectGuide/QA/QA_CONTRACT_REALIGNMENT_V5.md`.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## First-launch tutorial reference-led V3 verification
+
+```text
+Package integrity: PASS
+Static C# structure: PASS
+First install mock: REQUIRED BY PACKAGE BUILD
+Repeated install mock: REQUIRED BY PACKAGE BUILD
+Rollback mock: REQUIRED BY PACKAGE BUILD
+Unity compilation: NOT YET RECORDED
+TEST EVERYTHING: NOT YET RECORDED
+Three input-route runs: NOT YET RECORDED
+User visual approval: NOT YET RECORDED
+```
+
+Focused acceptance: `ProjectGuide/QA/FIRST_LAUNCH_TUTORIAL_REFERENCE_LED_PRESENTATION_V3.md`.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:BEGIN -->
+## First-launch tutorial QA contract correction V8
+
+```text
+Package integrity: PASS
+Targeted source validation: PASS
+git diff --check: PASS
+Unity compilation after V8: NOT YET RECORDED
+TEST EVERYTHING after V8: NOT YET RECORDED
+Play Mode acceptance: STILL REQUIRED
+```
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->

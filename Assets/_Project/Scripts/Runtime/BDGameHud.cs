@@ -10,6 +10,12 @@ namespace BoredomAndDungeons
         [SerializeField] private BDPlayerCombat playerCombat;
         [SerializeField] private bool showHud = true;
 
+        // BD CONTEXTUAL GAMEPLAY HUD PRESENTATION V2
+        private BDPlayerController playerController;
+        private BDHorseController horseController;
+        private BDGameplayHudPresentationDirector presentationDirector;
+        private float currentWidgetAlpha = 1f;
+
         private GUIStyle labelStyle;
         private GUIStyle smallStyle;
         private GUIStyle titleStyle;
@@ -21,13 +27,16 @@ namespace BoredomAndDungeons
         private void Awake()
         {
             whiteTexture = Texture2D.whiteTexture;
+            EnsurePresentationDirector();
         }
 
         private void Update()
         {
             Transform player = null;
 
-            if (playerHealth == null || playerCombat == null)
+            if (playerHealth == null ||
+                playerCombat == null ||
+                playerController == null)
             {
                 player = BDTargetFinder.FindPlayer();
 
@@ -36,10 +45,25 @@ namespace BoredomAndDungeons
 
                 if (playerCombat == null && player != null)
                     playerCombat = player.GetComponent<BDPlayerCombat>();
+
+                if (playerController == null && player != null)
+                    playerController = player.GetComponent<BDPlayerController>();
             }
 
             if (horseHealth == null)
                 horseHealth = FindFirstObjectByType<BDHorseHealth>();
+
+            if (horseController == null)
+                horseController = FindFirstObjectByType<BDHorseController>();
+
+            EnsurePresentationDirector();
+            presentationDirector.Bind(
+                playerHealth,
+                horseHealth,
+                playerCombat,
+                playerController,
+                horseController
+            );
         }
 
         private void OnGUI()
@@ -51,22 +75,54 @@ namespace BoredomAndDungeons
             }
 
             EnsureStyles();
+            EnsurePresentationDirector();
 
-            DrawStatusPanel();
-            DrawPlayerBar();
-            DrawHorseBar();
-            DrawAmmoWidget();
+            float playerAlpha = presentationDirector != null
+                ? presentationDirector.PlayerHealthAlpha
+                : 1f;
+            float horseAlpha = presentationDirector != null
+                ? presentationDirector.HorseHealthAlpha
+                : 1f;
+            float ammoAlpha = presentationDirector != null
+                ? presentationDirector.AmmoAlpha
+                : 1f;
+            float statusAlpha = Mathf.Max(playerAlpha, horseAlpha);
+
+            DrawStatusPanel(statusAlpha);
+            DrawPlayerBar(playerAlpha);
+            DrawHorseBar(horseAlpha);
+            DrawAmmoWidget(ammoAlpha);
             DrawCombatEventMessage();
             DrawDeathMessages();
         }
 
-        private void DrawStatusPanel()
+        private void DrawStatusPanel(float alpha)
         {
-            GUI.Box(new Rect(12, Screen.height - 120, 390, 104), "Status");
+            if (alpha <= 0.001f)
+                return;
+
+            BeginWidget(alpha, out Color previous);
+            bool playerVisible = presentationDirector == null ||
+                presentationDirector.PlayerHealthAlpha > 0.001f;
+            bool horseVisible = presentationDirector == null ||
+                presentationDirector.HorseHealthAlpha > 0.001f;
+            Rect panelRect;
+            if (playerVisible && horseVisible)
+                panelRect = new Rect(12f, Screen.height - 120f, 390f, 104f);
+            else if (playerVisible)
+                panelRect = new Rect(12f, Screen.height - 100f, 390f, 62f);
+            else
+                panelRect = new Rect(12f, Screen.height - 66f, 390f, 50f);
+            GUI.Box(panelRect, "Status");
+            EndWidget(previous);
         }
 
-        private void DrawPlayerBar()
+        private void DrawPlayerBar(float alpha)
         {
+            if (alpha <= 0.001f)
+                return;
+
+            BeginWidget(alpha, out Color previous);
             float hp = playerHealth != null ? playerHealth.CurrentHealth : 0f;
             float max = playerHealth != null ? playerHealth.MaxHealth : 1f;
             float ratio = Mathf.Clamp01(hp / Mathf.Max(1f, max));
@@ -74,10 +130,15 @@ namespace BoredomAndDungeons
             GUI.Label(new Rect(24, Screen.height - 84, 140, 22), "Player", labelStyle);
             DrawBar(new Rect(92, Screen.height - 82, 180, 18), ratio, new Color(0.85f, 0.12f, 0.10f, 1f), new Color(0.16f, 0.04f, 0.04f, 1f));
             GUI.Label(new Rect(282, Screen.height - 86, 78, 22), $"{hp:0}/{max:0}", labelStyle);
+            EndWidget(previous);
         }
 
-        private void DrawHorseBar()
+        private void DrawHorseBar(float alpha)
         {
+            if (alpha <= 0.001f)
+                return;
+
+            BeginWidget(alpha, out Color previous);
             float hp = horseHealth != null ? horseHealth.CurrentHealth : 0f;
             float max = horseHealth != null ? horseHealth.MaxHealth : 1f;
             float ratio = Mathf.Clamp01(hp / Mathf.Max(1f, max));
@@ -91,12 +152,19 @@ namespace BoredomAndDungeons
             DrawBar(new Rect(92, Screen.height - 48, 180, 18), ratio, fainted ? new Color(0.45f, 0.45f, 0.45f, 1f) : new Color(0.10f, 0.65f, 0.95f, 1f), new Color(0.03f, 0.08f, 0.11f, 1f));
             GUI.Label(new Rect(282, Screen.height - 52, 78, 22), $"{hp:0}/{max:0}", labelStyle);
             GUI.Label(new Rect(92, Screen.height - 26, 240, 22), horseState, smallStyle);
+            EndWidget(previous);
         }
 
-        private void DrawAmmoWidget()
+        private void DrawAmmoWidget(float alpha)
         {
             if (playerCombat == null)
                 return;
+
+            if (alpha <= 0.001f)
+                return;
+
+            BeginWidget(alpha, out Color previous);
+
 
             int ammo = playerCombat.RangedAmmo;
             int maxAmmo = playerCombat.RangedMagazineSize;
@@ -114,8 +182,10 @@ namespace BoredomAndDungeons
 
             Color old = GUI.color;
             GUI.color = new Color(0.025f, 0.035f, 0.045f, 0.82f);
+            GUI.color = WithWidgetAlpha(GUI.color);
             GUI.DrawTexture(panel, whiteTexture);
             GUI.color = reloading ? new Color(1.0f, 0.70f, 0.18f, 0.95f) : new Color(0.36f, 0.95f, 1f, 0.95f);
+            GUI.color = WithWidgetAlpha(GUI.color);
             GUI.Box(panel, GUIContent.none);
             GUI.color = old;
 
@@ -142,6 +212,7 @@ namespace BoredomAndDungeons
 
             string status = reloading ? $"RELOAD {remaining:0.0}s" : "READY";
             GUI.Label(new Rect(panel.x + 126f, panel.y + 55f, 104f, 18f), status, ammoSmallStyle);
+            EndWidget(previous);
         }
 
         private void DrawAmmoPips(
@@ -232,6 +303,7 @@ namespace BoredomAndDungeons
                 );
 
             GUI.color = color;
+            GUI.color = WithWidgetAlpha(GUI.color);
             GUI.DrawTexture(body, whiteTexture);
             GUI.DrawTexture(cap, whiteTexture);
 
@@ -239,6 +311,7 @@ namespace BoredomAndDungeons
                 ? new Color(1f, 1f, 1f, 0.55f)
                 : new Color(1f, 1f, 1f, 0.18f);
 
+            GUI.color = WithWidgetAlpha(GUI.color);
             GUI.Box(body, GUIContent.none);
             GUI.Box(cap, GUIContent.none);
             GUI.color = old;
@@ -266,7 +339,8 @@ namespace BoredomAndDungeons
                 GUIUtility.RotateAroundPivot(angle, center);
 
                 Rect segment = new Rect(center.x - segmentWidth * 0.5f, center.y - radius, segmentWidth, segmentHeight);
-                GUI.DrawTexture(segment, whiteTexture);
+                GUI.color = WithWidgetAlpha(GUI.color);
+            GUI.DrawTexture(segment, whiteTexture);
 
                 GUI.matrix = oldMatrix;
                 GUI.color = old;
@@ -316,16 +390,54 @@ namespace BoredomAndDungeons
         {
             Color old = GUI.color;
 
-            GUI.color = backgroundColor;
+            GUI.color = WithWidgetAlpha(backgroundColor);
             GUI.DrawTexture(rect, whiteTexture);
 
-            GUI.color = fillColor;
+            GUI.color = WithWidgetAlpha(fillColor);
             GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width * Mathf.Clamp01(ratio), rect.height), whiteTexture);
 
-            GUI.color = Color.white;
+            GUI.color = WithWidgetAlpha(Color.white);
             GUI.Box(rect, GUIContent.none);
 
             GUI.color = old;
+        }
+
+
+        private void EnsurePresentationDirector()
+        {
+            if (presentationDirector != null)
+                return;
+
+            presentationDirector =
+                GetComponent<BDGameplayHudPresentationDirector>();
+            if (presentationDirector == null)
+            {
+                presentationDirector = gameObject.AddComponent<
+                    BDGameplayHudPresentationDirector>();
+            }
+        }
+
+        private void BeginWidget(float alpha, out Color previous)
+        {
+            previous = GUI.color;
+            currentWidgetAlpha = Mathf.SmoothStep(
+                0f,
+                1f,
+                Mathf.Clamp01(alpha)
+            );
+            GUI.color = WithWidgetAlpha(previous);
+        }
+
+        private void EndWidget(Color previous)
+        {
+            GUI.color = previous;
+            currentWidgetAlpha = 1f;
+        }
+
+        private Color WithWidgetAlpha(Color color)
+        {
+            color.a *= Mathf.Clamp01(currentWidgetAlpha);
+            return color;
         }
 
         private void EnsureStyles()

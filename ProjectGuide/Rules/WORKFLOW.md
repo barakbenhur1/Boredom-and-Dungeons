@@ -488,3 +488,32 @@ When maintained documents are reorganized, do not assume path replacement alone 
 4. never weaken a scanner when the underlying contract is still valid;
 5. run a static token-equivalence validator in the package fixture;
 6. record the real Unity result and keep implementation blocked until the Unity rerun passes.
+
+<!-- B&D LOCAL PATCH DELIVERY V1 START -->
+## Permanent local patch delivery and production-code gate
+
+This section supersedes any wording that implies the assistant may write to Git or GitHub.
+
+1. The assistant must not commit, push, create or move branches, open or merge pull requests, reset, clean, stash, checkout or pull.
+2. The normal handoff is one downloadable, backup-aware local patch ZIP. It contains an idempotent installer, validator, rollback tool, manifest and focused verification list.
+3. Before any file is changed, the installer creates a timestamped backup of every path it can modify or remove. A failed preflight changes nothing; a failed later step keeps the backup and prints the rollback command.
+4. The installer must preserve unrelated local work. Unexpected owner structure blocks application instead of overwriting it.
+5. Package extraction/application is one command. Temporary package folders and the downloaded ZIP are removed only after all static checks pass; backups remain until the user deletes them.
+6. Unity verification and the local commit belong to the user. No push command is automatic.
+7. Every touched or materially encountered production area follows `ProjectGuide/Rules/PRODUCTION_CODE_STANDARD.md`. Durable behavior is implemented in the authoritative owner; avoidable workaround/compatibility layers are prohibited.
+<!-- B&D LOCAL PATCH DELIVERY V1 END -->
+
+<!-- B&D SAFE REPOSITORY MAINTENANCE V2 START -->
+## Safe repository-size maintenance
+
+Repository reduction is evidence-driven and lossless. Generated local data may be removed only when untracked and reproducible. No documentation, source asset, Unity `.meta`, GUID, history, commit hash, LFS history, visual quality or game behavior may change. When uncertain, retain the file and report it as an untouched candidate. The assistant still performs no push, commit, branch or PR operation.
+<!-- B&D SAFE REPOSITORY MAINTENANCE V2 END -->
+
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:BEGIN -->
+## Unity package/cache repair safety
+
+- Unity must be fully closed before deleting or rebuilding `Library`, `Temp`, `obj`, package caches, or package overlays.
+- Repository-maintenance tools must never recurse into or delete `Packages/**` as if it were a generic cache.
+- Generated, untracked `Packages/com.unity.*` overlays may be moved only after the manifest is validated, tracked/local packages are excluded, and an external rollback backup is created.
+- Package recovery must preserve `Packages/manifest.json` and a valid `packages-lock.json`; source files are not rewritten to avoid a missing package assembly.
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:END -->

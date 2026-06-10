@@ -50,6 +50,28 @@ After all three letters have fully settled, a circular badge begins behind the c
 
 The intro remains short and unskippable. It is installed on the existing main-menu root and must not create a parallel menu owner. Nested installers mark the scene dirty; the top-level QA/install flow owns final scene saving.
 
+
+<!-- B&D BBH CINEMATIC SIDE TASK V1 START -->
+## Cinematic side-task refinement
+
+This is a focused side task and does not change the active handheld task, its priority, its saved resume point, or the ordered work queue.
+
+The existing `BDBBHBootIntro` remains the sole owner. The intro keeps the first black frame, strict `B -> B -> H` entrance order, unscaled timing, one-play-per-application-session behavior, input blocking, and the existing menu handoff.
+
+Animation intent:
+
+- the first B is careful and curious, using a restrained searching offset and corrective settle;
+- the second B is more confident and produces a small readable nudge/rebound interaction with the first B;
+- the H is heavier and stabilizing, producing a restrained shared landing reaction;
+- the `H landing` is the authored heavy settling beat that stabilizes the completed BBH mark before the circle finishes expanding;
+- the completed letters respond subtly to the circle expansion;
+- the previous perpetual idle pulse is replaced by one deterministic completion breath.
+
+The filled graphite/steel circle is activated only after the H has completed its primary entrance. It gathers from a small point, expands with controlled overshoot, and settles to a responsive final badge that is **16% larger** than the previous desired diameter. The responsive clamp uses at most 78% of screen width and 72% of screen height plus a safe-edge bound, so the larger circle remains fully visible and never covers the letters.
+
+No eyes, faces, limbs, parallel camera owner, menu redesign, gameplay change, or new runtime dependency is introduced.
+<!-- B&D BBH CINEMATIC SIDE TASK V1 END -->
+
 ## Verification
 
 1. Start the application from the operating system.

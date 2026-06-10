@@ -53,20 +53,10 @@ namespace BoredomAndDungeons
                     0f,
                     startupDamageProtectionSeconds
                 );
-            EnsureHealAvailabilityIndicator();
             EnsureMountedDamageBridge();
         }
 
-        private void EnsureHealAvailabilityIndicator()
-        {
-            if (!Application.isPlaying)
-                return;
 
-            if (GetComponent<BDHorseHealAvailabilityIndicator>() != null)
-                return;
-
-            gameObject.AddComponent<BDHorseHealAvailabilityIndicator>();
-        }
 
 
         // BD MOUNTED DAMAGE BRIDGE V10

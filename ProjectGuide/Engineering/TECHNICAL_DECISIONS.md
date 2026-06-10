@@ -5,6 +5,16 @@ Controls must not be a flat front-sheet overlay. Each D-pad direction, face butt
 
 # Technical Decisions — Durable Project Choices
 
+<!-- B&D BBH CINEMATIC SIDE TASK V1 START -->
+### TD-037 — Cinematic BBH motion stays inside the existing intro owner
+
+**Decision:** Extend the existing BDBBHBootIntro owner with distinct authored motion for the first B, second B and H, subtle inter-letter reactions, one deterministic completion breath, and a responsive circle with a 16% larger desired diameter. Do not create a parallel intro, menu, camera, Timeline, input or state owner for this focused side task.
+
+**Reason:** The requested liveliness is achievable inside the current short boot presenter while preserving first-frame black, strict sequence, session gating, unscaled timing and existing menu integration. Keeping one owner reduces integration risk while allowing later replacement by production-authored assets if approved.
+
+**Constraint:** This side task does not change the current handheld priority, work queue, resume point, gameplay, menu design or camera handoff. Unity compilation, TEST EVERYTHING and focused Play Mode remain required before verification.
+<!-- B&D BBH CINEMATIC SIDE TASK V1 END -->
+
 ### TD-034 — Molded handheld surface replaces full-face decal
 
 **Decision:** Do not render a full-device transparent sticker over the 3D model. Use generated molded geometry plus an object-space blue→violet→orange surface shader. The original texture sheet remains reference input, not a flat Runtime shell replacement.
@@ -521,3 +531,52 @@ For the current grounded arc mesh, local X is the visible left-to-right long axi
 ## Final handheld control decision — 2026-06-09
 
 The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.
+
+<!-- B&D TD-038 FIRST LAUNCH OWNER AND DIRECT HANDHELD REPAIR START -->
+### TD-038 — First launch is a handheld screen mode; tactile repair belongs to the control owner
+
+**Decision:** Implement the one-time tutorial as an explicit `EffectivePage.FirstLaunchTutorial` mode of the existing handheld presenter, with a separate durable state store. Integrate device position, SELECT/EXIT placement, context-card behavior, Pause composition, text bounds and hardware tactile behavior directly into their current owners. Retire the merged V6 companion/compatibility classes after migration.
+
+**Reason:** The requested behavior is part of existing handheld screen and control responsibilities. Direct ownership provides deterministic lifecycle, prevents per-frame hierarchy scanning and duplicate state, and makes `TEST EVERYTHING` able to validate the real implementation.
+
+**Persistence:** `Completed` and `Skipped` are terminal for automatic display; `InProgress` restarts safely. `Skipped` is saved before visual transition.
+
+**Delivery:** Assistant output is a local backup-aware patch only. Git/GitHub writes are prohibited.
+<!-- B&D TD-038 FIRST LAUNCH OWNER AND DIRECT HANDHELD REPAIR END -->
+
+<!-- B&D TD-039 CONTEXTUAL HUD + DISCRETE HORSE INJURY V2 START -->
+## TD-039 — Contextual HUD and discrete horse injury bands
+
+- Horse speed uses exact discrete 30%-missing-health bands, not a continuous interpolation.
+- Health/ammo widgets reveal on player intent or state events and fade professionally; they are not permanently opaque.
+- The minimap remains available while stationary because that is a common map-reading moment. It dims to 38% after an idle delay instead of disappearing, and wakes on movement, threat, discovery or explicit map input.
+- Horse interaction prompts move to a bottom HUD strip so no icon competes with the horse silhouette.
+<!-- B&D TD-039 CONTEXTUAL HUD + DISCRETE HORSE INJURY V2 END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:BEGIN -->
+## TD-038 — Regression QA follows current authoritative behavior
+
+Automated regression checks must validate the current approved owner and semantic contract. They must not force superseded numeric literals or retired presentation mechanisms back into production code merely to satisfy an old token check.
+
+Applied examples:
+
+- handheld composition validates the approved `0.28f` rest offset rather than the retired `0.62f` value;
+- horse interaction QA validates the fixed bottom contextual strip and forbids the retired world-space prompt projection contract;
+- maintained prose may include explicit canonical summaries when those summaries improve human readability and automated stability.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## TD-040 — Tutorial input presentation uses parallel cards
+
+The tutorial has one normalized action gate and two simultaneous presentation routes. Keyboard/mouse and physical-handheld bindings are resolved separately and rendered in dedicated cards. No last-input-source switch removes an active route.
+
+The same tutorial owner remains responsible for flow and input. The pixel-presentation partial owns generated point-filtered sprites, reference-led backdrop decoration, binding-card emphasis and stepped visual animation. No adapter, compatibility layer or second state machine is introduced.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:BEGIN -->
+## TD-041 — composed UI fields are validated independently
+
+QA must not require values from separate UI fields to appear as one
+contiguous source token. Card titles and dynamically resolved bindings are
+validated through their separate authoritative contracts.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->

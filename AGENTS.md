@@ -13,7 +13,7 @@ Read this file first, then follow [`ProjectGuide/README.md`](ProjectGuide/README
 7. Update relevant status, bug, task, feature, architecture, QA, technical-decision and performance files together.
 8. Run a documentation relevance sweep: merge valid content before deleting obsolete/duplicate/temporary files.
 9. Never claim Unity compile, TEST EVERYTHING, Play Mode, device performance or user acceptance unless actually run.
-10. Do not commit or push. Deliver a validated ZIP and exact local commands; the user verifies and pushes.
+10. Never commit, push, create/update branches, or open/merge pull requests. Deliver a validated local patch ZIP with backup, rollback, and exact local commands; the user verifies and creates the commit.
 
 ## Required workflow
 
@@ -31,7 +31,7 @@ Read this file first, then follow [`ProjectGuide/README.md`](ProjectGuide/README
 
 - Current user priority after guide reorganization: real 3D upright handheld Main/Pause UI.
 - No flat in-game device image: modeled shell, screen, glass, buttons and tactile interaction.
-- Mouse + D-pad; `A` confirm, `B` back, `X` Settings, `Y` Progression.
+- Main mapping: `X` New Game, `A` Progression, `B` Settings, `Y` Credits; `B` is Back away from Main; black `SELECT` activates focus and black `EXIT` opens the legal in-screen confirmation.
 - Every Boy image requires a composition-matched Girl version.
 - `Progression` is the user-facing single-line label.
 
@@ -42,3 +42,14 @@ Read this file first, then follow [`ProjectGuide/README.md`](ProjectGuide/README
 - Do not add runtime dependencies on `UnityEditor`.
 - No expensive scene searches or allocations in per-frame paths.
 - Gameplay remains authoritative; animation/UI present state and do not duplicate damage, cooldown or progression truth.
+
+
+<!-- B&D LOCAL PATCH + PRODUCTION CODE CONTRACT V1 START -->
+## Permanent local-delivery and production-code contract
+
+- The assistant performs no GitHub write and no local Git commit operation. No push, branch, PR, merge, reset, stash, clean, checkout or pull is part of delivery.
+- Material work is delivered as a backup-aware local patch ZIP with preflight, idempotent apply, validator and rollback. The downloaded ZIP is removed only after every apply/validation step succeeds.
+- Preserve local changes: if an authoritative source anchor is not the expected current shape, stop before overwriting and report the conflict.
+- Every touched or materially encountered production area follows `ProjectGuide/Rules/PRODUCTION_CODE_STANDARD.md`.
+- Implement durable behavior in its authoritative owner. Do not create or rebrand an avoidable workaround/compatibility layer as architecture.
+<!-- B&D LOCAL PATCH + PRODUCTION CODE CONTRACT V1 END -->

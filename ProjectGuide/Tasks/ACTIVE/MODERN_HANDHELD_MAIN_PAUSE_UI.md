@@ -210,3 +210,15 @@ The prior X-select/Y-exit/A-credits mapping is superseded. This revision also ra
 - B returns on every non-main page.
 - center SELECT activates the highlighted option.
 - center EXIT opens the legal quit/abandon confirmation.
+
+<!-- B&D DIRECT OWNER REPAIR + FIRST LAUNCH ADDENDUM START -->
+## Direct-owner repair and first-launch addendum
+
+The merged V6 companion implementation is superseded by the current local patch. Accepted layout/content/tactile behavior is integrated into `BDModernHandheld3DPresenter` and `BDModernHandheldControlTarget`; companion LateUpdate/name-lookup classes are removed. The hero returns to title alignment, physical blue hover is removed, Pause becomes an internal screen menu, and the first-launch tutorial is an explicit page mode of the same presenter. Unity verification remains pending and the exact resume point is recorded in `Status/CURRENT.md`.
+<!-- B&D DIRECT OWNER REPAIR + FIRST LAUNCH ADDENDUM END -->
+
+<!-- B&D V2 HANDHELD CORRECTION CONTINUITY START -->
+## V2 continuity
+
+The direct-owner handheld repair and first-launch tutorial remain part of this cumulative package. Image alignment remains title-based; hardware hover has no blue frame; tactile animation remains in the physical control owner; Pause remains an internal handheld screen. Horse/HUD/minimap work must not regress those accepted constraints.
+<!-- B&D V2 HANDHELD CORRECTION CONTINUITY END -->

@@ -303,3 +303,25 @@ Ownership rules:
 ## Final handheld input ownership — 2026-06-09
 
 The presenter owns one semantic action per physical control: center SELECT activates focus; center EXIT opens the legal quit/abandon confirmation; Main Menu X starts New Game, A opens Progression, B opens Settings and Y opens Credits; B returns on every non-main page. WASD/arrows remain navigation-only, so keyboard A is never overloaded as the face-button A shortcut. Page UI, button pulse and state transition must derive from the same semantic action to prevent double execution or mismatched labels.
+
+<!-- B&D FIRST LAUNCH + HANDHELD OWNER ARCHITECTURE V1 START -->
+## First-launch tutorial and handheld owner boundaries
+
+- `BDModernHandheld3DPresenter` remains the sole handheld composition, screen-page and physical-input router. The tutorial is a cohesive partial of this same owner, not a parallel presenter.
+- `BDModernHandheldControlTarget` owns hardware rest pose, press travel, pressed scale and tutorial guidance scale. No material-emission side channel or name-based compatibility adapter remains.
+- `BDFirstLaunchTutorialStateStore` owns only the versioned durable display decision (`NotStarted`, `InProgress`, `Completed`, `Skipped`). It does not own gameplay saves or progression.
+- Tutorial entities are page-local generated UI and are destroyed through the existing page cleanup path. They never instantiate production player, horse, enemy, loot or procedural-run systems.
+- `BDBBHBootIntro` remains the only boot-logo owner.
+- `BDOneClickQAWindow` remains the single required QA entry point; feature scanners plug into it.
+<!-- B&D FIRST LAUNCH + HANDHELD OWNER ARCHITECTURE V1 END -->
+
+<!-- B&D HORSE HUD MINIMAP OWNERSHIP V2 START -->
+## Horse injury, contextual HUD, healing and minimap ownership
+
+- `BDHorseController` is the single horse horizontal speed owner. It applies one discrete health multiplier to every normal/external horizontal movement path: 100%, 92%, 84%, 76% at the approved missing-health bands. Vertical motion is unaffected.
+- `BDHorseHealth` owns health only and no longer creates a world-space heal icon.
+- `BDHorseHealingPresentation` is presentation only and is driven explicitly by the healing session owner.
+- `BDGameplayHudPresentationDirector` owns contextual alpha targets and timing. `BDGameHud` remains the widget renderer. Horse health is an on-foot proximity surface and stays hidden while mounted.
+- `BDHorseContextActionPrompts` renders one bottom-center contextual strip; nothing is drawn above the horse.
+- `BDMazeMinimap` owns dynamic entity discovery, cached marker classification, fog-safe marker shapes and idle dimming. Combatant markers render only inside discovered rooms.
+<!-- B&D HORSE HUD MINIMAP OWNERSHIP V2 END -->

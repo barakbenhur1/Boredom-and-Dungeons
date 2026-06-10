@@ -49,7 +49,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "DeviceLayer = 29",
                 "DeviceRestRotation",
                 "TableRestPosition",
-                "new Vector3(0f, 0.62f, 0f)",
+                "new Vector3(0f, 0.28f, 0f)",
                 "FrontSurfaceZ",
                 "Molded Outer Edge Bevel",
                 "Short Core Shadow To Left",

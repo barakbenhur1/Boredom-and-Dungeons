@@ -186,3 +186,39 @@ The approved in-game menu scene presents the actual modeled handheld on the supp
 ## Final physical-control identity — 2026-06-09
 
 The two center labels are equal-size recessed shell engravings, not bright floating UI labels. `SELECT` and `EXIT` are centered below their own pill buttons and never overlap the button meshes. X/Y/A/B use the approved source-sheet face textures on separate raised 3D bodies with visible skirt, cap, highlight and press travel. The final mapping above supersedes every earlier prototype mapping.
+
+<!-- B&D HANDHELD PRODUCTION REPAIR + TUTORIAL ART V1 START -->
+## Handheld production repair and first-launch tutorial art contract
+
+- The large Main Menu context image keeps the title-aligned composition. It must not be lowered to align with the Start Game row.
+- The small card below it remains text-only and changes content with the selected Main option.
+- Hardware hover has no blue outline, blue frame or emission treatment. Hardware moves only on actual press; tutorial guidance is a restrained scale-only pulse.
+- Pause is a compact internal screen menu, not a duplicate of the Main Menu hero/card composition.
+- Tutorial visuals are deliberately simple authored 2D shapes inside the glass, but they must read as one coherent game scene rather than debug UI. White boot light, instruction hierarchy, success feedback and exit confirmation share the handheld screen language.
+- All page text must remain inside its own card at supported landscape aspect ratios.
+<!-- B&D HANDHELD PRODUCTION REPAIR + TUTORIAL ART V1 END -->
+
+<!-- B&D CONTEXTUAL GAMEPLAY UI ART V2 START -->
+## Contextual gameplay UI art contract
+
+- Persistent HUD chrome yields to the world. Appearance uses short eased fades; disappearance is slightly slower and never pops.
+- Player health is visible while stationary and after health changes; horse health is visible only beside/mounted on the horse; ammo is visible from ranged-button press until release.
+- Minimap idle treatment is a readable 38% dim, never a complete disappearance.
+- Horse, regular enemy, mini-boss and boss minimap shapes are green dot, red dot, larger red dot and large red hexagon respectively.
+- Horse healing uses a grounded ring and rising motes. No healing, pet or mount icon floats above the horse.
+<!-- B&D CONTEXTUAL GAMEPLAY UI ART V2 END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## First-launch tutorial reference-led palette and hierarchy
+
+The tutorial world may use a remembered-console fantasy palette inspired by approved pixel-game references:
+
+- deep indigo and muted purple for negative space;
+- dark teal for vegetation and edge framing;
+- warm umber/gold for paths and readable terrain;
+- limited amber, cyan and green accents for interaction clarity.
+
+The world must stay clean and cannot become a dense decorative diorama. Actors, hazards and goals must read immediately.
+
+The teaching layer is intentionally modern rather than pixel-authentic. It uses large typography, generous spacing, high contrast and side-by-side input cards. It is allowed a short polished fade/slide/scale transition. The teaching layer always has priority over decorative authenticity.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->

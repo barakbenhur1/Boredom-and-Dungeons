@@ -39,11 +39,31 @@ namespace BoredomAndDungeons
         [SerializeField] private Color discoveredRoomColor = new Color(0.36f, 0.48f, 0.62f, 0.96f);
         [SerializeField] private Color wallColor = new Color(0.08f, 0.10f, 0.13f, 0.95f);
         [SerializeField] private Color playerColor = new Color(1f, 1f, 1f, 1f);
-        [SerializeField] private Color horseColor = new Color(0.15f, 0.95f, 1f, 1f);
+        [SerializeField] private Color horseColor = new Color(0.18f, 0.95f, 0.34f, 1f);
         [SerializeField] private Color currentRoomColor = new Color(0.55f, 0.80f, 1f, 1f);
         [SerializeField] private Color roomOutlineColor = new Color(0.12f, 0.18f, 0.24f, 0.95f);
 
+        [Header("Dynamic Marker Language")]
+        // BD MINIMAP COMBATANT MARKERS V2
+        [SerializeField] private Color enemyMarkerColor =
+            new Color(0.96f, 0.12f, 0.10f, 1f);
+        [SerializeField] private float regularEnemyMarkerScale = 0.72f;
+        [SerializeField] private float miniBossMarkerScale = 1.25f;
+        [SerializeField] private float bossMarkerScale = 1.80f;
+        [SerializeField] private float dynamicMarkerRefreshSeconds = 0.40f;
+
+        [Header("Contextual Visibility")]
+        [SerializeField, Range(0.20f, 0.70f)]
+        private float stationaryMinimapAlpha = 0.38f;
+        [SerializeField] private float stationaryDimDelay = 1.50f;
+        [SerializeField] private float minimapFadeInSeconds = 0.16f;
+        [SerializeField] private float minimapFadeOutSeconds = 0.34f;
+        [SerializeField] private float threatWakeRadius = 14f;
+        [SerializeField] private float eventWakeSeconds = 2.0f;
+
         private readonly List<BDMinimapRoom> rooms = new List<BDMinimapRoom>();
+        private readonly List<BDHealth> dynamicCombatants =
+            new List<BDHealth>(32);
         private Texture2D whiteTexture;
         private Transform player;
         private Transform horse;
@@ -61,6 +81,11 @@ namespace BoredomAndDungeons
         private int maxY;
         private bool boundsReady;
         private float refreshRetryTimer;
+        private float nextDynamicMarkerRefreshAt;
+        private float minimapAlpha = 1f;
+        private float fullVisibilityUntil;
+        private float stationaryStartedAt = -999f;
+        private int lastDiscoveredRoomCount = -1;
 
         // BD MINIMAP OFFSCREEN RASTER CLIP V13
         private const int RasterSize = 256;
@@ -101,10 +126,15 @@ namespace BoredomAndDungeons
         private void Update()
         {
             if (ReadTogglePressed())
+            {
                 visible = !visible;
+                WakeMinimap(eventWakeSeconds);
+            }
 
             ResolvePlayerReference();
             TickDynamicPlayerUpRotation();
+            RefreshDynamicMarkersIfNeeded();
+            TickContextualVisibility();
 
             if (horse == null)
             {
@@ -414,6 +444,13 @@ namespace BoredomAndDungeons
             }
 
             EnsureStyle();
+            Color previousMinimapGuiColor = GUI.color;
+            GUI.color = new Color(
+                previousMinimapGuiColor.r,
+                previousMinimapGuiColor.g,
+                previousMinimapGuiColor.b,
+                previousMinimapGuiColor.a * Mathf.Clamp01(minimapAlpha)
+            );
 
             if (rooms.Count == 0)
             {
@@ -447,6 +484,7 @@ namespace BoredomAndDungeons
                     labelStyle
                 );
                 GUI.EndGroup();
+                GUI.color = previousMinimapGuiColor;
                 return;
             }
 
@@ -520,6 +558,7 @@ namespace BoredomAndDungeons
             );
 
             GUI.EndGroup();
+            GUI.color = previousMinimapGuiColor;
         }
 
         private void EnsureMinimapRaster()
@@ -633,13 +672,14 @@ namespace BoredomAndDungeons
                 pivot = playerPoint;
             }
 
-            DrawRasterMarker(
+            DrawDynamicCombatantMarkers(rasterRect);
+            DrawRasterCircleMarker(
                 minimapSourcePixels,
                 rasterRect,
                 horse,
                 horseColor,
                 markerSize * RasterSize /
-                Mathf.Max(1f, panel.width) * 0.85f
+                Mathf.Max(1f, panel.width) * 0.88f
             );
             DrawRasterMarker(
                 minimapSourcePixels,
@@ -661,6 +701,306 @@ namespace BoredomAndDungeons
             minimapRasterTexture.Apply(
                 updateMipmaps: false,
                 makeNoLongerReadable: false
+            );
+        }
+
+
+        private void RefreshDynamicMarkersIfNeeded()
+        {
+            if (Time.unscaledTime < nextDynamicMarkerRefreshAt)
+                return;
+
+            nextDynamicMarkerRefreshAt =
+                Time.unscaledTime +
+                Mathf.Max(0.10f, dynamicMarkerRefreshSeconds);
+            dynamicCombatants.Clear();
+
+            BDHealth[] candidates = FindObjectsByType<BDHealth>(
+                FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None
+            );
+            for (int index = 0; index < candidates.Length; index++)
+            {
+                BDHealth candidate = candidates[index];
+                if (!IsMinimapCombatant(candidate))
+                    continue;
+                dynamicCombatants.Add(candidate);
+            }
+        }
+
+        private static bool IsMinimapCombatant(BDHealth candidate)
+        {
+            if (candidate == null ||
+                candidate.IsDead ||
+                !candidate.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
+            if (candidate.GetComponentInParent<BDPlayerMarker>() != null ||
+                candidate.GetComponentInParent<BDHorseHealth>() != null)
+            {
+                return false;
+            }
+
+            bool combatant =
+                candidate.GetComponent<CharacterController>() != null ||
+                candidate.GetComponent<BDBossHealthChannel>() != null;
+            if (!combatant)
+                return false;
+
+            return true;
+        }
+
+        private void DrawDynamicCombatantMarkers(Rect rasterRect)
+        {
+            float baseSize =
+                markerSize * RasterSize /
+                Mathf.Max(1f, panel.width);
+
+            for (int index = 0; index < dynamicCombatants.Count; index++)
+            {
+                BDHealth health = dynamicCombatants[index];
+                if (!IsMinimapCombatant(health) ||
+                    !IsWorldPositionInDiscoveredRoom(
+                        health.transform.position))
+                {
+                    continue;
+                }
+
+                BDCombatantRank rank =
+                    BDCombatantProfile.ResolveRank(health);
+                if (rank == BDCombatantRank.Boss)
+                {
+                    DrawRasterHexagonMarker(
+                        minimapSourcePixels,
+                        rasterRect,
+                        health.transform,
+                        enemyMarkerColor,
+                        baseSize * Mathf.Max(1f, bossMarkerScale)
+                    );
+                }
+                else
+                {
+                    float scale = rank == BDCombatantRank.MiniBoss
+                        ? Mathf.Max(1f, miniBossMarkerScale)
+                        : Mathf.Clamp(regularEnemyMarkerScale, 0.45f, 1f);
+                    DrawRasterCircleMarker(
+                        minimapSourcePixels,
+                        rasterRect,
+                        health.transform,
+                        enemyMarkerColor,
+                        baseSize * scale
+                    );
+                }
+            }
+        }
+
+        private bool IsWorldPositionInDiscoveredRoom(
+            Vector3 worldPosition)
+        {
+            BDMinimapRoom containing =
+                FindRoomContainingWorldPosition(worldPosition);
+            if (containing != null)
+                return containing.Discovered;
+
+            BDMinimapRoom nearest = FindNearestRoom(worldPosition);
+            return nearest != null &&
+                   nearest.Discovered &&
+                   nearest.SqrDistanceToCenter(worldPosition) <=
+                       nearestDiscoveryMaxDistance *
+                       nearestDiscoveryMaxDistance;
+        }
+
+        private void DrawRasterCircleMarker(
+            Color32[] pixels,
+            Rect mapRect,
+            Transform target,
+            Color color,
+            float size)
+        {
+            if (!TryResolveMapPoint(
+                    mapRect,
+                    target,
+                    out Vector2 point))
+            {
+                return;
+            }
+
+            float radius = Mathf.Max(1.5f, size * 0.5f);
+            int minX = Mathf.Clamp(
+                Mathf.FloorToInt(point.x - radius),
+                0,
+                RasterSize - 1
+            );
+            int maxX = Mathf.Clamp(
+                Mathf.CeilToInt(point.x + radius),
+                0,
+                RasterSize - 1
+            );
+            int minY = Mathf.Clamp(
+                Mathf.FloorToInt(point.y - radius),
+                0,
+                RasterSize - 1
+            );
+            int maxY = Mathf.Clamp(
+                Mathf.CeilToInt(point.y + radius),
+                0,
+                RasterSize - 1
+            );
+            float radiusSquared = radius * radius;
+            Color32 packed = color;
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    float dx = x + 0.5f - point.x;
+                    float dy = y + 0.5f - point.y;
+                    if (dx * dx + dy * dy <= radiusSquared)
+                        pixels[ToRasterIndex(x, y)] = packed;
+                }
+            }
+        }
+
+        private void DrawRasterHexagonMarker(
+            Color32[] pixels,
+            Rect mapRect,
+            Transform target,
+            Color color,
+            float size)
+        {
+            if (!TryResolveMapPoint(
+                    mapRect,
+                    target,
+                    out Vector2 point))
+            {
+                return;
+            }
+
+            float radius = Mathf.Max(3f, size * 0.5f);
+            int minX = Mathf.Clamp(
+                Mathf.FloorToInt(point.x - radius),
+                0,
+                RasterSize - 1
+            );
+            int maxX = Mathf.Clamp(
+                Mathf.CeilToInt(point.x + radius),
+                0,
+                RasterSize - 1
+            );
+            int minY = Mathf.Clamp(
+                Mathf.FloorToInt(point.y - radius),
+                0,
+                RasterSize - 1
+            );
+            int maxY = Mathf.Clamp(
+                Mathf.CeilToInt(point.y + radius),
+                0,
+                RasterSize - 1
+            );
+            Color32 packed = color;
+            float halfWidth = radius * 0.8660254f;
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                float dy = Mathf.Abs(y + 0.5f - point.y);
+                if (dy > radius)
+                    continue;
+                float rowHalfWidth = dy <= radius * 0.5f
+                    ? halfWidth
+                    : halfWidth * (radius - dy) / (radius * 0.5f);
+                for (int x = minX; x <= maxX; x++)
+                {
+                    if (Mathf.Abs(x + 0.5f - point.x) <= rowHalfWidth)
+                        pixels[ToRasterIndex(x, y)] = packed;
+                }
+            }
+        }
+
+        private void TickContextualVisibility()
+        {
+            if (!visible)
+                return;
+
+            int discovered = CountDiscoveredRooms();
+            if (lastDiscoveredRoomCount >= 0 &&
+                discovered > lastDiscoveredRoomCount)
+            {
+                WakeMinimap(eventWakeSeconds);
+            }
+            lastDiscoveredRoomCount = discovered;
+
+            bool moving = IsPlayerOrHorseMoving();
+            bool threatNear = HasNearbyMinimapThreat();
+            if (moving || threatNear)
+            {
+                stationaryStartedAt = -999f;
+                WakeMinimap(eventWakeSeconds);
+            }
+            else if (stationaryStartedAt < 0f)
+            {
+                stationaryStartedAt = Time.unscaledTime;
+            }
+
+            bool idleLongEnough =
+                stationaryStartedAt >= 0f &&
+                Time.unscaledTime - stationaryStartedAt >=
+                    Mathf.Max(0f, stationaryDimDelay);
+            bool full =
+                !idleLongEnough ||
+                Time.unscaledTime < fullVisibilityUntil;
+            float target = full
+                ? 1f
+                : Mathf.Clamp(stationaryMinimapAlpha, 0.20f, 0.70f);
+            float duration = target > minimapAlpha
+                ? Mathf.Max(0.05f, minimapFadeInSeconds)
+                : Mathf.Max(0.05f, minimapFadeOutSeconds);
+            minimapAlpha = Mathf.MoveTowards(
+                minimapAlpha,
+                target,
+                Time.unscaledDeltaTime / duration
+            );
+        }
+
+        private bool IsPlayerOrHorseMoving()
+        {
+            if (horseController != null &&
+                horseController.IsMounted &&
+                horseController.HasRideMoveInput)
+            {
+                return true;
+            }
+
+            return playerController != null &&
+                   playerController.HasMoveInput;
+        }
+
+        private bool HasNearbyMinimapThreat()
+        {
+            if (player == null)
+                return false;
+
+            float radius = Mathf.Max(1f, threatWakeRadius);
+            float radiusSquared = radius * radius;
+            for (int index = 0; index < dynamicCombatants.Count; index++)
+            {
+                BDHealth health = dynamicCombatants[index];
+                if (!IsMinimapCombatant(health))
+                    continue;
+                Vector3 delta = health.transform.position - player.position;
+                delta.y = 0f;
+                if (delta.sqrMagnitude <= radiusSquared)
+                    return true;
+            }
+            return false;
+        }
+
+        private void WakeMinimap(float seconds)
+        {
+            fullVisibilityUntil = Mathf.Max(
+                fullVisibilityUntil,
+                Time.unscaledTime + Mathf.Max(0f, seconds)
             );
         }
 

@@ -1,3 +1,15 @@
+<!-- B&D HANDHELD V6 DIRECT REPAIR BUG LEDGER START -->
+## Modern handheld merged-V6 regressions — implementation supplied, Unity verification pending
+
+- **Image alignment regression:** merged V6 lowered the hero image to the Start Game row; repaired by removing that override and retaining title alignment.
+- **Physical hover regression:** hardware received blue emission/frame-like feedback; repaired in the control owner with no hover visual and press-only movement.
+- **Architecture debt:** V6 used a persistent LateUpdate companion plus compatibility/name lookup classes; accepted behavior is migrated into the presenter/control owners and the companion files are retired.
+- **Broken card text:** `THE MAZE AWAITS` heading/body exceeded safe internal bounds; corrected in the authoritative card builder and bounded text creation.
+- **Pause duplication:** Escape/Pause reused Main-style hero/run cards; replaced with an internal screen panel.
+- **Settings glyph:** unsupported gear fonts could leave an empty square; font-safe deterministic fallback added.
+- **Verification status:** static/package checks only until Unity compile, TEST EVERYTHING and Play Mode evidence are returned.
+<!-- B&D HANDHELD V6 DIRECT REPAIR BUG LEDGER END -->
+
 # Open Bug Tracker — Current Defect Ledger
 
 > [!IMPORTANT]
@@ -67,3 +79,59 @@ This is the maintained focused ledger for current defects. `ProjectGuide/Status/
 - V23R19K automated QA is verified; the listed V23R19G/V23R19H/V23R19K behaviors remain open only for focused Play Mode/user confirmation.
 - The user reported that every previously requested V23R19E behavior not listed in the open table looked correct in Play Mode.
 - V23R19I compile compatibility remains verified.
+
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP BUGS V2 START -->
+## Horse/HUD/minimap repair set
+
+- Fixed: horse injury used a continuous 55% slowdown instead of the approved 8% per missing 30% band.
+- Fixed: horse interaction cards/icons occupied the horse silhouette.
+- Fixed: horse and player health and ammo remained permanently visible.
+- Fixed: horse heal lacked a clear authored presentation and completed too quickly.
+- Fixed: minimap horse color/shape and enemy rank markers did not match the approved language.
+- Fixed: local package validator treated decorative `=======` strings as merge-conflict markers; only real full-line conflict markers are now blocked.
+<!-- B&D 2026-06-09 HORSE HUD MINIMAP BUGS V2 END -->
+
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:BEGIN -->
+## 2026-06-09 — UnityEngine.UI package resolution after cache cleanup
+
+Observed blocker: `UnityEngine.UI`, `Image`, `Text`, `RawImage`, and `Outline` could not resolve even though `com.unity.ugui` and `com.unity.modules.ui` are declared. Unity also reported generated package symlinks, altered immutable package contents, and a missing `Library/Search` database file. V3 moves untracked generated package overlays to an external backup and rebuilds only reproducible package/script/search caches. Status after applying V3: recovery applied; Unity compilation and TEST EVERYTHING still require real local proof.
+<!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:END -->
+
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:BEGIN -->
+## Horse healing presentation compile regression — local V4 hotfix
+
+- Reported compiler errors: `CS1023` and `CS0103` in `BDHorseHealingPresentation.EndHealing`.
+- Cause: an invalid declaration under an unbraced `if` and an out-of-scope `healthRatio` reference.
+- Static correction: completed healing now requests a deterministic full completion pulse; interrupted healing keeps the normal fade-out path.
+- Status: source repaired locally; Unity compilation, `TEST EVERYTHING`, and Play Mode verification remain required.
+<!-- BND_HORSE_HEALING_COMPILE_FIX_V4:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:BEGIN -->
+## Stale automated contracts after the cumulative production patch — resolved locally
+
+- Automated QA still required the superseded handheld rest position `0.62f`.
+- V23R12 QA still required world-space horse prompt height/offset literals after horse actions moved to the bottom contextual strip.
+- BBH and horse feature documents described the correct behavior but omitted explicit maintained summaries used by focused QA.
+- V5 realigns the validators with the current authoritative owners and updates the maintained feature documentation.
+- Unity compilation, `TEST EVERYTHING`, and Play Mode acceptance remain required before commit.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V5:END -->
+
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:BEGIN -->
+## First-launch tutorial V3 defects addressed locally
+
+- tutorial world lacked a coherent reference-led palette;
+- instructions were still compressed into one multiline block;
+- keyboard/mouse and handheld routes needed separate large cards;
+- decorative layout required stronger safe-region ownership;
+- smooth scripted movement weakened the intended pixel presentation.
+
+The local V3 package addresses these items. Unity and Play Mode verification remain open.
+<!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:BEGIN -->
+## False first-launch tutorial QA blocker — corrected locally
+
+V7 incorrectly required `HANDHELD  HOLD Y` as one contiguous string, although
+the tutorial composes a card title and Grapple binding independently. V8
+validates the authoritative fields separately. Runtime behavior is unchanged.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->

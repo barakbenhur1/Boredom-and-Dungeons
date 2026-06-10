@@ -111,3 +111,25 @@ Each measured optimization should record in `ProjectGuide/Status/CURRENT.md`:
 - Shell microtexture, glass reflection, shadow masks and contextual artwork are loaded once from `Resources`. The obsolete full-face decal asset/shader are removed so they cannot add a draw call, build size or overlap risk.
 - `BDPlayableCharacterIdentity` performs scene discovery only on explicit scene/visibility refresh, not every presenter frame.
 - Four D-pad targets animate four separate cached cap transforms; no Rigidbody/physics simulation or temporary object is created per press.
+
+<!-- B&D FIRST LAUNCH HANDHELD PERFORMANCE V1 START -->
+## First-launch tutorial and handheld repair budgets
+
+- No hierarchy-wide `FindObjectsByType`, LINQ, material creation, texture creation, mesh creation, filesystem access or PlayerPrefs read/write occurs in the tutorial frame loop.
+- Tutorial page objects and hit targets are created once per page build and destroyed by the existing page cleanup.
+- Persistent-control references use the existing cached list.
+- Physical hover performs no material-property-block write. Press and tutorial guidance update only cached transforms.
+- Tutorial state writes occur only on entry and terminal completion/skip.
+- After `Completed` or `Skipped`, the tutorial has no normal-session idle allocation or update cost beyond one cheap state predicate during page resolution.
+- Device and shadow placement share one authoritative constant; no LateUpdate hierarchy correction layer remains.
+<!-- B&D FIRST LAUNCH HANDHELD PERFORMANCE V1 END -->
+
+<!-- B&D CONTEXTUAL HUD + MINIMAP PERFORMANCE V2 START -->
+## Contextual HUD and minimap performance
+
+- HUD alpha decisions are scalar updates using cached references and unscaled time.
+- Minimap combatants are refreshed on a throttled cadence rather than discovered in `OnGUI` or per raster pixel; marker rendering is limited to discovered rooms.
+- Marker drawing reuses the existing raster buffers and creates no per-frame textures/materials.
+- Horse healing owns one bounded particle system and one material, both reused for the horse lifetime and destroyed with the component.
+- Repository maintenance hashes files by streaming chunks and never loads large binaries into memory as one buffer.
+<!-- B&D CONTEXTUAL HUD + MINIMAP PERFORMANCE V2 END -->

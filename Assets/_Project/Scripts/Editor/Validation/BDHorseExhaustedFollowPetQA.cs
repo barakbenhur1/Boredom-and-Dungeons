@@ -113,6 +113,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
                     "IsMountedStationary",
                     "ResolvePetKey",
                     "DrawAction",
+                    "BD HORSE BOTTOM CONTEXT STRIP V2",
                     "BD HORSE PROMPT STATE MATRIX V23R9"
                 },
                 "HORSE_CONTEXT_PROMPT_CONTRACT_MISSING"

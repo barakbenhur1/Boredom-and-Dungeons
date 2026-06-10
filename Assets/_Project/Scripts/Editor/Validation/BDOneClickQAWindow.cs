@@ -105,10 +105,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "run_presentation",
                 "Run entrance, authored exit, pause, and menu",
                 "The mounted entrance uses a farther/higher room camera, locks every input including mouse aim, then the horse turns, fully stops, and only then returns camera/control. Pause -> Abandon requires confirmation. After confirmed abandon, the next mounted entrance keeps the current player visibly attached to the horse for the full sequence. Death restarts stay on foot and the authored exit remains authoritative."),
-            new ManualCheck(
+                        new ManualCheck(
                 "modern_handheld",
                 "Modern 3D handheld Main and Pause",
-                "The menu is a real upright 3D device on the supplied dark-wood table, with a slight top-away angle, upper-right light, short soft left shadow, progressive near/far table defocus, live screen behind readable glass, and no flat device screenshot. Mouse and D-pad share focus; A/B/X/Y plus Settings/Progression physical buttons trigger one action; every page and abandon confirmation stays inside the screen; Boy shows Boy art and Girl shows the matched Girl art."),
+                "The real upright device sits slightly lower without clipping; the large context image aligns with the title composition; every Main selection has relevant text-only context; no physical button receives a blue hover frame; D-Pad, SELECT, EXIT and X/Y/A/B share one press family; all text stays inside its card; Settings has a visible icon; and Escape opens a dedicated internal handheld Pause menu."),
+            new ManualCheck(
+                "first_launch_tutorial",
+                "First-launch tutorial",
+                "After a clean tutorial-state reset, white light reveals the deterministic 2D lesson before Main Menu. Complete the horse/enemy/heal opening and every listed lesson with keyboard, controller and physical controls. EXIT uses the safe confirmation guard; Continue resumes exactly; confirmed Leave persists Skipped before transition; completion persists Completed; neither terminal state auto-replays."),
             new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
@@ -116,7 +120,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "bbh_circle",
                 "BBH completed-circle intro",
-                "The intro begins black and reveals B, B, H strictly one at a time. Only after all three settle, a filled circle with a visible rim grows from zero behind the complete text, stays fully visible for exactly 0.50 seconds, then fades without replaying on a same-session New Game."),
+                "The intro begins black and reveals B, B, H strictly one at a time. The first B is careful, the second B arrives confidently and nudges it, and the H lands with a restrained shared weight reaction. Only after all three settle, a filled responsive circle gathers from a point, grows behind the letters to a clearly larger final badge without cropping, holds for exactly 0.50 seconds, then fades without replaying on a same-session New Game."),
             new ManualCheck(
                 "console",
                 "Console",
@@ -486,9 +490,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanHorseCleanStartContracts(result);
             ScanSceneYamlIntegrityContracts(result);
             ScanBBHBootIntroContracts(result);
+            BDBBHCinematicIntroQA.Scan(result);
+            BDFirstLaunchTutorialQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);
             BDHorseExhaustedFollowPetQA.Scan(result);
+            BDHorseHudMinimapQA.Scan(result);
             BDNewRunFeedbackResetQA.Scan(result);
             BDDocumentationGovernanceQA.Scan(result);
             BDVisualEntryMinimapMountedCombatQA.Scan(result);
