@@ -68,3 +68,15 @@ For UI built from independent fields, automated checks validate each field
 and resolver separately. Do not add dead strings or fake Runtime values only
 to satisfy token scanning.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## Presentation timing
+
+Presentation-only systems must not mutate global time scale. Use unscaled timing, explicit state and authoritative input locks. Any gameplay-wide pause belongs to the designated pause-flow owner.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## Tool finalization
+
+Repository tooling must use structured `finally`, `defer` or shell `EXIT` cleanup rather than success-only cleanup. Runtime validation must operate on the intended source domain and must not combine editor test literals with runtime implementation text.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

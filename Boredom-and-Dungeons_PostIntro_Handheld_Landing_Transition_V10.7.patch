@@ -1,0 +1,4 @@
+V10.7 code changes
+- The first eligible post-BBH landing page can be tutorial choice or Main Menu.
+- PLAY TUTORIAL no longer cancels the pending BBH transition.
+- QA requires both landing destinations and forbids delayed post-tutorial replay.

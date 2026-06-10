@@ -109,3 +109,15 @@ Full dialogue rules remain in `../../Features/Cinematics/OPENING_DIALOGUE_WORDLE
 ## Exact resume point
 
 Do not implement this while the base handheld cannot compile. After `com.unity.ugui` resolves, TEST EVERYTHING passes and the 3D device receives focused visual/input approval, audit current menu camera, gameplay camera, run loading, HUD visibility and opening coordinator owners; then implement the smallest additive transition state machine without creating a second camera or run-flow authority.
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Saved-run transition integration dependency
+
+Before final transition implementation, the run-flow task must define four distinct intents: New Game, Continue, Save & Return and Abandon. New Game runs the approved opening. Continue restores without replaying New Game. Save & Return preserves Continue. Abandon waits for its meta-result screen to close, then performs the agreed reverse exit animation. No single generic return path may erase these semantic differences.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 implemented handheld handoff subset
+
+The BBH-to-main-menu handheld camera handoff is implemented for Unity verification. This does not complete the broader gameplay opening cinematic task.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->

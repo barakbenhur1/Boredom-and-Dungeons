@@ -1,0 +1,2877 @@
+# Review-only patch: V9 targets to V10 targets
+--- a/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.cs
++++ b/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.cs
+@@ -14,21 +14,31 @@
+         {
+             WhiteBoot,
+             Move,
++            Jump,
+             MountHorse,
+             RideHorse,
+             EnemyArrival,
+             HorseShot,
+             AttackEnemy,
++            HeavyAttack,
++            Dodge,
++            Parry,
+             HorseReturn,
+             HealHorse,
+             RemountHorse,
+-            RangedAttack,
+-            DismountHorse,
+-            Dodge,
+-            HeavyAttack,
+             SpinAttack,
+-            Parry,
+             Grapple,
++            HazardKnockback,
++            RangedAttack,
++            Reload,
++            MountedImpact,
++            DismountHorse,
++            SidePath,
++            CombinedEncounter,
++            MiniBossIntro,
++            MiniBossPhaseOne,
++            MiniBossPhaseTwo,
++            MiniBossDefeated,
+             Collectible,
+             Completed
+         }
+@@ -94,6 +104,7 @@
+         private Text firstLaunchTutorialKeyboardBinding;
+         private Text firstLaunchTutorialHandheldBinding;
+         private Text firstLaunchTutorialBindingDivider;
++        private Image firstLaunchTutorialHoldFill;
+
+         private float firstLaunchTutorialInstructionStartedAt;
+         private readonly List<Texture2D> firstLaunchTutorialPixelTextures =
+@@ -423,6 +434,20 @@
+                 FontStyle.Bold
+             );
+
++            firstLaunchTutorialHoldFill = CreatePanel(
++                firstLaunchTutorialInstructionRect,
++                "Tutorial Hold Progress Fill",
++                -360f,
++                -108f,
++                0f,
++                8f,
++                new Color(0.30f, 0.86f, 1f, 1f)
++            );
++            firstLaunchTutorialHoldFill.rectTransform.pivot =
++                new Vector2(0f, 0.5f);
++            firstLaunchTutorialHoldFill.gameObject.SetActive(false);
++            firstLaunchTutorialHoldFill.raycastTarget = false;
++
+             firstLaunchTutorialFeedback = CreateText(
+                 rootPanel.rectTransform,
+                 "Tutorial Feedback",
+@@ -687,6 +712,13 @@
+             float progress,
+             bool visible)
+         {
++            if (firstLaunchTutorialHoldFill != null)
++            {
++                firstLaunchTutorialHoldFill.gameObject.SetActive(visible);
++                firstLaunchTutorialHoldFill.rectTransform.sizeDelta =
++                    new Vector2(720f * Mathf.Clamp01(progress), 8f);
++            }
++
+             if (firstLaunchTutorialFeedback == null)
+                 return;
+
+@@ -697,11 +729,8 @@
+                 return;
+             }
+
+-            int percent = Mathf.RoundToInt(
+-                Mathf.Clamp01(progress) * 100f
+-            );
+-            firstLaunchTutorialFeedback.text =
+-                label + "  " + percent + "%";
++            int percent = Mathf.RoundToInt(Mathf.Clamp01(progress) * 100f);
++            firstLaunchTutorialFeedback.text = label + "  " + percent + "%";
+             firstLaunchTutorialFeedbackClearAt = 0f;
+         }
+
+@@ -867,6 +896,7 @@
+             firstLaunchTutorialPrimaryHoldStartedAt = -1f;
+             firstLaunchTutorialHealHoldStartedAt = -1f;
+             firstLaunchTutorialGrappleHoldStartedAt = -1f;
++            ResetFirstLaunchTutorialHintEscalation();
+
+             ConfigureFirstLaunchTutorialScene(step);
+             UpdateFirstLaunchTutorialPrompt();
+@@ -902,51 +932,45 @@
+         {
+             string action = ResolveFirstLaunchTutorialBindingAction();
+             bool hasBindings = !string.IsNullOrEmpty(action);
++            bool keyboardActive =
++                firstLaunchTutorialInputSource == FirstLaunchTutorialInputSource.Keyboard;
++            bool handheldActive = !keyboardActive;
+
+             if (firstLaunchTutorialKeyboardBindingCard != null)
+             {
+                 firstLaunchTutorialKeyboardBindingCard.gameObject.SetActive(
+-                    hasBindings
++                    hasBindings && keyboardActive
+                 );
++                firstLaunchTutorialKeyboardBindingCard.rectTransform.anchoredPosition =
++                    new Vector2(0f, -62f);
+             }
+             if (firstLaunchTutorialHandheldBindingCard != null)
+             {
+                 firstLaunchTutorialHandheldBindingCard.gameObject.SetActive(
+-                    hasBindings
++                    hasBindings && handheldActive
+                 );
++                firstLaunchTutorialHandheldBindingCard.rectTransform.anchoredPosition =
++                    new Vector2(0f, -62f);
+             }
+             if (firstLaunchTutorialBindingDivider != null)
+-            {
+-                firstLaunchTutorialBindingDivider.gameObject.SetActive(
+-                    hasBindings
+-                );
+-            }
++                firstLaunchTutorialBindingDivider.gameObject.SetActive(false);
+
+             if (firstLaunchTutorialDetail != null)
+             {
+                 firstLaunchTutorialDetail.rectTransform.anchoredPosition =
+-                    hasBindings
+-                        ? new Vector2(0f, 25f)
+-                        : new Vector2(0f, -12f);
++                    hasBindings ? new Vector2(0f, 25f) : new Vector2(0f, -12f);
+                 firstLaunchTutorialDetail.rectTransform.sizeDelta =
+-                    hasBindings
+-                        ? new Vector2(748f, 32f)
+-                        : new Vector2(748f, 70f);
++                    hasBindings ? new Vector2(748f, 32f) : new Vector2(748f, 70f);
+             }
+
+             if (!hasBindings)
+                 return;
+-
+             if (firstLaunchTutorialKeyboardBinding != null)
+-            {
+                 firstLaunchTutorialKeyboardBinding.text =
+                     ResolveFirstLaunchTutorialKeyboardBinding(action);
+-            }
+             if (firstLaunchTutorialHandheldBinding != null)
+-            {
+                 firstLaunchTutorialHandheldBinding.text =
+                     ResolveFirstLaunchTutorialHandheldBinding(action);
+-            }
+         }
+
+         private string ResolveFirstLaunchTutorialProgressLabel()
+@@ -958,44 +982,35 @@
+         {
+             switch (firstLaunchTutorialStep)
+             {
+-                case FirstLaunchTutorialStep.WhiteBoot:
+-                    return "WAKING THE HANDHELD...";
+-                case FirstLaunchTutorialStep.Move:
+-                    return "MOVE THROUGH THE CLEARING";
+-                case FirstLaunchTutorialStep.MountHorse:
+-                    return "MOUNT THE HORSE";
+-                case FirstLaunchTutorialStep.RideHorse:
+-                    return "RIDE EAST";
+-                case FirstLaunchTutorialStep.EnemyArrival:
+-                    return "AN AMBUSH";
+-                case FirstLaunchTutorialStep.HorseShot:
+-                    return "THE HORSE IS HIT";
+-                case FirstLaunchTutorialStep.AttackEnemy:
+-                    return "STRIKE THE ENEMY";
+-                case FirstLaunchTutorialStep.HorseReturn:
+-                    return "THE HORSE RETURNS";
+-                case FirstLaunchTutorialStep.HealHorse:
+-                    return "HEAL THE HORSE";
+-                case FirstLaunchTutorialStep.RemountHorse:
+-                    return "MOUNT AGAIN";
+-                case FirstLaunchTutorialStep.RangedAttack:
+-                    return "SHOOT THE TARGET";
+-                case FirstLaunchTutorialStep.DismountHorse:
+-                    return "DISMOUNT FOR THE COURSE";
+-                case FirstLaunchTutorialStep.Dodge:
+-                    return "DODGE THROUGH THE HAZARD";
+-                case FirstLaunchTutorialStep.HeavyAttack:
+-                    return "BREAK THE ARMORED TARGET";
+-                case FirstLaunchTutorialStep.SpinAttack:
+-                    return "CLEAR THE GROUP";
+-                case FirstLaunchTutorialStep.Parry:
+-                    return "PARRY THE PROJECTILE";
+-                case FirstLaunchTutorialStep.Grapple:
+-                    return "GRAPPLE ACROSS";
+-                case FirstLaunchTutorialStep.Collectible:
+-                    return "COLLECT THE MEMORY";
+-                default:
+-                    return "YOU ARE READY";
++                case FirstLaunchTutorialStep.WhiteBoot: return "WAKING THE HANDHELD...";
++                case FirstLaunchTutorialStep.Move: return "MOVE";
++                case FirstLaunchTutorialStep.Jump: return "JUMP THE ROOT";
++                case FirstLaunchTutorialStep.MountHorse: return "RIDE";
++                case FirstLaunchTutorialStep.RideHorse: return "FEEL THE HORSE'S WEIGHT";
++                case FirstLaunchTutorialStep.EnemyArrival: return "AN AMBUSH";
++                case FirstLaunchTutorialStep.HorseShot: return "THE HORSE IS HIT";
++                case FirstLaunchTutorialStep.AttackEnemy: return "QUICK ATTACK";
++                case FirstLaunchTutorialStep.HeavyAttack: return "HEAVY ATTACK";
++                case FirstLaunchTutorialStep.Dodge: return "EVADE THE STRIKE";
++                case FirstLaunchTutorialStep.Parry: return "PARRY BEFORE IMPACT";
++                case FirstLaunchTutorialStep.HorseReturn: return "THE HORSE RETURNS";
++                case FirstLaunchTutorialStep.HealHorse: return "HEAL THE HORSE";
++                case FirstLaunchTutorialStep.RemountHorse: return "MOUNT AGAIN";
++                case FirstLaunchTutorialStep.SpinAttack: return "SPIN ATTACK";
++                case FirstLaunchTutorialStep.Grapple: return "GRAPPLING HOOK";
++                case FirstLaunchTutorialStep.HazardKnockback: return "TURN THE WORLD INTO A WEAPON";
++                case FirstLaunchTutorialStep.RangedAttack: return "FIRE WHILE RIDING";
++                case FirstLaunchTutorialStep.Reload: return "RELOADING";
++                case FirstLaunchTutorialStep.MountedImpact: return "RAM SMALL ENEMIES";
++                case FirstLaunchTutorialStep.DismountHorse: return "DISMOUNT";
++                case FirstLaunchTutorialStep.SidePath: return "THE ROAD IS NOT THE WHOLE WORLD";
++                case FirstLaunchTutorialStep.CombinedEncounter: return "USE WHAT YOU LEARNED";
++                case FirstLaunchTutorialStep.MiniBossIntro: return "FINAL TEST";
++                case FirstLaunchTutorialStep.MiniBossPhaseOne: return "WATCH THE WINDUP";
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo: return "STRIKE DURING RECOVERY";
++                case FirstLaunchTutorialStep.MiniBossDefeated: return "THE WAY IS OPEN";
++                case FirstLaunchTutorialStep.Collectible: return "TAKE THE LAST MEMORY";
++                default: return "YOU ARE READY";
+             }
+         }
+
+@@ -1003,44 +1018,35 @@
+         {
+             switch (firstLaunchTutorialStep)
+             {
+-                case FirstLaunchTutorialStep.WhiteBoot:
+-                    return "A short playable adventure is loading.";
+-                case FirstLaunchTutorialStep.Move:
+-                    return "Explore freely. The next lesson appears near its moment.";
+-                case FirstLaunchTutorialStep.MountHorse:
+-                    return "Walk close to the horse, then interact.";
+-                case FirstLaunchTutorialStep.RideHorse:
+-                    return "The horse moves faster. Follow the path at your pace.";
+-                case FirstLaunchTutorialStep.EnemyArrival:
+-                    return "A scripted threat enters the clearing.";
+-                case FirstLaunchTutorialStep.HorseShot:
+-                    return "The hit throws you from the saddle.";
+-                case FirstLaunchTutorialStep.AttackEnemy:
+-                    return "Move into range and use a quick light attack.";
+-                case FirstLaunchTutorialStep.HorseReturn:
+-                    return "The injured horse comes back to you.";
+-                case FirstLaunchTutorialStep.HealHorse:
+-                    return "Stand close and keep holding until healing completes.";
+-                case FirstLaunchTutorialStep.RemountHorse:
+-                    return "Mount again and continue through the wider course.";
+-                case FirstLaunchTutorialStep.RangedAttack:
+-                    return "Fire while mounted. The shot has a full pixel animation.";
+-                case FirstLaunchTutorialStep.DismountHorse:
+-                    return "Ride to the marked area, then interact to dismount.";
+-                case FirstLaunchTutorialStep.Dodge:
+-                    return "Approach the hazard and dash through it.";
+-                case FirstLaunchTutorialStep.HeavyAttack:
+-                    return "Move close and commit one heavy strike.";
+-                case FirstLaunchTutorialStep.SpinAttack:
+-                    return "Hold the light input until the spin releases.";
+-                case FirstLaunchTutorialStep.Parry:
+-                    return "Wait until the projectile is close, then parry.";
+-                case FirstLaunchTutorialStep.Grapple:
+-                    return "Hold the heavy input near the gap to pull across.";
+-                case FirstLaunchTutorialStep.Collectible:
+-                    return "Approach the memory and interact to finish.";
+-                default:
+-                    return "The main menu will appear next.";
++                case FirstLaunchTutorialStep.WhiteBoot: return "A short playable adventure is loading.";
++                case FirstLaunchTutorialStep.Move: return "Explore the clearing. The guide appears only when it matters.";
++                case FirstLaunchTutorialStep.Jump: return "Clear the obstacle and land safely.";
++                case FirstLaunchTutorialStep.MountHorse: return "Walk close, then use the active interaction binding.";
++                case FirstLaunchTutorialStep.RideHorse: return "The horse accelerates, turns wider and takes longer to stop.";
++                case FirstLaunchTutorialStep.EnemyArrival: return "Read the enemy before committing.";
++                case FirstLaunchTutorialStep.HorseShot: return "The hit separates rider and horse.";
++                case FirstLaunchTutorialStep.AttackEnemy: return "Tap for a fast strike with short recovery.";
++                case FirstLaunchTutorialStep.HeavyAttack: return "Tap heavy for more damage, knockback and longer recovery.";
++                case FirstLaunchTutorialStep.Dodge: return "Pass through the active hit during the invulnerable window.";
++                case FirstLaunchTutorialStep.Parry: return "Parry is optional, but success leaves the enemy exposed.";
++                case FirstLaunchTutorialStep.HorseReturn: return "The injured horse returns when the danger clears.";
++                case FirstLaunchTutorialStep.HealHorse: return "Stay close and hold until the healing action completes.";
++                case FirstLaunchTutorialStep.RemountHorse: return "Return to the saddle and continue east.";
++                case FirstLaunchTutorialStep.SpinAttack: return "Hold light when several enemies crowd you.";
++                case FirstLaunchTutorialStep.Grapple: return "Hold heavy to pull a small enemy into sword range.";
++                case FirstLaunchTutorialStep.HazardKnockback: return "Heavy, spin, hook placement or horse impact can push enemies into danger.";
++                case FirstLaunchTutorialStep.RangedAttack: return "Aim independently while the horse keeps its travel direction.";
++                case FirstLaunchTutorialStep.Reload: return "The empty magazine reloads automatically; firing is locked until ready.";
++                case FirstLaunchTutorialStep.MountedImpact: return "Build speed and hit a small enemy directly.";
++                case FirstLaunchTutorialStep.DismountHorse: return "Slow down, then leave the saddle at the safe marker.";
++                case FirstLaunchTutorialStep.SidePath: return "No marker points to secrets. Look beyond the main path.";
++                case FirstLaunchTutorialStep.CombinedEncounter: return "Ride, shoot, dismount, control space and survive in your own order.";
++                case FirstLaunchTutorialStep.MiniBossIntro: return "No new ability is required. Combine the language you already learned.";
++                case FirstLaunchTutorialStep.MiniBossPhaseOne: return "Every attack has anticipation, commitment and a real recovery window.";
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo: return "The pattern is faster, never unavoidable, and summons are limited.";
++                case FirstLaunchTutorialStep.MiniBossDefeated: return "Damage is disabled; the gate opens only after the death animation.";
++                case FirstLaunchTutorialStep.Collectible: return "Collect the memory to finish the first adventure.";
++                default: return "The main menu will appear next.";
+             }
+         }
+
+@@ -1049,31 +1055,22 @@
+             switch (firstLaunchTutorialStep)
+             {
+                 case FirstLaunchTutorialStep.Move:
+-                case FirstLaunchTutorialStep.RideHorse:
+-                    return "MOVE";
++                case FirstLaunchTutorialStep.RideHorse: return "MOVE";
++                case FirstLaunchTutorialStep.Jump: return "JUMP";
+                 case FirstLaunchTutorialStep.MountHorse:
+                 case FirstLaunchTutorialStep.RemountHorse:
+                 case FirstLaunchTutorialStep.DismountHorse:
+-                case FirstLaunchTutorialStep.Collectible:
+-                    return "INTERACT";
+-                case FirstLaunchTutorialStep.AttackEnemy:
+-                    return "ATTACK";
+-                case FirstLaunchTutorialStep.HealHorse:
+-                    return "HEAL";
+-                case FirstLaunchTutorialStep.RangedAttack:
+-                    return "RANGED";
+-                case FirstLaunchTutorialStep.Dodge:
+-                    return "DODGE";
+-                case FirstLaunchTutorialStep.HeavyAttack:
+-                    return "HEAVY";
+-                case FirstLaunchTutorialStep.SpinAttack:
+-                    return "SPIN";
+-                case FirstLaunchTutorialStep.Parry:
+-                    return "PARRY";
+-                case FirstLaunchTutorialStep.Grapple:
+-                    return "GRAPPLE";
+-                default:
+-                    return string.Empty;
++                case FirstLaunchTutorialStep.Collectible: return "INTERACT";
++                case FirstLaunchTutorialStep.AttackEnemy: return "ATTACK";
++                case FirstLaunchTutorialStep.HeavyAttack: return "HEAVY";
++                case FirstLaunchTutorialStep.Dodge: return "DODGE";
++                case FirstLaunchTutorialStep.Parry: return "PARRY";
++                case FirstLaunchTutorialStep.HealHorse: return "HEAL";
++                case FirstLaunchTutorialStep.SpinAttack: return "SPIN";
++                case FirstLaunchTutorialStep.Grapple: return "GRAPPLE";
++                case FirstLaunchTutorialStep.RangedAttack: return "RANGED";
++                case FirstLaunchTutorialStep.MountedImpact: return "MOVE";
++                default: return string.Empty;
+             }
+         }
+
+@@ -1086,6 +1083,8 @@
+                     return "WASD / ARROWS";
+                 case "INTERACT":
+                     return "E";
++                case "JUMP":
++                    return "W / UP";
+                 case "ATTACK":
+                     return "J / LEFT CLICK";
+                 case "HEAL":
+@@ -1116,6 +1115,8 @@
+                     return "D-PAD";
+                 case "INTERACT":
+                     return "SELECT";
++                case "JUMP":
++                    return "D-PAD UP";
+                 case "ATTACK":
+                     return "X";
+                 case "HEAL":
+--- a/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.PixelPresentation.cs
++++ b/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.PixelPresentation.cs
+@@ -362,6 +362,70 @@
+             }
+
+             if (entityName.IndexOf(
++                    "Mini Boss",
++                    StringComparison.OrdinalIgnoreCase) >= 0)
++            {
++                return new[]
++                {
++                    "...444444...",
++                    "..41111114..",
++                    ".4114444114.",
++                    "411111111114",
++                    "411333333114",
++                    "411111111114",
++                    ".3111111113.",
++                    "..31111113..",
++                    "..31....13..",
++                    ".31......13."
++                };
++            }
++
++            if (entityName.IndexOf(
++                    "Secret",
++                    StringComparison.OrdinalIgnoreCase) >= 0)
++            {
++                return new[]
++                {
++                    "..2..",
++                    ".212.",
++                    "21112",
++                    ".121.",
++                    "..2.."
++                };
++            }
++
++            if (entityName.IndexOf(
++                    "Finish Gate",
++                    StringComparison.OrdinalIgnoreCase) >= 0)
++            {
++                return new[]
++                {
++                    "2222222",
++                    "2111112",
++                    "21...12",
++                    "21...12",
++                    "21...12",
++                    "21...12",
++                    "21...12",
++                    "21...12"
++                };
++            }
++
++            if (entityName.IndexOf(
++                    "Jump Root",
++                    StringComparison.OrdinalIgnoreCase) >= 0)
++            {
++                return new[]
++                {
++                    "..111111..",
++                    ".11111111.",
++                    "1113331111",
++                    ".13333331.",
++                    "..33..33.."
++                };
++            }
++
++            if (entityName.IndexOf(
+                     "Enemy",
+                     StringComparison.OrdinalIgnoreCase) >= 0)
+             {
+@@ -436,52 +500,36 @@
+             RectTransform visual,
+             Image image)
+         {
+-            if (entityName.IndexOf(
+-                    "Player",
+-                    StringComparison.OrdinalIgnoreCase) >= 0)
++            switch (entityName)
+             {
+-                firstLaunchTutorialPlayerPixelVisual = visual;
+-                firstLaunchTutorialPlayerPixelImage = image;
+-            }
+-            else if (entityName.IndexOf(
+-                         "Horse",
+-                         StringComparison.OrdinalIgnoreCase) >= 0)
+-            {
+-                firstLaunchTutorialHorsePixelVisual = visual;
+-                firstLaunchTutorialHorsePixelImage = image;
+-            }
+-            else if (entityName.IndexOf(
+-                         "Enemy",
+-                         StringComparison.OrdinalIgnoreCase) >= 0)
+-            {
+-                firstLaunchTutorialEnemyPixelVisual = visual;
+-                firstLaunchTutorialEnemyPixelImage = image;
+-            }
+-            else if (entityName.IndexOf(
+-                         "Hazard",
+-                         StringComparison.OrdinalIgnoreCase) >= 0)
+-            {
+-                firstLaunchTutorialHazardPixelVisual = visual;
+-                firstLaunchTutorialHazardPixelImage = image;
+-            }
+-            else if (entityName.IndexOf(
+-                         "Projectile",
+-                         StringComparison.OrdinalIgnoreCase) >= 0)
+-            {
+-                firstLaunchTutorialProjectilePixelVisual = visual;
+-                firstLaunchTutorialProjectilePixelImage = image;
+-            }
+-            else if (entityName.IndexOf(
+-                         "Collectible",
+-                         StringComparison.OrdinalIgnoreCase) >= 0)
+-            {
+-                firstLaunchTutorialCollectiblePixelVisual = visual;
+-                firstLaunchTutorialCollectiblePixelImage = image;
+-            }
+-            else
+-            {
+-                firstLaunchTutorialGapPixelVisual = visual;
+-                firstLaunchTutorialGapPixelImage = image;
++                case "Tutorial Player":
++                    firstLaunchTutorialPlayerPixelVisual = visual;
++                    firstLaunchTutorialPlayerPixelImage = image;
++                    break;
++                case "Tutorial Horse":
++                    firstLaunchTutorialHorsePixelVisual = visual;
++                    firstLaunchTutorialHorsePixelImage = image;
++                    break;
++                case "Tutorial Enemy":
++                    firstLaunchTutorialEnemyPixelVisual = visual;
++                    firstLaunchTutorialEnemyPixelImage = image;
++                    break;
++                case "Tutorial Hazard":
++                    firstLaunchTutorialHazardPixelVisual = visual;
++                    firstLaunchTutorialHazardPixelImage = image;
++                    break;
++                case "Tutorial Projectile":
++                    firstLaunchTutorialProjectilePixelVisual = visual;
++                    firstLaunchTutorialProjectilePixelImage = image;
++                    break;
++                case "Tutorial Collectible":
++                    firstLaunchTutorialCollectiblePixelVisual = visual;
++                    firstLaunchTutorialCollectiblePixelImage = image;
++                    break;
++                case "Tutorial Gap":
++                    firstLaunchTutorialGapPixelVisual = visual;
++                    firstLaunchTutorialGapPixelImage = image;
++                    break;
+             }
+         }
+
+@@ -643,12 +691,22 @@
+                 firstLaunchTutorialMovementActive &&
+                 firstLaunchTutorialMounted;
+
++            bool airborne = !firstLaunchTutorialGrounded &&
++                !firstLaunchTutorialMounted;
++            float playerOffset = airborne
++                ? (firstLaunchTutorialVerticalVelocity >= 0f ? 3f : -1f)
++                : walking && frame % 2 == 1 ? 2f : 0f;
++            Vector3 playerScale = airborne
++                ? firstLaunchTutorialVerticalVelocity >= 0f
++                    ? new Vector3(0.92f, 1.08f, 1f)
++                    : new Vector3(1.04f, 0.96f, 1f)
++                : Vector3.one;
+             UpdateFirstLaunchTutorialPixelVisual(
+                 firstLaunchTutorialPlayer,
+                 firstLaunchTutorialPlayerPixelVisual,
+                 firstLaunchTutorialPlayerPixelImage,
+-                walking && frame % 2 == 1 ? 2f : 0f,
+-                Vector3.one
++                playerOffset,
++                playerScale
+             );
+             UpdateFirstLaunchTutorialPixelVisual(
+                 firstLaunchTutorialHorse,
+--- a/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.Gameplay.cs
++++ b/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.Gameplay.cs
+@@ -11,7 +11,7 @@
+     public sealed partial class BDModernHandheld3DPresenter
+     {
+         private const float TutorialWorldMinX = -920f;
+-        private const float TutorialWorldMaxX = 1700f;
++        private const float TutorialWorldMaxX = 4250f;
+         private const float TutorialWorldMinY = -126f;
+         private const float TutorialWorldMaxY = 56f;
+         private const float TutorialWorldViewportHalfWidth = 390f;
+@@ -24,14 +24,14 @@
+         private const float TutorialHorseStartX = -650f;
+         private const float TutorialAmbushTriggerX = -350f;
+         private const float TutorialAmbushEnemyX = -165f;
+-        private const float TutorialRangedTargetX = 120f;
+-        private const float TutorialDismountMarkerX = 300f;
+-        private const float TutorialHazardX = 470f;
++        private const float TutorialRangedTargetX = 1660f;
++        private const float TutorialDismountMarkerX = 2240f;
++        private const float TutorialHazardX = 860f;
+         private const float TutorialHeavyTargetX = 680f;
+-        private const float TutorialSpinTargetX = 890f;
+-        private const float TutorialParryTargetX = 1110f;
+-        private const float TutorialGapX = 1330f;
+-        private const float TutorialCollectibleX = 1580f;
++        private const float TutorialSpinTargetX = 2400f;
++        private const float TutorialParryTargetX = 1100f;
++        private const float TutorialGapX = 2580f;
++        private const float TutorialCollectibleX = 4050f;
+
+         private RectTransform firstLaunchTutorialCourseRoot;
+         private readonly List<Image> firstLaunchTutorialCourseDecorations =
+@@ -168,11 +168,13 @@
+             firstLaunchTutorialInstructionRequested = true;
+             firstLaunchTutorialInstructionVisibility = 1f;
+
++            InitializeFirstLaunchTutorialProductionCourse();
+             RenderFirstLaunchTutorialFreePlayCourse(force: true);
+         }
+
+         private void DisposeFirstLaunchTutorialFreePlayCourse()
+         {
++            DisposeFirstLaunchTutorialProductionCourse();
+             firstLaunchTutorialCourseDecorations.Clear();
+             firstLaunchTutorialCourseRoot = null;
+             firstLaunchTutorialPhysicalMoveLatch = Vector2.zero;
+@@ -240,6 +242,11 @@
+                 TutorialSpinTargetX,
+                 TutorialParryTargetX,
+                 TutorialGapX,
++                TutorialHazardStationX,
++                TutorialMountedStationX,
++                TutorialSecretBranchX,
++                TutorialCombinedStationX,
++                TutorialMiniBossStationX,
+                 TutorialCollectibleX
+             };
+
+@@ -280,6 +287,10 @@
+                 TutorialSpinTargetX,
+                 TutorialParryTargetX,
+                 TutorialGapX,
++                TutorialHazardStationX,
++                TutorialMountedStationX,
++                TutorialCombinedStationX,
++                TutorialMiniBossStationX,
+                 TutorialCollectibleX
+             };
+
+@@ -363,6 +374,7 @@
+             }
+
+             UpdateFirstLaunchTutorialHeldActions();
++            UpdateFirstLaunchTutorialProductionCourse(elapsed);
+
+             switch (firstLaunchTutorialStep)
+             {
+@@ -406,19 +418,29 @@
+             FirstLaunchTutorialInputSource source;
+             Vector2 movement =
+                 ReadFirstLaunchTutorialMovementVector(out source);
+-            if (movement.sqrMagnitude <= 0.0001f)
+-                return;
++            bool hasMovementInput = movement.sqrMagnitude > 0.0001f;
++            float speed = ResolveFirstLaunchTutorialTravelSpeed(
++                hasMovementInput ? movement : Vector2.zero
++            );
+
+-            SetFirstLaunchTutorialInputSource(source);
++            if (!hasMovementInput)
++            {
++                if (!firstLaunchTutorialMounted || speed <= 0.01f)
++                    return;
++                float inertiaDirection = Mathf.Abs(firstLaunchTutorialLastMoveDirection.x) > 0.01f
++                    ? Mathf.Sign(firstLaunchTutorialLastMoveDirection.x)
++                    : 1f;
++                movement = new Vector2(inertiaDirection, 0f);
++            }
++            else
++            {
++                SetFirstLaunchTutorialInputSource(source);
++            }
+
+             if (movement.sqrMagnitude > 1f)
+                 movement.Normalize();
+-
+-            float speed = firstLaunchTutorialMounted
+-                ? TutorialMountedMoveSpeed
+-                : TutorialFootMoveSpeed;
+             Vector2 delta =
+-                movement *
++                new Vector2(movement.x, 0f) *
+                 speed *
+                 Time.unscaledDeltaTime;
+
+@@ -431,11 +453,17 @@
+                     ResolveFirstLaunchTutorialMaximumPlayerX()
+                 )
+             );
+-            firstLaunchTutorialPlayerWorldPosition.y = Mathf.Clamp(
+-                firstLaunchTutorialPlayerWorldPosition.y,
+-                TutorialWorldMinY,
+-                TutorialWorldMaxY
+-            );
++
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.Jump &&
++                firstLaunchTutorialGrounded &&
++                firstLaunchTutorialPlayerWorldPosition.x > TutorialJumpObstacleX - 44f &&
++                firstLaunchTutorialPlayerWorldPosition.x < TutorialJumpObstacleX + 44f)
++            {
++                firstLaunchTutorialPlayerWorldPosition.x =
++                    movement.x >= 0f
++                        ? TutorialJumpObstacleX - 44f
++                        : TutorialJumpObstacleX + 44f;
++            }
+
+             if (firstLaunchTutorialMounted)
+             {
+@@ -453,7 +481,7 @@
+             {
+                 ShowFirstLaunchTutorialSuccess("KEEP EXPLORING");
+                 SetFirstLaunchTutorialStep(
+-                    FirstLaunchTutorialStep.MountHorse
++                    FirstLaunchTutorialStep.Jump
+                 );
+             }
+
+@@ -591,43 +619,41 @@
+             {
+                 case FirstLaunchTutorialStep.WhiteBoot:
+                 case FirstLaunchTutorialStep.Move:
++                    return TutorialJumpObstacleX + 20f;
++                case FirstLaunchTutorialStep.Jump:
+                 case FirstLaunchTutorialStep.MountHorse:
+                     return TutorialHorseStartX + 170f;
+-
+                 case FirstLaunchTutorialStep.RideHorse:
+                     return TutorialAmbushTriggerX + 70f;
+-
+                 case FirstLaunchTutorialStep.EnemyArrival:
+                 case FirstLaunchTutorialStep.HorseShot:
+                     return firstLaunchTutorialPlayerWorldPosition.x;
+-
+                 case FirstLaunchTutorialStep.AttackEnemy:
++                case FirstLaunchTutorialStep.HeavyAttack:
++                case FirstLaunchTutorialStep.Dodge:
++                case FirstLaunchTutorialStep.Parry:
+                 case FirstLaunchTutorialStep.HorseReturn:
+                 case FirstLaunchTutorialStep.HealHorse:
+                 case FirstLaunchTutorialStep.RemountHorse:
+-                    return TutorialRangedTargetX - 110f;
+-
++                    return TutorialParryTargetX + 220f;
+                 case FirstLaunchTutorialStep.RangedAttack:
+-                    return TutorialRangedTargetX + 120f;
+-
++                case FirstLaunchTutorialStep.Reload:
++                case FirstLaunchTutorialStep.MountedImpact:
++                    return TutorialMountedStationX + 420f;
+                 case FirstLaunchTutorialStep.DismountHorse:
+-                    return TutorialHazardX - 80f;
+-
+-                case FirstLaunchTutorialStep.Dodge:
+-                    return TutorialHeavyTargetX - 90f;
+-
+-                case FirstLaunchTutorialStep.HeavyAttack:
+-                    return TutorialSpinTargetX - 90f;
+-
+                 case FirstLaunchTutorialStep.SpinAttack:
+-                    return TutorialParryTargetX - 90f;
+-
+-                case FirstLaunchTutorialStep.Parry:
+-                    return TutorialGapX - 120f;
+-
+                 case FirstLaunchTutorialStep.Grapple:
+-                    return TutorialGapX - 72f;
+-
++                case FirstLaunchTutorialStep.HazardKnockback:
++                    return TutorialHazardStationX + 340f;
++                case FirstLaunchTutorialStep.SidePath:
++                    return TutorialSecretBranchX + 360f;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    return TutorialMiniBossStationX - 160f;
++                case FirstLaunchTutorialStep.MiniBossIntro:
++                case FirstLaunchTutorialStep.MiniBossPhaseOne:
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo:
++                case FirstLaunchTutorialStep.MiniBossDefeated:
++                    return TutorialFinishX - 80f;
+                 default:
+                     return TutorialWorldMaxX;
+             }
+@@ -643,9 +669,8 @@
+                 case BDModernHandheldControlTarget.ControlAction.DPadRight:
+                     return Vector2.right;
+                 case BDModernHandheldControlTarget.ControlAction.DPadUp:
+-                    return Vector2.up;
+                 case BDModernHandheldControlTarget.ControlAction.DPadDown:
+-                    return Vector2.down;
++                    return Vector2.zero;
+                 default:
+                     return Vector2.zero;
+             }
+@@ -681,6 +706,12 @@
+                 return;
+             }
+
++            if (ReadFirstLaunchTutorialJumpPressed())
++            {
++                RequestFirstLaunchTutorialJump();
++                return;
++            }
++
+             if (IsFirstLaunchTutorialActionInputLocked())
+                 return;
+
+@@ -802,6 +833,9 @@
+             BDModernHandheldControlTarget.ControlAction action,
+             FirstLaunchTutorialInputSource source)
+         {
++            if (TryHandleFirstLaunchTutorialProductionAction(action))
++                return;
++
+             Vector2 movement =
+                 ResolveFirstLaunchTutorialMovementAction(action);
+             if (movement.sqrMagnitude > 0.0001f)
+@@ -1015,6 +1049,8 @@
+                     ? (firstLaunchTutorialHazardWorldPosition -
+                        firstLaunchTutorialPlayerWorldPosition).normalized
+                     : firstLaunchTutorialLastMoveDirection;
++            firstLaunchTutorialInvulnerableUntil =
++                Mathf.Max(firstLaunchTutorialInvulnerableUntil, Time.unscaledTime + 0.34f);
+             PlayFirstLaunchTutorialDodgeAnimation(
+                 dodgeDirection,
+                 advances
+@@ -1333,102 +1369,93 @@
+             float elapsed)
+         {
+             bool requested;
+-
+             switch (firstLaunchTutorialStep)
+             {
+                 case FirstLaunchTutorialStep.Move:
++                case FirstLaunchTutorialStep.Jump:
+                     requested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.MountHorse:
+                 case FirstLaunchTutorialStep.RemountHorse:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialHorseWorldPosition) <=
+-                        164f;
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialHorseWorldPosition) <= 164f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.RideHorse:
+                     requested = elapsed <= 1.65f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.EnemyArrival:
+                 case FirstLaunchTutorialStep.HorseShot:
+                 case FirstLaunchTutorialStep.HorseReturn:
++                case FirstLaunchTutorialStep.MiniBossIntro:
++                case FirstLaunchTutorialStep.MiniBossDefeated:
+                     requested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.AttackEnemy:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialEnemyWorldPosition) <=
++                case FirstLaunchTutorialStep.HeavyAttack:
++                case FirstLaunchTutorialStep.Parry:
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialEnemyWorldPosition) <=
++                        TutorialInstructionTriggerRange + 40f;
++                    break;
++                case FirstLaunchTutorialStep.Dodge:
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialHazardWorldPosition) <=
+                         TutorialInstructionTriggerRange;
+                     break;
+-
+                 case FirstLaunchTutorialStep.HealHorse:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialHorseWorldPosition) <=
+-                        178f;
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialHorseWorldPosition) <= 178f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.RangedAttack:
+-                    requested =
+-                        firstLaunchTutorialMounted &&
+-                        Mathf.Abs(
+-                            firstLaunchTutorialPlayerWorldPosition.x -
+-                            TutorialRangedTargetX) <=
+-                        300f;
++                case FirstLaunchTutorialStep.Reload:
++                case FirstLaunchTutorialStep.MountedImpact:
++                    requested = firstLaunchTutorialMounted &&
++                        Mathf.Abs(firstLaunchTutorialPlayerWorldPosition.x -
++                                  TutorialMountedStationX) <= 520f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.DismountHorse:
+-                    requested =
+-                        firstLaunchTutorialPlayerWorldPosition.x >=
++                    requested = firstLaunchTutorialPlayerWorldPosition.x >=
+                         TutorialDismountMarkerX - 150f;
+                     break;
+-
+-                case FirstLaunchTutorialStep.Dodge:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialHazardWorldPosition) <=
+-                        TutorialInstructionTriggerRange;
+-                    break;
+-
+-                case FirstLaunchTutorialStep.HeavyAttack:
+                 case FirstLaunchTutorialStep.SpinAttack:
+-                case FirstLaunchTutorialStep.Parry:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialEnemyWorldPosition) <=
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialEnemyWorldPosition) <=
+                         TutorialInstructionTriggerRange + 40f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.Grapple:
+-                    requested =
+-                        Mathf.Abs(
+-                            firstLaunchTutorialPlayerWorldPosition.x -
+-                            TutorialGapX) <=
+-                        250f;
++                    requested = Mathf.Abs(
++                        firstLaunchTutorialPlayerWorldPosition.x -
++                        TutorialGapX) <= 270f;
++                    break;
++                case FirstLaunchTutorialStep.HazardKnockback:
++                    requested = Mathf.Abs(
++                        firstLaunchTutorialPlayerWorldPosition.x -
++                        TutorialHazardStationX) <= 300f;
++                    break;
++                case FirstLaunchTutorialStep.SidePath:
++                    requested = false;
++                    break;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    requested = elapsed <= 1.40f;
++                    break;
++                case FirstLaunchTutorialStep.MiniBossPhaseOne:
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo:
++                    requested = elapsed <= 1.50f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.Collectible:
+-                    requested =
+-                        Vector2.Distance(
+-                            firstLaunchTutorialPlayerWorldPosition,
+-                            firstLaunchTutorialCollectibleWorldPosition) <=
+-                        190f;
++                    requested = Vector2.Distance(
++                        firstLaunchTutorialPlayerWorldPosition,
++                        firstLaunchTutorialCollectibleWorldPosition) <= 190f;
+                     break;
+-
+                 default:
+                     requested = true;
+                     break;
+             }
+-
+             SetFirstLaunchTutorialInstructionRequested(requested);
+         }
+
+@@ -1442,13 +1469,9 @@
+             SetTutorialEntityActive(firstLaunchTutorialGap, false);
+
+             if (firstLaunchTutorialHorse != null)
+-            {
+                 firstLaunchTutorialHorse.gameObject.SetActive(true);
+-            }
+             if (firstLaunchTutorialPlayer != null)
+-            {
+                 firstLaunchTutorialPlayer.gameObject.SetActive(true);
+-            }
+
+             firstLaunchTutorialScriptStartedAt = Time.unscaledTime;
+             firstLaunchTutorialParryProjectileActive = false;
+@@ -1458,128 +1481,124 @@
+                 case FirstLaunchTutorialStep.WhiteBoot:
+                     firstLaunchTutorialInstructionRequested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.Move:
+                     firstLaunchTutorialInstructionRequested = true;
+                     firstLaunchTutorialTravelDistance = 0f;
+                     break;
+-
++                case FirstLaunchTutorialStep.Jump:
++                    firstLaunchTutorialInstructionRequested = true;
++                    firstLaunchTutorialCheckpointX = -840f;
++                    break;
+                 case FirstLaunchTutorialStep.MountHorse:
+                 case FirstLaunchTutorialStep.RemountHorse:
+                     firstLaunchTutorialInstructionRequested = false;
+                     break;
+-
+                 case FirstLaunchTutorialStep.RideHorse:
+                     firstLaunchTutorialInstructionRequested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.EnemyArrival:
+                     firstLaunchTutorialInstructionRequested = true;
+                     SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+                     break;
+-
+                 case FirstLaunchTutorialStep.HorseShot:
+                     firstLaunchTutorialInstructionRequested = true;
+                     SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+-                    SetTutorialEntityActive(
+-                        firstLaunchTutorialProjectile,
+-                        true
+-                    );
++                    SetTutorialEntityActive(firstLaunchTutorialProjectile, true);
+                     break;
+-
+                 case FirstLaunchTutorialStep.AttackEnemy:
+                     firstLaunchTutorialInstructionRequested = true;
+                     SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+                     firstLaunchTutorialEnemyWorldPosition =
+-                        new Vector2(
+-                            firstLaunchTutorialPlayerWorldPosition.x + 160f,
+-                            -108f
+-                        );
++                        firstLaunchTutorialPlayerWorldPosition + new Vector2(160f, 0f);
++                    break;
++                case FirstLaunchTutorialStep.HeavyAttack:
++                    firstLaunchTutorialInstructionRequested = false;
++                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
++                    firstLaunchTutorialEnemyWorldPosition =
++                        new Vector2(TutorialHeavyTargetX, TutorialGroundY);
++                    if (firstLaunchTutorialEnemy != null)
++                        firstLaunchTutorialEnemy.color = new Color(0.52f, 0.32f, 0.68f, 1f);
++                    break;
++                case FirstLaunchTutorialStep.Dodge:
++                    firstLaunchTutorialInstructionRequested = false;
++                    SetTutorialEntityActive(firstLaunchTutorialHazard, true);
++                    firstLaunchTutorialHazardWorldPosition =
++                        new Vector2(TutorialHazardX, TutorialGroundY - 34f);
++                    break;
++                case FirstLaunchTutorialStep.Parry:
++                    firstLaunchTutorialInstructionRequested = false;
++                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
++                    firstLaunchTutorialEnemyWorldPosition =
++                        new Vector2(TutorialParryTargetX + 126f, TutorialGroundY);
++                    firstLaunchTutorialProjectileWorldPosition =
++                        firstLaunchTutorialEnemyWorldPosition + new Vector2(-22f, 34f);
++                    firstLaunchTutorialParryProjectileProgress = 0f;
+                     break;
+-
+                 case FirstLaunchTutorialStep.HorseReturn:
+                     firstLaunchTutorialInstructionRequested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.HealHorse:
+                     firstLaunchTutorialInstructionRequested = false;
+                     firstLaunchTutorialHorseInjured = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.RangedAttack:
+                     firstLaunchTutorialInstructionRequested = false;
+-                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+-                    firstLaunchTutorialEnemyWorldPosition =
+-                        new Vector2(TutorialRangedTargetX, -108f);
++                    firstLaunchTutorialHorseWorldPosition =
++                        new Vector2(TutorialMountedStationX - 170f, TutorialGroundY - 8f);
++                    firstLaunchTutorialPlayerWorldPosition = firstLaunchTutorialHorseWorldPosition;
++                    firstLaunchTutorialMounted = true;
+                     break;
+-
+-                case FirstLaunchTutorialStep.DismountHorse:
+-                    firstLaunchTutorialInstructionRequested = false;
++                case FirstLaunchTutorialStep.Reload:
++                case FirstLaunchTutorialStep.MountedImpact:
++                    firstLaunchTutorialInstructionRequested = true;
+                     break;
+-
+-                case FirstLaunchTutorialStep.Dodge:
++                case FirstLaunchTutorialStep.DismountHorse:
+                     firstLaunchTutorialInstructionRequested = false;
+-                    SetTutorialEntityActive(firstLaunchTutorialHazard, true);
+-                    firstLaunchTutorialHazardWorldPosition =
+-                        new Vector2(TutorialHazardX, -142f);
+                     break;
+-
+-                case FirstLaunchTutorialStep.HeavyAttack:
++                case FirstLaunchTutorialStep.SpinAttack:
+                     firstLaunchTutorialInstructionRequested = false;
+                     SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+                     firstLaunchTutorialEnemyWorldPosition =
+-                        new Vector2(TutorialHeavyTargetX, -108f);
+-                    if (firstLaunchTutorialEnemy != null)
+-                    {
+-                        firstLaunchTutorialEnemy.color =
+-                            new Color(0.52f, 0.32f, 0.68f, 1f);
+-                    }
++                        new Vector2(TutorialSpinTargetX + 52f, TutorialGroundY);
+                     break;
+-
+-                case FirstLaunchTutorialStep.SpinAttack:
++                case FirstLaunchTutorialStep.Grapple:
+                     firstLaunchTutorialInstructionRequested = false;
+                     SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+-                    SetTutorialEntityActive(firstLaunchTutorialHazard, true);
+                     firstLaunchTutorialEnemyWorldPosition =
+-                        new Vector2(TutorialSpinTargetX + 52f, -108f);
+-                    firstLaunchTutorialHazardWorldPosition =
+-                        new Vector2(TutorialSpinTargetX - 54f, -138f);
++                        new Vector2(TutorialGapX + 130f, TutorialGroundY);
+                     break;
+-
+-                case FirstLaunchTutorialStep.Parry:
++                case FirstLaunchTutorialStep.HazardKnockback:
+                     firstLaunchTutorialInstructionRequested = false;
+-                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
+-                    firstLaunchTutorialEnemyWorldPosition =
+-                        new Vector2(TutorialParryTargetX + 126f, -108f);
+-                    firstLaunchTutorialProjectileWorldPosition =
+-                        firstLaunchTutorialEnemyWorldPosition +
+-                        new Vector2(-22f, 34f);
+-                    firstLaunchTutorialParryProjectileProgress = 0f;
+                     break;
+-
+-                case FirstLaunchTutorialStep.Grapple:
++                case FirstLaunchTutorialStep.SidePath:
+                     firstLaunchTutorialInstructionRequested = false;
+-                    SetTutorialEntityActive(firstLaunchTutorialGap, true);
+-                    firstLaunchTutorialGapWorldPosition =
+-                        new Vector2(TutorialGapX, -160f);
++                    firstLaunchTutorialCheckpointX = TutorialSecretBranchX - 220f;
++                    break;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    firstLaunchTutorialInstructionRequested = true;
++                    firstLaunchTutorialCheckpointX = TutorialCombinedStationX - 190f;
++                    break;
++                case FirstLaunchTutorialStep.MiniBossIntro:
++                    firstLaunchTutorialInstructionRequested = true;
++                    firstLaunchTutorialCheckpointX = TutorialMiniBossStationX - 220f;
++                    break;
++                case FirstLaunchTutorialStep.MiniBossPhaseOne:
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo:
++                case FirstLaunchTutorialStep.MiniBossDefeated:
++                    firstLaunchTutorialInstructionRequested = true;
+                     break;
+-
+                 case FirstLaunchTutorialStep.Collectible:
+                     firstLaunchTutorialInstructionRequested = false;
+-                    SetTutorialEntityActive(firstLaunchTutorialGap, true);
+-                    SetTutorialEntityActive(
+-                        firstLaunchTutorialCollectible,
+-                        true
+-                    );
++                    SetTutorialEntityActive(firstLaunchTutorialCollectible, true);
+                     firstLaunchTutorialCollectibleWorldPosition =
+                         new Vector2(TutorialCollectibleX, -90f);
+                     break;
+-
+                 case FirstLaunchTutorialStep.Completed:
+                     firstLaunchTutorialInstructionRequested = true;
+                     break;
+             }
+
++            ConfigureFirstLaunchTutorialProductionStep(step);
+             UpdateFirstLaunchTutorialPhysicalHighlight();
+         }
+
+@@ -1622,54 +1641,56 @@
+
+         private string ResolveFirstLaunchTutorialFreePlayProgressLabel()
+         {
+-            int lesson;
+-            const int total = 11;
+-
++            int section;
++            const int total = 10;
+             switch (firstLaunchTutorialStep)
+             {
+                 case FirstLaunchTutorialStep.WhiteBoot:
+                 case FirstLaunchTutorialStep.Move:
+-                    lesson = 1;
++                case FirstLaunchTutorialStep.Jump:
++                    section = 1;
+                     break;
+                 case FirstLaunchTutorialStep.MountHorse:
+                 case FirstLaunchTutorialStep.RideHorse:
+-                    lesson = 2;
++                    section = 2;
+                     break;
+                 case FirstLaunchTutorialStep.EnemyArrival:
+                 case FirstLaunchTutorialStep.HorseShot:
+                 case FirstLaunchTutorialStep.AttackEnemy:
+-                    lesson = 3;
++                case FirstLaunchTutorialStep.HeavyAttack:
++                case FirstLaunchTutorialStep.Dodge:
++                case FirstLaunchTutorialStep.Parry:
++                    section = 3;
+                     break;
+                 case FirstLaunchTutorialStep.HorseReturn:
+                 case FirstLaunchTutorialStep.HealHorse:
+-                    lesson = 4;
+-                    break;
+                 case FirstLaunchTutorialStep.RemountHorse:
+-                case FirstLaunchTutorialStep.RangedAttack:
+-                    lesson = 5;
++                    section = 4;
+                     break;
++                case FirstLaunchTutorialStep.RangedAttack:
++                case FirstLaunchTutorialStep.Reload:
++                case FirstLaunchTutorialStep.MountedImpact:
+                 case FirstLaunchTutorialStep.DismountHorse:
+-                case FirstLaunchTutorialStep.Dodge:
+-                    lesson = 6;
+-                    break;
+-                case FirstLaunchTutorialStep.HeavyAttack:
+-                    lesson = 7;
++                    section = 5;
+                     break;
+                 case FirstLaunchTutorialStep.SpinAttack:
+-                    lesson = 8;
++                case FirstLaunchTutorialStep.Grapple:
++                    section = 6;
+                     break;
+-                case FirstLaunchTutorialStep.Parry:
+-                    lesson = 9;
++                case FirstLaunchTutorialStep.HazardKnockback:
++                    section = 7;
+                     break;
+-                case FirstLaunchTutorialStep.Grapple:
+-                    lesson = 10;
++                case FirstLaunchTutorialStep.SidePath:
++                    section = 8;
++                    break;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    section = 9;
+                     break;
+                 default:
+-                    lesson = 11;
++                    section = 10;
+                     break;
+             }
+-
+-            return "GUIDE " + lesson + " / " + total;
++            return "GUIDE " + section + " / " + total;
+         }
+
+         private void RenderFirstLaunchTutorialFreePlayCourse(bool force)
+@@ -1681,8 +1702,12 @@
+                 TutorialWorldMinX + TutorialWorldViewportHalfWidth;
+             float maximumCamera =
+                 TutorialWorldMaxX - TutorialWorldViewportHalfWidth;
++            float facingLead = Mathf.Abs(firstLaunchTutorialLastMoveDirection.x) > 0.01f
++                ? Mathf.Sign(firstLaunchTutorialLastMoveDirection.x)
++                : 1f;
++            float leadDistance = firstLaunchTutorialMounted ? 96f : 54f;
+             float targetCamera = Mathf.Clamp(
+-                firstLaunchTutorialPlayerWorldPosition.x,
++                firstLaunchTutorialPlayerWorldPosition.x + facingLead * leadDistance,
+                 minimumCamera,
+                 maximumCamera
+             );
+@@ -1737,9 +1762,14 @@
+                             firstLaunchTutorialLastMoveDirection.x
+                         )
+                         : 1f;
+-                float scale = firstLaunchTutorialMounted ? 0.78f : 1f;
+-                firstLaunchTutorialPlayer.rectTransform.localScale =
+-                    new Vector3(facing * scale, scale, 1f);
++                if (!firstLaunchTutorialPlayerDeathActive)
++                {
++                    float scale = firstLaunchTutorialMounted ? 0.78f : 1f;
++                    firstLaunchTutorialPlayer.rectTransform.localScale =
++                        new Vector3(facing * scale, scale, 1f);
++                    firstLaunchTutorialPlayer.rectTransform.localRotation =
++                        Quaternion.identity;
++                }
+             }
+
+             if (firstLaunchTutorialEnemy != null)
+@@ -1783,6 +1813,8 @@
+                         firstLaunchTutorialGapWorldPosition
+                     );
+             }
++
++            RenderFirstLaunchTutorialProductionCourse();
+         }
+
+         private static Vector2 SnapFirstLaunchTutorialWorldPosition(
+@@ -1833,7 +1865,7 @@
+             if (advancesLesson)
+             {
+                 SetFirstLaunchTutorialStep(
+-                    FirstLaunchTutorialStep.Dodge
++                    FirstLaunchTutorialStep.SpinAttack
+                 );
+             }
+         }
+@@ -1846,9 +1878,9 @@
+
+             if (firstLaunchTutorialEnemy != null)
+                 firstLaunchTutorialEnemy.gameObject.SetActive(false);
+-            ShowFirstLaunchTutorialSuccess("ENEMY DEFEATED");
++            ShowFirstLaunchTutorialSuccess("OPENING FOUND");
+             SetFirstLaunchTutorialStep(
+-                FirstLaunchTutorialStep.HorseReturn
++                FirstLaunchTutorialStep.HeavyAttack
+             );
+         }
+
+@@ -1858,12 +1890,8 @@
+             if (!advancesLesson)
+                 return;
+
+-            if (firstLaunchTutorialEnemy != null)
+-                firstLaunchTutorialEnemy.gameObject.SetActive(false);
++            firstLaunchTutorialMountedShotDemonstrated = true;
+             ShowFirstLaunchTutorialSuccess("CLEAN SHOT");
+-            SetFirstLaunchTutorialStep(
+-                FirstLaunchTutorialStep.DismountHorse
+-            );
+         }
+
+         private void CompleteFirstLaunchTutorialDodgeAnimation(
+@@ -1871,9 +1899,10 @@
+         {
+             if (advancesLesson)
+             {
+-                ShowFirstLaunchTutorialSuccess("HAZARD CLEARED");
++                firstLaunchTutorialDodgeDemonstrated = true;
++                ShowFirstLaunchTutorialSuccess("EVADED");
+                 SetFirstLaunchTutorialStep(
+-                    FirstLaunchTutorialStep.HeavyAttack
++                    FirstLaunchTutorialStep.Parry
+                 );
+             }
+         }
+@@ -1886,9 +1915,9 @@
+
+             if (firstLaunchTutorialEnemy != null)
+                 firstLaunchTutorialEnemy.gameObject.SetActive(false);
+-            ShowFirstLaunchTutorialSuccess("ARMOR BROKEN");
++            ShowFirstLaunchTutorialSuccess("HEAVY IMPACT");
+             SetFirstLaunchTutorialStep(
+-                FirstLaunchTutorialStep.SpinAttack
++                FirstLaunchTutorialStep.Dodge
+             );
+         }
+
+@@ -1902,9 +1931,21 @@
+                 firstLaunchTutorialEnemy.gameObject.SetActive(false);
+             if (firstLaunchTutorialHazard != null)
+                 firstLaunchTutorialHazard.gameObject.SetActive(false);
++            for (int actorIndex = 0;
++                 actorIndex < firstLaunchTutorialActors.Count;
++                 actorIndex++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[actorIndex];
++                if (actor.Role == TutorialEnemyRole.MiniBoss)
++                    continue;
++                actor.Active = false;
++                actor.Dead = true;
++                if (actor.Image != null)
++                    actor.Image.gameObject.SetActive(false);
++            }
+             ShowFirstLaunchTutorialSuccess("GROUP CLEARED");
+             SetFirstLaunchTutorialStep(
+-                FirstLaunchTutorialStep.Parry
++                FirstLaunchTutorialStep.Grapple
+             );
+         }
+
+@@ -1919,9 +1960,10 @@
+
+             if (advancesLesson)
+             {
++                firstLaunchTutorialParryDemonstrated = true;
+                 ShowFirstLaunchTutorialSuccess("PARRIED");
+                 SetFirstLaunchTutorialStep(
+-                    FirstLaunchTutorialStep.Grapple
++                    FirstLaunchTutorialStep.HorseReturn
+                 );
+             }
+         }
+@@ -1932,11 +1974,11 @@
+             if (!advancesLesson)
+                 return;
+
+-            firstLaunchTutorialPlayerWorldPosition =
+-                new Vector2(TutorialGapX + 190f, -108f);
+-            ShowFirstLaunchTutorialSuccess("GAP CROSSED");
++            if (firstLaunchTutorialEnemy != null)
++                firstLaunchTutorialEnemy.gameObject.SetActive(false);
++            ShowFirstLaunchTutorialSuccess("PULLED INTO RANGE");
+             SetFirstLaunchTutorialStep(
+-                FirstLaunchTutorialStep.Collectible
++                FirstLaunchTutorialStep.HazardKnockback
+             );
+         }
+
+--- a/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.ActionPresentation.cs
++++ b/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.ActionPresentation.cs
+@@ -335,8 +335,9 @@
+
+         private bool IsFirstLaunchTutorialActionInputLocked()
+         {
+-            return firstLaunchTutorialActionPresentationType !=
+-                FirstLaunchTutorialActionPresentationType.None;
++            return firstLaunchTutorialPlayerDeathActive ||
++                firstLaunchTutorialActionPresentationType !=
++                    FirstLaunchTutorialActionPresentationType.None;
+         }
+
+         private void BeginFirstLaunchTutorialActionPresentation(
+@@ -503,8 +504,11 @@
+         private void PlayFirstLaunchTutorialGrappleAnimation(
+             bool advancesLesson)
+         {
+-            Vector2 target =
+-                new Vector2(TutorialGapX + 190f, -108f);
++            TutorialEnemyActor actor =
++                FindClosestLivingTutorialActor(560f);
++            Vector2 target = actor != null
++                ? actor.Position
++                : new Vector2(TutorialGapX + 190f, TutorialGroundY);
+             BeginFirstLaunchTutorialActionPresentation(
+                 FirstLaunchTutorialActionPresentationType.Grapple,
+                 0.72f,
+@@ -1208,8 +1212,20 @@
+             if (progress > 0.45f)
+             {
+                 float pull = (progress - 0.45f) / 0.55f;
+-                firstLaunchTutorialPlayerWorldPosition =
+-                    Vector2.Lerp(start, anchor, pull);
++                TutorialEnemyActor actor =
++                    FindClosestLivingTutorialActor(620f);
++                if (actor != null && actor.Role != TutorialEnemyRole.MiniBoss)
++                {
++                    float side = Mathf.Sign(
++                        anchor.x - firstLaunchTutorialPlayerWorldPosition.x
++                    );
++                    Vector2 safeTarget =
++                        firstLaunchTutorialPlayerWorldPosition +
++                        new Vector2(side * 132f, 0f);
++                    actor.Position = Vector2.Lerp(anchor, safeTarget, pull);
++                    if (actor.Image == firstLaunchTutorialEnemy)
++                        firstLaunchTutorialEnemyWorldPosition = actor.Position;
++                }
+             }
+         }
+         private void UpdateFirstLaunchTutorialHealPresentation(
+--- /dev/null
++++ b/Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.ProductionCourse.cs
+@@ -0,0 +1,1308 @@
++using System.Collections.Generic;
++using UnityEngine;
++using UnityEngine.UI;
++
++#if ENABLE_INPUT_SYSTEM
++using UnityEngine.InputSystem;
++#endif
++
++namespace BoredomAndDungeons
++{
++    public sealed partial class BDModernHandheld3DPresenter
++    {
++        private enum TutorialEnemyRole
++        {
++            Sword,
++            Ranged,
++            Small,
++            MiniBoss
++        }
++
++        private enum TutorialLearningState
++        {
++            NotSeen,
++            Introduced,
++            Attempted,
++            Performed,
++            Demonstrated,
++            MasteredForTutorial
++        }
++
++        private sealed class TutorialEnemyActor
++        {
++            public Image Image;
++            public TutorialEnemyRole Role;
++            public Vector2 Position;
++            public Vector2 SpawnPosition;
++            public float Health;
++            public float MaximumHealth;
++            public float NextActionAt;
++            public float ActionStartedAt;
++            public bool Active;
++            public bool AttackCommitted;
++            public bool DamageApplied;
++            public bool Dead;
++        }
++
++        private const float TutorialGroundY = -108f;
++        private const float TutorialJumpVelocity = 390f;
++        private const float TutorialGravity = 980f;
++        private const float TutorialJumpObstacleX = -760f;
++        private const float TutorialHazardStationX = 2750f;
++        private const float TutorialMountedStationX = 1900f;
++        private const float TutorialSecretBranchX = 3000f;
++        private const float TutorialCombinedStationX = 3260f;
++        private const float TutorialMiniBossStationX = 3600f;
++        private const float TutorialFinishX = 4080f;
++        private const int TutorialMagazineSize = 4;
++
++        private readonly List<TutorialEnemyActor> firstLaunchTutorialActors =
++            new List<TutorialEnemyActor>(8);
++        private readonly Dictionary<string, TutorialLearningState>
++            firstLaunchTutorialLearningStates =
++                new Dictionary<string, TutorialLearningState>(16);
++        private Image firstLaunchTutorialEnemySecondary;
++        private Image firstLaunchTutorialEnemyTertiary;
++        private Image firstLaunchTutorialRangedEnemy;
++        private Image firstLaunchTutorialMiniBoss;
++        private Image firstLaunchTutorialSecret;
++        private Image firstLaunchTutorialFinishGate;
++        private Image firstLaunchTutorialJumpObstacle;
++        private Text firstLaunchTutorialHealthText;
++        private Text firstLaunchTutorialAmmoText;
++        private float firstLaunchTutorialVerticalVelocity;
++        private float firstLaunchTutorialGroundedY = TutorialGroundY;
++        private float firstLaunchTutorialInvulnerableUntil;
++        private float firstLaunchTutorialNextEnemyAttackAt;
++        private float firstLaunchTutorialReloadCompletesAt;
++        private float firstLaunchTutorialMiniBossPhaseStartedAt;
++        private float firstLaunchTutorialCheckpointX;
++        private float firstLaunchTutorialMountedCurrentSpeed;
++        private int firstLaunchTutorialPlayerHealth;
++        private int firstLaunchTutorialAmmo;
++        private bool firstLaunchTutorialGrounded;
++        private bool firstLaunchTutorialJumpDemonstrated;
++        private bool firstLaunchTutorialDodgeDemonstrated;
++        private bool firstLaunchTutorialParryDemonstrated;
++        private bool firstLaunchTutorialHazardDemonstrated;
++        private bool firstLaunchTutorialMountedShotDemonstrated;
++        private bool firstLaunchTutorialMountedImpactDemonstrated;
++        private bool firstLaunchTutorialSecretCollected;
++        private bool firstLaunchTutorialCombinedStarted;
++        private bool firstLaunchTutorialMiniBossPhaseTwo;
++        private bool firstLaunchTutorialMiniBossDeathStarted;
++        private bool firstLaunchTutorialFinishGateOpen;
++        private bool firstLaunchTutorialProductionLightResolved;
++        private bool firstLaunchTutorialProductionHeavyResolved;
++        private int firstLaunchTutorialHintLevel;
++        private float firstLaunchTutorialHintAt;
++        private float firstLaunchTutorialBossProjectileProgress;
++        private float firstLaunchTutorialPlayerDeathStartedAt;
++        private float firstLaunchTutorialRunStartedAt;
++        private Text firstLaunchTutorialBossHealthText;
++        private int firstLaunchTutorialDisplayedHealth = -1;
++        private int firstLaunchTutorialDisplayedAmmo = -1;
++        private int firstLaunchTutorialDisplayedBossHealth = -1;
++        private bool firstLaunchTutorialDisplayedReloading;
++        private bool firstLaunchTutorialDisplayedBossVisible;
++        private bool firstLaunchTutorialPlayerDeathActive;
++
++        private void InitializeFirstLaunchTutorialProductionCourse()
++        {
++            if (firstLaunchTutorialCourseRoot == null)
++                return;
++
++            firstLaunchTutorialJumpObstacle = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Jump Root",
++                TutorialJumpObstacleX,
++                TutorialGroundY - 4f,
++                64f,
++                58f,
++                new Color(0.24f, 0.16f, 0.10f, 1f)
++            );
++            firstLaunchTutorialEnemySecondary = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Enemy Secondary",
++                0f,
++                TutorialGroundY,
++                49f,
++                77f,
++                new Color(0.82f, 0.18f, 0.24f, 1f)
++            );
++            firstLaunchTutorialEnemyTertiary = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Enemy Tertiary",
++                0f,
++                TutorialGroundY,
++                45f,
++                68f,
++                new Color(0.86f, 0.28f, 0.18f, 1f)
++            );
++            firstLaunchTutorialRangedEnemy = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Ranged Enemy",
++                0f,
++                TutorialGroundY,
++                52f,
++                74f,
++                new Color(0.66f, 0.16f, 0.70f, 1f)
++            );
++            firstLaunchTutorialMiniBoss = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Mini Boss",
++                TutorialMiniBossStationX + 220f,
++                TutorialGroundY + 10f,
++                112f,
++                132f,
++                new Color(0.74f, 0.10f, 0.22f, 1f)
++            );
++            firstLaunchTutorialSecret = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Optional Secret",
++                TutorialSecretBranchX + 150f,
++                TutorialGroundY + 82f,
++                34f,
++                44f,
++                new Color(0.28f, 1f, 0.72f, 1f)
++            );
++            firstLaunchTutorialFinishGate = CreateTutorialEntity(
++                firstLaunchTutorialCourseRoot,
++                "Tutorial Finish Gate",
++                TutorialFinishX,
++                TutorialGroundY + 24f,
++                44f,
++                154f,
++                new Color(0.24f, 0.72f, 1f, 0.92f)
++            );
++
++            if (firstLaunchTutorialProgress != null)
++            {
++                firstLaunchTutorialHealthText = CreateText(
++                    firstLaunchTutorialProgress.rectTransform.parent,
++                    "Tutorial Health",
++                    string.Empty,
++                    -300f,
++                    326f,
++                    220f,
++                    22f,
++                    14,
++                    TextAnchor.MiddleLeft,
++                    new Color(1f, 0.50f, 0.52f, 1f),
++                    FontStyle.Bold
++                );
++                firstLaunchTutorialAmmoText = CreateText(
++                    firstLaunchTutorialProgress.rectTransform.parent,
++                    "Tutorial Ammo",
++                    string.Empty,
++                    300f,
++                    326f,
++                    220f,
++                    22f,
++                    14,
++                    TextAnchor.MiddleRight,
++                    new Color(0.42f, 0.88f, 1f, 1f),
++                    FontStyle.Bold
++                );
++                firstLaunchTutorialBossHealthText = CreateText(
++                    firstLaunchTutorialProgress.rectTransform.parent,
++                    "Tutorial Mini Boss Health",
++                    string.Empty,
++                    0f,
++                    300f,
++                    430f,
++                    20f,
++                    13,
++                    TextAnchor.MiddleCenter,
++                    new Color(1f, 0.34f, 0.42f, 1f),
++                    FontStyle.Bold
++                );
++            }
++
++            firstLaunchTutorialActors.Clear();
++            firstLaunchTutorialLearningStates.Clear();
++            RegisterTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Sword);
++            RegisterTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small);
++            RegisterTutorialActor(firstLaunchTutorialEnemyTertiary, TutorialEnemyRole.Small);
++            RegisterTutorialActor(firstLaunchTutorialRangedEnemy, TutorialEnemyRole.Ranged);
++            RegisterTutorialActor(firstLaunchTutorialMiniBoss, TutorialEnemyRole.MiniBoss);
++
++            firstLaunchTutorialVerticalVelocity = 0f;
++            firstLaunchTutorialGrounded = true;
++            firstLaunchTutorialPlayerHealth = 6;
++            firstLaunchTutorialAmmo = TutorialMagazineSize;
++            firstLaunchTutorialCheckpointX = firstLaunchTutorialPlayerWorldPosition.x;
++            firstLaunchTutorialMountedCurrentSpeed = 0f;
++            firstLaunchTutorialSecretCollected = false;
++            firstLaunchTutorialCombinedStarted = false;
++            firstLaunchTutorialMiniBossPhaseTwo = false;
++            firstLaunchTutorialMiniBossDeathStarted = false;
++            firstLaunchTutorialFinishGateOpen = false;
++            firstLaunchTutorialHazardDemonstrated = false;
++            firstLaunchTutorialMountedShotDemonstrated = false;
++            firstLaunchTutorialMountedImpactDemonstrated = false;
++            firstLaunchTutorialPlayerDeathActive = false;
++            firstLaunchTutorialPlayerDeathStartedAt = 0f;
++            firstLaunchTutorialRunStartedAt = Time.unscaledTime;
++            firstLaunchTutorialDisplayedHealth = -1;
++            firstLaunchTutorialDisplayedAmmo = -1;
++            firstLaunchTutorialDisplayedBossHealth = -1;
++            firstLaunchTutorialDisplayedReloading = false;
++            firstLaunchTutorialDisplayedBossVisible = false;
++            firstLaunchTutorialHintLevel = 0;
++            firstLaunchTutorialHintAt = Time.unscaledTime + 7f;
++            SetProductionEntitiesVisible(false);
++            UpdateFirstLaunchTutorialProductionHud();
++        }
++
++        private void RegisterTutorialActor(Image image, TutorialEnemyRole role)
++        {
++            if (image == null)
++                return;
++            firstLaunchTutorialActors.Add(new TutorialEnemyActor
++            {
++                Image = image,
++                Role = role,
++                MaximumHealth = role == TutorialEnemyRole.MiniBoss ? 12f : 2f,
++                Health = role == TutorialEnemyRole.MiniBoss ? 12f : 2f
++            });
++        }
++
++        private void DisposeFirstLaunchTutorialProductionCourse()
++        {
++            firstLaunchTutorialActors.Clear();
++            firstLaunchTutorialLearningStates.Clear();
++            firstLaunchTutorialEnemySecondary = null;
++            firstLaunchTutorialEnemyTertiary = null;
++            firstLaunchTutorialRangedEnemy = null;
++            firstLaunchTutorialMiniBoss = null;
++            firstLaunchTutorialSecret = null;
++            firstLaunchTutorialFinishGate = null;
++            firstLaunchTutorialJumpObstacle = null;
++            firstLaunchTutorialHealthText = null;
++            firstLaunchTutorialAmmoText = null;
++            firstLaunchTutorialBossHealthText = null;
++            firstLaunchTutorialPlayerDeathActive = false;
++            firstLaunchTutorialPrimaryHoldStartedAt = -1f;
++            firstLaunchTutorialGrappleHoldStartedAt = -1f;
++            firstLaunchTutorialReloadCompletesAt = 0f;
++        }
++
++        private void UpdateFirstLaunchTutorialProductionCourse(float elapsed)
++        {
++            if (UpdateFirstLaunchTutorialPlayerDeath())
++            {
++                UpdateFirstLaunchTutorialProductionHud();
++                return;
++            }
++
++            UpdateFirstLaunchTutorialJumpPhysics();
++            UpdateFirstLaunchTutorialReload();
++            UpdateFirstLaunchTutorialEnemyTransactions();
++            UpdateFirstLaunchTutorialProductionHeldCombat();
++            UpdateFirstLaunchTutorialMountedImpact();
++            UpdateFirstLaunchTutorialHintEscalation();
++            UpdateFirstLaunchTutorialProductionHud();
++
++            switch (firstLaunchTutorialStep)
++            {
++                case FirstLaunchTutorialStep.SidePath:
++                    UpdateFirstLaunchTutorialSecretRoute();
++                    break;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    UpdateFirstLaunchTutorialCombinedEncounter();
++                    break;
++                case FirstLaunchTutorialStep.MiniBossIntro:
++                    if (elapsed >= 1.15f)
++                        SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossPhaseOne);
++                    break;
++                case FirstLaunchTutorialStep.MiniBossPhaseOne:
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo:
++                    UpdateFirstLaunchTutorialMiniBoss();
++                    break;
++                case FirstLaunchTutorialStep.MiniBossDefeated:
++                    UpdateFirstLaunchTutorialMiniBossDeath(elapsed);
++                    break;
++            }
++        }
++
++        private void SetFirstLaunchTutorialLearningState(
++            string actionId,
++            TutorialLearningState state)
++        {
++            TutorialLearningState current;
++            if (firstLaunchTutorialLearningStates.TryGetValue(actionId, out current) &&
++                current >= state)
++            {
++                return;
++            }
++            firstLaunchTutorialLearningStates[actionId] = state;
++        }
++
++        private void ResetFirstLaunchTutorialHintEscalation()
++        {
++            firstLaunchTutorialHintLevel = 0;
++            firstLaunchTutorialHintAt = Time.unscaledTime + 7f;
++        }
++
++        private void UpdateFirstLaunchTutorialHintEscalation()
++        {
++            if (!firstLaunchTutorialInstructionRequested ||
++                firstLaunchTutorialExitOpen ||
++                firstLaunchTutorialTransitionOut ||
++                Time.unscaledTime < firstLaunchTutorialHintAt)
++            {
++                return;
++            }
++
++            firstLaunchTutorialHintLevel++;
++            firstLaunchTutorialHintAt = Time.unscaledTime + 6f;
++            if (firstLaunchTutorialFeedback == null)
++                return;
++
++            switch (firstLaunchTutorialHintLevel)
++            {
++                case 1:
++                    firstLaunchTutorialFeedback.text = "TRY THE HIGHLIGHTED ACTION";
++                    break;
++                case 2:
++                    firstLaunchTutorialFeedback.text = "MOVE CLOSER TO THE HIGHLIGHTED OBJECT";
++                    break;
++                default:
++                    firstLaunchTutorialFeedback.text = "WATCH THE KEYCAP DEMONSTRATION";
++                    break;
++            }
++            firstLaunchTutorialFeedbackClearAt = Time.unscaledTime + 2.2f;
++        }
++
++        private float ResolveFirstLaunchTutorialTravelSpeed(Vector2 movement)
++        {
++            if (!firstLaunchTutorialMounted)
++            {
++                firstLaunchTutorialMountedCurrentSpeed = 0f;
++                return TutorialFootMoveSpeed;
++            }
++
++            float target = Mathf.Abs(movement.x) > 0.01f
++                ? TutorialMountedMoveSpeed
++                : 0f;
++            float rate = target > firstLaunchTutorialMountedCurrentSpeed
++                ? 330f
++                : 460f;
++            firstLaunchTutorialMountedCurrentSpeed = Mathf.MoveTowards(
++                firstLaunchTutorialMountedCurrentSpeed,
++                target,
++                rate * Time.unscaledDeltaTime
++            );
++            return firstLaunchTutorialMountedCurrentSpeed;
++        }
++
++        private void UpdateFirstLaunchTutorialJumpPhysics()
++        {
++            if (firstLaunchTutorialMounted)
++            {
++                firstLaunchTutorialVerticalVelocity = 0f;
++                firstLaunchTutorialGrounded = true;
++                firstLaunchTutorialPlayerWorldPosition.y = TutorialGroundY;
++                return;
++            }
++
++            if (firstLaunchTutorialGrounded)
++            {
++                firstLaunchTutorialPlayerWorldPosition.y = firstLaunchTutorialGroundedY;
++                return;
++            }
++
++            firstLaunchTutorialVerticalVelocity -= TutorialGravity * Time.unscaledDeltaTime;
++            firstLaunchTutorialPlayerWorldPosition.y +=
++                firstLaunchTutorialVerticalVelocity * Time.unscaledDeltaTime;
++            if (firstLaunchTutorialPlayerWorldPosition.y > firstLaunchTutorialGroundedY)
++                return;
++
++            firstLaunchTutorialPlayerWorldPosition.y = firstLaunchTutorialGroundedY;
++            firstLaunchTutorialVerticalVelocity = 0f;
++            firstLaunchTutorialGrounded = true;
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.Jump &&
++                firstLaunchTutorialPlayerWorldPosition.x >= TutorialJumpObstacleX + 44f)
++            {
++                firstLaunchTutorialJumpDemonstrated = true;
++                SetFirstLaunchTutorialLearningState(
++                    "Jump",
++                    TutorialLearningState.Demonstrated
++                );
++                ShowFirstLaunchTutorialSuccess("JUMP CLEARED");
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MountHorse);
++            }
++        }
++
++        private void RequestFirstLaunchTutorialJump()
++        {
++            if (firstLaunchTutorialMounted || !firstLaunchTutorialGrounded ||
++                IsFirstLaunchTutorialActionInputLocked())
++            {
++                return;
++            }
++
++            firstLaunchTutorialGrounded = false;
++            firstLaunchTutorialVerticalVelocity = TutorialJumpVelocity;
++            SetFirstLaunchTutorialLearningState(
++                "Jump",
++                TutorialLearningState.Performed
++            );
++            firstLaunchTutorialMovementActive = true;
++            PlayClick();
++        }
++
++        private bool ReadFirstLaunchTutorialJumpPressed()
++        {
++#if ENABLE_INPUT_SYSTEM
++            if (Keyboard.current != null &&
++                (Keyboard.current.wKey.wasPressedThisFrame ||
++                 Keyboard.current.upArrowKey.wasPressedThisFrame))
++            {
++                return true;
++            }
++            if (Gamepad.current != null &&
++                Gamepad.current.dpad.up.wasPressedThisFrame)
++            {
++                return true;
++            }
++#endif
++#if ENABLE_LEGACY_INPUT_MANAGER
++            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
++                return true;
++#endif
++            return false;
++        }
++
++        private bool TryHandleFirstLaunchTutorialProductionAction(
++            BDModernHandheldControlTarget.ControlAction action)
++        {
++            if (action == BDModernHandheldControlTarget.ControlAction.DPadUp &&
++                !firstLaunchTutorialMounted)
++            {
++                RequestFirstLaunchTutorialJump();
++                return true;
++            }
++
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.SidePath &&
++                action == BDModernHandheldControlTarget.ControlAction.Confirm)
++            {
++                TryCollectFirstLaunchTutorialSecret();
++                return true;
++            }
++
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.HazardKnockback &&
++                (action == BDModernHandheldControlTarget.ControlAction.Primary ||
++                 action == BDModernHandheldControlTarget.ControlAction.Credits))
++            {
++                ResolveFirstLaunchTutorialHazardKnockback();
++                return true;
++            }
++
++            if ((firstLaunchTutorialStep == FirstLaunchTutorialStep.CombinedEncounter ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo) &&
++                action == BDModernHandheldControlTarget.ControlAction.Primary)
++            {
++                if (firstLaunchTutorialMounted)
++                {
++                    ShowFirstLaunchTutorialSuccess("ON HORSE: RANGED ATTACKS ONLY");
++                    return true;
++                }
++                firstLaunchTutorialPrimaryHoldStartedAt = Time.unscaledTime;
++                firstLaunchTutorialProductionLightResolved = false;
++                return true;
++            }
++
++            if ((firstLaunchTutorialStep == FirstLaunchTutorialStep.CombinedEncounter ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo) &&
++                action == BDModernHandheldControlTarget.ControlAction.Credits)
++            {
++                if (firstLaunchTutorialMounted)
++                {
++                    ShowFirstLaunchTutorialSuccess("ON HORSE: RANGED ATTACKS ONLY");
++                    return true;
++                }
++                if (TryResolveFirstLaunchTutorialContextParry())
++                    return true;
++                firstLaunchTutorialGrappleHoldStartedAt = Time.unscaledTime;
++                firstLaunchTutorialProductionHeavyResolved = false;
++                return true;
++            }
++
++            if ((firstLaunchTutorialStep == FirstLaunchTutorialStep.CombinedEncounter ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.RangedAttack) &&
++                action == BDModernHandheldControlTarget.ControlAction.Progression)
++            {
++                FireFirstLaunchTutorialProductionShot();
++                return true;
++            }
++
++            return false;
++        }
++
++        private bool TryResolveFirstLaunchTutorialContextParry()
++        {
++            float now = Time.unscaledTime;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (!actor.Active || actor.Dead || !actor.AttackCommitted)
++                    continue;
++
++                float attackElapsed = now - actor.ActionStartedAt;
++                if (attackElapsed < 0.30f || attackElapsed > 0.58f)
++                    continue;
++                if (Vector2.Distance(actor.Position, firstLaunchTutorialPlayerWorldPosition) >
++                    (actor.Role == TutorialEnemyRole.Ranged ? 520f : 270f))
++                {
++                    continue;
++                }
++
++                actor.AttackCommitted = false;
++                actor.DamageApplied = false;
++                actor.NextActionAt = now + 1.25f;
++                firstLaunchTutorialInvulnerableUntil = now + 0.32f;
++                firstLaunchTutorialParryDemonstrated = true;
++                SetFirstLaunchTutorialLearningState(
++                    "Parry",
++                    TutorialLearningState.Demonstrated
++                );
++                PlayFirstLaunchTutorialParryAnimation(false);
++                ShowFirstLaunchTutorialSuccess("PARRY");
++                return true;
++            }
++            return false;
++        }
++
++        private void UpdateFirstLaunchTutorialProductionHeldCombat()
++        {
++            bool productionCombat =
++                firstLaunchTutorialStep == FirstLaunchTutorialStep.CombinedEncounter ||
++                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo;
++            if (!productionCombat || IsFirstLaunchTutorialActionInputLocked())
++                return;
++
++            if (firstLaunchTutorialPrimaryHoldStartedAt >= 0f &&
++                !firstLaunchTutorialProductionLightResolved)
++            {
++                float held = Time.unscaledTime - firstLaunchTutorialPrimaryHoldStartedAt;
++                bool isHeld = IsFirstLaunchTutorialPrimaryHeld();
++                if (held >= TutorialSpinHoldSeconds && isHeld)
++                {
++                    firstLaunchTutorialProductionLightResolved = true;
++                    firstLaunchTutorialPrimaryHoldStartedAt = -1f;
++                    ResolveFirstLaunchTutorialProductionSpin();
++                }
++                else if (!isHeld)
++                {
++                    firstLaunchTutorialProductionLightResolved = true;
++                    firstLaunchTutorialPrimaryHoldStartedAt = -1f;
++                    ResolveFirstLaunchTutorialProductionMelee(1f, false);
++                    PlayFirstLaunchTutorialLightAttackAnimation(false);
++                }
++            }
++
++            if (firstLaunchTutorialGrappleHoldStartedAt >= 0f &&
++                !firstLaunchTutorialProductionHeavyResolved)
++            {
++                float held = Time.unscaledTime - firstLaunchTutorialGrappleHoldStartedAt;
++                bool isHeld = IsFirstLaunchTutorialHeavyHeld();
++                if (held >= TutorialGrappleHoldSeconds && isHeld)
++                {
++                    firstLaunchTutorialProductionHeavyResolved = true;
++                    firstLaunchTutorialGrappleHoldStartedAt = -1f;
++                    ResolveFirstLaunchTutorialProductionHook();
++                }
++                else if (!isHeld)
++                {
++                    firstLaunchTutorialProductionHeavyResolved = true;
++                    firstLaunchTutorialGrappleHoldStartedAt = -1f;
++                    ResolveFirstLaunchTutorialProductionMelee(2f, true);
++                    PlayFirstLaunchTutorialHeavyAttackAnimation(false);
++                }
++            }
++        }
++
++        private void ResolveFirstLaunchTutorialProductionSpin()
++        {
++            bool hit = false;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (!actor.Active || actor.Dead ||
++                    Vector2.Distance(actor.Position, firstLaunchTutorialPlayerWorldPosition) > 210f)
++                {
++                    continue;
++                }
++                ApplyFirstLaunchTutorialActorDamage(actor, 0.82f);
++                if (actor.Role != TutorialEnemyRole.MiniBoss)
++                    actor.Position.x += Mathf.Sign(actor.Position.x - firstLaunchTutorialPlayerWorldPosition.x) * 54f;
++                hit = true;
++            }
++            PlayFirstLaunchTutorialSpinAttackAnimation(false);
++            SetFirstLaunchTutorialLearningState(
++                "Spin",
++                hit ? TutorialLearningState.Demonstrated : TutorialLearningState.Attempted
++            );
++            if (!hit)
++                ShowFirstLaunchTutorialSuccess("NO TARGET IN RANGE");
++        }
++
++        private void ResolveFirstLaunchTutorialProductionHook()
++        {
++            TutorialEnemyActor actor = FindClosestLivingTutorialActor(520f);
++            if (actor == null)
++            {
++                PlayFirstLaunchTutorialGrappleAnimation(false);
++                ShowFirstLaunchTutorialSuccess("THE HOOK FOUND NOTHING");
++                return;
++            }
++            ApplyFirstLaunchTutorialActorDamage(actor, 0.5f);
++            if (actor.Role != TutorialEnemyRole.MiniBoss)
++            {
++                float side = Mathf.Sign(actor.Position.x - firstLaunchTutorialPlayerWorldPosition.x);
++                actor.Position = firstLaunchTutorialPlayerWorldPosition + new Vector2(side * 132f, 0f);
++                if (actor.Image == firstLaunchTutorialEnemy)
++                    firstLaunchTutorialEnemyWorldPosition = actor.Position;
++            }
++            PlayFirstLaunchTutorialGrappleAnimation(false);
++            SetFirstLaunchTutorialLearningState(
++                "Grapple",
++                TutorialLearningState.Demonstrated
++            );
++        }
++
++        private void ResolveFirstLaunchTutorialHazardKnockback()
++        {
++            TutorialEnemyActor actor = FindClosestLivingTutorialActor(240f);
++            if (actor != null)
++            {
++                actor.Position = new Vector2(TutorialHazardStationX, TutorialGroundY - 34f);
++                ApplyFirstLaunchTutorialActorDamage(actor, actor.Health);
++            }
++            firstLaunchTutorialHazardDemonstrated = true;
++            SetFirstLaunchTutorialLearningState(
++                "HazardKnockback",
++                TutorialLearningState.Demonstrated
++            );
++            ShowFirstLaunchTutorialSuccess("HAZARD USED");
++            SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.SidePath);
++        }
++
++        private void UpdateFirstLaunchTutorialMountedImpact()
++        {
++            if (firstLaunchTutorialStep != FirstLaunchTutorialStep.MountedImpact ||
++                !firstLaunchTutorialMounted ||
++                !firstLaunchTutorialMovementActive)
++            {
++                return;
++            }
++            TutorialEnemyActor actor = FindClosestLivingTutorialActor(112f);
++            if (actor == null || actor.Role == TutorialEnemyRole.MiniBoss)
++                return;
++            ApplyFirstLaunchTutorialActorDamage(actor, actor.Health);
++            actor.Position.x += Mathf.Sign(firstLaunchTutorialLastMoveDirection.x) * 110f;
++            firstLaunchTutorialMountedImpactDemonstrated = true;
++            SetFirstLaunchTutorialLearningState(
++                "MountedImpact",
++                TutorialLearningState.Demonstrated
++            );
++            ShowFirstLaunchTutorialSuccess("MOUNTED IMPACT");
++            SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.DismountHorse);
++        }
++
++        private void ResolveFirstLaunchTutorialProductionMelee(float damage, bool heavy)
++        {
++            TutorialEnemyActor actor = FindClosestLivingTutorialActor(heavy ? 210f : 165f);
++            if (actor == null)
++            {
++                ShowFirstLaunchTutorialSuccess("NO TARGET IN RANGE");
++                return;
++            }
++
++            ApplyFirstLaunchTutorialActorDamage(actor, damage);
++            SetFirstLaunchTutorialLearningState(
++                heavy ? "Heavy" : "Light",
++                TutorialLearningState.Demonstrated
++            );
++            if (heavy && actor.Role != TutorialEnemyRole.MiniBoss)
++                actor.Position.x += Mathf.Sign(actor.Position.x - firstLaunchTutorialPlayerWorldPosition.x) * 72f;
++        }
++
++        private void FireFirstLaunchTutorialProductionShot()
++        {
++            if (!firstLaunchTutorialMounted &&
++                firstLaunchTutorialStep != FirstLaunchTutorialStep.CombinedEncounter &&
++                firstLaunchTutorialStep != FirstLaunchTutorialStep.MiniBossPhaseOne &&
++                firstLaunchTutorialStep != FirstLaunchTutorialStep.MiniBossPhaseTwo)
++            {
++                ShowFirstLaunchTutorialSuccess("MOUNT FIRST");
++                return;
++            }
++            if (Time.unscaledTime < firstLaunchTutorialReloadCompletesAt)
++                return;
++            if (firstLaunchTutorialAmmo <= 0)
++            {
++                BeginFirstLaunchTutorialReload();
++                return;
++            }
++
++            TutorialEnemyActor actor = FindClosestLivingTutorialActor(520f);
++            Vector2 target = actor != null
++                ? actor.Position
++                : firstLaunchTutorialPlayerWorldPosition + Vector2.right * 360f;
++            firstLaunchTutorialAmmo--;
++            PlayFirstLaunchTutorialRangedAttackAnimation(target, false);
++            if (actor != null)
++                ApplyFirstLaunchTutorialActorDamage(actor, 1f);
++            firstLaunchTutorialMountedShotDemonstrated = true;
++            if (firstLaunchTutorialAmmo <= 0)
++                BeginFirstLaunchTutorialReload();
++        }
++
++        private void BeginFirstLaunchTutorialReload()
++        {
++            if (Time.unscaledTime < firstLaunchTutorialReloadCompletesAt)
++                return;
++            firstLaunchTutorialReloadCompletesAt = Time.unscaledTime + 1.15f;
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.RangedAttack)
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Reload);
++            ShowFirstLaunchTutorialSuccess("RELOADING");
++        }
++
++        private void UpdateFirstLaunchTutorialReload()
++        {
++            if (firstLaunchTutorialReloadCompletesAt <= 0f ||
++                Time.unscaledTime < firstLaunchTutorialReloadCompletesAt)
++            {
++                return;
++            }
++            firstLaunchTutorialReloadCompletesAt = 0f;
++            firstLaunchTutorialAmmo = TutorialMagazineSize;
++            ShowFirstLaunchTutorialSuccess("READY");
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.Reload)
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MountedImpact);
++        }
++
++        private TutorialEnemyActor FindClosestLivingTutorialActor(float range)
++        {
++            TutorialEnemyActor closest = null;
++            float best = range * range;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (!actor.Active || actor.Dead)
++                    continue;
++                float distance = (actor.Position - firstLaunchTutorialPlayerWorldPosition).sqrMagnitude;
++                if (distance >= best)
++                    continue;
++                best = distance;
++                closest = actor;
++            }
++            return closest;
++        }
++
++        private void ApplyFirstLaunchTutorialActorDamage(TutorialEnemyActor actor, float damage)
++        {
++            if (actor == null || actor.Dead || damage <= 0f)
++                return;
++            if (actor.Role == TutorialEnemyRole.MiniBoss)
++            {
++                if (Time.unscaledTime - firstLaunchTutorialMiniBossPhaseStartedAt < 0.55f)
++                    return;
++                if (actor.AttackCommitted &&
++                    Time.unscaledTime - actor.ActionStartedAt < 0.92f)
++                {
++                    ShowFirstLaunchTutorialSuccess("STRIKE DURING RECOVERY");
++                    return;
++                }
++            }
++            actor.Health = Mathf.Max(0f, actor.Health - damage);
++            if (actor.Health > 0f)
++                return;
++            actor.Dead = true;
++            actor.Active = false;
++            if (actor.Image != null)
++                actor.Image.gameObject.SetActive(false);
++        }
++
++        private void UpdateFirstLaunchTutorialEnemyTransactions()
++        {
++            float now = Time.unscaledTime;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (!actor.Active || actor.Dead)
++                    continue;
++
++                if (actor.AttackCommitted)
++                {
++                    float attackElapsed = now - actor.ActionStartedAt;
++                    if (!actor.DamageApplied && attackElapsed >= 0.46f)
++                    {
++                        actor.DamageApplied = true;
++                        if (Vector2.Distance(actor.Position, firstLaunchTutorialPlayerWorldPosition) <=
++                            (actor.Role == TutorialEnemyRole.Ranged ? 520f : 250f) &&
++                            now >= firstLaunchTutorialInvulnerableUntil)
++                        {
++                            DamageFirstLaunchTutorialPlayer(
++                                actor.Role == TutorialEnemyRole.MiniBoss ? 2 : 1
++                            );
++                        }
++                    }
++                    if (attackElapsed >= 0.92f)
++                    {
++                        actor.AttackCommitted = false;
++                        actor.DamageApplied = false;
++                        actor.NextActionAt = now +
++                            (actor.Role == TutorialEnemyRole.MiniBoss && firstLaunchTutorialMiniBossPhaseTwo
++                                ? 0.72f
++                                : 1.15f);
++                    }
++                    continue;
++                }
++
++                if (now < actor.NextActionAt ||
++                    now < firstLaunchTutorialNextEnemyAttackAt ||
++                    Vector2.Distance(actor.Position, firstLaunchTutorialPlayerWorldPosition) > 520f)
++                {
++                    continue;
++                }
++
++                actor.ActionStartedAt = now;
++                actor.AttackCommitted = true;
++                actor.DamageApplied = false;
++                firstLaunchTutorialNextEnemyAttackAt = now + 0.62f;
++                break;
++            }
++        }
++
++        private void DamageFirstLaunchTutorialPlayer(int amount)
++        {
++            if (amount <= 0 || Time.unscaledTime < firstLaunchTutorialInvulnerableUntil)
++                return;
++            firstLaunchTutorialPlayerHealth = Mathf.Max(0, firstLaunchTutorialPlayerHealth - amount);
++            firstLaunchTutorialInvulnerableUntil = Time.unscaledTime + 0.75f;
++            ShowFirstLaunchTutorialSuccess("HIT");
++            if (firstLaunchTutorialPlayerHealth > 0)
++                return;
++
++            firstLaunchTutorialPlayerDeathActive = true;
++            firstLaunchTutorialPlayerDeathStartedAt = Time.unscaledTime;
++            firstLaunchTutorialMovementActive = false;
++            firstLaunchTutorialPrimaryHoldStartedAt = -1f;
++            firstLaunchTutorialGrappleHoldStartedAt = -1f;
++            firstLaunchTutorialReloadCompletesAt = 0f;
++            ShowFirstLaunchTutorialSuccess("TRY AGAIN");
++        }
++
++        private bool UpdateFirstLaunchTutorialPlayerDeath()
++        {
++            if (!firstLaunchTutorialPlayerDeathActive)
++                return false;
++
++            float elapsed = Time.unscaledTime - firstLaunchTutorialPlayerDeathStartedAt;
++            if (firstLaunchTutorialPlayer != null)
++            {
++                float t = Mathf.Clamp01(elapsed / 0.62f);
++                firstLaunchTutorialPlayer.rectTransform.localRotation =
++                    Quaternion.Euler(0f, 0f, Mathf.Lerp(0f, -78f, t));
++                firstLaunchTutorialPlayer.rectTransform.localScale =
++                    new Vector3(1f, Mathf.Lerp(1f, 0.70f, t), 1f);
++            }
++
++            if (elapsed < 0.72f)
++                return true;
++
++            firstLaunchTutorialPlayerDeathActive = false;
++            ResetFirstLaunchTutorialToCheckpoint();
++            return true;
++        }
++
++        private void ResetFirstLaunchTutorialToCheckpoint()
++        {
++            if (firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo ||
++                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossDefeated)
++            {
++                firstLaunchTutorialMiniBossPhaseTwo = false;
++                firstLaunchTutorialMiniBossDeathStarted = false;
++                firstLaunchTutorialBossProjectileProgress = 0f;
++                firstLaunchTutorialStep = FirstLaunchTutorialStep.MiniBossPhaseOne;
++                firstLaunchTutorialStepStartedAt = Time.unscaledTime;
++            }
++
++            firstLaunchTutorialPlayerHealth = 6;
++            firstLaunchTutorialAmmo = TutorialMagazineSize;
++            firstLaunchTutorialReloadCompletesAt = 0f;
++            firstLaunchTutorialMounted = false;
++            firstLaunchTutorialMountedCurrentSpeed = 0f;
++            firstLaunchTutorialGrounded = true;
++            firstLaunchTutorialVerticalVelocity = 0f;
++            firstLaunchTutorialPlayerWorldPosition = new Vector2(firstLaunchTutorialCheckpointX, TutorialGroundY);
++            if (firstLaunchTutorialPlayer != null)
++            {
++                firstLaunchTutorialPlayer.rectTransform.localRotation = Quaternion.identity;
++                firstLaunchTutorialPlayer.rectTransform.localScale = Vector3.one;
++            }
++            firstLaunchTutorialPrimaryHoldStartedAt = -1f;
++            firstLaunchTutorialGrappleHoldStartedAt = -1f;
++            firstLaunchTutorialHealHoldStartedAt = -1f;
++            ConfigureFirstLaunchTutorialProductionStep(firstLaunchTutorialStep);
++            ShowFirstLaunchTutorialSuccess("CHECKPOINT RESTORED");
++        }
++
++        private void UpdateFirstLaunchTutorialSecretRoute()
++        {
++            if (firstLaunchTutorialSecretCollected)
++            {
++                if (firstLaunchTutorialPlayerWorldPosition.x >= TutorialSecretBranchX + 210f)
++                    SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.CombinedEncounter);
++                return;
++            }
++            if (firstLaunchTutorialPlayerWorldPosition.x >= TutorialSecretBranchX + 260f)
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.CombinedEncounter);
++        }
++
++        private void TryCollectFirstLaunchTutorialSecret()
++        {
++            if (firstLaunchTutorialSecretCollected || firstLaunchTutorialSecret == null)
++                return;
++            Vector2 secretPosition = new Vector2(TutorialSecretBranchX + 150f, TutorialGroundY + 82f);
++            if (Vector2.Distance(firstLaunchTutorialPlayerWorldPosition, secretPosition) > 110f)
++                return;
++            firstLaunchTutorialSecretCollected = true;
++            firstLaunchTutorialSecret.gameObject.SetActive(false);
++            ShowFirstLaunchTutorialSuccess("SECRET FOUND");
++        }
++
++        private void UpdateFirstLaunchTutorialCombinedEncounter()
++        {
++            if (!firstLaunchTutorialCombinedStarted)
++            {
++                firstLaunchTutorialCombinedStarted = true;
++                firstLaunchTutorialCheckpointX = TutorialCombinedStationX - 190f;
++            }
++            if (CountLivingTutorialActors(TutorialEnemyRole.MiniBoss) == 0 &&
++                CountLivingNonBossTutorialActors() == 0)
++            {
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossIntro);
++            }
++        }
++
++        private void UpdateFirstLaunchTutorialMiniBoss()
++        {
++            TutorialEnemyActor boss = FindTutorialBoss();
++            if (boss == null || boss.Dead)
++            {
++                if (!firstLaunchTutorialMiniBossDeathStarted)
++                    SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossDefeated);
++                return;
++            }
++
++            if (firstLaunchTutorialMiniBossPhaseTwo)
++                UpdateFirstLaunchTutorialMiniBossProjectile(boss);
++
++            if (!firstLaunchTutorialMiniBossPhaseTwo && boss.Health <= boss.MaximumHealth * 0.5f)
++            {
++                float remainingHealth = boss.Health;
++                firstLaunchTutorialMiniBossPhaseTwo = true;
++                firstLaunchTutorialMiniBossPhaseStartedAt = Time.unscaledTime;
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossPhaseTwo);
++                TutorialEnemyActor phaseBoss = FindTutorialBoss();
++                if (phaseBoss != null)
++                    phaseBoss.Health = remainingHealth;
++                SpawnTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small, TutorialMiniBossStationX - 120f, 2f);
++                SpawnTutorialActor(firstLaunchTutorialEnemyTertiary, TutorialEnemyRole.Small, TutorialMiniBossStationX + 120f, 2f);
++            }
++        }
++
++        private void UpdateFirstLaunchTutorialMiniBossProjectile(
++            TutorialEnemyActor boss)
++        {
++            if (firstLaunchTutorialProjectile == null || boss == null)
++                return;
++
++            firstLaunchTutorialProjectile.gameObject.SetActive(true);
++            firstLaunchTutorialBossProjectileProgress = Mathf.Repeat(
++                firstLaunchTutorialBossProjectileProgress +
++                Time.unscaledDeltaTime / 1.55f,
++                1f
++            );
++            firstLaunchTutorialProjectileWorldPosition = Vector2.Lerp(
++                boss.Position + new Vector2(-28f, 38f),
++                firstLaunchTutorialPlayerWorldPosition + new Vector2(0f, 24f),
++                firstLaunchTutorialBossProjectileProgress
++            );
++        }
++
++        private void UpdateFirstLaunchTutorialMiniBossDeath(float elapsed)
++        {
++            firstLaunchTutorialMiniBossDeathStarted = true;
++            if (firstLaunchTutorialProjectile != null)
++                firstLaunchTutorialProjectile.gameObject.SetActive(false);
++            if (firstLaunchTutorialMiniBoss != null)
++            {
++                float t = Mathf.Clamp01(elapsed / 0.9f);
++                firstLaunchTutorialMiniBoss.rectTransform.localScale =
++                    new Vector3(1f + t * 0.12f, 1f - t * 0.82f, 1f);
++                if (t >= 1f)
++                    firstLaunchTutorialMiniBoss.gameObject.SetActive(false);
++            }
++            if (elapsed >= 1.05f && !firstLaunchTutorialFinishGateOpen)
++            {
++                firstLaunchTutorialFinishGateOpen = true;
++                if (firstLaunchTutorialFinishGate != null)
++                    firstLaunchTutorialFinishGate.gameObject.SetActive(false);
++                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Collectible);
++            }
++        }
++
++        private int CountLivingNonBossTutorialActors()
++        {
++            int count = 0;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (actor.Role != TutorialEnemyRole.MiniBoss && actor.Active && !actor.Dead)
++                    count++;
++            }
++            return count;
++        }
++
++        private int CountLivingTutorialActors(TutorialEnemyRole role)
++        {
++            int count = 0;
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (actor.Role == role && actor.Active && !actor.Dead)
++                    count++;
++            }
++            return count;
++        }
++
++        private TutorialEnemyActor FindTutorialBoss()
++        {
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                if (firstLaunchTutorialActors[i].Role == TutorialEnemyRole.MiniBoss)
++                    return firstLaunchTutorialActors[i];
++            }
++            return null;
++        }
++
++        private void SpawnTutorialActor(Image image, TutorialEnemyRole role, float x, float health)
++        {
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (actor.Image != image)
++                    continue;
++                actor.Role = role;
++                actor.Position = new Vector2(x, TutorialGroundY);
++                actor.SpawnPosition = actor.Position;
++                actor.MaximumHealth = health;
++                actor.Health = health;
++                actor.Active = true;
++                actor.Dead = false;
++                actor.AttackCommitted = false;
++                actor.DamageApplied = false;
++                actor.NextActionAt = Time.unscaledTime + 0.80f;
++                if (actor.Image == firstLaunchTutorialEnemy)
++                    firstLaunchTutorialEnemyWorldPosition = actor.Position;
++                if (actor.Image != null)
++                    actor.Image.gameObject.SetActive(true);
++                return;
++            }
++        }
++
++        private void ConfigureFirstLaunchTutorialProductionStep(FirstLaunchTutorialStep step)
++        {
++            bool ownsPrimaryActor =
++                step == FirstLaunchTutorialStep.SpinAttack ||
++                step == FirstLaunchTutorialStep.Grapple ||
++                step == FirstLaunchTutorialStep.HazardKnockback ||
++                step == FirstLaunchTutorialStep.RangedAttack ||
++                step == FirstLaunchTutorialStep.Reload ||
++                step == FirstLaunchTutorialStep.MountedImpact ||
++                step == FirstLaunchTutorialStep.SidePath ||
++                step == FirstLaunchTutorialStep.CombinedEncounter ||
++                step == FirstLaunchTutorialStep.MiniBossIntro ||
++                step == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                step == FirstLaunchTutorialStep.MiniBossPhaseTwo ||
++                step == FirstLaunchTutorialStep.MiniBossDefeated ||
++                step == FirstLaunchTutorialStep.Collectible;
++
++            if (ownsPrimaryActor)
++                SetProductionEntitiesVisible(false);
++            else
++                HideAdditionalFirstLaunchTutorialActors();
++
++            switch (step)
++            {
++                case FirstLaunchTutorialStep.SpinAttack:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Small, 1050f, 1f);
++                    SpawnTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small, 1120f, 1f);
++                    break;
++                case FirstLaunchTutorialStep.Grapple:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Small, 1370f, 2f);
++                    break;
++                case FirstLaunchTutorialStep.HazardKnockback:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Small, TutorialHazardStationX - 70f, 1f);
++                    if (firstLaunchTutorialHazard != null)
++                    {
++                        firstLaunchTutorialHazardWorldPosition =
++                            new Vector2(TutorialHazardStationX + 38f, TutorialGroundY - 34f);
++                        firstLaunchTutorialHazard.gameObject.SetActive(true);
++                    }
++                    break;
++                case FirstLaunchTutorialStep.RangedAttack:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Small, TutorialMountedStationX + 130f, 2f);
++                    SpawnTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small, TutorialMountedStationX + 300f, 2f);
++                    break;
++                case FirstLaunchTutorialStep.Reload:
++                    break;
++                case FirstLaunchTutorialStep.MountedImpact:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Small, TutorialMountedStationX + 210f, 1f);
++                    break;
++                case FirstLaunchTutorialStep.SidePath:
++                    if (firstLaunchTutorialSecret != null)
++                        firstLaunchTutorialSecret.gameObject.SetActive(!firstLaunchTutorialSecretCollected);
++                    break;
++                case FirstLaunchTutorialStep.CombinedEncounter:
++                    SpawnTutorialActor(firstLaunchTutorialEnemy, TutorialEnemyRole.Sword, TutorialCombinedStationX + 100f, 2f);
++                    SpawnTutorialActor(firstLaunchTutorialRangedEnemy, TutorialEnemyRole.Ranged, TutorialCombinedStationX + 360f, 2f);
++                    SpawnTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small, TutorialCombinedStationX + 220f, 1f);
++                    break;
++                case FirstLaunchTutorialStep.MiniBossIntro:
++                case FirstLaunchTutorialStep.MiniBossPhaseOne:
++                case FirstLaunchTutorialStep.MiniBossPhaseTwo:
++                    SpawnTutorialActor(firstLaunchTutorialMiniBoss, TutorialEnemyRole.MiniBoss, TutorialMiniBossStationX + 170f, 12f);
++                    break;
++                case FirstLaunchTutorialStep.MiniBossDefeated:
++                    if (firstLaunchTutorialMiniBoss != null)
++                        firstLaunchTutorialMiniBoss.gameObject.SetActive(true);
++                    break;
++                case FirstLaunchTutorialStep.Collectible:
++                    if (firstLaunchTutorialFinishGate != null)
++                        firstLaunchTutorialFinishGate.gameObject.SetActive(false);
++                    break;
++            }
++        }
++
++        private void HideAdditionalFirstLaunchTutorialActors()
++        {
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (actor.Image == firstLaunchTutorialEnemy)
++                    continue;
++                actor.Active = false;
++                actor.Dead = true;
++                actor.AttackCommitted = false;
++                if (actor.Image != null)
++                    actor.Image.gameObject.SetActive(false);
++            }
++            if (firstLaunchTutorialSecret != null)
++                firstLaunchTutorialSecret.gameObject.SetActive(false);
++            if (firstLaunchTutorialFinishGate != null)
++                firstLaunchTutorialFinishGate.gameObject.SetActive(!firstLaunchTutorialFinishGateOpen);
++        }
++
++        private void SetProductionEntitiesVisible(bool value)
++        {
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                actor.Active = value;
++                actor.Dead = !value;
++                if (actor.Image != null)
++                    actor.Image.gameObject.SetActive(value);
++            }
++            if (firstLaunchTutorialSecret != null)
++                firstLaunchTutorialSecret.gameObject.SetActive(false);
++            if (firstLaunchTutorialFinishGate != null)
++                firstLaunchTutorialFinishGate.gameObject.SetActive(!firstLaunchTutorialFinishGateOpen);
++        }
++
++        private void RenderFirstLaunchTutorialProductionCourse()
++        {
++            for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
++            {
++                TutorialEnemyActor actor = firstLaunchTutorialActors[i];
++                if (actor.Image == null || !actor.Active || actor.Dead)
++                    continue;
++                actor.Image.rectTransform.anchoredPosition =
++                    SnapFirstLaunchTutorialWorldPosition(actor.Position);
++                if (actor.AttackCommitted)
++                {
++                    float pulse = 1f + 0.08f * Mathf.Sin(
++                        (Time.unscaledTime - actor.ActionStartedAt) * 18f
++                    );
++                    actor.Image.rectTransform.localScale =
++                        new Vector3(pulse, 1f / Mathf.Max(0.92f, pulse), 1f);
++                }
++                else
++                {
++                    actor.Image.rectTransform.localScale = Vector3.one;
++                }
++                if (actor.Image == firstLaunchTutorialEnemy)
++                    firstLaunchTutorialEnemyWorldPosition = actor.Position;
++            }
++        }
++
++        private void UpdateFirstLaunchTutorialProductionHud()
++        {
++            if (firstLaunchTutorialHealthText != null &&
++                firstLaunchTutorialDisplayedHealth != firstLaunchTutorialPlayerHealth)
++            {
++                firstLaunchTutorialDisplayedHealth = firstLaunchTutorialPlayerHealth;
++                firstLaunchTutorialHealthText.text =
++                    "HEARTS " + firstLaunchTutorialPlayerHealth + " / 6";
++            }
++
++            bool reloading = Time.unscaledTime < firstLaunchTutorialReloadCompletesAt;
++            if (firstLaunchTutorialAmmoText != null &&
++                (firstLaunchTutorialDisplayedAmmo != firstLaunchTutorialAmmo ||
++                 firstLaunchTutorialDisplayedReloading != reloading))
++            {
++                firstLaunchTutorialDisplayedAmmo = firstLaunchTutorialAmmo;
++                firstLaunchTutorialDisplayedReloading = reloading;
++                firstLaunchTutorialAmmoText.text = reloading
++                    ? "RELOADING"
++                    : "AMMO " + firstLaunchTutorialAmmo + " / " + TutorialMagazineSize;
++            }
++
++            if (firstLaunchTutorialBossHealthText == null)
++                return;
++
++            TutorialEnemyActor boss = FindTutorialBoss();
++            bool visible = boss != null && boss.Active && !boss.Dead &&
++                (firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
++                 firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo);
++            if (firstLaunchTutorialDisplayedBossVisible != visible)
++            {
++                firstLaunchTutorialDisplayedBossVisible = visible;
++                firstLaunchTutorialBossHealthText.gameObject.SetActive(visible);
++            }
++            if (!visible)
++                return;
++
++            int displayedBossHealth = Mathf.CeilToInt(boss.Health);
++            if (firstLaunchTutorialDisplayedBossHealth == displayedBossHealth)
++                return;
++
++            firstLaunchTutorialDisplayedBossHealth = displayedBossHealth;
++            firstLaunchTutorialBossHealthText.text =
++                "FINAL TEST  " + displayedBossHealth +
++                " / " + Mathf.CeilToInt(boss.MaximumHealth);
++        }
++    }
++}
+--- a/Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialQA.cs
++++ b/Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialQA.cs
+@@ -21,6 +21,9 @@
+             "Assets/_Project/Scripts/Runtime/UI/" +
+             "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+             "ActionPresentation.cs",
++            "Assets/_Project/Scripts/Runtime/UI/" +
++            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
++            "ProductionCourse.cs",
+             "Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialEditorTools.cs",
+             "ProjectGuide/Features/UI/FIRST_LAUNCH_TUTORIAL_V1.md",
+             "ProjectGuide/Tasks/ACTIVE/FIRST_LAUNCH_TUTORIAL_AND_HANDHELD_PRODUCTION_REPAIR.md"
+@@ -60,7 +63,7 @@
+             "BuildFirstLaunchTutorialPixelBackdrop",
+             "BeginFirstLaunchTutorialInstructionPresentation",
+             "TutorialWorldMinX = -920f",
+-            "TutorialWorldMaxX = 1700f",
++            "TutorialWorldMaxX = 4250f",
+             "UpdateFirstLaunchTutorialFreePlay",
+             "UpdateFirstLaunchTutorialContinuousMovement",
+             "ResolveFirstLaunchTutorialMaximumPlayerX",
+@@ -94,7 +97,23 @@
+             "UpdateFirstLaunchTutorialParryPresentation",
+             "UpdateFirstLaunchTutorialGrapplePresentation",
+             "UpdateFirstLaunchTutorialHealPresentation",
+-            "UpdateFirstLaunchTutorialHorseHitPresentation"
++            "UpdateFirstLaunchTutorialHorseHitPresentation",
++            "FirstLaunchTutorialStep.Jump",
++            "RequestFirstLaunchTutorialJump",
++            "TutorialJumpObstacleX",
++            "TutorialLearningState",
++            "TutorialCheckpoint",
++            "ResetFirstLaunchTutorialToCheckpoint",
++            "TutorialMagazineSize",
++            "BeginFirstLaunchTutorialReload",
++            "MountedImpact",
++            "Tutorial Optional Secret",
++            "CombinedEncounter",
++            "MiniBossPhaseOne",
++            "MiniBossPhaseTwo",
++            "Tutorial Mini Boss Health",
++            "UpdateFirstLaunchTutorialMiniBossDeath",
++            "Tutorial Hold Progress Fill"
+         };
+
+         public static void Scan(BDOneClickQAResult result)
+@@ -140,6 +159,11 @@
+                 "Assets/_Project/Scripts/Runtime/UI/" +
+                 "BDModernHandheld3DPresenter.FirstLaunchTutorial.ActionPresentation.cs"
+             );
++            string productionCoursePath = Path.Combine(
++                root,
++                "Assets/_Project/Scripts/Runtime/UI/" +
++                "BDModernHandheld3DPresenter.FirstLaunchTutorial.ProductionCourse.cs"
++            );
+             string targetPath = Path.Combine(
+                 root,
+                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldControlTarget.cs"
+@@ -151,6 +175,7 @@
+                              ReadIfPresent(pixelPresentationPath) +
+                              ReadIfPresent(gameplayPath) +
+                              ReadIfPresent(actionPresentationPath) +
++                             ReadIfPresent(productionCoursePath) +
+                              ReadIfPresent(targetPath);
+
+             for (int index = 0; index < RequiredRuntimeTokens.Length; index++)
+@@ -202,7 +227,9 @@
+                 "wide playable course",
+                 "TutorialHorseStartX = -650f",
+                 "TutorialAmbushTriggerX = -350f",
+-                "TutorialCollectibleX = 1580f",
++                "TutorialSecretBranchX = 3000f",
++                "TutorialMiniBossStationX = 3600f",
++                "TutorialCollectibleX = 4050f",
+                 "firstLaunchTutorialTravelDistance"
+             );
+             RequireRuntimeContract(
+@@ -230,6 +257,35 @@
+                 "Tutorial Horse Hit Effect"
+             );
+
++            RequireRuntimeContract(
++                runtime,
++                errors,
++                "production course progression",
++                "FirstLaunchTutorialStep.Jump",
++                "FirstLaunchTutorialStep.SidePath",
++                "FirstLaunchTutorialStep.CombinedEncounter",
++                "FirstLaunchTutorialStep.MiniBossPhaseOne",
++                "FirstLaunchTutorialStep.MiniBossPhaseTwo",
++                "FirstLaunchTutorialStep.MiniBossDefeated"
++            );
++            RequireRuntimeContract(
++                runtime,
++                errors,
++                "checkpoint and reset cleanup",
++                "ResetFirstLaunchTutorialToCheckpoint",
++                "firstLaunchTutorialPrimaryHoldStartedAt = -1f",
++                "firstLaunchTutorialGrappleHoldStartedAt = -1f",
++                "firstLaunchTutorialReloadCompletesAt = 0f"
++            );
++            RequireRuntimeContract(
++                runtime,
++                errors,
++                "active input presentation",
++                "bool keyboardActive",
++                "bool handheldActive",
++                "firstLaunchTutorialBindingDivider.gameObject.SetActive(false)"
++            );
++
+             string[] forbiddenRuntimeTokens =
+             {
+                 "BDModernHandheldV6Polish",

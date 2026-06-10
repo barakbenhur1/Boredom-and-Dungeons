@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,6 +25,23 @@ namespace BoredomAndDungeons
         private Image firstLaunchTutorialProjectilePixelImage;
         private Image firstLaunchTutorialCollectiblePixelImage;
         private Image firstLaunchTutorialGapPixelImage;
+
+        private sealed class TutorialPixelWalkVisual
+        {
+            public Image Source;
+            public Image Visual;
+            public Sprite Idle;
+            public Sprite StepA;
+            public Sprite StepB;
+            public Vector2 LastSourcePosition;
+            public bool IsPlayer;
+            public bool IsHorse;
+            public bool IsEnemy;
+        }
+
+        private readonly List<TutorialPixelWalkVisual>
+            firstLaunchTutorialWalkVisuals =
+                new List<TutorialPixelWalkVisual>(12);
 
         private void BuildFirstLaunchTutorialPixelBackdrop(
             RectTransform parent)
@@ -73,9 +91,9 @@ namespace BoredomAndDungeons
             CreateTutorialDecoration(
                 parent,
                 "Pixel Forest Left Canopy B",
-                -380f,
+                -374f,
                 126f,
-                72f,
+                68f,
                 58f,
                 canopyLight
             );
@@ -101,7 +119,7 @@ namespace BoredomAndDungeons
             CreateTutorialDecoration(
                 parent,
                 "Pixel Forest Right Canopy B",
-                380f,
+                374f,
                 124f,
                 68f,
                 58f,
@@ -247,11 +265,191 @@ namespace BoredomAndDungeons
             visualImage.color = tint;
             visualImage.raycastTarget = false;
 
+            RegisterFirstLaunchTutorialWalkVisual(
+                entity,
+                entityName,
+                visualImage,
+                sprite
+            );
             RegisterFirstLaunchTutorialPixelVisual(
                 entityName,
                 visualRect,
                 visualImage
             );
+        }
+
+        private void RegisterFirstLaunchTutorialWalkVisual(
+            Image source,
+            string entityName,
+            Image visual,
+            Sprite idle)
+        {
+            bool isPlayer = entityName.IndexOf(
+                "Player",
+                StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isHorse = entityName.IndexOf(
+                "Horse",
+                StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isEnemy = entityName.IndexOf(
+                "Enemy",
+                StringComparison.OrdinalIgnoreCase) >= 0 ||
+                entityName.IndexOf(
+                    "Mini Boss",
+                    StringComparison.OrdinalIgnoreCase) >= 0;
+            if (!isPlayer && !isHorse && !isEnemy)
+                return;
+
+            Sprite stepA = CreateFirstLaunchTutorialPixelSpriteAsset(
+                entityName + " Walk A",
+                ResolveFirstLaunchTutorialWalkPattern(entityName, 0)
+            );
+            Sprite stepB = CreateFirstLaunchTutorialPixelSpriteAsset(
+                entityName + " Walk B",
+                ResolveFirstLaunchTutorialWalkPattern(entityName, 1)
+            );
+            firstLaunchTutorialWalkVisuals.Add(
+                new TutorialPixelWalkVisual
+                {
+                    Source = source,
+                    Visual = visual,
+                    Idle = idle,
+                    StepA = stepA,
+                    StepB = stepB,
+                    LastSourcePosition =
+                        source.rectTransform.anchoredPosition,
+                    IsPlayer = isPlayer,
+                    IsHorse = isHorse,
+                    IsEnemy = isEnemy
+                }
+            );
+        }
+
+        private Sprite CreateFirstLaunchTutorialPixelSpriteAsset(
+            string assetName,
+            string[] pattern)
+        {
+            Texture2D texture = CreateFirstLaunchTutorialPixelTexture(
+                assetName,
+                pattern
+            );
+            Sprite sprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f),
+                1f,
+                0u,
+                SpriteMeshType.FullRect
+            );
+            sprite.name = assetName + " Pixel Sprite";
+            sprite.hideFlags = HideFlags.DontSave;
+            firstLaunchTutorialPixelTextures.Add(texture);
+            firstLaunchTutorialPixelSprites.Add(sprite);
+            return sprite;
+        }
+
+        private static string[] ResolveFirstLaunchTutorialWalkPattern(
+            string entityName,
+            int phase)
+        {
+            bool alternate = phase % 2 != 0;
+            if (entityName.IndexOf(
+                    "Horse",
+                    StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return alternate
+                    ? new[]
+                    {
+                        ".........22...",
+                        "..2222222112..",
+                        ".21111111112..",
+                        "2111111111112.",
+                        "21111311111112",
+                        ".211111111112.",
+                        "...11....11...",
+                        ".11........11."
+                    }
+                    : new[]
+                    {
+                        ".........22...",
+                        "..2222222112..",
+                        ".21111111112..",
+                        "2111111111112.",
+                        "21111311111112",
+                        ".211111111112.",
+                        ".11........11.",
+                        "...11....11..."
+                    };
+            }
+
+            bool miniBoss = entityName.IndexOf(
+                "Mini Boss",
+                StringComparison.OrdinalIgnoreCase) >= 0;
+            if (miniBoss)
+            {
+                return alternate
+                    ? new[]
+                    {
+                        "...444444...",
+                        "..41111114..",
+                        ".4114444114.",
+                        "411111111114",
+                        "411333333114",
+                        "411111111114",
+                        ".3111111113.",
+                        "..31111113..",
+                        ".31......13.",
+                        "31........13"
+                    }
+                    : new[]
+                    {
+                        "...444444...",
+                        "..41111114..",
+                        ".4114444114.",
+                        "411111111114",
+                        "411333333114",
+                        "411111111114",
+                        ".3111111113.",
+                        "..31111113..",
+                        "..31....13..",
+                        ".31......13."
+                    };
+            }
+
+            bool enemy = entityName.IndexOf(
+                "Enemy",
+                StringComparison.OrdinalIgnoreCase) >= 0;
+            string head = enemy ? "..444.." : "..222..";
+            string face = enemy ? ".41114." : ".21112.";
+            string eyes = enemy ? ".41414." : ".21412.";
+            return alternate
+                ? new[]
+                {
+                    head,
+                    face,
+                    eyes,
+                    "..111..",
+                    ".31113.",
+                    "3111113",
+                    "3111113",
+                    "..111..",
+                    "...11..",
+                    "..11.1.",
+                    ".11..11"
+                }
+                : new[]
+                {
+                    head,
+                    face,
+                    eyes,
+                    "..111..",
+                    ".31113.",
+                    "3111113",
+                    "3111113",
+                    "..111..",
+                    "..11...",
+                    ".1.11..",
+                    "11..11."
+                };
         }
 
         private Texture2D CreateFirstLaunchTutorialPixelTexture(
@@ -362,6 +560,70 @@ namespace BoredomAndDungeons
             }
 
             if (entityName.IndexOf(
+                    "Mini Boss",
+                    StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new[]
+                {
+                    "...444444...",
+                    "..41111114..",
+                    ".4114444114.",
+                    "411111111114",
+                    "411333333114",
+                    "411111111114",
+                    ".3111111113.",
+                    "..31111113..",
+                    "..31....13..",
+                    ".31......13."
+                };
+            }
+
+            if (entityName.IndexOf(
+                    "Secret",
+                    StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new[]
+                {
+                    "..2..",
+                    ".212.",
+                    "21112",
+                    ".121.",
+                    "..2.."
+                };
+            }
+
+            if (entityName.IndexOf(
+                    "Finish Gate",
+                    StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new[]
+                {
+                    "2222222",
+                    "2111112",
+                    "21...12",
+                    "21...12",
+                    "21...12",
+                    "21...12",
+                    "21...12",
+                    "21...12"
+                };
+            }
+
+            if (entityName.IndexOf(
+                    "Jump Root",
+                    StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return new[]
+                {
+                    "..111111..",
+                    ".11111111.",
+                    "1113331111",
+                    ".13333331.",
+                    "..33..33.."
+                };
+            }
+
+            if (entityName.IndexOf(
                     "Enemy",
                     StringComparison.OrdinalIgnoreCase) >= 0)
             {
@@ -436,52 +698,36 @@ namespace BoredomAndDungeons
             RectTransform visual,
             Image image)
         {
-            if (entityName.IndexOf(
-                    "Player",
-                    StringComparison.OrdinalIgnoreCase) >= 0)
+            switch (entityName)
             {
-                firstLaunchTutorialPlayerPixelVisual = visual;
-                firstLaunchTutorialPlayerPixelImage = image;
-            }
-            else if (entityName.IndexOf(
-                         "Horse",
-                         StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                firstLaunchTutorialHorsePixelVisual = visual;
-                firstLaunchTutorialHorsePixelImage = image;
-            }
-            else if (entityName.IndexOf(
-                         "Enemy",
-                         StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                firstLaunchTutorialEnemyPixelVisual = visual;
-                firstLaunchTutorialEnemyPixelImage = image;
-            }
-            else if (entityName.IndexOf(
-                         "Hazard",
-                         StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                firstLaunchTutorialHazardPixelVisual = visual;
-                firstLaunchTutorialHazardPixelImage = image;
-            }
-            else if (entityName.IndexOf(
-                         "Projectile",
-                         StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                firstLaunchTutorialProjectilePixelVisual = visual;
-                firstLaunchTutorialProjectilePixelImage = image;
-            }
-            else if (entityName.IndexOf(
-                         "Collectible",
-                         StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                firstLaunchTutorialCollectiblePixelVisual = visual;
-                firstLaunchTutorialCollectiblePixelImage = image;
-            }
-            else
-            {
-                firstLaunchTutorialGapPixelVisual = visual;
-                firstLaunchTutorialGapPixelImage = image;
+                case "Tutorial Player":
+                    firstLaunchTutorialPlayerPixelVisual = visual;
+                    firstLaunchTutorialPlayerPixelImage = image;
+                    break;
+                case "Tutorial Horse":
+                    firstLaunchTutorialHorsePixelVisual = visual;
+                    firstLaunchTutorialHorsePixelImage = image;
+                    break;
+                case "Tutorial Enemy":
+                    firstLaunchTutorialEnemyPixelVisual = visual;
+                    firstLaunchTutorialEnemyPixelImage = image;
+                    break;
+                case "Tutorial Hazard":
+                    firstLaunchTutorialHazardPixelVisual = visual;
+                    firstLaunchTutorialHazardPixelImage = image;
+                    break;
+                case "Tutorial Projectile":
+                    firstLaunchTutorialProjectilePixelVisual = visual;
+                    firstLaunchTutorialProjectilePixelImage = image;
+                    break;
+                case "Tutorial Collectible":
+                    firstLaunchTutorialCollectiblePixelVisual = visual;
+                    firstLaunchTutorialCollectiblePixelImage = image;
+                    break;
+                case "Tutorial Gap":
+                    firstLaunchTutorialGapPixelVisual = visual;
+                    firstLaunchTutorialGapPixelImage = image;
+                    break;
             }
         }
 
@@ -495,6 +741,9 @@ namespace BoredomAndDungeons
                 firstLaunchTutorialInstructionAccent.color =
                     ResolveFirstLaunchTutorialInstructionAccent(step);
             }
+
+            firstLaunchTutorialInstructionVisibility =
+                firstLaunchTutorialInstructionRequested ? 0f : 0f;
 
             if (firstLaunchTutorialInstructionCanvasGroup != null)
                 firstLaunchTutorialInstructionCanvasGroup.alpha = 0f;
@@ -536,6 +785,7 @@ namespace BoredomAndDungeons
             UpdateFirstLaunchTutorialInstructionPresentation();
             UpdateFirstLaunchTutorialBindingPresentation();
             UpdateFirstLaunchTutorialPixelAnimation();
+            UpdateFirstLaunchTutorialActionPresentation();
             UpdateFirstLaunchTutorialFeedbackPresentation();
         }
 
@@ -547,22 +797,37 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            float progress = Mathf.Clamp01(
+            float target =
+                firstLaunchTutorialInstructionRequested ? 1f : 0f;
+            float speed =
+                firstLaunchTutorialInstructionRequested ? 8.5f : 6.5f;
+            firstLaunchTutorialInstructionVisibility =
+                Mathf.MoveTowards(
+                    firstLaunchTutorialInstructionVisibility,
+                    target,
+                    speed * Time.unscaledDeltaTime
+                );
+
+            float entrance = Mathf.Clamp01(
                 (Time.unscaledTime -
                  firstLaunchTutorialInstructionStartedAt) /
                 0.22f
             );
-            float eased = 1f - Mathf.Pow(1f - progress, 3f);
+            float easedEntrance =
+                1f - Mathf.Pow(1f - entrance, 3f);
+            float visible =
+                firstLaunchTutorialInstructionRequested
+                    ? Mathf.Min(
+                        firstLaunchTutorialInstructionVisibility,
+                        easedEntrance
+                    )
+                    : firstLaunchTutorialInstructionVisibility;
 
-            firstLaunchTutorialInstructionCanvasGroup.alpha = eased;
+            firstLaunchTutorialInstructionCanvasGroup.alpha = visible;
             firstLaunchTutorialInstructionRect.anchoredPosition =
-                Vector2.LerpUnclamped(
-                    TutorialInstructionRestPosition +
-                    new Vector2(0f, -12f),
-                    TutorialInstructionRestPosition,
-                    eased
-                );
-            float scale = Mathf.LerpUnclamped(0.955f, 1f, eased);
+                TutorialInstructionRestPosition +
+                new Vector2(0f, -12f * (1f - visible));
+            float scale = Mathf.Lerp(0.965f, 1f, visible);
             firstLaunchTutorialInstructionRect.localScale =
                 new Vector3(scale, scale, 1f);
 
@@ -572,7 +837,7 @@ namespace BoredomAndDungeons
                 float pulse =
                     0.86f +
                     Mathf.Sin(Time.unscaledTime * 3.4f) * 0.14f;
-                color.a = Mathf.Clamp01(pulse);
+                color.a = Mathf.Clamp01(pulse * visible);
                 firstLaunchTutorialInstructionAccent.color = color;
             }
         }
@@ -617,20 +882,41 @@ namespace BoredomAndDungeons
         private void UpdateFirstLaunchTutorialPixelAnimation()
         {
             int frame = Mathf.FloorToInt(Time.unscaledTime * 4f);
+            bool walking =
+                firstLaunchTutorialMovementActive &&
+                !firstLaunchTutorialMounted;
+            bool riding =
+                firstLaunchTutorialMovementActive &&
+                firstLaunchTutorialMounted;
 
+            bool airborne = !firstLaunchTutorialGrounded &&
+                !firstLaunchTutorialMounted;
+            float playerOffset = airborne
+                ? (firstLaunchTutorialVerticalVelocity >= 0f ? 3f : -1f)
+                : walking && frame % 2 == 1 ? 2f : 0f;
+            Vector3 playerScale = airborne
+                ? firstLaunchTutorialVerticalVelocity >= 0f
+                    ? new Vector3(0.92f, 1.08f, 1f)
+                    : new Vector3(1.04f, 0.96f, 1f)
+                : Vector3.one;
             UpdateFirstLaunchTutorialPixelVisual(
                 firstLaunchTutorialPlayer,
                 firstLaunchTutorialPlayerPixelVisual,
                 firstLaunchTutorialPlayerPixelImage,
-                frame % 4 == 1 ? 2f : 0f,
-                Vector3.one
+                playerOffset,
+                playerScale
             );
             UpdateFirstLaunchTutorialPixelVisual(
                 firstLaunchTutorialHorse,
                 firstLaunchTutorialHorsePixelVisual,
                 firstLaunchTutorialHorsePixelImage,
-                frame % 6 == 2 ? 2f : 0f,
-                Vector3.one
+                (riding || firstLaunchTutorialMovementActive) &&
+                    frame % 2 == 0
+                    ? 2f
+                    : 0f,
+                riding && frame % 4 == 1
+                    ? new Vector3(1.02f, 0.98f, 1f)
+                    : Vector3.one
             );
             UpdateFirstLaunchTutorialPixelVisual(
                 firstLaunchTutorialEnemy,
@@ -671,6 +957,69 @@ namespace BoredomAndDungeons
                 0f,
                 Vector3.one
             );
+            UpdateFirstLaunchTutorialWalkFrames(frame, walking, riding);
+        }
+
+        private void UpdateFirstLaunchTutorialWalkFrames(
+            int frame,
+            bool playerWalking,
+            bool horseRiding)
+        {
+            for (int index = 0;
+                 index < firstLaunchTutorialWalkVisuals.Count;
+                 index++)
+            {
+                TutorialPixelWalkVisual entry =
+                    firstLaunchTutorialWalkVisuals[index];
+                if (entry.Source == null || entry.Visual == null)
+                    continue;
+
+                Vector2 currentPosition =
+                    entry.Source.rectTransform.anchoredPosition;
+                bool translated = Vector2.SqrMagnitude(
+                    currentPosition - entry.LastSourcePosition
+                ) > 0.25f;
+                entry.LastSourcePosition = currentPosition;
+
+                bool stepping =
+                    entry.IsPlayer
+                        ? playerWalking
+                        : entry.IsHorse
+                            ? horseRiding || translated ||
+                              firstLaunchTutorialStep ==
+                                  FirstLaunchTutorialStep.HorseReturn
+                            : entry.IsEnemy &&
+                              (translated ||
+                               IsFirstLaunchTutorialEnemyVisualAttacking(
+                                   entry.Source
+                               ));
+
+                if (!stepping)
+                {
+                    entry.Visual.sprite = entry.Idle;
+                    continue;
+                }
+
+                entry.Visual.sprite = frame % 2 == 0
+                    ? entry.StepA
+                    : entry.StepB;
+            }
+        }
+
+        private bool IsFirstLaunchTutorialEnemyVisualAttacking(
+            Image source)
+        {
+            for (int index = 0;
+                 index < firstLaunchTutorialActors.Count;
+                 index++)
+            {
+                TutorialEnemyActor actor =
+                    firstLaunchTutorialActors[index];
+                if (actor.Image == source)
+                    return actor.Active && !actor.Dead &&
+                           actor.AttackCommitted;
+            }
+            return false;
         }
 
         private static void UpdateFirstLaunchTutorialPixelVisual(
@@ -738,6 +1087,7 @@ namespace BoredomAndDungeons
 
             firstLaunchTutorialPixelSprites.Clear();
             firstLaunchTutorialPixelTextures.Clear();
+            firstLaunchTutorialWalkVisuals.Clear();
 
             firstLaunchTutorialPlayerPixelVisual = null;
             firstLaunchTutorialHorsePixelVisual = null;

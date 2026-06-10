@@ -1,3 +1,13 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## V10.8.1 ownership clarification
+
+- `FireFirstLaunchTutorialProductionShot` decides whether a shot belongs to the mounted shooting lesson.
+- `ResolveFirstLaunchTutorialRangedProjectileImpact` remains the sole completion point for projectile damage and mounted-shot lesson advancement.
+- `CompleteFirstLaunchTutorialMountedShotLessonAtImpact` performs the one-time learning-state/step transition only after a confirmed living-target impact.
+- `IntroToMainMenuTransition` owns camera choreography only. `deviceVisualRoot`, `shadowRoot` and `tableRoot` remain static scene geometry during the landing shot.
+- Package presentation is tooling-only and must not affect Runtime architecture; terminal style is centralized in package tools and governed by `TERMINAL_OUTPUT_STANDARD.md`.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
 
 ## Modern handheld V5 ownership refinement
 
@@ -325,3 +335,38 @@ The presenter owns one semantic action per physical control: center SELECT activ
 - `BDHorseContextActionPrompts` renders one bottom-center contextual strip; nothing is drawn above the horse.
 - `BDMazeMinimap` owns dynamic entity discovery, cached marker classification, fog-safe marker shapes and idle dimming. Combatant markers render only inside discovered rooms.
 <!-- B&D HORSE HUD MINIMAP OWNERSHIP V2 END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Tutorial production-course and future saved-run ownership
+
+The first-launch tutorial remains one mode of `BDModernHandheld3DPresenter`. Core partial: lifecycle, persistence decision, prompt/modal and transition. Gameplay partial: horizontal course, camera root and lesson routing. Action-presentation partial: reusable visual action phases only. Pixel-presentation partial: generated sprites and instruction animation. Production-course partial: tutorial-local health/ammo, learning evidence, checkpoints, actors, enemy transactions, secret, combined encounter and Mini-Boss. None becomes a production-run owner.
+
+The future saved-run system must use one snapshot owner coordinated by `BDMainMenuFlow`. New Game, Continue, Save & Return and Abandon are separate semantic intents. The meta owner evaluates and awards points; the run flow orders result presentation and cinematic return. Abandon must reuse the death-equivalent evaluator and may not duplicate its formula.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## V10.1 tutorial evidence ownership
+
+The production-course partial reports mechanic evidence only through the tutorial learning-state owner. Presentation callbacks may advance that state, but they may not maintain parallel per-mechanic booleans. This keeps prompt, checkpoint and QA decisions on one explicit source of truth.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## V10.2 tutorial input and presentation ownership
+
+- The tutorial continues to use the existing presenter and semantic physical-control targets; no parallel input manager is introduced.
+- Tutorial desktop readers mirror live gameplay gestures: Space Jump, directional double-tap Dodge, J/left-click Light, K/right-click Heavy, Q Ranged and E interaction.
+- The Parry lesson consumes either committed melee input and evaluates timing against the tutorial projectile; it does not own a fabricated Parry key.
+- Directional double-tap recognition owns only tutorial gesture recognition. Movement remains owned by the tutorial motor and the second tap submits one Dodge transaction.
+- Checkpoint restoration remains owned by the production-course state. The respawn overlay is presentation-only and never chooses a checkpoint or mutates health.
+- `BDModernHandheld3DPresenter` reserves first-launch presentation before `BDMainMenuFlow` is available. The legacy-menu suppression gate consumes that reservation, while `BDMainMenuFlow` remains the semantic menu owner once resolved.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## V10.8 tutorial transaction and collision ownership
+
+- `BDPlayerCombat` remains the production Charged Shot authority. The tutorial mirrors its threshold/duration/cancel/auto-fire/ammo/reload contract and is regression-checked against that source.
+- `BDModernHandheld3DPresenter.FirstLaunchTutorial.V108Repair.cs` is a cohesive tutorial-local coordinator for pending projectile impact, pending Hook completion, one enemy projectile, local checkpoint selection and actor-axis collision. It is not a second global combat, physics or input system.
+- `ProductionCourse` remains authoritative for actor health, damage, learning evidence, boss state and step progression. Presentation transactions call that owner once at their semantic completion.
+- `PixelPresentation` owns cached point-filtered frame assets and frame selection only. It does not move actors or decide gameplay state.
+- `IntroToMainMenuTransition` owns the one-shot post-BBH camera/device/shadow pose interpolation. It uses the existing real product-scene objects and restores cached ordinary-menu state exactly.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

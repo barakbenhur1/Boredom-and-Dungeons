@@ -1,3 +1,43 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## 2026-06-10 — V10.8.1 shooting progression, camera-only landing and terminal-output compliance
+
+**Classification:** `EARLIER/BLOCKING HOTFIX INSIDE CURRENT FIRST-LAUNCH TUTORIAL TASK`
+
+**User regression:** after the mounted shooting lesson, the visible enemy could be hit and removed but the course remained stuck because the production shot transaction was always created with `advancesLesson: false`. The lesson therefore never reached its impact-owned transition to Reload.
+
+**Implemented repair:** `FireFirstLaunchTutorialProductionShot` now marks only the real `RangedAttack` lesson shot as progression-capable. `ResolveFirstLaunchTutorialRangedProjectileImpact` completes the lesson only when that visible projectile reaches impact against a living target, then moves to Reload exactly once. Firing, animation completion or a miss cannot advance the lesson. The duplicate invalid charged-shot expression found during the audit is also removed.
+
+**Camera clarification implemented:** the post-BBH scene remains one full-screen 3D table environment at all times. The table, device, screen and shadow remain at their authoritative rest transforms. Only the already-present 3D camera position, rotation and field of view animate along a safe dolly path. The table geometry receives additional off-screen coverage so the camera never exposes empty background during the establishing angle.
+
+**Delivery repair:** the cumulative installer and validator now follow `ProjectGuide/Rules/TERMINAL_OUTPUT_STANDARD.md`: interactive PASS is bold green, BLOCKED/ERROR bold red, WARNING bold yellow, INFO cyan and CLEANED magenta; copied/non-interactive output keeps explicit prefixes without ANSI; `NO_COLOR` and `TERM=dumb` are respected.
+
+**Preservation:** this is an additive repair. No tutorial lesson, mechanic, input path, visual asset, checkpoint, boss behavior, prior V10.8 repair or unrelated gameplay system is removed. The supplied retro tutorial redesign and new-enemy/model/difficulty requirements are preserved verbatim in queued maintained task documents and do not displace the current blocker gate.
+
+**QA truth:** final package verification passes on both the supplied pre-V10.8 local state and the already-applied V10.8 state. Verified evidence: 34/34 owned target hashes, first install, cumulative install, idempotent no-rewrite run, unknown-local-change preflight with zero writes/no backup, repeated byte-for-byte rollback, pseudo-terminal green/red/cyan/magenta output, ANSI suppression under `NO_COLOR=1`, `TERM=dumb` and redirected output, cleanup of the exact source ZIP and extracted artifacts on success/failure, ZIP path safety/uniqueness (1004 members), full snapshot equality (962 files), exact Git changed set (34/34), `git diff --check`, source stability scan (0 blockers/0 warnings) and ProjectGuide hygiene PASS. Unity compilation, `TEST EVERYTHING`, rendered camera behavior and focused Play Mode remain unverified and are not claimed.
+
+**Exact resume point:** install V10.8.1, reset the first-launch tutorial, reach mounted shooting, confirm that the enemy dies only at projectile impact and that the lesson immediately proceeds through Reload to Charged Shot. Then verify the post-BBH camera-only table scene and terminal colors. Do not commit before `0 blockers / 0 warnings / 0 info` and user acceptance.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## 2026-06-10 — First-launch tutorial mechanics, readability and 3D cinematic repair V10.8
+
+**Classification:** `CURRENT / EARLIER-BLOCKING USER PLAY-MODE REGRESSION REPAIR`
+
+**Previous:** V10.7.2 corrected post-BBH landing/installer validation while the playable tutorial remained open for focused user review.
+
+**Current:** the latest user run reopened ten tutorial defects. V10.8 repairs them in the existing presenter and production-course owners: injured-horse remount is rejected; player, horse and enemy locomotion uses real alternating leg frames; player ranged damage resolves only when the visible projectile reaches impact; Hook damage/progression resolves only after the pull presentation completes; death restores a nearby stable lesson checkpoint; tutorial enemies physically block the player; decorative lesson-divider lines/gates are removed while invisible progression clamps remain; the final boss keeps persistent instructions, readable telegraph/impact/recovery states and only accepts damage during a safe recovery opening; a mechanics-faithful Charged Shot lesson is added; and the BBH handoff uses a full-screen real-3D camera/device move rather than screen-space or slide-like interpolation.
+
+**Charged Shot truth verified from `BDPlayerCombat`:** press/hold begins with the production `0.22s` threshold; full charge duration is `min(3.20s, 0.90s + 0.45s × rounds above two)`; full charge fires automatically without release; release before the threshold produces an ordinary shot; release after charge begins cancels; the charged shot consumes all remaining ammunition and starts Reload immediately.
+
+**Implementation truth:** source and QA/documentation repairs exist in the local working tree. No parallel gameplay, damage, camera or input owner was introduced. Projectile and Hook effects are presentation transactions whose completion calls the existing tutorial damage/progression owner exactly once.
+
+**QA truth:** C# tree-sitter structure, duplicate-member/signature scans, QA token simulation, repository stability/hygiene scans, ZIP integrity, first and idempotent installation, unknown-change blocking, byte-for-byte rollback, `git diff --check`, exact 27-file changed-set verification, 993-entry package-manifest verification and 960-file complete-snapshot comparison all pass. Unity compilation, TEST EVERYTHING, Play Mode, rendered timing, performance and user visual/gameplay acceptance are not yet claimed.
+
+**Next:** apply the statically/package-verified V10.8 ZIP, compile in Unity `6000.0.76f1`, run `Boredom And Dungeons -> TEST EVERYTHING`, then perform the complete focused run in `ProjectGuide/QA/FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10.md`.
+
+**Exact resume point:** begin at a reset first-launch state; verify the entry choice and full-screen 3D handoff, then complete one uninterrupted tutorial run while intentionally testing early/late Charged Shot release, injured-horse remount, enemy body blocking, death in several late lessons, mounted projectile impact, Hook pull completion and both boss phases. Do not commit until automated output is `0 blockers / 0 warnings / 0 info` and the user accepts the result.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 <!-- B&D 2026-06-09 FIRST LAUNCH + HANDHELD PRODUCTION PATCH START -->
 ## 2026-06-09 — First-launch tutorial, direct handheld repair and local-delivery correction
 
@@ -1911,3 +1951,102 @@ Visual approval: REQUIRED
 
 The ordered work queue remains unchanged and must resume only after this focused tutorial gate passes.
 <!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Current user-prioritized sequence — tutorial production course and saved-run follow-up
+
+```text
+1. Modern Handheld base visual/input verification remains an acceptance dependency.
+2. First-launch tutorial V10 production course: IMPLEMENTED IN LOCAL PACKAGE / UNITY VERIFICATION REQUIRED.
+3. Persistent run Continue, Save & Return, New Game overwrite confirmation and Abandon scoring: APPROVED / QUEUED AFTER TUTORIAL VERIFICATION.
+4. Professional handheld↔gameplay transition: integrate four distinct intents after the saved-run task.
+5. Return to the previously preserved Runtime/QA/enemy-animation/audit queue afterward.
+```
+
+Abandon scoring is now approved as 84% of the meta points the shared death evaluator would award at the same moment. Its shared result screen must close before the agreed exit animation begins. This is documentation truth only; the saved-run/meta implementation has not yet been written or verified.
+
+The V10 tutorial package does not change the normal run, meta balance or result flow. Next action after installation is Unity compilation and the focused V10 QA contract.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## Current interruption — V10.1 compiler-warning cleanup
+
+The uploaded Unity run on `2026-06-10T02:45:38.8280090Z` reported `TEST EVERYTHING: PASS` with `0 blockers / 0 warnings / 0 info`, but Unity compilation also emitted six `CS0414` warnings for write-only tutorial demonstration fields. Automated QA did not classify those compiler warnings, so the tutorial is not yet at the required clean-compilation gate.
+
+V10.1 removes the redundant booleans, keeps `TutorialLearningState` as the single source of tutorial learning evidence, and adds a regression check forbidding the retired fields. Unity compilation and TEST EVERYTHING must be rerun after applying V10.1. The saved-run/Continue/Abandon-scoring task remains next after tutorial verification.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## First-launch tutorial V10.2 input, respawn and transition repair
+
+Status: `IMPLEMENTED BY DELIVERY PACKAGE / UNITY VERIFICATION REQUIRED`.
+
+Focused user Play Mode review of V10.1 found three earlier blockers before tutorial acceptance:
+
+1. displayed and consumed tutorial bindings did not match the live gameplay contract: Jump used Up/W instead of Space, Dodge used Space instead of directional double-tap, and Parry was described as one dedicated heavy key rather than a correctly timed light or heavy melee attack;
+2. checkpoint recovery teleported the player after a short fall pose without a readable transition;
+3. the legacy/main-menu surface could receive a brief visible frame while `BDMainMenuFlow` was still resolving after the BBH intro.
+
+V10.2 repairs those items without redesigning tutorial encounters:
+
+- desktop Jump is `Space`; physical-handheld Jump is `B`;
+- Dodge is committed by a second left/right direction tap within `0.30s` on keyboard, controller D-pad or physical D-pad;
+- Parry accepts the same light/heavy melee inputs used by gameplay when timed before impact;
+- respawn now uses a cached full-screen fade, `RETURNING TO CHECKPOINT...`, hidden checkpoint restoration and a controlled reveal;
+- the tutorial presentation is reserved before flow resolution and legacy-menu suppression covers that reservation, eliminating the one-frame old-menu exposure;
+- focused QA now rejects the retired labels and implementation paths.
+
+The uploaded V10.1 automated baseline was clean (`0 blockers / 0 warnings / 0 info`), but that result predates V10.2. Unity compilation, TEST EVERYTHING and focused Play Mode must run again. The tutorial remains the active priority; the saved post-tutorial run-resume/Abandon-scoring task and prior repair queue remain unchanged.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## First-launch tutorial V10.3 — entry choice and launch-frame gate
+
+Status: `IMPLEMENTED / UNITY VERIFICATION REQUIRED`.
+
+V10.3 adds the required pre-tutorial handheld choice (`PLAY TUTORIAL` / `SKIP TUTORIAL`) and a launch-presentation reservation that prevents the legacy menu from owning the frame exposed after the BBH intro. The presenter is installed before scene load and releases the reservation only after the BBH intro has completed and `BDMainMenuFlow` has resolved.
+
+The source ZIP cleanup defect is corrected in the V10.3 installer: successful application removes the exact V10/V10.1/V10.2/V10.3 tutorial package ZIPs from `~/Downloads`; blocked or failed application preserves the package and rollback data.
+
+Not yet verified in Unity:
+- BBH intro → choice screen with no legacy-frame flash;
+- Play and Skip routes on all supported input schemes;
+- skip persistence across restart;
+- clean compiler output and `TEST EVERYTHING`.
+
+Current next action: install V10.3, reset the tutorial, run the focused launch/choice matrix, then continue the tutorial animation production pass defined by `Features/UI/FIRST_LAUNCH_TUTORIAL_ENTRY_AND_ANIMATION_V11.md`.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## First-launch tutorial V10.4 — forward progression repair
+
+Status: `IMPLEMENTED / UNITY VERIFICATION REQUIRED`.
+
+V10.4 corrects the mid-course dead end reported after dismount. Spin and Grapple lesson actors now spawn at their forward authored stations instead of obsolete coordinates behind the player. Hard step boundaries are represented by a visible reusable pixel gate, mounted melee/Hook input is rejected, the ranged lesson starts on its final round so Reload follows one valid shot, and the tutorial entry page uses real point-filtered pixel glyphs.
+
+Current next action: install V10.4, reset the tutorial, complete one uninterrupted full run through every mechanic, rerun `TEST EVERYTHING`, then continue the dedicated tutorial animation production pass. The main-game animation backlog remains open.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 — intro-to-main-menu cinematic and tutorial-choice spacing
+
+Status: `IMPLEMENTED / UNITY VERIFICATION REQUIRED`.
+
+V10.5 adds an explicit one-shot `IntroToMainMenuTransition` emitted by BBH completion and consumed only by the first real main-menu destination. The handheld starts in a wider, differently angled table shot with the real screen active, follows an eased cubic camera path and settles exactly on the ordinary menu pose while input remains locked. Regular entries never replay it.
+
+The first-launch choice also separates `B&D` from `Boredom & Dungeons` with a non-overlapping pixel hierarchy.
+
+Current next action: install V10.5, verify the cinematic and spacing matrix, rerun TEST EVERYTHING, then continue the full tutorial animation production pass.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## V10.6 — BBH global time-scale ownership correction
+
+The latest Unity run was blocked by `FIRST_LAUNCH_TUTORIAL_CONTRACT_INVALID` because `BDBBHBootIntro` still assigned the global simulation clock to zero. V10.6 removes that presentation-layer ownership while preserving the realtime BBH timeline and local input/presentation gate. Unity recompilation and a clean `TEST EVERYTHING` run are required before continuing to the animation-production task.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## V10.7.2 — post-intro transition delivery repair and clean installer exit
+
+V10.7.1 accepted the authoritative tutorial source but its post-write validator scanned the editor QA source as Runtime code and rejected the validator's own forbidden-token strings. V10.7.2 scopes runtime validation correctly and makes package cleanup unconditional on success or failure. Unity verification remains required before continuing the tutorial gameplay and animation tasks.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

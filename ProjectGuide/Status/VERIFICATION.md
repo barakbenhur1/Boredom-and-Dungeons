@@ -1,3 +1,90 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## V10.8.1 verification contract
+
+### Static/package — PASS
+
+```text
+Owned target hashes: PASS (34/34)
+Install from supplied pre-V10.8 local state: PASS (34 paths)
+Cumulative install over V10.8: PASS (24 paths changed; prior V10.8 preserved)
+Idempotent second run: PASS (0 rewrites / no extra backup)
+Unknown-local-change preflight: PASS (blocked before write; no backup)
+Rollback: PASS byte-for-byte; repeated rollback also PASS
+Interactive semantic colors: PASS (green PASS, red BLOCKED, cyan INFO, magenta CLEANED)
+NO_COLOR=1: PASS (no ANSI)
+TERM=dumb: PASS (no ANSI)
+Redirected output: PASS (no ANSI)
+Success/failure cleanup: PASS (exact ZIP and extracted artifacts removed)
+ZIP integrity/path safety/unique members: PASS (1004 members)
+File-manifest target hashes: PASS (34/34)
+Complete project snapshot equality: PASS (962 files)
+Git diff --check: PASS
+Exact Git changed set: PASS (34/34)
+Repository stability source scan: PASS (0 blockers / 0 warnings)
+ProjectGuide repository hygiene: PASS
+Unity compilation: NOT YET RECORDED
+TEST EVERYTHING: NOT YET RECORDED
+Focused Play Mode/camera/gameplay acceptance: NOT YET RECORDED
+```
+
+QA requires `advancesMountedShotLesson`, `hitLivingTarget` and `CompleteFirstLaunchTutorialMountedShotLessonAtImpact`, rejects reintroduction of device/shadow transform animation in `IntroToMainMenuTransition`, and retains the entire V10.8 regression matrix.
+
+### Unity / focused Play Mode
+
+1. Reach the mounted shooting lesson with its spawned enemy alive.
+2. Fire once. Before projectile impact, the enemy remains alive and the step remains `RangedAttack`.
+3. At visible impact, the enemy dies, `MountedShot` is demonstrated and the step changes to Reload exactly once.
+4. Reload completes and the course enters Charged Shot; no second input is required to unstick the previous lesson.
+5. A miss or shot without a living lesson target cannot advance.
+6. Run the post-BBH landing: the wood table fills every frame, the device stays physically fixed on it, and only camera/lens motion changes composition.
+7. Repeat the full V10.8 regression matrix before acceptance.
+
+Unity results are not claimed until recorded from the user's run.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## V10.8 package/static verification passed — Unity verification pending
+
+```text
+Source basis: user-supplied current local-state archive
+C# tree-sitter structural/syntax validation: PASS for all changed tutorial/transition/QA sources
+Duplicate presenter-field and exact-method-signature scan: PASS
+QA required-token and runtime-contract simulation: PASS (0 missing)
+Repository stability source scan: PASS (0 blockers / 0 warnings)
+ProjectGuide repository hygiene scan: PASS
+ZIP integrity, duplicate-member and traversal-path checks: PASS (994 members)
+Installer first run from pristine supplied baseline: PASS
+Installed target byte comparison: PASS (27/27 files)
+Installer second/idempotent run: PASS (0 rewrites / no extra backup)
+Unknown-local-change protection: PASS (blocked before write; sentinel preserved)
+Rollback byte-for-byte test: PASS (27/27 files; repeated rollback also PASS)
+git diff --check in committed fixture: PASS
+Exact Git changed-set comparison: PASS (27/27 expected paths)
+Package SHA manifest verification: PASS (993/993 entries)
+Complete project snapshot byte comparison: PASS (960/960 files)
+Unity compilation after V10.8: NOT YET RECORDED
+TEST EVERYTHING after V10.8: NOT YET RECORDED
+Focused Play Mode: NOT YET RECORDED
+Performance/profile evidence: NOT YET RECORDED
+User acceptance: NOT YET RECORDED
+```
+
+These package/static results prove deterministic delivery and source-contract integrity only. They do not prove Unity compilation, rendered timing, collision feel, camera quality, performance or gameplay acceptance.
+
+Focused Unity evidence must include:
+
+1. injured/red horse cannot be mounted and becomes mountable only after healing;
+2. player, horse and enemies visibly alternate leg frames while moving and stop in an idle frame when stationary;
+3. mounted and charged targets keep health until the projectile visibly arrives;
+4. death at multiple late lessons restores near the current lesson behind the opaque checkpoint cover;
+5. Hook target visibly travels before damage/progression;
+6. no decorative section-divider line or visible lesson gate remains;
+7. living enemies physically block walking/riding through them;
+8. Charged Shot follows production timing/auto-fire/cancel/ammo/reload semantics;
+9. final boss instructions persist and its telegraph, impact, recovery and damage window are understandable and survivable;
+10. post-BBH handoff is one continuous full-screen 3D camera/device motion with exact final pose and no wrong/flat frame.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 <!-- B&D FIRST LAUNCH + HANDHELD PRODUCTION VERIFICATION START -->
 ## Pending verification — first launch, handheld direct repair and BBH cinematic side task
 
@@ -255,3 +342,128 @@ TEST EVERYTHING after V8: NOT YET RECORDED
 Play Mode acceptance: STILL REQUIRED
 ```
 <!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## V10 tutorial and queued saved-run verification truth
+
+```text
+V10 package integrity/static validation: performed by installer
+Unity compilation: NOT YET RECORDED
+TEST EVERYTHING: NOT YET RECORDED
+Keyboard/mouse full tutorial: NOT YET RECORDED
+Controller full tutorial: NOT YET RECORDED
+Physical handheld full tutorial: NOT YET RECORDED
+Mixed-input full tutorial: NOT YET RECORDED
+5–8 minute timing: NOT YET RECORDED
+User approval: NOT YET RECORDED
+Persistent run/Continue/Abandon implementation: NOT STARTED
+```
+
+Focused tutorial contract: `ProjectGuide/QA/FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10.md`.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## V10.1 warning-cleanup verification truth
+
+```text
+Reported Unity automated run: 2026-06-10T02:45:38.8280090Z
+TEST EVERYTHING before V10.1: PASS / 0 blockers / 0 warnings / 0 info
+Unity compiler before V10.1: six CS0414 warnings
+V10.1 static package validation: PASS
+Unity compilation after V10.1: REQUIRED
+TEST EVERYTHING after V10.1: REQUIRED
+Focused tutorial Play Mode: STILL REQUIRED
+```
+
+The automated PASS is valid evidence for its own scanner output, but it does not override the separately reported compiler warnings.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## V10.2 verification gate — input truth, readable respawn and no legacy flash
+
+Pre-package evidence:
+- V10.1 TEST EVERYTHING report: automated PASS, blockers `0`, warnings `0`, info `0`.
+- focused Play Mode subsequently exposed binding, respawn-readability and transition-flash defects; therefore V10.1 is not the acceptance result for V10.2.
+
+Required rerun:
+1. Unity compiles with no Console error or warning introduced by V10.2.
+2. TEST EVERYTHING reports `0 blockers / 0 warnings / 0 info`.
+3. Keyboard/mouse: Space jumps; W/A/S/D and arrows move; a second A/D or Left/Right tap within the allowed window dodges; J/left click and K/right click can each produce a correctly timed Parry.
+4. Physical handheld: B jumps; D-pad moves; double-tapping D-pad Left/Right dodges; X or Y can Parry; SELECT still interacts; A still owns the contextual ranged/heal lesson; X/Y tap/hold combat remains intact.
+5. Death during at least the combined encounter and Mini-Boss shows the fall/fade, an opaque checkpoint cover and a controlled fade-in. No uncovered teleport is visible.
+6. Fresh process launch after tutorial reset: BBH intro transitions directly to the intended modern handheld/tutorial surface with no legacy menu, plain menu or stale page visible for one frame.
+7. Repeat at low frame rate and after app focus loss to ensure transition ownership remains deterministic.
+
+No Play Mode, visual or user-acceptance claim is made by the package itself.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## First-launch tutorial V10.3 verification gate
+
+Required before approval:
+
+1. reset first-launch tutorial state outside Play Mode;
+2. start Play Mode and confirm BBH intro transitions directly to the black `B&D` choice screen;
+3. confirm no legacy menu, stale page or unwanted frame appears;
+4. verify up/down and confirm using keyboard, controller, pointer and physical handheld controls;
+5. choose `PLAY TUTORIAL`, confirm `InProgress` flow and controlled reveal;
+6. reset, choose `SKIP TUTORIAL`, confirm the modern main menu appears with no flash;
+7. restart and confirm choice/tutorial do not auto-return after skip;
+8. rerun `Boredom And Dungeons → TEST EVERYTHING`;
+9. confirm compiler errors/warnings introduced by V10.3 are zero;
+10. confirm the source package ZIP is deleted only after a successful installer result.
+
+This section does not verify the queued tutorial or main-game animation production passes.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## First-launch tutorial V10.4 verification gate
+
+1. reset first-launch state outside Play Mode;
+2. confirm the `B&D` choice title, subtitle, both options and status line use visibly pixelated point-filtered glyphs;
+3. choose Play and complete the course in one forward run;
+4. verify mounted Light/Heavy/Spin/Hook attempts do not attack and show `ON HORSE: RANGED ATTACKS ONLY`;
+5. fire the final mounted round once and confirm automatic Reload begins;
+6. ram the mounted-impact target and dismount at the marker;
+7. verify Spin enemies appear ahead at the Spin station;
+8. verify the Grapple target appears ahead across the gap;
+9. verify any active hard lesson boundary is an invisible clamp with contextual instruction feedback and no visible divider/gate geometry;
+10. continue through hazard, side path, combined encounter, final test and completion;
+11. restart and confirm completion persists;
+12. run `Boredom And Dungeons → TEST EVERYTHING` and require zero blockers, warnings and info.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 verification gate
+
+- verify title/subtitle separation;
+- verify BBH → wide angled active-handheld shot → exact regular pose;
+- verify Skip preserves and Play cancels the one-shot request;
+- verify internal-menu/gameplay returns never replay it;
+- verify no legacy, wrong, black or correction frame;
+- verify input lock;
+- run TEST EVERYTHING with zero blockers, warnings and info.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## V10.6 verification gate
+
+Pending:
+- compile with no errors/warnings;
+- BBH sequence duration and visuals unchanged;
+- no menu/gameplay input during BBH;
+- IntroToMainMenu transition remains one-shot;
+- `TEST EVERYTHING`: blockers=0, warnings=0, info=0.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## V10.7.2 verification gate
+
+- authoritative predecessor hash is accepted;
+- unknown source is blocked before writes;
+- runtime token validation excludes Editor QA;
+- checksum, preflight and post-write failures all clean package residue;
+- verified post-write rollback removes the failed-attempt backup;
+- both post-BBH landing destinations work exactly once;
+- TEST EVERYTHING returns blockers=0, warnings=0, info=0.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

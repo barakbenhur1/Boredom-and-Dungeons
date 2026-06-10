@@ -1,3 +1,32 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## First-launch tutorial V10.8.1 regression gate
+
+- Mounted lesson shot sets `advancesMountedShotLesson` only in `RangedAttack`.
+- Lesson completion is called only from visible projectile impact after `hitLivingTarget` is confirmed.
+- Impact transitions to Reload exactly once; Reload transitions to Charged Shot.
+- Misses and animation completion do not advance the mounted shooting lesson.
+- The post-BBH transition source contains no device/shadow start-transform or animated scale/position path; only camera pose/FOV changes.
+- Table and vignette coverage remain larger than the visible framing envelope.
+- Revised package tools pass interactive-color, `NO_COLOR`, redirected-output and `TERM=dumb` checks.
+- Full prior V10.8 automated and focused Play Mode matrix remains mandatory.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## First-launch tutorial V10.8 focused acceptance
+
+- [ ] Unity compiles with no new error/warning and TEST EVERYTHING reports `0 / 0 / 0`.
+- [ ] Injured horse refuses Mount until healing completes.
+- [ ] Player, horse and enemies show real alternating leg frames while moving.
+- [ ] Mounted and charged ranged damage/death occurs only at visible projectile impact.
+- [ ] Charged Shot is hold-to-auto-fire; early pre-threshold release is ordinary, mid-charge release cancels, full ammo is consumed and Reload begins.
+- [ ] Hook pull presentation completes before damage and progression.
+- [ ] Major-lesson deaths restore locally behind the opaque checkpoint cover.
+- [ ] Living enemy bodies block the player/horse; no pass-through remains.
+- [ ] No decorative course-divider line or visible lesson gate remains.
+- [ ] Final boss instructions persist; telegraph, impact, recovery and legal damage windows are readable and survivable.
+- [ ] Post-BBH transition is a full-screen real-3D camera/device/table shot with no flat/slide-like frame and exact final restoration.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 
 ## Modern Handheld V5 focused checks
 
@@ -856,3 +885,112 @@ The presenter owns one semantic action per physical control: center SELECT activ
 - [ ] mixed-input completion passes;
 - [ ] exit confirmation and first-launch persistence remain correct.
 <!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## First-launch tutorial production course V10
+
+- [ ] complete all routes in `QA/FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10.md`;
+- [ ] prove one large instruction maximum and correct active Keycap switching;
+- [ ] prove Tap/Hold never double-emits;
+- [ ] prove checkpoints clean every transient action;
+- [ ] prove the secret is optional, hidden and non-duplicating;
+- [ ] prove the combined encounter has multiple legal solutions;
+- [ ] prove the Mini-Boss phase/death/gate ordering;
+- [ ] time representative runs at 5–8 minutes;
+- [ ] verify the Editor reset command causes the tutorial to appear on the next Play Mode start.
+
+## Queued persistent-run gate
+
+When activated, verify normal Exit preserves Continue, Abandon removes it, New Game overwrite is confirmed, Abandon equals 84% of death-equivalent points, the shared result screen appears before the exit animation, and idempotency prevents duplicate awards.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## V10.1 compiler cleanliness gate
+
+- [ ] Unity Console contains no `CS0414` warning for tutorial learning evidence.
+- [ ] `TutorialLearningState` is the single source for Introduced/Attempted/Performed/Demonstrated/MasteredForTutorial evidence.
+- [ ] The retired `firstLaunchTutorial*Demonstrated` boolean fields do not exist.
+- [ ] Jump, Dodge, Parry, HazardKnockback, MountedShot and MountedImpact still record Demonstrated through `SetFirstLaunchTutorialLearningState`.
+- [ ] TEST EVERYTHING remains `0 blockers / 0 warnings / 0 info` after recompilation.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## First-launch tutorial V10.2 focused gate
+
+- [ ] Unity compiles without new errors or warnings.
+- [ ] TEST EVERYTHING: 0 blockers, 0 warnings, 0 info.
+- [ ] Space/B Jump labels and behavior match.
+- [ ] Directional double-tap Dodge labels and behavior match on keyboard and physical D-pad.
+- [ ] J/left click, K/right click, X and Y all follow the Parry timing contract.
+- [ ] Mount, ranged, heal, Spin and Hook labels remain correct after the remap.
+- [ ] Checkpoint relocation is never visible outside the opaque respawn cover.
+- [ ] Player color, scale, rotation, input and camera return cleanly after repeated recovery.
+- [ ] No legacy or old menu frame appears after BBH intro.
+- [ ] No recurring GC allocation is attributable to double-tap recognition or respawn presentation.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## Tutorial V10.3 focused checklist
+
+- [ ] first post-BBH frame belongs to the modern handheld;
+- [ ] `B&D` and `Boredom & Dungeons` are visible on black;
+- [ ] `PLAY TUTORIAL` and `SKIP TUTORIAL` are vertically arranged and clearly selected;
+- [ ] keyboard/controller/pointer/physical controls navigate and confirm;
+- [ ] Play writes InProgress only after confirmation;
+- [ ] Skip persists and does not auto-replay after restart;
+- [ ] no legacy/stale page is exposed on either route;
+- [ ] package source ZIP is removed after success and preserved after failure;
+- [ ] TEST EVERYTHING reports zero blockers, warnings and info;
+- [ ] animation production backlog remains open until separately verified.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## Tutorial V10.4 focused checklist
+
+- [ ] entry choice typography is genuinely pixelated;
+- [ ] no mounted melee/Spin/Hook transaction is created;
+- [ ] one mounted shot transitions into Reload;
+- [ ] Spin targets are ahead after dismount;
+- [ ] Grapple target is ahead across the gap;
+- [ ] lesson clamps remain invisible and provide contextual instruction feedback without divider/gate geometry;
+- [ ] every mechanic appears in forward order;
+- [ ] one complete run reaches the completion transition;
+- [ ] completion persists across restart;
+- [ ] compiler output and TEST EVERYTHING are clean.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 cinematic checklist
+
+- [ ] title/subtitle separated;
+- [ ] real screen active in opening shot;
+- [ ] continuous position/rotation/FOV;
+- [ ] exact final pose;
+- [ ] input locked;
+- [ ] no replay on ordinary entries;
+- [ ] Play cancels and Skip preserves request;
+- [ ] no legacy/incorrect/black frame;
+- [ ] compiler and TEST EVERYTHING clean.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## BBH time ownership regression check
+
+- [ ] BBH code contains no global time-scale zero assignment.
+- [ ] BBH still consumes/blocks input locally.
+- [ ] BBH visual timing uses realtime/unscaled time.
+- [ ] Intro-to-main-menu handoff remains exact and one-shot.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## Clean-exit installer checks
+
+- [ ] Success deletes exact source ZIP and extracted installer residue.
+- [ ] Checksum failure deletes exact source ZIP and extracted installer residue.
+- [ ] Preflight blocking deletes exact source ZIP and extracted installer residue.
+- [ ] Post-write failure restores exact content and removes the verified failed-attempt backup.
+- [ ] Unknown source remains blocked before writes.
+- [ ] Runtime token checks scan Runtime source only.
+- [ ] Editor QA rules cannot self-trigger from their own string literals.
+- [ ] `NO_COLOR=1` remains readable.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

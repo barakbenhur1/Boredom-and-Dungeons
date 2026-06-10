@@ -92,3 +92,64 @@ TEST EVERYTHING was blocked by one compilation blocker: the UGUI assembly was un
 - left Runtime and visual behavior unchanged;
 - performed no Git write operation.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## 2026-06-10 — V10 tutorial production-course package prepared
+
+- merged the recognized local first-launch implementation with the V9 wide-course design instead of overwriting the unrecognized PixelPresentation change;
+- implemented jump, learning evidence, health/ammo, Reload, checkpoints, damage timing, contextual Parry, mounted impact, optional secret, combined encounter and two-phase Mini-Boss;
+- retained confirmed tutorial Leave semantics and the Editor reset command;
+- captured the later persistent Continue/Save & Return/New Game overwrite/Abandon-scoring contract in maintained documents;
+- performed no Commit, Push, Pull, Branch, PR, Merge, Reset, Stash, Clean or Checkout.
+
+Unity, TEST EVERYTHING, timing and Play Mode evidence remain required.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## 2026-06-10 — V10 automated pass with compiler-warning follow-up
+
+The uploaded report generated at `2026-06-10T02:45:38.8280090Z` recorded `AUTOMATED PASS`, `0 blockers`, `0 warnings` and `0 info`. Unity separately emitted six `CS0414` warnings for write-only tutorial demonstration fields. V10.1 removes the redundant state and adds a regression check. No post-fix Unity result is claimed yet.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## 2026-06-10 — Tutorial V10.2 focused repair prepared
+
+The V10.1 automated run was clean, but subsequent Play Mode review found incorrect tutorial bindings, an unclear checkpoint position jump and a transient old-menu frame after the intro. V10.2 aligns tutorial input with live gameplay semantics, adds an opaque cached respawn transition and reserves/suppresses first-launch presentation during menu-flow resolution. Verification remains pending a new Unity compile, TEST EVERYTHING run and focused visual/input review.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## 2026-06-10 — first-launch tutorial V10.3 package
+
+Prepared a focused entry/transition repair:
+- dedicated tutorial Play/Skip choice;
+- before-scene-load presenter reservation;
+- exact successful source-ZIP cleanup;
+- automated contract expansion;
+- explicit tutorial and main-game animation backlog.
+
+Unity compilation, focused Play Mode and TEST EVERYTHING remain pending user-side verification.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## 2026-06-10 — tutorial V10.4 package prepared
+
+Prepared a focused repair for the reported mid-course dead end, pixel typography and mounted combat rule. Static package validation, idempotent install, rollback and local-change blocking are package-side requirements. Unity compilation and full Play Mode remain user-side verification gates.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## 2026-06-10 — V10.5 package prepared
+
+Prepared the explicit post-BBH cinematic, one-shot destination contract and tutorial-choice spacing. Package-side static validation, idempotence, rollback and local-change blocking were executed; Unity verification remains required.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## 2026-06-10 — V10.6 package prepared
+
+The V10.5 Unity run exposed one blocker: legacy global time-scale ownership in `BDBBHBootIntro`. V10.6 removes the assignment, preserves the validator prohibition and requires full Unity re-verification.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## 2026-06-10 — V10.7.2 prepared
+
+V10.7.1 accepted the correct predecessor, wrote the intended files, then self-rejected because the runtime token scan included the editor validator. The repository was restored. V10.7.2 corrects validator scope and changes cleanup from success-only to unconditional.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

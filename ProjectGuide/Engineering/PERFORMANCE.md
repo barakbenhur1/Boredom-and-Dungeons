@@ -1,3 +1,9 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## V10.8.1 performance constraints
+
+The mounted-shot repair adds no per-frame searches or allocations; it reuses the existing pending-shot transaction and actor reference. Camera-only landing interpolation uses cached transforms and value types. Enlarging the existing table quads does not add renderers, materials, cameras or update loops. Terminal color formatting is installer-time only and has no Unity Runtime cost.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
 
 ## V5 control and glass cost contract
 
@@ -133,3 +139,39 @@ Each measured optimization should record in `ProjectGuide/Status/CURRENT.md`:
 - Horse healing owns one bounded particle system and one material, both reused for the horse lifetime and destroyed with the component.
 - Repository maintenance hashes files by streaming chunks and never loads large binaries into memory as one buffer.
 <!-- B&D CONTEXTUAL HUD + MINIMAP PERFORMANCE V2 END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## V10 tutorial Runtime budget
+
+- Tutorial entities, HUD and effects are created once with the page and reused.
+- Actor iteration uses bounded cached lists; no scene search, LINQ or physics world is introduced.
+- HUD text updates only when displayed values or visibility change.
+- Hint escalation and instruction changes are event/state driven.
+- Jump, enemy timing, camera lead and action presentation use unscaled delta time and cached RectTransforms.
+- Checkpoint reset reuses actors/effects and creates no replacement objects.
+- Profiling must prove no recurring prompt/HUD GC and no leak across Retry, Leave, completion or presenter teardown.
+
+The queued saved-run task must write snapshots outside hot transition frames where possible, use atomic serialization and avoid rendering duplicate full-cost cameras longer than the cinematic handoff requires.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## V10.2 tutorial recovery and input cost boundary
+
+- Directional double-tap uses two timestamps and no per-frame collection or allocation.
+- The respawn cover and text are built once with the tutorial page, then only cached color/active-state values are changed.
+- Checkpoint recovery creates no Texture2D, Material, RenderTexture, coroutine or temporary GameObject.
+- First-launch legacy suppression is a constant-time state query and performs no search or allocation.
+- Focused profiling must confirm no recurring managed allocation while waiting for a second direction tap or during repeated checkpoint recovery.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## V10.8 tutorial repair cost boundaries
+
+- Player/horse/enemy step sprites are generated once per tutorial presentation lifecycle, cached and destroyed during presenter teardown; frame selection does not allocate.
+- Projectile and Hook synchronization use fixed fields and existing actor references, not coroutines, scene searches, LINQ or temporary collections.
+- At most one tutorial enemy projectile transaction is active; it reuses the existing projectile visual.
+- Body collision iterates the bounded cached tutorial actor list and allocates no physics objects or arrays.
+- Boss state/HUD updates reuse existing text and actor presentation objects.
+- The one-shot cinematic reuses the existing camera, device root and shadow root; it creates no camera, RenderTexture, material, mesh or per-frame object.
+- Focused profiling must still confirm zero recurring managed allocation during locomotion, charged hold, repeated boss attacks, checkpoint restore and the cinematic path.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

@@ -28,6 +28,8 @@ namespace BoredomAndDungeons
         private const float ScreenHeight = 9.04f;
         private const float ScreenCenterY = 2.56f;
         private const float ScreenTransitionDuration = 0.24f;
+        private const float TableEnvironmentWidth = 46f;
+        private const float TableEnvironmentHeight = 30f;
 
         private static readonly Vector2 CanvasSize =
             new Vector2(960f, 1080f);
@@ -214,14 +216,14 @@ namespace BoredomAndDungeons
 
         public static bool SuppressLegacyMenu =>
             instance != null &&
-            instance.presentationReady &&
-            instance.visible;
+            (instance.ShouldReserveLaunchPresentation() ||
+             (instance.presentationReady && instance.visible));
 
         public static bool OwnsMenuInput =>
             SuppressLegacyMenu;
 
         [RuntimeInitializeOnLoadMethod(
-            RuntimeInitializeLoadType.AfterSceneLoad)]
+            RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Install()
         {
             if (UnityEngine.Object.FindFirstObjectByType<
@@ -255,7 +257,9 @@ namespace BoredomAndDungeons
             LoadResources();
             BuildPresentation();
             InitializeFirstLaunchTutorial();
-            SetVisible(false);
+            InitializeLaunchPresentationGate();
+            InitializeIntroToMainMenuTransition();
+            SetVisible(ShouldReserveLaunchPresentation());
         }
 
         private void Start()
@@ -274,6 +278,7 @@ namespace BoredomAndDungeons
                 HandleCharacterChanged;
 
             DisposeFirstLaunchTutorial();
+            DisposeIntroToMainMenuTransition();
             ReleaseGeneratedResources();
         }
 
@@ -286,7 +291,8 @@ namespace BoredomAndDungeons
             displayedPageInitialized = false;
             nextFlowLookupAt = 0f;
             ResetFirstLaunchTutorialForScene();
-            SetVisible(false);
+            ResetIntroToMainMenuTransitionForScene();
+            SetVisible(ShouldReserveLaunchPresentation());
         }
 
         private void HandleCharacterChanged(
@@ -312,6 +318,7 @@ namespace BoredomAndDungeons
                 ResolveFlow();
             }
 
+            TickLaunchPresentationGate();
             UpdatePresentationState(force: false);
 
             if (!visible)
@@ -320,6 +327,7 @@ namespace BoredomAndDungeons
             UpdateEntryAnimation();
             UpdateScreenResolution();
             RefreshPageIfNeeded();
+            TickIntroToMainMenuTransition();
 
             if (displayedPage == EffectivePage.FirstLaunchTutorial)
             {
@@ -351,8 +359,9 @@ namespace BoredomAndDungeons
         private void UpdatePresentationState(bool force)
         {
             bool shouldShow =
-                flow != null &&
-                flow.ShouldPresentModernHandheld;
+                ShouldReserveLaunchPresentation() ||
+                (flow != null &&
+                 flow.ShouldPresentModernHandheld);
 
             if (!force && shouldShow == visible)
                 return;
@@ -902,7 +911,11 @@ namespace BoredomAndDungeons
             table.transform.localRotation =
                 Quaternion.Euler(0f, 180f, 0f);
             table.transform.localScale =
-                new Vector3(34f, 25f, 1f);
+                new Vector3(
+                    TableEnvironmentWidth,
+                    TableEnvironmentHeight,
+                    1f
+                );
             table.GetComponent<Renderer>().sharedMaterial =
                 tableMaterial;
             SetLayerRecursively(table, DeviceLayer);
@@ -918,7 +931,11 @@ namespace BoredomAndDungeons
             vignette.transform.localRotation =
                 Quaternion.Euler(0f, 180f, 0f);
             vignette.transform.localScale =
-                new Vector3(34f, 25f, 1f);
+                new Vector3(
+                    TableEnvironmentWidth,
+                    TableEnvironmentHeight,
+                    1f
+                );
             vignette.GetComponent<Renderer>().sharedMaterial =
                 backgroundMaterial;
             SetLayerRecursively(vignette, DeviceLayer);
@@ -1908,11 +1925,11 @@ namespace BoredomAndDungeons
 
         private EffectivePage ResolveEffectivePage()
         {
-            if (flow == null)
-                return EffectivePage.MainMenu;
-
             if (ShouldPresentFirstLaunchTutorial())
                 return EffectivePage.FirstLaunchTutorial;
+
+            if (flow == null)
+                return EffectivePage.MainMenu;
 
             BDMainMenuFlow.HandheldPage flowPage =
                 flow.CurrentHandheldPage;
@@ -3704,6 +3721,9 @@ namespace BoredomAndDungeons
 
         private bool IsMenuInputReady()
         {
+            if (IsIntroToMainMenuTransitionBlockingInput())
+                return false;
+
             if (Time.unscaledTime < menuInputUnlockAt)
                 return false;
 
@@ -3944,7 +3964,8 @@ namespace BoredomAndDungeons
                 Screen.width / Mathf.Max(1f, Screen.height)
             );
 
-            if (deviceCamera != null)
+            if (deviceCamera != null &&
+                !introToMainMenuTransitionActive)
             {
                 float fit = Mathf.InverseLerp(0.78f, 1.55f, aspect);
                 deviceCamera.fieldOfView = Mathf.Lerp(49f, 36.4f, fit);

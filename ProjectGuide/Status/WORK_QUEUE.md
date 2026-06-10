@@ -1,3 +1,32 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## Current immediate gate — V10.8.1 cumulative hotfix
+
+1. Apply the cumulative V10.8.1 package without resetting or discarding prior V10.8 work.
+2. Terminal delivery gate is package-verified: interactive semantic colors and ANSI-free `NO_COLOR=1` / `TERM=dumb` / redirected logs passed.
+3. Compile and run `Boredom And Dungeons -> TEST EVERYTHING`; require `0/0/0`.
+4. Reset the tutorial and verify mounted shooting progresses only after actual projectile impact, then reaches Reload and Charged Shot without becoming stuck.
+5. Verify the post-BBH composition remains a full-screen table scene and only the camera animates; the handheld/table/shadow never scale or slide.
+6. Recheck all prior V10.8 acceptance items to prove no regression.
+7. After the mechanics gate is accepted, continue with `Tasks/QUEUED/FIRST_LAUNCH_TUTORIAL_RETRO_VISUAL_REDESIGN.md`.
+8. The new enemy/model/difficulty contract remains queued at `Tasks/QUEUED/NEW_ENEMY_ARCHETYPES_ARTICULATED_MODELS_AND_DIFFICULTY_GRAPH.md` and must not be partially improvised during this hotfix.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## Current immediate gate — V10.8 tutorial mechanics and cinematic repair
+
+**Status:** `IMPLEMENTED / PACKAGE + STATIC PASS / UNITY VERIFICATION REQUIRED`
+
+1. Apply the package/static-verified V10.8 ZIP to the exact current local repository; its installer must continue to block unknown edits before overwrite.
+2. Wait for Unity compilation and resolve every project-generated error/warning.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Reset first-launch state and verify BBH lands through one continuous full-screen 3D camera/device shot with no flat/sliding frame.
+5. Complete the tutorial with keyboard/mouse, then repeat with physical controls/mixed input.
+6. Intentionally test injured-horse Mount rejection, moving leg frames, mounted impact timing, Hook completion, enemy body collision and local checkpoint recovery.
+7. Test Charged Shot three ways: release before threshold, release during charge, hold through automatic fire; then verify impact and Reload.
+8. Fight both boss phases slowly enough to confirm persistent instructions, readable attack states, avoidable projectile/contact behavior and safe recovery damage windows.
+9. Record real evidence in Current/Bugs/Verification. Commit only after user acceptance; then return to the preserved broader tutorial/main-game animation order.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 
 ## Current immediate gate
 
@@ -625,3 +654,66 @@ Exact resume point:
 4. Verify all pages align to the shared grid, the footer remains one line, and the New Game cards do not overlap.
 5. Verify textured 3D control caps, visible short-left shadow, upper-right glass glint and raised device composition.
 6. Do not commit or resume earlier Runtime work until the user accepts this visual/input gate.
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Current temporary priority override
+
+1. Verify the installed Modern Handheld base and V10 first-launch tutorial.
+2. Complete all V10 tutorial Play Mode, input, timing, cleanup and user-acceptance gates.
+3. Implement and verify Persistent Run Resume, non-destructive Save & Return, protected New Game overwrite and Abandon scoring/result routing.
+4. Integrate New Game, Continue, Save & Return and Abandon into the professional handheld↔gameplay transition.
+5. Resume the previously preserved Runtime blocker, enemy-animation and architecture-audit sequence without closing or skipping it.
+
+This override changes ordering only. It does not mark any retained task complete.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## Current interruption — tutorial V10.2 focused repair
+
+Complete and verify this order before continuing tutorial feature expansion:
+
+1. apply the V10.2 binding/respawn/legacy-flash repair;
+2. recompile Unity and rerun TEST EVERYTHING;
+3. verify keyboard/mouse, controller and physical-handheld mappings;
+4. verify checkpoint fade/reveal in multiple encounters;
+5. verify a clean BBH-intro-to-modern-handheld transition with no old-menu frame;
+6. continue remaining tutorial Play Mode acceptance only after the three focused defects pass.
+
+The post-tutorial persistent-run/Continue/regular-exit/Abandon-scoring task remains next after the tutorial is fully verified. The earlier runtime/QA repair resume point remains preserved after that.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## Temporary priority override — first-launch tutorial entry and animation
+
+1. Verify V10.3 tutorial entry choice, launch-frame ownership and package cleanup.
+2. Complete the tutorial production animation pass: player, horse, enemies, mini-boss, attack/impact synchronization, limbs and no-sliding acceptance.
+3. Complete remaining tutorial gameplay/visual acceptance.
+4. Implement persistent run Continue / safe return / Abandon scoring according to the queued contract.
+5. Resume the previously saved repository work-queue position without closing or skipping older open work.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## Temporary priority override — tutorial V10.4
+
+1. Verify the V10.4 pixel entry typography, mounted-action prohibition and full forward course completion.
+2. Complete the tutorial production animation pass for player, horse, enemies and mini-boss.
+3. Complete remaining tutorial visual/gameplay acceptance.
+4. Implement persistent run Continue / safe return / Abandon scoring.
+5. Resume the previously saved repository work-queue pointer.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## Temporary priority override — V10.5
+
+1. Verify cinematic and tutorial-choice spacing.
+2. Complete tutorial production animations.
+3. Complete remaining tutorial acceptance.
+4. Implement Continue / safe return / Abandon scoring.
+5. Resume saved repository queue.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## Immediate next action
+
+Install V10.7.2, verify both post-BBH landing destinations and run TEST EVERYTHING. After acceptance continue in order: final-boss clarity, solid enemy blocking, locomotion animation, then the complete BBH intro color-direction pass.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

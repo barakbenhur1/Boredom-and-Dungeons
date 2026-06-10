@@ -103,3 +103,17 @@ Returning to Main Menu abandons the current run without result wording.
 - Gameplay input and combat stop, the gameplay camera remains visible, and the player death animation completes first.
 - Only after the readable final death pose may `BDMainMenuFlow` open the integrated Game Boy menu and freeze the world.
 - Enemy death presentation is independent from the menu: regular enemies animate, then release loot/despawn.
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Approved future saved-run/result correction
+
+The earlier rule that Main Menu always exposes only an unchanged Start button and that `Main Menu` necessarily abandons the run is superseded for the future target.
+
+- With no valid run: `START NEW GAME`.
+- With a valid run: `CONTINUE` and `START NEW GAME`.
+- Starting a new run over an existing one requires an in-handheld confirmation with safe default Cancel.
+- Pause provides a non-destructive Save & Return separate from Abandon.
+- Abandon shows the shared meta-result screen, then starts the agreed exit animation only after that screen closes.
+
+This section is approved design/queue truth and is not an implementation claim.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->

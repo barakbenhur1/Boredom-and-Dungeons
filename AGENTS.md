@@ -1,3 +1,13 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## V10.8.1 protected continuation rules
+
+- Preserve all V10.8 mechanics and presentation work; this hotfix may only improve or repair.
+- Mounted shooting progression is impact-owned: never advance on trigger press, ammo consumption or animation completion.
+- The post-BBH table/handheld/shadow are static scene objects; only the existing 3D camera may animate the landing composition.
+- Every revised installer/validator must implement the semantic colors and compatibility rules in `ProjectGuide/Rules/TERMINAL_OUTPUT_STANDARD.md`.
+- Preserve the two user-supplied future contracts verbatim in their queued task documents; do not partially invent or silently omit their requirements.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
 # Boredom & Dungeons — AI/Codex Operating Contract
 
 Read this file first, then follow [`ProjectGuide/README.md`](ProjectGuide/README.md).
@@ -53,3 +63,13 @@ Read this file first, then follow [`ProjectGuide/README.md`](ProjectGuide/README
 - Every touched or materially encountered production area follows `ProjectGuide/Rules/PRODUCTION_CODE_STANDARD.md`.
 - Implement durable behavior in its authoritative owner. Do not create or rebrand an avoidable workaround/compatibility layer as architecture.
 <!-- B&D LOCAL PATCH + PRODUCTION CODE CONTRACT V1 END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## Current V10.8 continuation requirements
+
+- Treat the supplied local working tree as newer than remote `main`.
+- Do not reintroduce visible lesson-divider gates.
+- Do not apply tutorial ranged/Hook damage before visible semantic completion.
+- Charged Shot is hold-to-auto-fire according to `BDPlayerCombat`; never document or implement release-to-fire.
+- Do not mark the tutorial accepted before Unity `TEST EVERYTHING` plus the focused Play Mode matrix.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

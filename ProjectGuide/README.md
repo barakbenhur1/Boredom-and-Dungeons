@@ -1,3 +1,15 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## Current V10.8.1 hotfix truth
+
+The active blocker is the mounted shooting lesson failing to advance after a real hit. The repair makes progression occur at projectile impact against the living lesson target. The post-BBH landing is camera-only inside the persistent full-screen table scene, and package tools must use the maintained semantic terminal-color standard. The retro tutorial redesign and articulated new-enemy/difficulty work are captured as queued tasks after this gate.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## Current active verification slice — 2026-06-10
+
+The immediate active item is the V10.8 first-launch tutorial mechanics/readability repair. It synchronizes projectile and Hook effects to visible completion, adds production-faithful Charged Shot teaching, local checkpoints, actor blocking, moving leg frames, a readable/fair final boss and a full-screen real-3D post-BBH handoff. It is implemented locally but remains unverified until Unity compilation, TEST EVERYTHING and focused Play Mode pass. The broader tutorial/main-game animation production work remains queued after this gate.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 # Boredom & Dungeons — Project Guide
 
 This folder is the complete maintained knowledge base for the project. It is deliberately outside `Assets/` so Unity does not import planning, QA and reference material as game assets.

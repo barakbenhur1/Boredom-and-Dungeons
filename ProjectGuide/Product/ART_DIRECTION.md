@@ -1,3 +1,9 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDESIGN_CAPTURE_V1:BEGIN -->
+## Queued first-launch tutorial retro redesign
+
+The complete user-approved Atari / early Nintendo-inspired Pixel Art redesign contract is preserved at `ProjectGuide/Tasks/QUEUED/FIRST_LAUNCH_TUTORIAL_RETRO_VISUAL_REDESIGN.md`. It requires a coherent low-resolution point-filtered visual language, deliberate limited-frame animation, articulated character/horse movement, retro UI/audio and selective modern impact effects. This is queued after the current mechanics gate; it is not falsely claimed as complete by the V10.8.1 hotfix.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDESIGN_CAPTURE_V1:END -->
+
 
 ## Modern handheld material acceptance
 

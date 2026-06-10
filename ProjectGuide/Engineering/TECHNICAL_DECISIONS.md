@@ -1,3 +1,13 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## Decision — impact-owned tutorial progression and camera-only product-scene landing
+
+**Status:** `ACTIVE / UNITY VERIFICATION REQUIRED`
+
+A ranged tutorial lesson is complete only when its visible projectile transaction confirms impact on the intended living target. Input, ammunition changes and animation completion are insufficient evidence. This prevents both premature completion and the V10.8 stuck state caused by a non-advancing transaction.
+
+The post-BBH product scene is never animated as a card, scaled frame or moving device. The table, handheld and shadow are persistent world geometry; the cinematic result comes exclusively from the existing perspective camera's dolly, aim and restrained lens change. Static table coverage may be enlarged off-screen to protect composition across aspect ratios.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
 
 ## Decision — textured caps over modeled control bodies
 
@@ -580,3 +590,77 @@ QA must not require values from separate UI fields to appear as one
 contiguous source token. Card titles and dynamically resolved bindings are
 validated through their separate authoritative contracts.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## TD-053 — Tutorial teaches through one bounded playable course
+
+The first-launch tutorial uses a fixed side-view course with contextual prompts, explicit learning evidence and soft progression gates. It does not reuse the production procedural run or introduce a second global input/menu owner. Optional mechanics such as Parry and the secret are encouraged but do not block completion.
+
+## TD-054 — Normal exit and Abandon are separate run transactions
+
+A future normal Save & Return preserves a valid Continue snapshot and grants no end-of-run reward. Abandon is destructive, uses the shared death-equivalent meta evaluator, applies the approved 0.84 multiplier before existing rounding/clamp, awards once, presents the shared result screen, and begins the exit animation only after that screen closes.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## TD-055 — One tutorial learning-evidence source
+
+The tutorial uses `TutorialLearningState` as its sole mechanic-evidence model. Per-mechanic write-only boolean mirrors are rejected. This eliminates duplicate truth, prevents CS0414 debt and keeps completion evidence queryable through one state contract.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## TD-TUTORIAL-V102 — Tutorial instruction truth and hidden checkpoint restore
+
+Status: ACTIVE
+Date: 2026-06-10
+
+Decision:
+- Tutorial prompts and consumers mirror the actual gameplay gesture rather than mapping a convenient substitute.
+- Dodge is a directional double-tap transaction; Parry is a timed light/heavy melee transaction.
+- Checkpoint relocation occurs only behind an opaque cached presentation cover.
+- Pending first-launch state reserves the modern presenter before menu-flow lookup completes, and legacy presentation is suppressed during that reservation.
+
+Consequences:
+- physical B is available for Jump while D-pad double-tap owns Dodge;
+- X and Y both remain valid Parry inputs in the Parry context;
+- no uncovered checkpoint teleport or one-frame legacy-menu exposure is acceptable;
+- static QA rejects the retired bindings and flow order.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## Decision — explicit one-shot intro destination signal
+
+The post-intro cinematic is driven by an explicit one-shot request owned by `BDBBHBootIntro`, never inferred from time, scene load, camera transform or generic menu visibility.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## Decision — presentation code does not own global time scale
+
+Boot, tutorial and handheld presentation components may use unscaled timing and explicit input/state gates, but may not assign the global simulation clock. Gameplay-wide pause ownership must remain with the authoritative pause/run flow.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## Decision — validator scope and installer cleanup
+
+Runtime implementation invariants are evaluated only against Runtime source. Editor validators are validated separately and must not self-trigger through their rule literals. ZIP installers use a shell EXIT/finally cleanup registered before verification and remove owned ZIPs and extracted package residue on every outcome.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## TD-TUTORIAL-V108 — Semantic completion owns tutorial effects
+
+Status: `ACTIVE / UNITY VERIFICATION REQUIRED`
+Date: 2026-06-10
+
+Decision:
+
+- a visible tutorial projectile applies damage only at its impact event;
+- a tutorial Hook applies damage/progression only after the pull presentation completes;
+- tutorial Charged Shot mirrors `BDPlayerCombat` and auto-fires at full charge without release;
+- living actor bodies block movement through a bounded tutorial-local collision resolver;
+- lesson boundaries use invisible clamps plus instruction feedback, not decorative divider geometry;
+- boss attacks expose explicit telegraph/commit/recovery state and damage windows;
+- the post-BBH special shot manipulates the real 3D scene, never a screen-space proxy.
+
+Reason: gameplay truth, visual timing and learning evidence must describe the same event. Immediate damage, timer-only attacks and proxy camera effects made the tutorial misleading even when automated source checks passed.
+
+Consequences: presentation completion forwards to one authoritative damage/progression owner; final assets may replace procedural frames without changing semantic event order; Unity Play Mode remains mandatory because static checks cannot prove visual contact, readability or fairness.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

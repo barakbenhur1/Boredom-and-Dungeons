@@ -42,6 +42,7 @@ namespace BoredomAndDungeons
 
         private static bool playedThisApplicationSession;
         private static bool currentlyPlaying;
+        private static bool introToMainMenuTransitionRequested;
         private static BDBBHBootIntro activeInstance;
 
         private float startedAt;
@@ -58,6 +59,22 @@ namespace BoredomAndDungeons
 
         public static bool IsPlaying => currentlyPlaying;
         public static bool HasPlayedThisSession => playedThisApplicationSession;
+        public static bool HasPendingIntroToMainMenuTransition =>
+            introToMainMenuTransitionRequested;
+
+        public static bool TryConsumeIntroToMainMenuTransition()
+        {
+            if (!introToMainMenuTransitionRequested)
+                return false;
+
+            introToMainMenuTransitionRequested = false;
+            return true;
+        }
+
+        public static void CancelPendingIntroToMainMenuTransition()
+        {
+            introToMainMenuTransitionRequested = false;
+        }
 
         [RuntimeInitializeOnLoadMethod(
             RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -65,6 +82,7 @@ namespace BoredomAndDungeons
         {
             playedThisApplicationSession = false;
             currentlyPlaying = false;
+            introToMainMenuTransitionRequested = false;
             activeInstance = null;
         }
 
@@ -82,7 +100,8 @@ namespace BoredomAndDungeons
             currentlyPlaying = true;
             startedAt = 0f;
             renderClockStarted = false;
-            Time.timeScale = 0f;
+            // Presentation timing is realtime/unscaled. The BBH intro must
+            // never take ownership of the global simulation clock.
 
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.None;
@@ -154,6 +173,7 @@ namespace BoredomAndDungeons
             active = false;
             currentlyPlaying = false;
             playedThisApplicationSession = true;
+            introToMainMenuTransitionRequested = true;
             enabled = false;
 
             Cursor.visible = true;

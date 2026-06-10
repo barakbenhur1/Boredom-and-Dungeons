@@ -818,3 +818,9 @@ The procedural vertical slice, screen RenderTexture, glass, physical controls, m
 - Page layouts use a common left-content/right-art grid and a concise footer that does not wrap.
 - Control textures are alpha-cleaned from the approved source sheet so each 3D cap shows only its own button surface rather than neighboring controls or square crop backgrounds.
 - This final addendum supersedes V4/prototype control labels and mappings.
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## Post-intro cinematic camera mode
+
+The special post-BBH shot starts farther away and at a different angle, exposes more table, keeps the real screen active and moves to the exact ordinary camera transform/FOV. It is a camera path, not device scaling or a camera cut.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->

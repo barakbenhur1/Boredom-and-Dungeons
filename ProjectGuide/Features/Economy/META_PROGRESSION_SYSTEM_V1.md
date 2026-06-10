@@ -88,3 +88,11 @@ The latest Girl/Father correction specification additionally requires a temporar
 - explicit backlog work for the final reward formula, Girl unlock price, Father unlock price, anti-farming simulation and final visual design.
 
 No temporary reward value, save schema or UI is implemented by V23R19J. The value must be selected and reported when this backlog item becomes active.
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Approved Abandon award policy
+
+The broader defeat/victory formula remains open, but Abandon now has an exact relationship to the eventual/current death evaluator: evaluate the points that death would award at that exact run state, multiply by `0.84`, then apply the evaluator's existing rounding/clamp policy. Use the same evaluator and one idempotent award transaction; do not duplicate the death formula.
+
+The shared meta-result screen appears before the gameplay-to-handheld exit animation. Abandon cleanup and the animation begin only after the player legally closes that result screen. Ordinary Save & Return grants no end-of-run points.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->

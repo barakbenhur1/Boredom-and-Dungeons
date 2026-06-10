@@ -80,3 +80,21 @@ No eyes, faces, limbs, parallel camera owner, menu redesign, gameplay change, or
 4. Confirm the filled graphite/steel circle grows from zero behind the letters.
 5. Confirm the completed mark holds exactly `0.50s` before the intro finishes.
 6. Confirm the intro does not replay during same-session gameplay scene reloads.
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 explicit handoff signal
+
+BBH completion publishes one pending `IntroToMainMenuTransition` request. The modern handheld consumes it once only at a real main-menu destination. Play cancels it; Skip preserves it.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## Time ownership rule
+
+The BBH intro uses realtime/unscaled timing and explicit presentation/input ownership. It must never pause or resume the global simulation clock.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## V10.8 post-intro presentation boundary
+
+The BBH owner still emits only the one-shot destination request. The receiving transition must present the real full-screen 3D handheld/table scene; BBH does not create or animate a 2D representation of the device and does not own the destination camera path.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

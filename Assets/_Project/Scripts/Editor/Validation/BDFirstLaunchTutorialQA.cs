@@ -11,12 +11,34 @@ namespace BoredomAndDungeons.EditorTools.Validation
         private static readonly string[] RequiredFiles =
         {
             "Assets/_Project/Scripts/Runtime/UI/BDFirstLaunchTutorialStateStore.cs",
+            "Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs",
             "Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.FirstLaunchTutorial.cs",
             "Assets/_Project/Scripts/Runtime/UI/" +
             "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
             "PixelPresentation.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+            "PixelText.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+            "Gameplay.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+            "ActionPresentation.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+            "ProductionCourse.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.FirstLaunchTutorial." +
+            "V108Repair.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.LaunchPresentationGate.cs",
+            "Assets/_Project/Scripts/Runtime/UI/" +
+            "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs",
             "Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialEditorTools.cs",
             "ProjectGuide/Features/UI/FIRST_LAUNCH_TUTORIAL_V1.md",
+            "ProjectGuide/Features/UI/" +
+            "FIRST_LAUNCH_TUTORIAL_ENTRY_AND_ANIMATION_V11.md",
             "ProjectGuide/Tasks/ACTIVE/FIRST_LAUNCH_TUTORIAL_AND_HANDHELD_PRODUCTION_REPAIR.md"
         };
 
@@ -42,6 +64,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             "Tutorial Instruction Panel",
             "ResolveFirstLaunchTutorialKeyboardBinding",
             "ResolveFirstLaunchTutorialHandheldBinding",
+            "ResolveFirstLaunchTutorialGamepadBinding",
             "Tutorial Keyboard Binding Card",
             "Tutorial Handheld Binding Card",
             "UpdateFirstLaunchTutorialBindingPresentation",
@@ -49,10 +72,115 @@ namespace BoredomAndDungeons.EditorTools.Validation
             "Remembered-console palette",
             "KEYBOARD / MOUSE",
             "HANDHELD",
+            "CONTROLLER",
             "FilterMode.Point",
             "ApplyFirstLaunchTutorialPixelSprite",
             "BuildFirstLaunchTutorialPixelBackdrop",
-            "BeginFirstLaunchTutorialInstructionPresentation"
+            "BeginFirstLaunchTutorialInstructionPresentation",
+            "TutorialWorldMinX = -920f",
+            "TutorialWorldMaxX = 4250f",
+            "UpdateFirstLaunchTutorialFreePlay",
+            "UpdateFirstLaunchTutorialContinuousMovement",
+            "ResolveFirstLaunchTutorialMaximumPlayerX",
+            "ReadFirstLaunchTutorialMovementVector",
+            "firstLaunchTutorialMounted",
+            "Tutorial Wide Course",
+            "PlayFirstLaunchTutorialMountAnimation",
+            "PlayFirstLaunchTutorialLightAttackAnimation",
+            "PlayFirstLaunchTutorialRangedAttackAnimation",
+            "PlayFirstLaunchTutorialDodgeAnimation",
+            "PlayFirstLaunchTutorialHeavyAttackAnimation",
+            "PlayFirstLaunchTutorialSpinAttackAnimation",
+            "PlayFirstLaunchTutorialParryAnimation",
+            "PlayFirstLaunchTutorialGrappleAnimation",
+            "PlayFirstLaunchTutorialHealAnimation",
+            "Tutorial Player Projectile Effect",
+            "Tutorial Light Slash Effect",
+            "Tutorial Muzzle Flash Effect",
+            "Tutorial Spin Effect",
+            "Tutorial Parry Effect",
+            "Tutorial Grapple Line Effect",
+            "ApplyFirstLaunchTutorialPlayerActionPose",
+            "ApplyFirstLaunchTutorialHorseActionPose",
+            "ApplyFirstLaunchTutorialEnemyActionPose",
+            "UpdateFirstLaunchTutorialLightAttackPresentation",
+            "UpdateFirstLaunchTutorialRangedAttackPresentation",
+            "UpdateFirstLaunchTutorialDodgePresentation",
+            "UpdateFirstLaunchTutorialHeavyAttackPresentation",
+            "UpdateFirstLaunchTutorialSpinPresentation",
+            "UpdateFirstLaunchTutorialParryPresentation",
+            "UpdateFirstLaunchTutorialGrapplePresentation",
+            "UpdateFirstLaunchTutorialHealPresentation",
+            "UpdateFirstLaunchTutorialHorseHitPresentation",
+            "FirstLaunchTutorialStep.Jump",
+            "RequestFirstLaunchTutorialJump",
+            "TutorialJumpObstacleX",
+            "TutorialLearningState",
+            "TutorialCheckpoint",
+            "ResetFirstLaunchTutorialToCheckpoint",
+            "TutorialMagazineSize",
+            "BeginFirstLaunchTutorialReload",
+            "MountedImpact",
+            "Tutorial Optional Secret",
+            "CombinedEncounter",
+            "MiniBossPhaseOne",
+            "MiniBossPhaseTwo",
+            "Tutorial Mini Boss Health",
+            "UpdateFirstLaunchTutorialMiniBossDeath",
+            "Tutorial Hold Progress Fill",
+            "TutorialDirectionalDodgeDoubleTapSeconds",
+            "TryReadFirstLaunchTutorialDirectionalDodge",
+            "TryRegisterFirstLaunchTutorialDirectionalDodge",
+            "Tutorial Respawn Fade",
+            "RETURNING TO CHECKPOINT...",
+            "firstLaunchTutorialRespawnResetApplied",
+            "ShouldReserveFirstLaunchTutorialPresentation",
+            "FirstLaunchTutorialEntryPhase",
+            "PLAY TUTORIAL",
+            "SKIP TUTORIAL",
+            "BuildFirstLaunchTutorialEntryChoice",
+            "ConfirmFirstLaunchTutorialEntrySelection",
+            "SetTutorialEntryTargetsActive",
+            "InitializeLaunchPresentationGate",
+            "ShouldReserveLaunchPresentation",
+            "TickLaunchPresentationGate",
+            "MainMenuEntryMode",
+            "IntroToMainMenuTransition",
+            "TryConsumeIntroToMainMenuTransition",
+            "IsEligiblePostIntroLandingPage",
+            "SmootherStep01",
+            "EvaluateCubicBezier",
+            "IntroMainMenuEstablishSeconds",
+            "IntroMainMenuCinematicSeconds",
+            "RuntimeInitializeLoadType.BeforeSceneLoad",
+            "CreateFirstLaunchTutorialPixelText",
+            "FirstLaunchTutorialPixelGlyphs",
+            "COMPLETE THE CURRENT LESSON TO CONTINUE",
+            "RejectFirstLaunchTutorialMountedMelee",
+            "ON HORSE: RANGED ATTACKS ONLY",
+            "TutorialSpinTargetX - 54f",
+            "TutorialSpinTargetX + 54f",
+            "TutorialGapX + 150f",
+            "firstLaunchTutorialAmmo = 1",
+            "FirstLaunchTutorialStep.ChargedShot",
+            "TutorialChargedShotHoldThresholdSeconds = 0.22f",
+            "FireFirstLaunchTutorialChargedShotAutomatically",
+            "ResolveFirstLaunchTutorialRangedProjectileImpact",
+            "BeginFirstLaunchTutorialShotTransaction",
+            "CompleteFirstLaunchTutorialProductionHookTransaction",
+            "ResolveFirstLaunchTutorialCollisionX",
+            "HEAL THE HORSE BEFORE MOUNTING",
+            "RegisterFirstLaunchTutorialWalkVisual",
+            "ResolveFirstLaunchTutorialWalkPattern",
+            "RECOVERY — ATTACK NOW",
+            "PRESS INTERACT WHEN READY",
+            "ApplyIntroToMainMenuCameraPose",
+            "RestoreStaticIntroScenePose",
+            "TableEnvironmentWidth",
+            "TableEnvironmentHeight",
+            "advancesMountedShotLesson",
+            "CompleteFirstLaunchTutorialMountedShotLessonAtImpact",
+            "UpdateFirstLaunchTutorialCompletionContact"
         };
 
         public static void Scan(BDOneClickQAResult result)
@@ -74,6 +202,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 root,
                 "Assets/_Project/Scripts/Runtime/UI/BDFirstLaunchTutorialStateStore.cs"
             );
+            string combatPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/BDPlayerCombat.cs"
+            );
             string presenterPath = Path.Combine(
                 root,
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.cs"
@@ -88,16 +220,65 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/UI/" +
                 "BDModernHandheld3DPresenter.FirstLaunchTutorial.PixelPresentation.cs"
             );
+            string pixelTextPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.FirstLaunchTutorial.PixelText.cs"
+            );
+            string gameplayPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.FirstLaunchTutorial.Gameplay.cs"
+            );
+            string actionPresentationPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.FirstLaunchTutorial.ActionPresentation.cs"
+            );
+            string productionCoursePath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.FirstLaunchTutorial.ProductionCourse.cs"
+            );
+            string v108RepairPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.FirstLaunchTutorial.V108Repair.cs"
+            );
             string targetPath = Path.Combine(
                 root,
                 "Assets/_Project/Scripts/Runtime/UI/BDModernHandheldControlTarget.cs"
             );
+            string launchGatePath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.LaunchPresentationGate.cs"
+            );
+            string introMainMenuPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs"
+            );
+            string bootIntroPath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/BDBBHBootIntro.cs"
+            );
 
+            string introMainMenu = ReadIfPresent(introMainMenuPath);
             string runtime = ReadIfPresent(statePath) +
+                             ReadIfPresent(combatPath) +
                              ReadIfPresent(presenterPath) +
                              ReadIfPresent(tutorialPath) +
                              ReadIfPresent(pixelPresentationPath) +
-                             ReadIfPresent(targetPath);
+                             ReadIfPresent(pixelTextPath) +
+                             ReadIfPresent(gameplayPath) +
+                             ReadIfPresent(actionPresentationPath) +
+                             ReadIfPresent(productionCoursePath) +
+                             ReadIfPresent(v108RepairPath) +
+                             ReadIfPresent(targetPath) +
+                             ReadIfPresent(launchGatePath) +
+                             introMainMenu +
+                             ReadIfPresent(bootIntroPath);
 
             for (int index = 0; index < RequiredRuntimeTokens.Length; index++)
             {
@@ -114,13 +295,320 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "case \"GRAPPLE\":",
                 "return \"HOLD Y\";"
             );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Ranged keyboard binding",
+                "case \"RANGED\":",
+                "return \"Q\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Ranged handheld binding",
+                "case \"RANGED\":",
+                "return \"A\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Jump keyboard binding",
+                "case \"JUMP\":",
+                "return \"SPACE\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Jump handheld binding",
+                "case \"JUMP\":",
+                "return \"B\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Directional dodge keyboard binding",
+                "case \"DODGE\":",
+                "return \"DOUBLE-TAP A/D OR LEFT/RIGHT\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Directional dodge handheld binding",
+                "case \"DODGE\":",
+                "return \"DOUBLE-TAP D-PAD LEFT/RIGHT\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Parry keyboard binding",
+                "case \"PARRY\":",
+                "return \"J / LEFT CLICK OR K / RIGHT CLICK\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Parry handheld binding",
+                "case \"PARRY\":",
+                "return \"X OR Y\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "Controller binding family",
+                "ResolveFirstLaunchTutorialGamepadBinding",
+                "return \"A / SOUTH\";",
+                "return \"RB\";",
+                "return \"HOLD LB\";",
+                "return \"X / WEST OR Y / NORTH\";"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "first-launch tutorial entry choice",
+                "PLAY TUTORIAL",
+                "SKIP TUTORIAL",
+                "BDFirstLaunchTutorialStateStore.MarkInProgress();",
+                "BDFirstLaunchTutorialStateStore.MarkSkipped();",
+                "SetTutorialEntryTargetsActive"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "pixel entry typography",
+                "CreateFirstLaunchTutorialPixelText",
+                "FirstLaunchTutorialPixelGlyphs",
+                "FilterMode.Point",
+                "PLAY TUTORIAL",
+                "SKIP TUTORIAL"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "invisible lesson clamp and forward progression",
+                "COMPLETE THE CURRENT LESSON TO CONTINUE",
+                "ResolveFirstLaunchTutorialMaximumPlayerX",
+                "TutorialSpinTargetX - 54f",
+                "TutorialSpinTargetX + 54f",
+                "TutorialGapX + 150f",
+                "firstLaunchTutorialAmmo = 1"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "mounted melee prohibition",
+                "RejectFirstLaunchTutorialMountedMelee",
+                "ON HORSE: RANGED ATTACKS ONLY",
+                "firstLaunchTutorialPrimaryHoldStartedAt = -1f",
+                "firstLaunchTutorialGrappleHoldStartedAt = -1f"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "first-frame modern presentation reservation",
+                "RuntimeInitializeLoadType.BeforeSceneLoad",
+                "InitializeLaunchPresentationGate",
+                "ShouldReserveLaunchPresentation",
+                "TickLaunchPresentationGate"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "camera-only intro-to-main-menu cinematic",
+                "MainMenuEntryMode.IntroToMainMenuTransition",
+                "TryConsumeIntroToMainMenuTransition",
+                "IsEligiblePostIntroLandingPage",
+                "page == EffectivePage.MainMenu",
+                "page == EffectivePage.FirstLaunchTutorial",
+                "IntroMainMenuEstablishSeconds",
+                "IntroMainMenuCinematicSeconds",
+                "ApplyIntroToMainMenuCameraPose",
+                "RestoreStaticIntroScenePose",
+                "TableEnvironmentWidth = 46f",
+                "TableEnvironmentHeight = 30f",
+                "deviceCamera.transform.localPosition = cameraPosition",
+                "EvaluateCubicBezier",
+                "SmootherStep01",
+                "menuInputUnlockAt = float.PositiveInfinity"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "charged-shot mechanic parity",
+                "chargedShotHoldThreshold = 0.22f",
+                "chargedShotBaseDuration = 0.90f",
+                "chargedShotSecondsPerAdditionalAmmo = 0.45f",
+                "chargedShotMaximumDuration = 3.20f",
+                "FireChargedShot(direction);",
+                "StartReloadImmediatelyAfterChargedShot();",
+                "FirstLaunchTutorialStep.ChargedShot",
+                "FireFirstLaunchTutorialChargedShotAutomatically"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "impact-synchronized tutorial transactions",
+                "BeginFirstLaunchTutorialShotTransaction",
+                "ResolveFirstLaunchTutorialRangedProjectileImpact",
+                "advancesMountedShotLesson",
+                "advancesLesson: advancesMountedShotLesson",
+                "hitLivingTarget",
+                "CompleteFirstLaunchTutorialMountedShotLessonAtImpact",
+                "SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Reload)",
+                "BeginFirstLaunchTutorialProductionHookTransaction",
+                "CompleteFirstLaunchTutorialProductionHookTransaction",
+                "progress >= 0.82f"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "injured horse and actor body collision",
+                "HEAL THE HORSE BEFORE MOUNTING",
+                "ResolveFirstLaunchTutorialCollisionX",
+                "TutorialEnemyCollisionRadius",
+                "TutorialMountedCollisionRadius"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "articulated pixel walk frames",
+                "TutorialPixelWalkVisual",
+                "ResolveFirstLaunchTutorialWalkPattern",
+                "entry.StepA",
+                "entry.StepB"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "readable final-test combat",
+                "PRESS INTERACT WHEN READY",
+                "WINDUP — MOVE / DODGE",
+                "RECOVERY — ATTACK NOW",
+                "firstLaunchTutorialEnemyProjectileTarget"
+            );
+
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "tutorial entry title hierarchy spacing",
+                "Tutorial Choice Brand",
+                "292f",
+                "Tutorial Choice Subtitle",
+                "154f",
+                "Play Tutorial Option",
+                "20f"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "contextual instruction pacing",
+                "SetFirstLaunchTutorialInstructionRequested",
+                "TutorialInstructionTriggerRange"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "wide playable course",
+                "TutorialHorseStartX = -650f",
+                "TutorialAmbushTriggerX = -350f",
+                "TutorialSecretBranchX = 3000f",
+                "TutorialMiniBossStationX = 3600f",
+                "TutorialCollectibleX = 3980f",
+                "firstLaunchTutorialTravelDistance"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "mounted free-play",
+                "firstLaunchTutorialMounted",
+                "TutorialMountedMoveSpeed",
+                "PlayFirstLaunchTutorialMountAnimation",
+                "PlayFirstLaunchTutorialDismountAnimation"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "action animation family",
+                "Tutorial Light Slash Effect",
+                "Tutorial Muzzle Flash Effect",
+                "Tutorial Player Projectile Effect",
+                "Tutorial Dodge Trail Effect",
+                "Tutorial Heavy Impact Effect",
+                "Tutorial Spin Effect",
+                "Tutorial Parry Effect",
+                "Tutorial Grapple Line Effect",
+                "Tutorial Healing Effect",
+                "Tutorial Horse Hit Effect"
+            );
+
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "production course progression",
+                "FirstLaunchTutorialStep.Jump",
+                "FirstLaunchTutorialStep.SidePath",
+                "FirstLaunchTutorialStep.CombinedEncounter",
+                "FirstLaunchTutorialStep.MiniBossPhaseOne",
+                "FirstLaunchTutorialStep.MiniBossPhaseTwo",
+                "FirstLaunchTutorialStep.MiniBossDefeated"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "checkpoint and reset cleanup",
+                "ResetFirstLaunchTutorialToCheckpoint",
+                "firstLaunchTutorialPrimaryHoldStartedAt = -1f",
+                "firstLaunchTutorialGrappleHoldStartedAt = -1f",
+                "firstLaunchTutorialReloadCompletesAt = 0f"
+            );
+            RequireRuntimeContract(
+                runtime,
+                errors,
+                "active input presentation",
+                "bool keyboardActive",
+                "bool controllerActive",
+                "bool handheldActive",
+                "firstLaunchTutorialBindingDivider.gameObject.SetActive(false)"
+            );
+
+            string[] forbiddenIntroTransitionTokens =
+            {
+                "introToMainMenuDeviceStartPosition",
+                "introToMainMenuDeviceStartRotation",
+                "introToMainMenuShadowStartPosition",
+                "introToMainMenuShadowStartRotation",
+                "deviceVisualRoot.localPosition = devicePosition",
+                "deviceVisualRoot.localScale = Vector3.one * deviceScale",
+                "shadowRoot.localPosition = Vector3.Lerp",
+                "ApplyIntroToMainMenuThreeDimensionalPose"
+            };
+
+            for (int index = 0;
+                 index < forbiddenIntroTransitionTokens.Length;
+                 index++)
+            {
+                string token = forbiddenIntroTransitionTokens[index];
+                if (introMainMenu.IndexOf(token, StringComparison.Ordinal) >= 0)
+                {
+                    errors.Add(
+                        "Forbidden non-camera post-intro animation token: " +
+                        token
+                    );
+                }
+            }
 
             string[] forbiddenRuntimeTokens =
             {
+                "Tutorial Visible Lesson Gate",
+                "UpdateFirstLaunchTutorialLessonGateVisual",
+                "COMPLETE THE CURRENT LESSON TO OPEN THE GATE",
+                "IntroMainMenuWideShotHoldSeconds",
+                "IntroMainMenuTravelSeconds",
                 "BDModernHandheldV6Polish",
                 "BDModernHandheldTactileCompatibility",
                 "BDModernHandheldPressScaleFeedback",
                 "Time.timeScale = 0",
+                "CancelPendingIntroToMainMenuTransitionForTutorialPlay",
+                "BDBBHBootIntro.CancelPendingIntroToMainMenuTransition();",
                 "HandleModernPrimaryAction(); // tutorial",
                 "AddComponent<BDMainMenuFlow>",
                 "case \"GRAPPLE\":\n" +
@@ -129,7 +617,25 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "V6Polish",
                 "ResolveFirstLaunchTutorialDualBinding",
                 "firstLaunchTutorialPrompt.resizeTextMaxSize = 38",
-                "firstLaunchTutorialDetail.resizeTextMaxSize = 22"
+                "firstLaunchTutorialDetail.resizeTextMaxSize = 22",
+                "Use four movement inputs in any direction.",
+                "firstLaunchTutorialMovementInputs >= 4",
+                "return \"Q\";\n                case \"SPIN\"",
+                "firstLaunchTutorialJumpDemonstrated",
+                "firstLaunchTutorialDodgeDemonstrated",
+                "firstLaunchTutorialParryDemonstrated",
+                "firstLaunchTutorialHazardDemonstrated",
+                "firstLaunchTutorialMountedShotDemonstrated",
+                "firstLaunchTutorialMountedImpactDemonstrated",
+                "return \"W / UP\";",
+                "return \"D-PAD UP\";",
+                "return \"SPACE\";\n                case \"HEAVY\"",
+                "private static bool ReadFirstLaunchTutorialDodgePressed()",
+                "Keyboard.current.wKey.wasPressedThisFrame ||\n                 Keyboard.current.upArrowKey.wasPressedThisFrame",
+                "action == BDModernHandheldControlTarget.ControlAction.DPadUp &&\n                !firstLaunchTutorialMounted",
+                "TutorialEnemyRole.Small, 1050f, 1f",
+                "TutorialEnemyRole.Small, 1120f, 1f",
+                "TutorialEnemyRole.Small, 1370f, 2f"
             };
 
             for (int index = 0; index < forbiddenRuntimeTokens.Length; index++)

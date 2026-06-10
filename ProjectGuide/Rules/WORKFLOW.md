@@ -517,3 +517,22 @@ Repository reduction is evidence-driven and lossless. Generated local data may b
 - Generated, untracked `Packages/com.unity.*` overlays may be moved only after the manifest is validated, tracked/local packages are excluded, and an external rollback backup is created.
 - Package recovery must preserve `Packages/manifest.json` and a valid `packages-lock.json`; source files are not rewritten to avoid a missing package assembly.
 <!-- BND_UNITY_UI_PACKAGE_RECOVERY_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## Source-package cleanup contract
+
+A repository patch installer must distinguish the extracted package root from the original ZIP in `~/Downloads`.
+
+After full successful validation only, the installer must:
+- remove its extracted payload/tools/launcher files from the repository root;
+- remove the exact source ZIP filename from `~/Downloads`;
+- optionally remove explicitly listed obsolete predecessor ZIPs that the new cumulative package supersedes.
+
+On preflight block, validation failure or rollback, the source ZIP must remain available. Wildcard deletion of unrelated ZIP files is forbidden.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## Installer cleanup is unconditional
+
+Every new or revised package must follow `TERMINAL_OUTPUT_STANDARD.md`. The cleanup handler is registered before checksum verification and executes on success, blocking, validation failure or interruption. Exact source/superseded ZIPs and extracted package artifacts are deleted even when installation fails. Successful rollback backups remain intentional artifacts; verified failed-attempt backups are removed after restoration.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->

@@ -13,18 +13,33 @@ namespace BoredomAndDungeons
         private enum FirstLaunchTutorialStep
         {
             WhiteBoot,
+            Move,
+            Jump,
             MountHorse,
+            RideHorse,
             EnemyArrival,
             HorseShot,
             AttackEnemy,
+            HeavyAttack,
+            Dodge,
+            Parry,
             HorseReturn,
             HealHorse,
-            Move,
-            Dodge,
-            HeavyAttack,
+            RemountHorse,
             SpinAttack,
-            Parry,
             Grapple,
+            HazardKnockback,
+            RangedAttack,
+            Reload,
+            ChargedShot,
+            MountedImpact,
+            DismountHorse,
+            SidePath,
+            CombinedEncounter,
+            MiniBossIntro,
+            MiniBossPhaseOne,
+            MiniBossPhaseTwo,
+            MiniBossDefeated,
             Collectible,
             Completed
         }
@@ -37,13 +52,29 @@ namespace BoredomAndDungeons
             Touch
         }
 
+        private enum FirstLaunchTutorialEntryPhase
+        {
+            Choice,
+            StartingTutorial,
+            Playing,
+            Skipping
+        }
+
         private const int TutorialContinueTargetIndex = 100;
         private const int TutorialLeaveTargetIndex = 101;
+        private const int TutorialPlayTargetIndex = 102;
+        private const int TutorialSkipTargetIndex = 103;
         private const float TutorialExitInputGuardSeconds = 0.20f;
+        private const float TutorialEntryConfirmSeconds = 0.28f;
         private const float TutorialTransitionSeconds = 0.52f;
         private const float TutorialSpinHoldSeconds = 0.78f;
         private const float TutorialHealHoldSeconds = 1.10f;
         private const float TutorialGrappleHoldSeconds = 0.72f;
+        private const float TutorialChargedShotHoldThresholdSeconds = 0.22f;
+        private const float TutorialChargedShotBaseSeconds = 0.90f;
+        private const float TutorialChargedShotSecondsPerAdditionalRound = 0.45f;
+        private const float TutorialChargedShotMaximumSeconds = 3.20f;
+        private const float TutorialDirectionalDodgeDoubleTapSeconds = 0.30f;
 
         private bool firstLaunchTutorialInitialized;
         private bool firstLaunchTutorialActive;
@@ -51,21 +82,38 @@ namespace BoredomAndDungeons
         private bool firstLaunchTutorialExitOpen;
         private bool firstLaunchTutorialTransitionOut;
         private int firstLaunchTutorialExitSelection;
-        private int firstLaunchTutorialMovementInputs;
         private float firstLaunchTutorialStepStartedAt;
         private float firstLaunchTutorialInputUnlockAt;
         private float firstLaunchTutorialTransitionStartedAt;
         private float firstLaunchTutorialPrimaryHoldStartedAt = -1f;
         private float firstLaunchTutorialHealHoldStartedAt = -1f;
         private float firstLaunchTutorialGrappleHoldStartedAt = -1f;
+        private float firstLaunchTutorialChargedShotPendingStartedAt = -1f;
+        private float firstLaunchTutorialChargedShotStartedAt = -1f;
         private float firstLaunchTutorialFeedbackClearAt;
         private float firstLaunchTutorialPauseStartedAt = -1f;
         private float firstLaunchTutorialExitOpenedAt;
+        private float firstLaunchTutorialLastLeftTapAt = -999f;
+        private float firstLaunchTutorialLastRightTapAt = -999f;
         private int firstLaunchTutorialLastActionFrame = -1;
         private FirstLaunchTutorialStep firstLaunchTutorialStep;
         private FirstLaunchTutorialInputSource firstLaunchTutorialInputSource;
+        private FirstLaunchTutorialEntryPhase firstLaunchTutorialEntryPhase;
+        private int firstLaunchTutorialEntrySelection;
+        private float firstLaunchTutorialEntryTransitionStartedAt;
+        private int firstLaunchTutorialEntryLastNavigationFrame = -1;
 
+        private GameObject firstLaunchTutorialGameplayRoot;
+        private GameObject firstLaunchTutorialEntryRoot;
+        private CanvasGroup firstLaunchTutorialEntryCanvasGroup;
+        private Image firstLaunchTutorialPlayOption;
+        private Image firstLaunchTutorialSkipOption;
+        private Image firstLaunchTutorialPlayLabel;
+        private Image firstLaunchTutorialSkipLabel;
+        private Image firstLaunchTutorialEntryStatus;
         private Image firstLaunchTutorialWhiteOverlay;
+        private Image firstLaunchTutorialRespawnOverlay;
+        private Text firstLaunchTutorialRespawnLabel;
         private Image firstLaunchTutorialWorldPanel;
         private Image firstLaunchTutorialPlayer;
         private Image firstLaunchTutorialHorse;
@@ -88,9 +136,12 @@ namespace BoredomAndDungeons
         private Text firstLaunchTutorialFeedback;
         private Image firstLaunchTutorialKeyboardBindingCard;
         private Image firstLaunchTutorialHandheldBindingCard;
+        private Text firstLaunchTutorialKeyboardBindingTitle;
+        private Text firstLaunchTutorialHandheldBindingTitle;
         private Text firstLaunchTutorialKeyboardBinding;
         private Text firstLaunchTutorialHandheldBinding;
         private Text firstLaunchTutorialBindingDivider;
+        private Image firstLaunchTutorialHoldFill;
 
         private float firstLaunchTutorialInstructionStartedAt;
         private readonly List<Texture2D> firstLaunchTutorialPixelTextures =
@@ -105,45 +156,97 @@ namespace BoredomAndDungeons
             firstLaunchTutorialActive = false;
             firstLaunchTutorialExitOpen = false;
             firstLaunchTutorialTransitionOut = false;
+            firstLaunchTutorialEntryPhase = FirstLaunchTutorialEntryPhase.Choice;
+            firstLaunchTutorialEntrySelection = 0;
+            firstLaunchTutorialEntryTransitionStartedAt = 0f;
+            firstLaunchTutorialEntryLastNavigationFrame = -1;
+            firstLaunchTutorialLastLeftTapAt = -999f;
+            firstLaunchTutorialLastRightTapAt = -999f;
         }
 
         private void DisposeFirstLaunchTutorial()
         {
+            DisposeFirstLaunchTutorialActionPresentation();
+            DisposeFirstLaunchTutorialFreePlayCourse();
             DisposeFirstLaunchTutorialPixelAssets();
             ClearFirstLaunchTutorialPhysicalHighlight();
+            SetTutorialEntryTargetsActive(false);
+            SetTutorialExitTargetsActive(false);
             firstLaunchTutorialActive = false;
             firstLaunchTutorialExitOpen = false;
             firstLaunchTutorialTransitionOut = false;
+            firstLaunchTutorialGameplayRoot = null;
+            firstLaunchTutorialEntryRoot = null;
+            firstLaunchTutorialEntryCanvasGroup = null;
+            firstLaunchTutorialPlayOption = null;
+            firstLaunchTutorialSkipOption = null;
+            firstLaunchTutorialPlayLabel = null;
+            firstLaunchTutorialSkipLabel = null;
+            firstLaunchTutorialEntryStatus = null;
+            firstLaunchTutorialWhiteOverlay = null;
+            firstLaunchTutorialRespawnOverlay = null;
+            firstLaunchTutorialRespawnLabel = null;
         }
 
         private void ResetFirstLaunchTutorialForScene()
         {
+            DisposeFirstLaunchTutorialActionPresentation();
+            DisposeFirstLaunchTutorialFreePlayCourse();
             DisposeFirstLaunchTutorialPixelAssets();
             ClearFirstLaunchTutorialPhysicalHighlight();
+            SetTutorialEntryTargetsActive(false);
+            SetTutorialExitTargetsActive(false);
             firstLaunchTutorialActive = false;
             firstLaunchTutorialExitOpen = false;
             firstLaunchTutorialTransitionOut = false;
             firstLaunchTutorialPrimaryHoldStartedAt = -1f;
             firstLaunchTutorialHealHoldStartedAt = -1f;
             firstLaunchTutorialGrappleHoldStartedAt = -1f;
+            firstLaunchTutorialChargedShotPendingStartedAt = -1f;
+            firstLaunchTutorialChargedShotStartedAt = -1f;
             firstLaunchTutorialPauseStartedAt = -1f;
+            firstLaunchTutorialLastLeftTapAt = -999f;
+            firstLaunchTutorialLastRightTapAt = -999f;
             firstLaunchTutorialLastActionFrame = -1;
+            firstLaunchTutorialEntryPhase = FirstLaunchTutorialEntryPhase.Choice;
+            firstLaunchTutorialEntrySelection = 0;
+            firstLaunchTutorialEntryTransitionStartedAt = 0f;
+            firstLaunchTutorialEntryLastNavigationFrame = -1;
+            firstLaunchTutorialGameplayRoot = null;
+            firstLaunchTutorialEntryRoot = null;
+            firstLaunchTutorialEntryCanvasGroup = null;
+            firstLaunchTutorialPlayOption = null;
+            firstLaunchTutorialSkipOption = null;
+            firstLaunchTutorialPlayLabel = null;
+            firstLaunchTutorialSkipLabel = null;
+            firstLaunchTutorialEntryStatus = null;
+            firstLaunchTutorialWhiteOverlay = null;
+            firstLaunchTutorialRespawnOverlay = null;
+            firstLaunchTutorialRespawnLabel = null;
+        }
+
+        private bool ShouldReserveFirstLaunchTutorialPresentation()
+        {
+            return firstLaunchTutorialInitialized &&
+                   !firstLaunchTutorialFinishedThisSession &&
+                   BDFirstLaunchTutorialStateStore.ShouldPresent;
         }
 
         private bool ShouldPresentFirstLaunchTutorial()
         {
-            if (!firstLaunchTutorialInitialized ||
-                firstLaunchTutorialFinishedThisSession ||
-                flow == null ||
-                flow.IsRunActive ||
-                flow.IsPausedFromGameplay ||
-                flow.CurrentHandheldPage !=
-                    BDMainMenuFlow.HandheldPage.MainMenu)
-            {
+            if (!ShouldReserveFirstLaunchTutorialPresentation())
                 return false;
-            }
 
-            return BDFirstLaunchTutorialStateStore.ShouldPresent;
+            // Reserve the tutorial surface while BDMainMenuFlow is still being
+            // resolved. This prevents the legacy menu from receiving one visible
+            // frame between the BBH intro and the modern handheld presentation.
+            if (flow == null)
+                return true;
+
+            return !flow.IsRunActive &&
+                   !flow.IsPausedFromGameplay &&
+                   flow.CurrentHandheldPage ==
+                       BDMainMenuFlow.HandheldPage.MainMenu;
         }
 
         private void BuildFirstLaunchTutorialPage()
@@ -153,16 +256,17 @@ namespace BoredomAndDungeons
             firstLaunchTutorialExitOpen = false;
             firstLaunchTutorialTransitionOut = false;
             firstLaunchTutorialExitSelection = 0;
-            firstLaunchTutorialMovementInputs = 0;
             firstLaunchTutorialPrimaryHoldStartedAt = -1f;
             firstLaunchTutorialHealHoldStartedAt = -1f;
             firstLaunchTutorialGrappleHoldStartedAt = -1f;
+            firstLaunchTutorialChargedShotPendingStartedAt = -1f;
+            firstLaunchTutorialChargedShotStartedAt = -1f;
             firstLaunchTutorialPauseStartedAt = -1f;
+            firstLaunchTutorialLastLeftTapAt = -999f;
+            firstLaunchTutorialLastRightTapAt = -999f;
             firstLaunchTutorialLastActionFrame = -1;
             firstLaunchTutorialInputSource =
                 FirstLaunchTutorialInputSource.Keyboard;
-
-            BDFirstLaunchTutorialStateStore.MarkInProgress();
 
             Image rootPanel = CreatePanel(
                 pageRoot,
@@ -173,6 +277,7 @@ namespace BoredomAndDungeons
                 850f,
                 new Color(0.012f, 0.016f, 0.028f, 1f)
             );
+            firstLaunchTutorialGameplayRoot = rootPanel.gameObject;
             AddOutline(
                 rootPanel.gameObject,
                 new Color(0.18f, 0.30f, 0.46f, 0.52f),
@@ -392,6 +497,7 @@ namespace BoredomAndDungeons
                     "KEYBOARD / MOUSE",
                     -205f,
                     new Color(0.055f, 0.105f, 0.145f, 1f),
+                    out firstLaunchTutorialKeyboardBindingTitle,
                     out firstLaunchTutorialKeyboardBinding
                 );
             firstLaunchTutorialHandheldBindingCard =
@@ -401,6 +507,7 @@ namespace BoredomAndDungeons
                     "HANDHELD",
                     205f,
                     new Color(0.105f, 0.070f, 0.155f, 1f),
+                    out firstLaunchTutorialHandheldBindingTitle,
                     out firstLaunchTutorialHandheldBinding
                 );
             firstLaunchTutorialBindingDivider = CreateText(
@@ -416,6 +523,20 @@ namespace BoredomAndDungeons
                 new Color(0.62f, 0.72f, 0.82f, 1f),
                 FontStyle.Bold
             );
+
+            firstLaunchTutorialHoldFill = CreatePanel(
+                firstLaunchTutorialInstructionRect,
+                "Tutorial Hold Progress Fill",
+                -360f,
+                -108f,
+                0f,
+                8f,
+                new Color(0.30f, 0.86f, 1f, 1f)
+            );
+            firstLaunchTutorialHoldFill.rectTransform.pivot =
+                new Vector2(0f, 0.5f);
+            firstLaunchTutorialHoldFill.gameObject.SetActive(false);
+            firstLaunchTutorialHoldFill.raycastTarget = false;
 
             firstLaunchTutorialFeedback = CreateText(
                 rootPanel.rectTransform,
@@ -433,6 +554,32 @@ namespace BoredomAndDungeons
 
             BuildFirstLaunchTutorialExitConfirmation(rootPanel.rectTransform);
 
+            firstLaunchTutorialRespawnOverlay = CreatePanel(
+                pageRoot,
+                "Tutorial Respawn Fade",
+                0f,
+                0f,
+                CanvasSize.x,
+                CanvasSize.y,
+                new Color(0.003f, 0.006f, 0.014f, 0f)
+            );
+            firstLaunchTutorialRespawnOverlay.raycastTarget = false;
+            firstLaunchTutorialRespawnOverlay.gameObject.SetActive(false);
+            firstLaunchTutorialRespawnLabel = CreateText(
+                firstLaunchTutorialRespawnOverlay.rectTransform,
+                "Tutorial Respawn Label",
+                "RETURNING TO CHECKPOINT...",
+                0f,
+                -8f,
+                720f,
+                46f,
+                22,
+                TextAnchor.MiddleCenter,
+                new Color(0.78f, 0.90f, 1f, 0f),
+                FontStyle.Bold
+            );
+            firstLaunchTutorialRespawnLabel.raycastTarget = false;
+
             firstLaunchTutorialWhiteOverlay = CreatePanel(
                 pageRoot,
                 "Tutorial White Boot Light",
@@ -443,9 +590,405 @@ namespace BoredomAndDungeons
                 Color.white
             );
             firstLaunchTutorialWhiteOverlay.transform.SetAsLastSibling();
+            firstLaunchTutorialWhiteOverlay.gameObject.SetActive(false);
 
+            InitializeFirstLaunchTutorialFreePlayCourse();
             SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.WhiteBoot);
             SetTutorialExitTargetsActive(false);
+            BuildFirstLaunchTutorialEntryChoice();
+            SetFirstLaunchTutorialEntryChoiceActive(true);
+        }
+
+        private void BuildFirstLaunchTutorialEntryChoice()
+        {
+            Image background = CreatePanel(
+                pageRoot,
+                "First Launch Tutorial Choice",
+                0f,
+                0f,
+                CanvasSize.x,
+                CanvasSize.y,
+                Color.black
+            );
+            firstLaunchTutorialEntryRoot = background.gameObject;
+            firstLaunchTutorialEntryCanvasGroup =
+                background.gameObject.AddComponent<CanvasGroup>();
+
+            CreateFirstLaunchTutorialPixelText(
+                background.rectTransform,
+                "Tutorial Choice Brand",
+                "B&D",
+                0f,
+                292f,
+                760f,
+                136f,
+                Color.white,
+                8,
+                3
+            );
+            CreateFirstLaunchTutorialPixelText(
+                background.rectTransform,
+                "Tutorial Choice Subtitle",
+                "Boredom & Dungeons",
+                0f,
+                154f,
+                760f,
+                56f,
+                Color.white,
+                4,
+                2
+            );
+
+            firstLaunchTutorialPlayOption = CreatePanel(
+                background.rectTransform,
+                "Play Tutorial Option",
+                0f,
+                20f,
+                600f,
+                88f,
+                Color.black
+            );
+            firstLaunchTutorialSkipOption = CreatePanel(
+                background.rectTransform,
+                "Skip Tutorial Option",
+                0f,
+                -96f,
+                600f,
+                88f,
+                Color.black
+            );
+
+            firstLaunchTutorialPlayLabel =
+                CreateFirstLaunchTutorialPixelText(
+                    firstLaunchTutorialPlayOption.rectTransform,
+                    "Play Tutorial Label",
+                    "PLAY TUTORIAL",
+                    0f,
+                    0f,
+                    540f,
+                    64f,
+                    Color.white,
+                    4,
+                    2
+                );
+            firstLaunchTutorialSkipLabel =
+                CreateFirstLaunchTutorialPixelText(
+                    firstLaunchTutorialSkipOption.rectTransform,
+                    "Skip Tutorial Label",
+                    "SKIP TUTORIAL",
+                    0f,
+                    0f,
+                    540f,
+                    64f,
+                    Color.white,
+                    4,
+                    2
+                );
+
+            firstLaunchTutorialEntryStatus =
+                CreateFirstLaunchTutorialPixelText(
+                    background.rectTransform,
+                    "Tutorial Choice Status",
+                    "UP / DOWN TO CHOOSE   SELECT TO CONFIRM",
+                    0f,
+                    -260f,
+                    760f,
+                    52f,
+                    new Color(0.86f, 0.90f, 0.94f, 1f),
+                    2,
+                    1
+                );
+
+            AddOutline(
+                firstLaunchTutorialPlayOption.gameObject,
+                Color.white,
+                3f
+            );
+            AddOutline(
+                firstLaunchTutorialSkipOption.gameObject,
+                Color.white,
+                3f
+            );
+
+            background.transform.SetAsLastSibling();
+            RefreshFirstLaunchTutorialEntryChoiceVisuals();
+        }
+
+        private void SetFirstLaunchTutorialEntryChoiceActive(bool active)
+        {
+            firstLaunchTutorialEntryPhase = active
+                ? FirstLaunchTutorialEntryPhase.Choice
+                : FirstLaunchTutorialEntryPhase.Playing;
+            firstLaunchTutorialEntrySelection = 0;
+            firstLaunchTutorialEntryTransitionStartedAt = 0f;
+            firstLaunchTutorialEntryLastNavigationFrame = -1;
+
+            if (firstLaunchTutorialGameplayRoot != null)
+                firstLaunchTutorialGameplayRoot.SetActive(!active);
+            if (firstLaunchTutorialEntryRoot != null)
+            {
+                firstLaunchTutorialEntryRoot.SetActive(active);
+                firstLaunchTutorialEntryRoot.transform.SetAsLastSibling();
+            }
+            if (firstLaunchTutorialEntryCanvasGroup != null)
+                firstLaunchTutorialEntryCanvasGroup.alpha = 1f;
+
+            SetTutorialEntryTargetsActive(active);
+            RefreshFirstLaunchTutorialEntryChoiceVisuals();
+            if (active)
+            {
+                SetFirstLaunchTutorialPhysicalHighlight(
+                    BDModernHandheldControlTarget.ControlAction.Confirm
+                );
+            }
+        }
+
+        private void SetFirstLaunchTutorialEntrySelection(int selection)
+        {
+            int clamped = Mathf.Clamp(selection, 0, 1);
+            if (clamped == firstLaunchTutorialEntrySelection)
+                return;
+
+            firstLaunchTutorialEntrySelection = clamped;
+            PlayClick();
+            RefreshFirstLaunchTutorialEntryChoiceVisuals();
+        }
+
+        private void RefreshFirstLaunchTutorialEntryChoiceVisuals()
+        {
+            bool playSelected = firstLaunchTutorialEntrySelection == 0;
+            ApplyFirstLaunchTutorialEntryOptionVisual(
+                firstLaunchTutorialPlayOption,
+                firstLaunchTutorialPlayLabel,
+                playSelected
+            );
+            ApplyFirstLaunchTutorialEntryOptionVisual(
+                firstLaunchTutorialSkipOption,
+                firstLaunchTutorialSkipLabel,
+                !playSelected
+            );
+        }
+
+        private static void ApplyFirstLaunchTutorialEntryOptionVisual(
+            Image option,
+            Image label,
+            bool selected)
+        {
+            if (option != null)
+            {
+                option.color = selected ? Color.white : Color.black;
+                option.rectTransform.localScale = selected
+                    ? new Vector3(1.025f, 1.025f, 1f)
+                    : Vector3.one;
+            }
+            if (label != null)
+                label.color = selected ? Color.black : Color.white;
+        }
+
+        private void ConfirmFirstLaunchTutorialEntrySelection()
+        {
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Choice ||
+                Time.frameCount == firstLaunchTutorialEntryLastNavigationFrame)
+            {
+                return;
+            }
+
+            firstLaunchTutorialEntryLastNavigationFrame = Time.frameCount;
+            firstLaunchTutorialEntryTransitionStartedAt = Time.unscaledTime;
+            PlayClick();
+
+            if (firstLaunchTutorialEntrySelection == 0)
+            {
+                BDFirstLaunchTutorialStateStore.MarkInProgress();
+                firstLaunchTutorialEntryPhase =
+                    FirstLaunchTutorialEntryPhase.StartingTutorial;
+                SetFirstLaunchTutorialPixelText(
+                    firstLaunchTutorialEntryStatus,
+                    "LOADING FIRST ADVENTURE..."
+                );
+            }
+            else
+            {
+                BDFirstLaunchTutorialStateStore.MarkSkipped();
+                firstLaunchTutorialEntryPhase =
+                    FirstLaunchTutorialEntryPhase.Skipping;
+                SetFirstLaunchTutorialPixelText(
+                    firstLaunchTutorialEntryStatus,
+                    "TUTORIAL SKIPPED"
+                );
+            }
+
+            SetTutorialEntryTargetsActive(false);
+            ClearFirstLaunchTutorialPhysicalHighlight();
+        }
+
+        private bool UpdateFirstLaunchTutorialEntryChoice()
+        {
+            if (firstLaunchTutorialEntryPhase ==
+                    FirstLaunchTutorialEntryPhase.Playing ||
+                (firstLaunchTutorialEntryPhase ==
+                     FirstLaunchTutorialEntryPhase.Skipping &&
+                 firstLaunchTutorialTransitionOut))
+            {
+                return false;
+            }
+
+            if (firstLaunchTutorialEntryPhase ==
+                    FirstLaunchTutorialEntryPhase.Choice)
+            {
+                if (firstLaunchTutorialEntryRoot != null)
+                    firstLaunchTutorialEntryRoot.transform.SetAsLastSibling();
+
+                float pulse =
+                    1f + Mathf.Sin(Time.unscaledTime * 5f) * 0.012f;
+                Image selected = firstLaunchTutorialEntrySelection == 0
+                    ? firstLaunchTutorialPlayOption
+                    : firstLaunchTutorialSkipOption;
+                if (selected != null)
+                {
+                    selected.rectTransform.localScale =
+                        new Vector3(pulse, pulse, 1f);
+                }
+                return true;
+            }
+
+            float elapsed =
+                Time.unscaledTime -
+                firstLaunchTutorialEntryTransitionStartedAt;
+            float progress = Mathf.Clamp01(
+                elapsed / TutorialEntryConfirmSeconds
+            );
+            if (firstLaunchTutorialEntryCanvasGroup != null)
+            {
+                firstLaunchTutorialEntryCanvasGroup.alpha =
+                    1f - Mathf.SmoothStep(0f, 1f, progress);
+            }
+
+            if (progress < 1f)
+                return true;
+
+            if (firstLaunchTutorialEntryPhase ==
+                    FirstLaunchTutorialEntryPhase.StartingTutorial)
+            {
+                if (firstLaunchTutorialEntryRoot != null)
+                    firstLaunchTutorialEntryRoot.SetActive(false);
+                if (firstLaunchTutorialGameplayRoot != null)
+                    firstLaunchTutorialGameplayRoot.SetActive(true);
+                if (firstLaunchTutorialWhiteOverlay != null)
+                {
+                    firstLaunchTutorialWhiteOverlay.gameObject.SetActive(true);
+                    firstLaunchTutorialWhiteOverlay.color = Color.white;
+                    firstLaunchTutorialWhiteOverlay.transform.SetAsLastSibling();
+                }
+
+                firstLaunchTutorialEntryPhase =
+                    FirstLaunchTutorialEntryPhase.Playing;
+                firstLaunchTutorialInputUnlockAt =
+                    Time.unscaledTime + 0.18f;
+                firstLaunchTutorialStepStartedAt = Time.unscaledTime;
+                UpdateFirstLaunchTutorialPrompt();
+                return false;
+            }
+
+            if (!firstLaunchTutorialTransitionOut)
+                BeginFirstLaunchTutorialTransition(skip: true);
+            return false;
+        }
+
+        private void UpdateFirstLaunchTutorialEntryNavigationInput()
+        {
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Choice)
+            {
+                return;
+            }
+
+            bool up = ReadFirstLaunchTutorialEntryUpPressed();
+            bool down = ReadFirstLaunchTutorialEntryDownPressed();
+            if (up)
+                SetFirstLaunchTutorialEntrySelection(0);
+            else if (down)
+                SetFirstLaunchTutorialEntrySelection(1);
+
+            if (ReadFirstLaunchTutorialConfirmPressed())
+                ConfirmFirstLaunchTutorialEntrySelection();
+        }
+
+        private static bool ReadFirstLaunchTutorialEntryUpPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null &&
+                (keyboard.wKey.wasPressedThisFrame ||
+                 keyboard.upArrowKey.wasPressedThisFrame))
+            {
+                return true;
+            }
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad != null &&
+                (gamepad.dpad.up.wasPressedThisFrame ||
+                 gamepad.leftStick.up.wasPressedThisFrame))
+            {
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKeyDown(KeyCode.W) ||
+                Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                return true;
+            }
+#endif
+            return false;
+        }
+
+        private static bool ReadFirstLaunchTutorialEntryDownPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null &&
+                (keyboard.sKey.wasPressedThisFrame ||
+                 keyboard.downArrowKey.wasPressedThisFrame))
+            {
+                return true;
+            }
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad != null &&
+                (gamepad.dpad.down.wasPressedThisFrame ||
+                 gamepad.leftStick.down.wasPressedThisFrame))
+            {
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKeyDown(KeyCode.S) ||
+                Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                return true;
+            }
+#endif
+            return false;
+        }
+
+        private void SetTutorialEntryTargetsActive(bool active)
+        {
+            SetTutorialScreenTargetActive(
+                TutorialPlayTargetIndex,
+                active,
+                0f,
+                2f,
+                600f,
+                92f
+            );
+            SetTutorialScreenTargetActive(
+                TutorialSkipTargetIndex,
+                active,
+                0f,
+                -114f,
+                600f,
+                92f
+            );
         }
 
         private Image CreateTutorialEntity(
@@ -480,6 +1023,7 @@ namespace BoredomAndDungeons
             string category,
             float x,
             Color background,
+            out Text categoryText,
             out Text bindingText)
         {
             Image card = CreatePanel(
@@ -498,7 +1042,7 @@ namespace BoredomAndDungeons
                 2f
             );
 
-            CreateText(
+            categoryText = CreateText(
                 card.rectTransform,
                 name + " Category",
                 category,
@@ -645,6 +1189,9 @@ namespace BoredomAndDungeons
                 return false;
             }
 
+            if (UpdateFirstLaunchTutorialEntryChoice())
+                return true;
+
             if (firstLaunchTutorialFeedback != null &&
                 firstLaunchTutorialFeedbackClearAt > 0f &&
                 Time.unscaledTime >= firstLaunchTutorialFeedbackClearAt)
@@ -653,273 +1200,26 @@ namespace BoredomAndDungeons
                 firstLaunchTutorialFeedbackClearAt = 0f;
             }
 
-            UpdateFirstLaunchTutorialVisualPresentation();
-
             if (firstLaunchTutorialTransitionOut)
             {
                 UpdateFirstLaunchTutorialTransitionOut();
+                UpdateFirstLaunchTutorialVisualPresentation();
                 return true;
             }
 
             if (firstLaunchTutorialExitOpen)
             {
                 UpdateFirstLaunchTutorialExitAnimation();
+                UpdateFirstLaunchTutorialVisualPresentation();
                 return true;
             }
 
-            float elapsed = Time.unscaledTime - firstLaunchTutorialStepStartedAt;
-
-            switch (firstLaunchTutorialStep)
-            {
-                case FirstLaunchTutorialStep.WhiteBoot:
-                    UpdateFirstLaunchTutorialWhiteBoot(elapsed);
-                    break;
-                case FirstLaunchTutorialStep.EnemyArrival:
-                    UpdateFirstLaunchTutorialEnemyArrival(elapsed);
-                    break;
-                case FirstLaunchTutorialStep.HorseShot:
-                    UpdateFirstLaunchTutorialHorseShot(elapsed);
-                    break;
-                case FirstLaunchTutorialStep.HorseReturn:
-                    UpdateFirstLaunchTutorialHorseReturn(elapsed);
-                    break;
-                case FirstLaunchTutorialStep.HealHorse:
-                    UpdateFirstLaunchTutorialHealHold();
-                    break;
-                case FirstLaunchTutorialStep.SpinAttack:
-                    UpdateFirstLaunchTutorialSpinHold();
-                    break;
-                case FirstLaunchTutorialStep.Parry:
-                    UpdateFirstLaunchTutorialProjectile(elapsed);
-                    break;
-                case FirstLaunchTutorialStep.Grapple:
-                    UpdateFirstLaunchTutorialGrappleHold();
-                    break;
-                case FirstLaunchTutorialStep.Completed:
-                    if (elapsed >= 1.20f)
-                        BeginFirstLaunchTutorialTransition(skip: false);
-                    break;
-            }
-
+            float elapsed =
+                Time.unscaledTime -
+                firstLaunchTutorialStepStartedAt;
+            UpdateFirstLaunchTutorialFreePlay(elapsed);
+            UpdateFirstLaunchTutorialVisualPresentation();
             return true;
-        }
-
-        private void UpdateFirstLaunchTutorialWhiteBoot(float elapsed)
-        {
-            float reveal = Mathf.Clamp01((elapsed - 0.30f) / 0.85f);
-            if (firstLaunchTutorialWhiteOverlay != null)
-            {
-                Color color = firstLaunchTutorialWhiteOverlay.color;
-                color.a = 1f - reveal;
-                firstLaunchTutorialWhiteOverlay.color = color;
-            }
-
-            if (elapsed >= 1.25f)
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MountHorse);
-        }
-
-        private void UpdateFirstLaunchTutorialEnemyArrival(float elapsed)
-        {
-            if (firstLaunchTutorialEnemy != null)
-            {
-                Vector2 position = firstLaunchTutorialEnemy.rectTransform
-                    .anchoredPosition;
-                position.x = SnapFirstLaunchTutorialPixelValue(
-                    Mathf.Lerp(370f, 265f, Mathf.Clamp01(elapsed))
-                );
-                firstLaunchTutorialEnemy.rectTransform.anchoredPosition = position;
-            }
-
-            if (elapsed >= 1.10f)
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.HorseShot);
-        }
-
-        private void UpdateFirstLaunchTutorialHorseShot(float elapsed)
-        {
-            if (firstLaunchTutorialProjectile != null)
-            {
-                firstLaunchTutorialProjectile.gameObject.SetActive(true);
-                Vector2 position = firstLaunchTutorialProjectile.rectTransform
-                    .anchoredPosition;
-                position.x = SnapFirstLaunchTutorialPixelValue(
-                    Mathf.Lerp(
-                        245f,
-                        -72f,
-                        Mathf.Clamp01(elapsed / 0.65f)
-                    )
-                );
-                firstLaunchTutorialProjectile.rectTransform.anchoredPosition = position;
-            }
-
-            if (elapsed >= 0.68f)
-            {
-                if (firstLaunchTutorialProjectile != null)
-                    firstLaunchTutorialProjectile.gameObject.SetActive(false);
-                if (firstLaunchTutorialHorse != null)
-                {
-                    firstLaunchTutorialHorse.color =
-                        new Color(0.62f, 0.14f, 0.16f, 1f);
-                    firstLaunchTutorialHorse.rectTransform.anchoredPosition =
-                        new Vector2(-280f, -126f);
-                }
-                if (firstLaunchTutorialPlayer != null)
-                {
-                    firstLaunchTutorialPlayer.rectTransform.anchoredPosition =
-                        new Vector2(-130f, -118f);
-                    firstLaunchTutorialPlayer.rectTransform.localRotation =
-                        Quaternion.Euler(0f, 0f, 16f);
-                }
-                SetFirstLaunchTutorialStep(
-                    FirstLaunchTutorialStep.AttackEnemy
-                );
-            }
-        }
-
-        private void UpdateFirstLaunchTutorialHorseReturn(float elapsed)
-        {
-            if (firstLaunchTutorialHorse != null)
-            {
-                Vector2 position = firstLaunchTutorialHorse.rectTransform
-                    .anchoredPosition;
-                position.x = SnapFirstLaunchTutorialPixelValue(
-                    Mathf.Lerp(-310f, -72f, Mathf.Clamp01(elapsed))
-                );
-                firstLaunchTutorialHorse.rectTransform.anchoredPosition = position;
-            }
-
-            if (elapsed >= 1.05f)
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.HealHorse);
-        }
-
-        private void UpdateFirstLaunchTutorialProjectile(float elapsed)
-        {
-            if (firstLaunchTutorialProjectile == null)
-                return;
-
-            firstLaunchTutorialProjectile.gameObject.SetActive(true);
-            float cycle = Mathf.Repeat(elapsed, 1.35f) / 1.35f;
-            firstLaunchTutorialProjectile.rectTransform.anchoredPosition =
-                new Vector2(
-                    SnapFirstLaunchTutorialPixelValue(
-                        Mathf.Lerp(285f, -120f, cycle)
-                    ),
-                    -70f
-                );
-        }
-
-        private void UpdateFirstLaunchTutorialSpinHold()
-        {
-            if (!IsFirstLaunchTutorialPrimaryHeld())
-            {
-                firstLaunchTutorialPrimaryHoldStartedAt = -1f;
-                ShowFirstLaunchTutorialHoldProgress(
-                    "HOLD TO CHARGE",
-                    0f,
-                    visible: false
-                );
-                return;
-            }
-
-            if (firstLaunchTutorialPrimaryHoldStartedAt < 0f)
-                firstLaunchTutorialPrimaryHoldStartedAt = Time.unscaledTime;
-
-            float held = Time.unscaledTime -
-                         firstLaunchTutorialPrimaryHoldStartedAt;
-            float progress = Mathf.Clamp01(held / TutorialSpinHoldSeconds);
-            ShowFirstLaunchTutorialHoldProgress(
-                "SPIN CHARGE",
-                progress,
-                visible: true
-            );
-
-            if (progress >= 1f)
-            {
-                ShowFirstLaunchTutorialSuccess("SPIN ATTACK READY");
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Parry);
-            }
-        }
-
-        private void UpdateFirstLaunchTutorialHealHold()
-        {
-            if (!IsFirstLaunchTutorialHealHeld())
-            {
-                firstLaunchTutorialHealHoldStartedAt = -1f;
-                ShowFirstLaunchTutorialHoldProgress(
-                    "HOLD TO HEAL",
-                    0f,
-                    visible: false
-                );
-                return;
-            }
-
-            if (firstLaunchTutorialHealHoldStartedAt < 0f)
-                firstLaunchTutorialHealHoldStartedAt = Time.unscaledTime;
-
-            float held = Time.unscaledTime -
-                         firstLaunchTutorialHealHoldStartedAt;
-            float progress = Mathf.Clamp01(
-                held / TutorialHealHoldSeconds
-            );
-            ShowFirstLaunchTutorialHoldProgress(
-                "HEALING",
-                progress,
-                visible: true
-            );
-
-            if (progress < 1f)
-                return;
-
-            if (firstLaunchTutorialHorse != null)
-            {
-                firstLaunchTutorialHorse.color =
-                    new Color(0.58f, 0.35f, 0.18f, 1f);
-            }
-
-            ShowFirstLaunchTutorialSuccess("HORSE HEALED");
-            SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Move);
-        }
-
-        private void UpdateFirstLaunchTutorialGrappleHold()
-        {
-            if (!IsFirstLaunchTutorialHeavyHeld())
-            {
-                firstLaunchTutorialGrappleHoldStartedAt = -1f;
-                ShowFirstLaunchTutorialHoldProgress(
-                    "HOLD TO GRAPPLE",
-                    0f,
-                    visible: false
-                );
-                return;
-            }
-
-            if (firstLaunchTutorialGrappleHoldStartedAt < 0f)
-                firstLaunchTutorialGrappleHoldStartedAt =
-                    Time.unscaledTime;
-
-            float held = Time.unscaledTime -
-                         firstLaunchTutorialGrappleHoldStartedAt;
-            float progress = Mathf.Clamp01(
-                held / TutorialGrappleHoldSeconds
-            );
-            ShowFirstLaunchTutorialHoldProgress(
-                "GRAPPLE",
-                progress,
-                visible: true
-            );
-
-            if (progress < 1f)
-                return;
-
-            if (firstLaunchTutorialPlayer != null)
-            {
-                firstLaunchTutorialPlayer.rectTransform
-                    .anchoredPosition = new Vector2(230f, -118f);
-            }
-
-            ShowFirstLaunchTutorialSuccess("GRAPPLED ACROSS");
-            SetFirstLaunchTutorialStep(
-                FirstLaunchTutorialStep.Collectible
-            );
         }
 
         private void ShowFirstLaunchTutorialHoldProgress(
@@ -927,6 +1227,13 @@ namespace BoredomAndDungeons
             float progress,
             bool visible)
         {
+            if (firstLaunchTutorialHoldFill != null)
+            {
+                firstLaunchTutorialHoldFill.gameObject.SetActive(visible);
+                firstLaunchTutorialHoldFill.rectTransform.sizeDelta =
+                    new Vector2(720f * Mathf.Clamp01(progress), 8f);
+            }
+
             if (firstLaunchTutorialFeedback == null)
                 return;
 
@@ -937,11 +1244,8 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            int percent = Mathf.RoundToInt(
-                Mathf.Clamp01(progress) * 100f
-            );
-            firstLaunchTutorialFeedback.text =
-                label + "  " + percent + "%";
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(progress) * 100f);
+            firstLaunchTutorialFeedback.text = label + "  " + percent + "%";
             firstLaunchTutorialFeedbackClearAt = 0f;
         }
 
@@ -977,129 +1281,14 @@ namespace BoredomAndDungeons
 
         private void UpdateFirstLaunchTutorialNavigationInput()
         {
-            if (!firstLaunchTutorialActive ||
-                displayedPage != EffectivePage.FirstLaunchTutorial ||
-                Time.unscaledTime < firstLaunchTutorialInputUnlockAt)
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Playing)
             {
+                UpdateFirstLaunchTutorialEntryNavigationInput();
                 return;
             }
 
-            if (ReadExitPressed())
-            {
-                RegisterFirstLaunchTutorialInputSource();
-                if (firstLaunchTutorialExitOpen)
-                    CloseFirstLaunchTutorialExitConfirmation();
-                else
-                    OpenFirstLaunchTutorialExitConfirmation();
-                return;
-            }
-
-            if (firstLaunchTutorialExitOpen)
-            {
-                if (ReadUpPressed() || ReadLeftPressed())
-                    SetFirstLaunchTutorialExitSelection(0);
-                else if (ReadDownPressed() || ReadRightPressed())
-                    SetFirstLaunchTutorialExitSelection(1);
-
-                if (ReadFirstLaunchTutorialConfirmPressed())
-                    ConfirmFirstLaunchTutorialExitSelection();
-                return;
-            }
-
-            if (ReadUpPressed())
-                HandleFirstLaunchTutorialAction(
-                    BDModernHandheldControlTarget.ControlAction.DPadUp,
-                    FirstLaunchTutorialInputSource.Keyboard
-                );
-            else if (ReadDownPressed())
-                HandleFirstLaunchTutorialAction(
-                    BDModernHandheldControlTarget.ControlAction.DPadDown,
-                    FirstLaunchTutorialInputSource.Keyboard
-                );
-            else if (ReadLeftPressed())
-                HandleFirstLaunchTutorialAction(
-                    BDModernHandheldControlTarget.ControlAction.DPadLeft,
-                    FirstLaunchTutorialInputSource.Keyboard
-                );
-            else if (ReadRightPressed())
-                HandleFirstLaunchTutorialAction(
-                    BDModernHandheldControlTarget.ControlAction.DPadRight,
-                    FirstLaunchTutorialInputSource.Keyboard
-                );
-
-            switch (firstLaunchTutorialStep)
-            {
-                case FirstLaunchTutorialStep.MountHorse:
-                case FirstLaunchTutorialStep.Collectible:
-                    if (ReadFirstLaunchTutorialInteractPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Confirm,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Grapple:
-                    if (ReadFirstLaunchTutorialHeavyPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Credits,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    if (ReadFirstLaunchTutorialLightPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Primary,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.HealHorse:
-                    if (ReadFirstLaunchTutorialHealPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Progression,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Dodge:
-                    if (ReadFirstLaunchTutorialDodgePressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.ContextBackSettings,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    if (ReadFirstLaunchTutorialHeavyPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Credits,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Parry:
-                    if (ReadFirstLaunchTutorialParryPressed())
-                    {
-                        HandleFirstLaunchTutorialAction(
-                            BDModernHandheldControlTarget.ControlAction.Credits,
-                            FirstLaunchTutorialInputSource.Keyboard
-                        );
-                    }
-                    break;
-            }
+            UpdateFirstLaunchTutorialFreePlayInput();
         }
 
         private bool HandleFirstLaunchTutorialControl(
@@ -1110,6 +1299,44 @@ namespace BoredomAndDungeons
                 target == null)
             {
                 return false;
+            }
+
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Playing)
+            {
+                target.Pulse();
+                if (target.Action ==
+                        BDModernHandheldControlTarget.ControlAction.ScreenItem)
+                {
+                    if (target.Index == TutorialPlayTargetIndex)
+                    {
+                        SetFirstLaunchTutorialEntrySelection(0);
+                        ConfirmFirstLaunchTutorialEntrySelection();
+                    }
+                    else if (target.Index == TutorialSkipTargetIndex)
+                    {
+                        SetFirstLaunchTutorialEntrySelection(1);
+                        ConfirmFirstLaunchTutorialEntrySelection();
+                    }
+                    return true;
+                }
+
+                if (target.Action ==
+                        BDModernHandheldControlTarget.ControlAction.DPadUp)
+                {
+                    SetFirstLaunchTutorialEntrySelection(0);
+                }
+                else if (target.Action ==
+                         BDModernHandheldControlTarget.ControlAction.DPadDown)
+                {
+                    SetFirstLaunchTutorialEntrySelection(1);
+                }
+                else if (target.Action ==
+                         BDModernHandheldControlTarget.ControlAction.Confirm)
+                {
+                    ConfirmFirstLaunchTutorialEntrySelection();
+                }
+                return true;
             }
 
             if (target.Action ==
@@ -1156,6 +1383,19 @@ namespace BoredomAndDungeons
                 return false;
             }
 
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Playing &&
+                target != null &&
+                target.Action ==
+                    BDModernHandheldControlTarget.ControlAction.ScreenItem)
+            {
+                if (target.Index == TutorialPlayTargetIndex)
+                    SetFirstLaunchTutorialEntrySelection(0);
+                else if (target.Index == TutorialSkipTargetIndex)
+                    SetFirstLaunchTutorialEntrySelection(1);
+                return true;
+            }
+
             if (firstLaunchTutorialExitOpen && target != null &&
                 target.Action ==
                     BDModernHandheldControlTarget.ControlAction.ScreenItem)
@@ -1177,9 +1417,8 @@ namespace BoredomAndDungeons
                 return;
 
             firstLaunchTutorialLastActionFrame = Time.frameCount;
-            firstLaunchTutorialInputSource = ResolveFirstLaunchTutorialSource(
-                source
-            );
+            firstLaunchTutorialInputSource =
+                ResolveFirstLaunchTutorialSource(source);
             UpdateFirstLaunchTutorialPrompt();
 
             if (action == BDModernHandheldControlTarget.ControlAction.Exit)
@@ -1193,8 +1432,10 @@ namespace BoredomAndDungeons
 
             if (firstLaunchTutorialExitOpen)
             {
-                if (action == BDModernHandheldControlTarget.ControlAction.DPadUp ||
-                    action == BDModernHandheldControlTarget.ControlAction.DPadLeft)
+                if (action ==
+                        BDModernHandheldControlTarget.ControlAction.DPadUp ||
+                    action ==
+                        BDModernHandheldControlTarget.ControlAction.DPadLeft)
                 {
                     SetFirstLaunchTutorialExitSelection(0);
                 }
@@ -1213,138 +1454,10 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            switch (firstLaunchTutorialStep)
-            {
-                case FirstLaunchTutorialStep.MountHorse:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Confirm)
-                    {
-                        if (firstLaunchTutorialPlayer != null)
-                        {
-                            firstLaunchTutorialPlayer.rectTransform
-                                .anchoredPosition = new Vector2(-110f, -92f);
-                        }
-                        ShowFirstLaunchTutorialSuccess("MOUNTED");
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.EnemyArrival
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Primary)
-                    {
-                        if (firstLaunchTutorialEnemy != null)
-                            firstLaunchTutorialEnemy.gameObject.SetActive(false);
-                        ShowFirstLaunchTutorialSuccess("ONE-HIT ATTACK");
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.HorseReturn
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.HealHorse:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Progression)
-                    {
-                        firstLaunchTutorialHealHoldStartedAt =
-                            Time.unscaledTime;
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Move:
-                    if (IsTutorialMovementAction(action))
-                    {
-                        firstLaunchTutorialMovementInputs++;
-                        MoveFirstLaunchTutorialPlayer(action);
-                        if (firstLaunchTutorialMovementInputs >= 4)
-                        {
-                            ShowFirstLaunchTutorialSuccess("MOVEMENT READY");
-                            SetFirstLaunchTutorialStep(
-                                FirstLaunchTutorialStep.Dodge
-                            );
-                        }
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Dodge:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.ContextBackSettings)
-                    {
-                        if (firstLaunchTutorialPlayer != null)
-                        {
-                            firstLaunchTutorialPlayer.rectTransform.localScale =
-                                new Vector3(1.28f, 0.72f, 1f);
-                        }
-                        ShowFirstLaunchTutorialSuccess("DODGED");
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.HeavyAttack
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Credits)
-                    {
-                        if (firstLaunchTutorialEnemy != null)
-                            firstLaunchTutorialEnemy.gameObject.SetActive(false);
-                        ShowFirstLaunchTutorialSuccess("HEAVY HIT");
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.SpinAttack
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.SpinAttack:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Primary)
-                    {
-                        firstLaunchTutorialPrimaryHoldStartedAt =
-                            Time.unscaledTime;
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Parry:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Credits)
-                    {
-                        if (firstLaunchTutorialProjectile != null)
-                            firstLaunchTutorialProjectile.gameObject.SetActive(false);
-                        ShowFirstLaunchTutorialSuccess("PARRIED");
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.Grapple
-                        );
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Grapple:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Credits)
-                    {
-                        firstLaunchTutorialGrappleHoldStartedAt =
-                            Time.unscaledTime;
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Collectible:
-                    if (action ==
-                        BDModernHandheldControlTarget.ControlAction.Confirm)
-                    {
-                        if (firstLaunchTutorialCollectible != null)
-                        {
-                            firstLaunchTutorialCollectible.gameObject
-                                .SetActive(false);
-                        }
-                        ShowFirstLaunchTutorialSuccess("TUTORIAL COMPLETE");
-                        BDFirstLaunchTutorialStateStore.MarkCompleted();
-                        SetFirstLaunchTutorialStep(
-                            FirstLaunchTutorialStep.Completed
-                        );
-                    }
-                    break;
-            }
+            HandleFirstLaunchTutorialFreePlayAction(
+                action,
+                firstLaunchTutorialInputSource
+            );
         }
 
         private void SetFirstLaunchTutorialStep(
@@ -1356,6 +1469,9 @@ namespace BoredomAndDungeons
             firstLaunchTutorialPrimaryHoldStartedAt = -1f;
             firstLaunchTutorialHealHoldStartedAt = -1f;
             firstLaunchTutorialGrappleHoldStartedAt = -1f;
+            firstLaunchTutorialChargedShotPendingStartedAt = -1f;
+            firstLaunchTutorialChargedShotStartedAt = -1f;
+            ResetFirstLaunchTutorialHintEscalation();
 
             ConfigureFirstLaunchTutorialScene(step);
             UpdateFirstLaunchTutorialPrompt();
@@ -1366,83 +1482,7 @@ namespace BoredomAndDungeons
         private void ConfigureFirstLaunchTutorialScene(
             FirstLaunchTutorialStep step)
         {
-            SetTutorialEntityActive(firstLaunchTutorialEnemy, false);
-            SetTutorialEntityActive(firstLaunchTutorialHazard, false);
-            SetTutorialEntityActive(firstLaunchTutorialProjectile, false);
-            SetTutorialEntityActive(firstLaunchTutorialCollectible, false);
-            SetTutorialEntityActive(firstLaunchTutorialGap, false);
-
-            if (firstLaunchTutorialPlayer != null)
-            {
-                firstLaunchTutorialPlayer.rectTransform.localScale = Vector3.one;
-                firstLaunchTutorialPlayer.rectTransform.localRotation =
-                    Quaternion.identity;
-            }
-
-            switch (step)
-            {
-                case FirstLaunchTutorialStep.EnemyArrival:
-                case FirstLaunchTutorialStep.HorseShot:
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
-                    if (firstLaunchTutorialEnemy != null)
-                    {
-                        firstLaunchTutorialEnemy.rectTransform.anchoredPosition =
-                            new Vector2(300f, -120f);
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Dodge:
-                    SetTutorialEntityActive(firstLaunchTutorialHazard, true);
-                    break;
-
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
-                    if (firstLaunchTutorialEnemy != null)
-                    {
-                        firstLaunchTutorialEnemy.rectTransform.anchoredPosition =
-                            new Vector2(205f, -120f);
-                        firstLaunchTutorialEnemy.color =
-                            new Color(0.44f, 0.30f, 0.58f, 1f);
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.SpinAttack:
-                    SetTutorialEntityActive(firstLaunchTutorialEnemy, true);
-                    SetTutorialEntityActive(firstLaunchTutorialHazard, true);
-                    if (firstLaunchTutorialEnemy != null)
-                    {
-                        firstLaunchTutorialEnemy.rectTransform.anchoredPosition =
-                            new Vector2(160f, -120f);
-                        firstLaunchTutorialEnemy.color =
-                            new Color(0.72f, 0.12f, 0.20f, 1f);
-                    }
-                    if (firstLaunchTutorialHazard != null)
-                    {
-                        firstLaunchTutorialHazard.rectTransform.anchoredPosition =
-                            new Vector2(-20f, -120f);
-                        firstLaunchTutorialHazard.color =
-                            new Color(0.72f, 0.12f, 0.20f, 1f);
-                    }
-                    break;
-
-                case FirstLaunchTutorialStep.Parry:
-                    SetTutorialEntityActive(firstLaunchTutorialProjectile, true);
-                    break;
-
-                case FirstLaunchTutorialStep.Grapple:
-                    SetTutorialEntityActive(firstLaunchTutorialGap, true);
-                    break;
-
-                case FirstLaunchTutorialStep.Collectible:
-                    SetTutorialEntityActive(firstLaunchTutorialCollectible, true);
-                    if (firstLaunchTutorialCollectible != null)
-                    {
-                        firstLaunchTutorialCollectible.rectTransform
-                            .anchoredPosition = new Vector2(250f, -96f);
-                    }
-                    break;
-            }
+            ConfigureFirstLaunchTutorialFreePlayScene(step);
         }
 
         private void UpdateFirstLaunchTutorialPrompt()
@@ -1467,99 +1507,102 @@ namespace BoredomAndDungeons
         {
             string action = ResolveFirstLaunchTutorialBindingAction();
             bool hasBindings = !string.IsNullOrEmpty(action);
+            bool keyboardActive =
+                firstLaunchTutorialInputSource ==
+                    FirstLaunchTutorialInputSource.Keyboard;
+            bool controllerActive =
+                firstLaunchTutorialInputSource ==
+                    FirstLaunchTutorialInputSource.Gamepad;
+            bool handheldActive = !keyboardActive;
 
             if (firstLaunchTutorialKeyboardBindingCard != null)
             {
                 firstLaunchTutorialKeyboardBindingCard.gameObject.SetActive(
-                    hasBindings
+                    hasBindings && keyboardActive
                 );
+                firstLaunchTutorialKeyboardBindingCard.rectTransform.anchoredPosition =
+                    new Vector2(0f, -62f);
             }
             if (firstLaunchTutorialHandheldBindingCard != null)
             {
                 firstLaunchTutorialHandheldBindingCard.gameObject.SetActive(
-                    hasBindings
+                    hasBindings && handheldActive
                 );
+                firstLaunchTutorialHandheldBindingCard.rectTransform.anchoredPosition =
+                    new Vector2(0f, -62f);
             }
             if (firstLaunchTutorialBindingDivider != null)
-            {
-                firstLaunchTutorialBindingDivider.gameObject.SetActive(
-                    hasBindings
-                );
-            }
+                firstLaunchTutorialBindingDivider.gameObject.SetActive(false);
 
             if (firstLaunchTutorialDetail != null)
             {
                 firstLaunchTutorialDetail.rectTransform.anchoredPosition =
-                    hasBindings
-                        ? new Vector2(0f, 25f)
-                        : new Vector2(0f, -12f);
+                    hasBindings ? new Vector2(0f, 25f) : new Vector2(0f, -12f);
                 firstLaunchTutorialDetail.rectTransform.sizeDelta =
-                    hasBindings
-                        ? new Vector2(748f, 32f)
-                        : new Vector2(748f, 70f);
+                    hasBindings ? new Vector2(748f, 32f) : new Vector2(748f, 70f);
             }
 
             if (!hasBindings)
                 return;
-
+            if (firstLaunchTutorialKeyboardBindingTitle != null)
+                firstLaunchTutorialKeyboardBindingTitle.text =
+                    "KEYBOARD / MOUSE";
             if (firstLaunchTutorialKeyboardBinding != null)
-            {
                 firstLaunchTutorialKeyboardBinding.text =
                     ResolveFirstLaunchTutorialKeyboardBinding(action);
+            if (firstLaunchTutorialHandheldBindingTitle != null)
+            {
+                firstLaunchTutorialHandheldBindingTitle.text =
+                    controllerActive ? "CONTROLLER" : "HANDHELD";
             }
             if (firstLaunchTutorialHandheldBinding != null)
             {
                 firstLaunchTutorialHandheldBinding.text =
-                    ResolveFirstLaunchTutorialHandheldBinding(action);
+                    controllerActive
+                        ? ResolveFirstLaunchTutorialGamepadBinding(action)
+                        : ResolveFirstLaunchTutorialHandheldBinding(action);
             }
         }
 
         private string ResolveFirstLaunchTutorialProgressLabel()
         {
-            int index = Mathf.Clamp(
-                (int)firstLaunchTutorialStep,
-                0,
-                (int)FirstLaunchTutorialStep.Completed
-            );
-            int total = (int)FirstLaunchTutorialStep.Completed;
-            return "LESSON " + Mathf.Min(index + 1, total) +
-                   " / " + total;
+            return ResolveFirstLaunchTutorialFreePlayProgressLabel();
         }
 
         private string ResolveFirstLaunchTutorialPrompt()
         {
             switch (firstLaunchTutorialStep)
             {
-                case FirstLaunchTutorialStep.WhiteBoot:
-                    return "WAKING THE HANDHELD...";
-                case FirstLaunchTutorialStep.MountHorse:
-                    return "MOUNT THE HORSE";
-                case FirstLaunchTutorialStep.EnemyArrival:
-                    return "STAY READY";
-                case FirstLaunchTutorialStep.HorseShot:
-                    return "THE HORSE IS HIT";
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    return "ATTACK THE ENEMY";
-                case FirstLaunchTutorialStep.HorseReturn:
-                    return "THE HORSE IS RETURNING";
-                case FirstLaunchTutorialStep.HealHorse:
-                    return "HEAL THE HORSE";
-                case FirstLaunchTutorialStep.Move:
-                    return "MOVE THROUGH THE ROOM";
-                case FirstLaunchTutorialStep.Dodge:
-                    return "DODGE THE HAZARD";
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    return "BREAK THE ARMORED TARGET";
-                case FirstLaunchTutorialStep.SpinAttack:
-                    return "CHARGE A SPIN ATTACK";
-                case FirstLaunchTutorialStep.Parry:
-                    return "PARRY THE PROJECTILE";
-                case FirstLaunchTutorialStep.Grapple:
-                    return "CROSS THE GAP";
-                case FirstLaunchTutorialStep.Collectible:
-                    return "COLLECT THE MEMORY";
-                default:
-                    return "YOU ARE READY";
+                case FirstLaunchTutorialStep.WhiteBoot: return "WAKING THE HANDHELD...";
+                case FirstLaunchTutorialStep.Move: return "MOVE";
+                case FirstLaunchTutorialStep.Jump: return "JUMP THE ROOT";
+                case FirstLaunchTutorialStep.MountHorse: return "RIDE";
+                case FirstLaunchTutorialStep.RideHorse: return "FEEL THE HORSE'S WEIGHT";
+                case FirstLaunchTutorialStep.EnemyArrival: return "AN AMBUSH";
+                case FirstLaunchTutorialStep.HorseShot: return "THE HORSE IS HIT";
+                case FirstLaunchTutorialStep.AttackEnemy: return "QUICK ATTACK";
+                case FirstLaunchTutorialStep.HeavyAttack: return "HEAVY ATTACK";
+                case FirstLaunchTutorialStep.Dodge: return "EVADE THE STRIKE";
+                case FirstLaunchTutorialStep.Parry: return "PARRY BEFORE IMPACT";
+                case FirstLaunchTutorialStep.HorseReturn: return "THE HORSE RETURNS";
+                case FirstLaunchTutorialStep.HealHorse: return "HEAL THE HORSE";
+                case FirstLaunchTutorialStep.RemountHorse: return "MOUNT AGAIN";
+                case FirstLaunchTutorialStep.SpinAttack: return "SPIN ATTACK";
+                case FirstLaunchTutorialStep.Grapple: return "GRAPPLING HOOK";
+                case FirstLaunchTutorialStep.HazardKnockback: return "TURN THE WORLD INTO A WEAPON";
+                case FirstLaunchTutorialStep.RangedAttack: return "FIRE WHILE RIDING";
+                case FirstLaunchTutorialStep.Reload: return "RELOADING";
+                case FirstLaunchTutorialStep.ChargedShot: return "HOLD UNTIL IT FIRES";
+                case FirstLaunchTutorialStep.MountedImpact: return "RAM SMALL ENEMIES";
+                case FirstLaunchTutorialStep.DismountHorse: return "DISMOUNT";
+                case FirstLaunchTutorialStep.SidePath: return "THE ROAD IS NOT THE WHOLE WORLD";
+                case FirstLaunchTutorialStep.CombinedEncounter: return "USE WHAT YOU LEARNED";
+                case FirstLaunchTutorialStep.MiniBossIntro: return "FINAL TEST — READ THIS FIRST";
+                case FirstLaunchTutorialStep.MiniBossPhaseOne: return "DODGE THE WINDUP — ATTACK RECOVERY";
+                case FirstLaunchTutorialStep.MiniBossPhaseTwo: return "DODGE THE RELEASE — ATTACK RECOVERY";
+                case FirstLaunchTutorialStep.MiniBossDefeated: return "THE WAY IS OPEN";
+                case FirstLaunchTutorialStep.Collectible: return "TAKE THE LAST MEMORY";
+                default: return "YOU ARE READY";
             }
         }
 
@@ -1567,36 +1610,36 @@ namespace BoredomAndDungeons
         {
             switch (firstLaunchTutorialStep)
             {
-                case FirstLaunchTutorialStep.WhiteBoot:
-                    return "A short interactive lesson is loading.";
-                case FirstLaunchTutorialStep.MountHorse:
-                    return "Approach the horse and use either control route.";
-                case FirstLaunchTutorialStep.EnemyArrival:
-                    return "Watch the clean scripted encounter.";
-                case FirstLaunchTutorialStep.HorseShot:
-                    return "The next action unlocks when the event completes.";
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    return "Use a quick light attack.";
-                case FirstLaunchTutorialStep.HorseReturn:
-                    return "The injured horse returns automatically.";
-                case FirstLaunchTutorialStep.HealHorse:
-                    return "Keep holding until the healing meter completes.";
-                case FirstLaunchTutorialStep.Move:
-                    return "Use four movement inputs in any direction.";
-                case FirstLaunchTutorialStep.Dodge:
-                    return "Evade before touching the hazard.";
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    return "Use the heavy-action input once.";
-                case FirstLaunchTutorialStep.SpinAttack:
-                    return "Keep holding until the spin is fully charged.";
-                case FirstLaunchTutorialStep.Parry:
-                    return "Time the parry as the projectile approaches.";
-                case FirstLaunchTutorialStep.Grapple:
-                    return "Keep holding the heavy-action input to cross.";
-                case FirstLaunchTutorialStep.Collectible:
-                    return "Interact with the memory to finish the lesson.";
-                default:
-                    return "The main menu will appear next.";
+                case FirstLaunchTutorialStep.WhiteBoot: return "A short playable adventure is loading.";
+                case FirstLaunchTutorialStep.Move: return "Explore the clearing. The guide appears only when it matters.";
+                case FirstLaunchTutorialStep.Jump: return "Clear the obstacle and land safely.";
+                case FirstLaunchTutorialStep.MountHorse: return "Walk close, then use the active interaction binding.";
+                case FirstLaunchTutorialStep.RideHorse: return "The horse accelerates, turns wider and takes longer to stop.";
+                case FirstLaunchTutorialStep.EnemyArrival: return "Read the enemy before committing.";
+                case FirstLaunchTutorialStep.HorseShot: return "The hit separates rider and horse.";
+                case FirstLaunchTutorialStep.AttackEnemy: return "Tap for a fast strike with short recovery.";
+                case FirstLaunchTutorialStep.HeavyAttack: return "Tap heavy for more damage, knockback and longer recovery.";
+                case FirstLaunchTutorialStep.Dodge: return "Pass through the active hit during the invulnerable window.";
+                case FirstLaunchTutorialStep.Parry: return "Parry is optional, but success leaves the enemy exposed.";
+                case FirstLaunchTutorialStep.HorseReturn: return "The injured horse returns when the danger clears.";
+                case FirstLaunchTutorialStep.HealHorse: return "Stay close and hold until the healing action completes.";
+                case FirstLaunchTutorialStep.RemountHorse: return "Return to the saddle and continue east.";
+                case FirstLaunchTutorialStep.SpinAttack: return "Hold light when several enemies crowd you.";
+                case FirstLaunchTutorialStep.Grapple: return "Hold heavy to pull a small enemy into sword range.";
+                case FirstLaunchTutorialStep.HazardKnockback: return "Heavy, spin, hook placement or horse impact can push enemies into danger.";
+                case FirstLaunchTutorialStep.RangedAttack: return "Fire the final round while riding; the empty magazine reloads automatically.";
+                case FirstLaunchTutorialStep.Reload: return "The empty magazine reloads automatically; firing is locked until ready.";
+                case FirstLaunchTutorialStep.ChargedShot: return "Hold the ranged input. At full charge it fires automatically and consumes every loaded round; releasing after charge begins cancels it.";
+                case FirstLaunchTutorialStep.MountedImpact: return "Build speed and hit a small enemy directly.";
+                case FirstLaunchTutorialStep.DismountHorse: return "Slow down, then leave the saddle at the safe marker.";
+                case FirstLaunchTutorialStep.SidePath: return "No marker points to secrets. Look beyond the main path.";
+                case FirstLaunchTutorialStep.CombinedEncounter: return "Ride, shoot, dismount, control space and survive in your own order.";
+                case FirstLaunchTutorialStep.MiniBossIntro: return "Press interact when ready. Do not attack the windup: dodge or parry, then strike only while RECOVERY — ATTACK NOW is visible.";
+                case FirstLaunchTutorialStep.MiniBossPhaseOne: return "The boss cannot damage you from a distance. Read WINDUP, avoid IMPACT, then attack during the clearly labeled recovery window.";
+                case FirstLaunchTutorialStep.MiniBossPhaseTwo: return "Projectiles lock their target when released. Move or dodge away, then punish the recovery window.";
+                case FirstLaunchTutorialStep.MiniBossDefeated: return "Damage is disabled; the gate opens only after the death animation.";
+                case FirstLaunchTutorialStep.Collectible: return "Collect the memory to finish the first adventure.";
+                default: return "The main menu will appear next.";
             }
         }
 
@@ -1604,27 +1647,25 @@ namespace BoredomAndDungeons
         {
             switch (firstLaunchTutorialStep)
             {
-                case FirstLaunchTutorialStep.MountHorse:
-                case FirstLaunchTutorialStep.Collectible:
-                    return "INTERACT";
-                case FirstLaunchTutorialStep.AttackEnemy:
-                    return "ATTACK";
-                case FirstLaunchTutorialStep.HealHorse:
-                    return "HEAL";
                 case FirstLaunchTutorialStep.Move:
-                    return "MOVE";
-                case FirstLaunchTutorialStep.Dodge:
-                    return "DODGE";
-                case FirstLaunchTutorialStep.HeavyAttack:
-                    return "HEAVY";
-                case FirstLaunchTutorialStep.SpinAttack:
-                    return "SPIN";
-                case FirstLaunchTutorialStep.Parry:
-                    return "PARRY";
-                case FirstLaunchTutorialStep.Grapple:
-                    return "GRAPPLE";
-                default:
-                    return string.Empty;
+                case FirstLaunchTutorialStep.RideHorse: return "MOVE";
+                case FirstLaunchTutorialStep.Jump: return "JUMP";
+                case FirstLaunchTutorialStep.MountHorse:
+                case FirstLaunchTutorialStep.RemountHorse:
+                case FirstLaunchTutorialStep.DismountHorse:
+                case FirstLaunchTutorialStep.Collectible: return "INTERACT";
+                case FirstLaunchTutorialStep.AttackEnemy: return "ATTACK";
+                case FirstLaunchTutorialStep.HeavyAttack: return "HEAVY";
+                case FirstLaunchTutorialStep.Dodge: return "DODGE";
+                case FirstLaunchTutorialStep.Parry: return "PARRY";
+                case FirstLaunchTutorialStep.HealHorse: return "HEAL";
+                case FirstLaunchTutorialStep.SpinAttack: return "SPIN";
+                case FirstLaunchTutorialStep.Grapple: return "GRAPPLE";
+                case FirstLaunchTutorialStep.RangedAttack:
+                case FirstLaunchTutorialStep.ChargedShot: return "RANGED";
+                case FirstLaunchTutorialStep.MiniBossIntro: return "INTERACT";
+                case FirstLaunchTutorialStep.MountedImpact: return "MOVE";
+                default: return string.Empty;
             }
         }
 
@@ -1637,20 +1678,57 @@ namespace BoredomAndDungeons
                     return "WASD / ARROWS";
                 case "INTERACT":
                     return "E";
-                case "GRAPPLE":
-                    return "HOLD K / RIGHT CLICK";
+                case "JUMP":
+                    return "SPACE";
                 case "ATTACK":
                     return "J / LEFT CLICK";
                 case "HEAL":
                     return "HOLD F";
+                case "RANGED":
+                    return "Q";
                 case "DODGE":
-                    return "SPACE";
+                    return "DOUBLE-TAP A/D OR LEFT/RIGHT";
                 case "HEAVY":
                     return "K / RIGHT CLICK";
-                case "PARRY":
-                    return "Q";
                 case "SPIN":
                     return "HOLD J / LEFT CLICK";
+                case "PARRY":
+                    return "J / LEFT CLICK OR K / RIGHT CLICK";
+                case "GRAPPLE":
+                    return "HOLD K / RIGHT CLICK";
+                default:
+                    return string.Empty;
+            }
+        }
+
+
+        private static string ResolveFirstLaunchTutorialGamepadBinding(
+            string action)
+        {
+            switch (action)
+            {
+                case "MOVE":
+                    return "LEFT STICK / D-PAD";
+                case "INTERACT":
+                    return "B / EAST";
+                case "JUMP":
+                    return "A / SOUTH";
+                case "ATTACK":
+                    return "X / WEST";
+                case "HEAL":
+                    return "HOLD LB";
+                case "RANGED":
+                    return "RB";
+                case "DODGE":
+                    return "DOUBLE-TAP D-PAD LEFT/RIGHT";
+                case "HEAVY":
+                    return "Y / NORTH";
+                case "SPIN":
+                    return "HOLD X / WEST";
+                case "PARRY":
+                    return "X / WEST OR Y / NORTH";
+                case "GRAPPLE":
+                    return "HOLD Y / NORTH";
                 default:
                     return string.Empty;
             }
@@ -1665,20 +1743,24 @@ namespace BoredomAndDungeons
                     return "D-PAD";
                 case "INTERACT":
                     return "SELECT";
-                case "GRAPPLE":
-                    return "HOLD Y";
+                case "JUMP":
+                    return "B";
                 case "ATTACK":
                     return "X";
                 case "HEAL":
                     return "HOLD A";
+                case "RANGED":
+                    return "A";
                 case "DODGE":
-                    return "B";
+                    return "DOUBLE-TAP D-PAD LEFT/RIGHT";
                 case "HEAVY":
                     return "Y";
                 case "PARRY":
-                    return "Y";
+                    return "X OR Y";
                 case "SPIN":
                     return "HOLD X";
+                case "GRAPPLE":
+                    return "HOLD Y";
                 default:
                     return string.Empty;
             }
@@ -1900,6 +1982,15 @@ namespace BoredomAndDungeons
 
         private void UpdateFirstLaunchTutorialPhysicalHighlight()
         {
+            if (firstLaunchTutorialEntryPhase !=
+                    FirstLaunchTutorialEntryPhase.Playing)
+            {
+                SetFirstLaunchTutorialPhysicalHighlight(
+                    BDModernHandheldControlTarget.ControlAction.Confirm
+                );
+                return;
+            }
+
             if (firstLaunchTutorialExitOpen)
             {
                 SetFirstLaunchTutorialPhysicalHighlight(
@@ -1916,24 +2007,34 @@ namespace BoredomAndDungeons
         private BDModernHandheldControlTarget.ControlAction
             ResolveFirstLaunchTutorialRequiredControl()
         {
+            if (!IsFirstLaunchTutorialInstructionRequested())
+            {
+                return BDModernHandheldControlTarget.ControlAction.None;
+            }
+
             switch (firstLaunchTutorialStep)
             {
                 case FirstLaunchTutorialStep.MountHorse:
+                case FirstLaunchTutorialStep.RemountHorse:
+                case FirstLaunchTutorialStep.DismountHorse:
                 case FirstLaunchTutorialStep.Collectible:
                     return BDModernHandheldControlTarget.ControlAction.Confirm;
-                case FirstLaunchTutorialStep.Grapple:
-                    return BDModernHandheldControlTarget.ControlAction.Credits;
                 case FirstLaunchTutorialStep.AttackEnemy:
                 case FirstLaunchTutorialStep.SpinAttack:
+                case FirstLaunchTutorialStep.Parry:
                     return BDModernHandheldControlTarget.ControlAction.Primary;
                 case FirstLaunchTutorialStep.HealHorse:
+                case FirstLaunchTutorialStep.RangedAttack:
+                case FirstLaunchTutorialStep.ChargedShot:
                     return BDModernHandheldControlTarget.ControlAction.Progression;
                 case FirstLaunchTutorialStep.Move:
-                    return BDModernHandheldControlTarget.ControlAction.DPadRight;
+                case FirstLaunchTutorialStep.RideHorse:
                 case FirstLaunchTutorialStep.Dodge:
+                    return BDModernHandheldControlTarget.ControlAction.DPadRight;
+                case FirstLaunchTutorialStep.Jump:
                     return BDModernHandheldControlTarget.ControlAction.ContextBackSettings;
                 case FirstLaunchTutorialStep.HeavyAttack:
-                case FirstLaunchTutorialStep.Parry:
+                case FirstLaunchTutorialStep.Grapple:
                     return BDModernHandheldControlTarget.ControlAction.Credits;
                 default:
                     return BDModernHandheldControlTarget.ControlAction.None;
@@ -1950,6 +2051,15 @@ namespace BoredomAndDungeons
                     continue;
 
                 bool highlight = control.Action == action;
+                if (firstLaunchTutorialStep ==
+                        FirstLaunchTutorialStep.Parry &&
+                    action ==
+                        BDModernHandheldControlTarget.ControlAction.Primary &&
+                    control.Action ==
+                        BDModernHandheldControlTarget.ControlAction.Credits)
+                {
+                    highlight = true;
+                }
                 if (action ==
                         BDModernHandheldControlTarget.ControlAction.DPadRight &&
                     (control.Action ==
@@ -1971,45 +2081,6 @@ namespace BoredomAndDungeons
             SetFirstLaunchTutorialPhysicalHighlight(
                 BDModernHandheldControlTarget.ControlAction.None
             );
-        }
-
-        private static bool IsTutorialMovementAction(
-            BDModernHandheldControlTarget.ControlAction action)
-        {
-            return action == BDModernHandheldControlTarget.ControlAction.DPadUp ||
-                   action == BDModernHandheldControlTarget.ControlAction.DPadDown ||
-                   action == BDModernHandheldControlTarget.ControlAction.DPadLeft ||
-                   action == BDModernHandheldControlTarget.ControlAction.DPadRight;
-        }
-
-        private void MoveFirstLaunchTutorialPlayer(
-            BDModernHandheldControlTarget.ControlAction action)
-        {
-            if (firstLaunchTutorialPlayer == null)
-                return;
-
-            Vector2 delta = Vector2.zero;
-            switch (action)
-            {
-                case BDModernHandheldControlTarget.ControlAction.DPadUp:
-                    delta.y = 18f;
-                    break;
-                case BDModernHandheldControlTarget.ControlAction.DPadDown:
-                    delta.y = -18f;
-                    break;
-                case BDModernHandheldControlTarget.ControlAction.DPadLeft:
-                    delta.x = -28f;
-                    break;
-                case BDModernHandheldControlTarget.ControlAction.DPadRight:
-                    delta.x = 28f;
-                    break;
-            }
-
-            Vector2 position = firstLaunchTutorialPlayer.rectTransform
-                .anchoredPosition + delta;
-            position.x = Mathf.Clamp(position.x, -310f, 300f);
-            position.y = Mathf.Clamp(position.y, -145f, 80f);
-            firstLaunchTutorialPlayer.rectTransform.anchoredPosition = position;
         }
 
         private FirstLaunchTutorialInputSource ResolveFirstLaunchTutorialSource(
@@ -2051,7 +2122,7 @@ namespace BoredomAndDungeons
                 return true;
             }
             if (Gamepad.current != null &&
-                Gamepad.current.buttonSouth.wasPressedThisFrame)
+                Gamepad.current.buttonEast.wasPressedThisFrame)
             {
                 return true;
             }
@@ -2101,7 +2172,7 @@ namespace BoredomAndDungeons
                 return true;
             }
             if (Gamepad.current != null &&
-                Gamepad.current.buttonSouth.wasPressedThisFrame)
+                Gamepad.current.leftShoulder.wasPressedThisFrame)
             {
                 return true;
             }
@@ -2113,24 +2184,79 @@ namespace BoredomAndDungeons
             return false;
         }
 
-        private static bool ReadFirstLaunchTutorialDodgePressed()
+        private bool TryReadFirstLaunchTutorialDirectionalDodge()
         {
+            bool leftPressed = false;
+            bool rightPressed = false;
+
 #if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null &&
-                Keyboard.current.spaceKey.wasPressedThisFrame)
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null)
             {
-                return true;
+                leftPressed =
+                    keyboard.aKey.wasPressedThisFrame ||
+                    keyboard.leftArrowKey.wasPressedThisFrame;
+                rightPressed =
+                    keyboard.dKey.wasPressedThisFrame ||
+                    keyboard.rightArrowKey.wasPressedThisFrame;
             }
-            if (Gamepad.current != null &&
-                Gamepad.current.buttonEast.wasPressedThisFrame)
+
+            Gamepad gamepad = Gamepad.current;
+            if (gamepad != null)
             {
-                return true;
+                leftPressed |= gamepad.dpad.left.wasPressedThisFrame;
+                rightPressed |= gamepad.dpad.right.wasPressedThisFrame;
             }
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
-            if (Input.GetKeyDown(KeyCode.Space))
-                return true;
+            leftPressed |=
+                Input.GetKeyDown(KeyCode.A) ||
+                Input.GetKeyDown(KeyCode.LeftArrow);
+            rightPressed |=
+                Input.GetKeyDown(KeyCode.D) ||
+                Input.GetKeyDown(KeyCode.RightArrow);
 #endif
+
+            return TryRegisterFirstLaunchTutorialDirectionalDodge(
+                leftPressed,
+                rightPressed
+            );
+        }
+
+        private bool TryRegisterFirstLaunchTutorialDirectionalDodge(
+            bool leftPressed,
+            bool rightPressed)
+        {
+            float now = Time.unscaledTime;
+
+            if (leftPressed)
+            {
+                bool committed =
+                    now - firstLaunchTutorialLastLeftTapAt <=
+                    TutorialDirectionalDodgeDoubleTapSeconds;
+                firstLaunchTutorialLastLeftTapAt =
+                    committed ? -999f : now;
+                if (committed)
+                {
+                    firstLaunchTutorialLastMoveDirection = Vector2.left;
+                    return true;
+                }
+            }
+
+            if (rightPressed)
+            {
+                bool committed =
+                    now - firstLaunchTutorialLastRightTapAt <=
+                    TutorialDirectionalDodgeDoubleTapSeconds;
+                firstLaunchTutorialLastRightTapAt =
+                    committed ? -999f : now;
+                if (committed)
+                {
+                    firstLaunchTutorialLastMoveDirection = Vector2.right;
+                    return true;
+                }
+            }
+
             return false;
         }
 
@@ -2165,23 +2291,10 @@ namespace BoredomAndDungeons
 
         private static bool ReadFirstLaunchTutorialParryPressed()
         {
-#if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null &&
-                Keyboard.current.qKey.wasPressedThisFrame)
-            {
-                return true;
-            }
-            if (Gamepad.current != null &&
-                Gamepad.current.buttonNorth.wasPressedThisFrame)
-            {
-                return true;
-            }
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
-            if (Input.GetKeyDown(KeyCode.Q))
-                return true;
-#endif
-            return false;
+            // Parry is the timing result of a committed light or heavy melee
+            // attack immediately before impact; it is not a separate key.
+            return ReadFirstLaunchTutorialLightPressed() ||
+                   ReadFirstLaunchTutorialHeavyPressed();
         }
 
         private bool IsFirstLaunchTutorialHealHeld()
@@ -2193,7 +2306,7 @@ namespace BoredomAndDungeons
                 return true;
             }
             if (Gamepad.current != null &&
-                Gamepad.current.buttonSouth.isPressed)
+                Gamepad.current.leftShoulder.isPressed)
             {
                 return true;
             }
@@ -2220,6 +2333,56 @@ namespace BoredomAndDungeons
 #endif
 #if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetKey(KeyCode.F))
+                return true;
+            if (Input.GetMouseButton(0) &&
+                hoveredTarget != null &&
+                hoveredTarget.Action ==
+                    BDModernHandheldControlTarget.ControlAction.Progression)
+            {
+                firstLaunchTutorialInputSource =
+                    FirstLaunchTutorialInputSource.Handheld;
+                return true;
+            }
+#endif
+            return false;
+        }
+
+        private bool IsFirstLaunchTutorialRangedHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null &&
+                Keyboard.current.qKey.isPressed)
+            {
+                return true;
+            }
+            if (Gamepad.current != null &&
+                Gamepad.current.rightShoulder.isPressed)
+            {
+                return true;
+            }
+            if (Mouse.current != null &&
+                Mouse.current.leftButton.isPressed &&
+                hoveredTarget != null &&
+                hoveredTarget.Action ==
+                    BDModernHandheldControlTarget.ControlAction.Progression)
+            {
+                firstLaunchTutorialInputSource =
+                    FirstLaunchTutorialInputSource.Handheld;
+                return true;
+            }
+            if (Touchscreen.current != null &&
+                Touchscreen.current.primaryTouch.press.isPressed &&
+                hoveredTarget != null &&
+                hoveredTarget.Action ==
+                    BDModernHandheldControlTarget.ControlAction.Progression)
+            {
+                firstLaunchTutorialInputSource =
+                    FirstLaunchTutorialInputSource.Touch;
+                return true;
+            }
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+            if (Input.GetKey(KeyCode.Q))
                 return true;
             if (Input.GetMouseButton(0) &&
                 hoveredTarget != null &&

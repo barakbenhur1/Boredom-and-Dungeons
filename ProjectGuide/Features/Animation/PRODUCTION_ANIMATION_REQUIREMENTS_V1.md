@@ -1,3 +1,9 @@
+<!-- BND_ARTICULATED_MODELS_AND_ENEMIES_CAPTURE_V1:BEGIN -->
+## Queued articulated model and enemy-animation expansion
+
+The authoritative detailed requirement for segmented player/enemy bodies, elbow/knee joints, four articulated horse legs, weapon attachment, action-specific animation and the Summoner/Smasher/Big Shooter/Speedy/Tracking Shooter archetypes is preserved at `ProjectGuide/Tasks/QUEUED/NEW_ENEMY_ARCHETYPES_ARTICULATED_MODELS_AND_DIFFICULTY_GRAPH.md`. It is future production scope and must not be represented by rigid-body sliding or placeholder-only behavior.
+<!-- BND_ARTICULATED_MODELS_AND_ENEMIES_CAPTURE_V1:END -->
+
 # Boredom & Dungeons — Production Animation Requirements V1
 
 ## Authority
@@ -121,3 +127,11 @@ An animation set is approved only when:
 - Regular enemies must stop gameplay, show a readable death animation, and only then release loot/despawn.
 - Boss and mini-boss authored death sequences remain specialized encounter responsibilities.
 - The V23R19E procedural fall is a working Runtime presentation and does not remove the requirement for final production-authored death animation.
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## Explicit tutorial and main-game animation production backlog
+
+The tutorial now has an active, explicit production-animation requirement covering player, horse, every enemy role and mini-boss. It includes animated arms/legs, state-driven locomotion, attack preparation/commit/impact/recovery, jump/fall/land, dodge, hit/stagger/knockback, mount synchronization, death and respawn. Foot sliding, incompatible simultaneous states and unsynchronized impact/release are release blockers.
+
+A separate main-game animation pass is queued with the same production standard and role-specific coverage. Documentation of this requirement is not implementation or verification. See `ProjectGuide/Features/UI/FIRST_LAUNCH_TUTORIAL_ENTRY_AND_ANIMATION_V11.md`.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->

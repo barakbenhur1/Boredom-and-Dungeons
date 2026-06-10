@@ -1,3 +1,11 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## Mounted shooting progression invariant
+
+The mounted shooting lesson owns one progression-capable shot transaction. The shot does not complete when input is pressed, ammunition is consumed or the recoil animation ends. It completes only when the visible projectile reaches a living lesson target, applies damage through the existing actor owner and records `MountedShot`. The step then moves to Reload exactly once.
+
+The post-BBH presentation remains the same physical full-screen table/handheld scene. The device and its shadow stay fixed on the table; the scene camera alone changes position, rotation and field of view.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
 # First-Launch Tutorial V1
 
 ```text
@@ -194,3 +202,111 @@ Both control routes are visible and active at the same time. The most recently u
 
 The title/progress, feedback, world and instruction card own separate safe regions. Normal tutorial UI may not overlap.
 <!-- BND_TUTORIAL_REFERENCE_LED_V3:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## V10 production playable-course contract
+
+The tutorial is a 5–8 minute side-view pixel-art game contained inside the physical handheld screen. It teaches through play rather than a slideshow. The maintained sequence is: free movement and jump; horse Mount/Ride/Dismount; a readable sword enemy; Light/Heavy and Dodge/Parry; Tap/Hold Spin and Grappling Hook; environmental knockback; mounted shooting, Reload and mounted impact; an unadvertised optional secret; a multi-solution combined encounter; and a two-phase Mini-Boss using only previously taught mechanics.
+
+The map is fixed but not corridor-like. It contains a small opening choice, local backtracking, one optional branch that reconnects, varied play spaces and a final arena. Progress gates prevent bypassing entire lessons without requiring arbitrary input counts or full mastery of optional mechanics.
+
+`BDModernHandheld3DPresenter.FirstLaunchTutorial.ProductionCourse.cs` owns the production-course actors, explicit learning states, jump physics, checkpoints, health/ammo, enemy attack transactions, optional secret, combined encounter and Mini-Boss. It remains a cohesive partial of the existing presenter rather than a new global game/menu owner.
+
+The instruction system displays one large localized action card at a time. It distinguishes Tap and Hold, changes the active Keycap without rebuilding the card, records Introduced/Attempted/Performed/Demonstrated/MasteredForTutorial separately, escalates hints gradually and never auto-solves the action. The optional secret receives no advance instruction or marker.
+
+Confirmed tutorial Leave still writes `Skipped`, grants no run/meta reward and permanently suppresses automatic replay. Full completion writes `Completed`. The Editor reset command remains `Boredom And Dungeons -> Development -> Reset First Launch Tutorial`; stop and restart Play Mode afterward.
+
+Implementation is not verified until Unity compilation, TEST EVERYTHING, all input-route runs, timing, reset/failure coverage and user acceptance pass.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## Tutorial learning-state ownership clarification
+
+`TutorialLearningState` is the only tutorial-local evidence store for Introduced, Attempted, Performed, Demonstrated and MasteredForTutorial. Individual write-only booleans for specific mechanics are prohibited because they create duplicate truth, generate compiler warnings and can drift from prompt/progression decisions.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## V10.2 authoritative input and recovery clarification
+
+The tutorial must teach and consume the current gameplay gestures, not convenient substitute keys.
+
+### Desktop and physical-handheld contract
+
+| Action | Keyboard / mouse | Physical handheld |
+|---|---|---|
+| Move | WASD or arrows | D-pad |
+| Jump | Space | B |
+| Interact / Mount / Dismount | E | SELECT |
+| Light / Spin | J or left click / hold | X / hold X |
+| Heavy / Hook | K or right click / hold | Y / hold Y |
+| Ranged | Q | A |
+| Heal | Hold F | Hold A |
+| Dodge | Double-tap a movement direction; the side-view tutorial uses A/D or Left/Right | Double-tap D-pad Left/Right |
+| Parry | Time either Light or Heavy immediately before a valid impact | Time X or Y immediately before a valid impact |
+
+Parry is a result of melee timing and is not presented as a separate dedicated button. Dodge completion requires the second directional tap; a single tap remains movement. Input labels and the action consumer must derive from the same semantic contract.
+
+### Checkpoint presentation
+
+Death recovery is an explicit sequence:
+
+`death pose -> character fade -> opaque checkpoint cover -> restore stable snapshot -> controlled reveal`.
+
+The checkpoint transform may change only while the cover is opaque. The cached cover and label are reused and produce no per-recovery material or texture allocation. Combat input, holds, reload and transient effects remain cancelled before restoration.
+
+### Intro/menu presentation boundary
+
+When first-launch tutorial state is pending, the modern presenter reserves the presentation before `BDMainMenuFlow` resolution. Legacy-menu suppression includes that reservation. `ResolveEffectivePage` chooses the tutorial before falling back to Main Menu for a temporarily unresolved flow. This prevents any one-frame legacy or stale-main-menu exposure after the BBH intro.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## V10.3 entry decision
+
+Before tutorial gameplay, an unresolved first-launch state presents a black pixel-style handheld page with `B&D`, `Boredom & Dungeons`, `PLAY TUTORIAL` and `SKIP TUTORIAL`.
+
+`PLAY TUTORIAL` writes `InProgress` after confirmation and then begins the existing tutorial course. `SKIP TUTORIAL` persists a terminal no-auto-replay state and returns to the normal modern main menu. Both routes must remain covered until the correct next page is ready; no legacy or stale page may be exposed.
+
+The authoritative expanded contract and animation backlog are in `FIRST_LAUNCH_TUTORIAL_ENTRY_AND_ANIMATION_V11.md`.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## V10.4 forward-progress and gate rule
+
+A tutorial progression boundary may use a coordinate clamp only when the instruction director clearly states that the current lesson must be completed. V10.8 removes the rejected visible pixel-world gate/divider treatment.
+
+Lesson actors must spawn at or ahead of the expected player entry position. The post-dismount order is mounted shot → Reload → mounted impact → dismount → Spin → Grapple → hazard → side path → combined encounter → final test.
+
+While mounted, the boy tutorial supports ranged combat only. Light, Heavy, Spin and Grappling Hook requests are rejected without creating an attack transaction.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## V10.8 mechanics/readability correction
+
+V10.8 supersedes the V10.4 requirement for visible lesson gates. The course may retain invisible progression clamps to prevent skipping an untaught dependency, but it may not draw decorative boundary lines or gate bars between lessons. A blocked player receives contextual instruction feedback instead.
+
+The following are authoritative:
+
+- injured/red horse state is not mountable; healing must complete first;
+- living tutorial actors have blocking body volume and cannot be traversed by ordinary walking/riding;
+- walking/riding/chasing uses explicit alternating leg frames for player, horse and enemies;
+- tutorial ranged damage is an impact transaction: projectile presentation reaches impact before target damage, death or lesson advancement;
+- tutorial Hook is a completion transaction: target pull presentation finishes before damage and advancement;
+- checkpoints are updated at safe entry points for major lessons so recovery remains local;
+- final-boss HUD/instruction remains visible, attacks state `TELEGRAPH`, `IMPACT` and `RECOVER`, and the safe attack opening is the recovery window;
+- Phase 2 ranged damage comes from a visible projectile transaction rather than a distant timer hit.
+
+### Charged Shot parity
+
+The tutorial mirrors `BDPlayerCombat` instead of inventing a release-to-fire action:
+
+1. the ranged press remains pending for `0.22s`;
+2. release before that threshold produces an ordinary shot and does not complete the lesson;
+3. after threshold, charge duration is `min(3.20s, 0.90s + 0.45s × ammunition above two)`;
+4. release during active charge cancels it;
+5. reaching full charge fires automatically while the input is still held;
+6. the shot consumes all ammunition remaining in the magazine;
+7. Reload starts immediately;
+8. lesson completion waits for the charged projectile impact and resulting Reload completion.
+
+No separate combat owner is introduced. The tutorial transaction layer presents and forwards completion to the existing tutorial actor/damage/learning-state owners.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->

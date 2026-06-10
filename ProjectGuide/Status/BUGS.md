@@ -1,3 +1,34 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
+## First-launch tutorial V10.8.1 hotfixes — implementation supplied, Unity verification pending
+
+| ID | Area | Status | Current truth / acceptance condition |
+|---|---|---|---|
+| `TUTORIAL-V1081-001` | Mounted shooting progression | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The prior shot transaction always used `advancesLesson: false`, so a confirmed projectile impact could kill the enemy without advancing. Only the real `RangedAttack` lesson shot now opts into progression, and only a visible impact against a living target completes `MountedShot` and enters Reload. Misses, firing and animation completion do not advance. |
+| `TUTORIAL-V1081-002` | Post-BBH scene ownership | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The table, handheld, screen and shadow are one persistent full-screen 3D scene. They remain at rest transforms throughout the transition; only the existing scene camera moves/rotates/changes lens. Expanded table coverage must prevent empty-background exposure or apparent clipping at the opening angle. |
+| `DELIVERY-V1081-001` | Terminal semantic colors | `PACKAGE VERIFIED` | Pseudo-terminal tests confirmed bold green PASS, bold red BLOCKED, cyan INFO and magenta CLEANED. `NO_COLOR=1`, `TERM=dumb` and redirected output contained no ANSI sequences while retaining textual prefixes. Success and blocked paths removed the exact source ZIP and extracted package artifacts. |
+
+The two Runtime rows remain open for Unity/Play Mode. The terminal-delivery row passed its package gate and remains here only as the current recorded verification truth.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:BEGIN -->
+## First-launch tutorial V10.8 regressions — implementation supplied, Unity verification pending
+
+| ID | Area | Status | Current truth / acceptance condition |
+|---|---|---|---|
+| `TUTORIAL-V108-001` | Injured horse | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | A horse in the injured/red state rejects Mount and explains that healing is required. Mount may succeed only after the real tutorial healing transaction restores it. |
+| `TUTORIAL-V108-002` | Locomotion | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Player, horse and active enemies use alternating point-filtered leg frames derived from actual movement/action state. No stationary bob may substitute for moving legs. |
+| `TUTORIAL-V108-003` | Mounted/charged projectile timing | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Target health/death and lesson completion occur only when the visible projectile reaches its impact phase; firing may not kill the target immediately. One projectile resolves at most once. |
+| `TUTORIAL-V108-004` | Death recovery | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Each major lesson records a nearby stable checkpoint. Death still uses the covered restore sequence but may not send the player several completed lessons backward. |
+| `TUTORIAL-V108-005` | Grappling Hook | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The selected target is pulled by the visible rope/action presentation first. Damage and lesson progression resolve only when that presentation completes. |
+| `TUTORIAL-V108-006` | Course dividers | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Decorative transition lines/visible lesson gates are absent. Progression remains enforced by invisible coordinate clamps plus contextual feedback, not unexplained world-space stripes. |
+| `TUTORIAL-V108-007` | Final boss clarity/fairness | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Boss instructions and state remain visible; attacks expose telegraph, committed impact and recovery; close contact alone is not instant death; ranged attacks travel visibly and can be avoided; the boss accepts damage only during a stated recovery opening. |
+| `TUTORIAL-V108-008` | Enemy collision | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Living enemies and the boss block the player/horse body on the course axis. The player cannot walk or ride through them, while defeated/inactive actors stop blocking. |
+| `TUTORIAL-V108-009` | Post-BBH camera | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The special one-shot is a full-screen real-3D product-scene camera/device move with continuous perspective and exact final-pose restoration. No screen-space scale, slide, flat card or PowerPoint-like interpolation is allowed. |
+| `TUTORIAL-V108-010` | Charged Shot lesson | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | Holding Ranged beyond the production threshold starts charge; full charge fires automatically; early release fires ordinary before threshold or cancels after charge begins; all remaining ammo is consumed; Reload starts immediately; progression waits for the charged projectile impact and reload completion. |
+
+Source/static/package checks do not verify these rows. They remain open until a fresh Unity compile, TEST EVERYTHING and the focused Play Mode matrix pass.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+
 <!-- B&D HANDHELD V6 DIRECT REPAIR BUG LEDGER START -->
 ## Modern handheld merged-V6 regressions — implementation supplied, Unity verification pending
 
@@ -135,3 +166,82 @@ V7 incorrectly required `HANDHELD  HOLD Y` as one contiguous string, although
 the tutorial composes a card title and Grapple binding independently. V8
 validates the authoritative fields separately. Runtime behavior is unchanged.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_QA_CONTRACT_FIX_V8:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:BEGIN -->
+## Tutorial production-course acceptance status
+
+The earlier tutorial linearity, sustained-riding and missing-action-motion findings are implemented locally through the V10 course, but remain open for Unity/Play Mode confirmation. Additional acceptance risks tracked by V10 are jump collision, Tap/Hold double emission, checkpoint orphan cleanup, contextual Parry timing, mounted-only permissions, optional-secret duplication and Mini-Boss phase/death ordering. No item is marked verified by static package checks.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PRODUCTION_COURSE_V10:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:BEGIN -->
+## BUG-FIRST-LAUNCH-V10-001 — write-only tutorial learning flags
+
+```text
+Status: FIXED IN V10.1 CODE / UNITY RERUN REQUIRED
+Severity: warning-cleanliness and duplicate-state debt
+Evidence: six CS0414 warnings in ProductionCourse.cs after V10 installation
+```
+
+The write-only Jump, Dodge, Parry, Hazard, MountedShot and MountedImpact booleans duplicated the existing `TutorialLearningState` dictionary. V10.1 removes those fields and routes the remaining lesson completions through `SetFirstLaunchTutorialLearningState`. Close only after Unity recompiles without these warnings and TEST EVERYTHING remains clean.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_WARNING_CLEANUP_V101:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:BEGIN -->
+## Active tutorial V10.2 repair findings
+
+| ID | Severity | Status | Finding | Acceptance |
+|---|---:|---|---|---|
+| `BUG-TUTORIAL-V102-001` | Blocker | IMPLEMENTED / VERIFY IN UNITY | Jump, Dodge and Parry tutorial labels/consumers diverged from live controls. | Space jumps; directional double-tap dodges; timed light or heavy attack parries; physical labels and actions match. |
+| `BUG-TUTORIAL-V102-002` | High | IMPLEMENTED / VERIFY IN UNITY | Player death/checkpoint restore read as an unexplained position jump. | Character fades out, checkpoint restores only under opaque cover, then the character fades back in. |
+| `BUG-TUTORIAL-V102-003` | High | IMPLEMENTED / VERIFY IN UNITY | Legacy/old menu could flash while the modern first-launch page waited for flow resolution. | No old/legacy menu frame is visible between BBH intro and the intended handheld page. |
+
+Do not close these findings from static inspection or the earlier V10.1 automated pass. Close only after the new build compiles, TEST EVERYTHING is clean and focused Play Mode confirms each visible behavior.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_V10_INPUT_RESPAWN_FLASH_REPAIR_V102:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:BEGIN -->
+## V10.3 focused defects
+
+- `FIX IMPLEMENTED / VERIFY`: the package installer previously deleted only the extracted installer payload because the source ZIP remained in `~/Downloads`, outside `PACKAGE_ROOT`. V10.3 deletes the exact known tutorial ZIP filenames only after successful validation.
+- `FIX IMPLEMENTED / VERIFY`: a legacy or stale menu frame could appear between the BBH boot intro and the correct modern handheld page because the presenter was installed after scene load and visibility depended on a resolved flow. V10.3 installs before scene load and reserves the modern presentation until boot completion plus flow resolution.
+- `NEW FEATURE / VERIFY`: first-launch state now presents a dedicated pixel choice screen before tutorial gameplay.
+- `OPEN`: the full tutorial limb/animation production pass remains required and must not be marked complete from this patch.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_ENTRY_GATE_V103:END -->
+
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:BEGIN -->
+## V10.4 tutorial progression defects
+
+- `FIX IMPLEMENTED / VERIFY`: Spin and Grapple targets spawned behind the player's post-dismount position, producing an apparent invisible wall and preventing later mechanics from appearing.
+- `FIX IMPLEMENTED / VERIFY`: progression clamps had no visible world representation.
+- `FIX IMPLEMENTED / VERIFY`: mounted tutorial paths could still execute sword/Heavy/Hook actions.
+- `FIX IMPLEMENTED / VERIFY`: the mounted-shot lesson wording did not match the full-magazine requirement needed to reach Reload.
+- `FIX IMPLEMENTED / VERIFY`: the Play/Skip choice used non-pixel `Text` rendering.
+- `OPEN`: full production animation pass for player, horse, enemies and mini-boss remains the next implementation task after V10.4 verification.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_PROGRESSION_GATE_REPAIR_V104:END -->
+
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:BEGIN -->
+## V10.5 presentation defects
+
+- `FIX IMPLEMENTED / VERIFY`: subtitle crowded against the `B&D` title.
+- `FIX IMPLEMENTED / VERIFY`: intro completion lacked an explicit one-shot cinematic destination contract.
+- `FIX IMPLEMENTED / VERIFY`: ordinary main-menu entries were not formally separated from the special post-intro shot.
+- `OPEN`: full tutorial player/horse/enemy/mini-boss animation production remains next.
+<!-- BND_INTRO_TO_MAIN_MENU_CINEMATIC_AND_TUTORIAL_SPACING_V105:END -->
+
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:BEGIN -->
+## BBH intro mutates global time scale
+
+- Severity: blocker.
+- Detected by: `FIRST_LAUNCH_TUTORIAL_CONTRACT_INVALID`.
+- Cause: legacy `BDBBHBootIntro` startup code assigned the global time scale to zero.
+- Package correction: remove the assignment; keep unscaled timing and explicit local ownership.
+- Verification: pending Unity compile, BBH playback, cinematic handoff and `TEST EVERYTHING`.
+<!-- BND_BBH_GLOBAL_TIMESCALE_REMOVAL_V106:END -->
+
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:BEGIN -->
+## V10.7.1 self-rejected after writing
+
+- Severity: delivery blocker.
+- Cause: runtime token validation concatenated all changed C# files, including the editor validator containing the forbidden-token literals.
+- Safety result: the backup restored the repository.
+- Correction: scan only `/Runtime/` files for runtime tokens; validate editor QA independently.
+- Cleanup correction: source ZIP and extracted installer residue must be removed on every exit path.
+<!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
