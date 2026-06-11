@@ -1,3 +1,21 @@
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:BEGIN -->
+## V10.9.29 path-clearance addendum
+The child begins well behind the chair and clearly left of its centerline at the previously accepted POV height. The child does not climb through the backrest. The route approaches the left-rear corner, climbs outside the chair footprint, advances to a seat-side point after clearing the backrest, and then settles inward over the seat.
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:BEGIN -->
+## V10.9.28 direction addendum
+The first visible camera is behind the chair, slightly left, at the raised POV used by the earlier cinematic rather than near-floor height. The chair faces the table, with its backrest toward the approaching child. The power-on is two-stage: physical glass/backlight wake, then delayed tutorial-content feed-in with fade, upward settle and micro-scale correction.
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:BEGIN -->
+## Child point-of-view room entry addendum — V10.9.27
+
+The tutorial entry is one uninterrupted physical-camera shot. The child approaches from behind the chair, climbs onto it, leans toward the handheld, settles at the final tutorial composition, then powers on the display. The tutorial UI may exist in memory before that moment but must not be visible or emissive until the authored power-on begins.
+
+Screen-off means: screen canvas inactive, screen camera disabled, page alpha zero, display color near-black, emission/brightness zero, scanlines and hit targets disabled. The final reveal uses dark shutters and a restrained blue electronic line; no white full-screen flash is allowed.
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:END -->
+
 # First-Launch Tutorial Entry Choice and Animation Direction V11
 
 Status: `ENTRY CHOICE IMPLEMENTED IN V10.3 / TUTORIAL ANIMATION PRODUCTION PASS ACTIVE / MAIN-GAME ANIMATION PASS QUEUED`

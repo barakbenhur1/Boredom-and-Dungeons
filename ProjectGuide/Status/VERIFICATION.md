@@ -1,33 +1,133 @@
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
-## V10.9.11 verification truth — 2026-06-11
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
+## V10.9.33 verification contract
 
-### Incoming automated evidence
+Require:
 
-```text
-Unity: 6000.0.76f1
-Automated status: BLOCKED
-Blockers: 1
-Warnings: 0
-Info: 0
+- `backPanelBottomY = CinematicChairSeatSurfaceY + 0.52f`;
+- slat endpoints derived from the top of the lower rail and underside of the top rail;
+- `IntroMainMenuTotalSeconds = 8.05f`;
+- `ChildApproachPowerOnStartsAtSeconds = 6.80f`;
+- `ChildApproachPowerOnEndsAtSeconds = 7.80f`;
+- previous chair-gap and timing values absent;
+- QA synchronized with Runtime;
+- C# balance and `git diff --check` passing.
 
-HANDHELD_3D_CINEMATIC_ENVIRONMENT_MISSING
-Missing required contract: new Vector3(0f, -7.15f, 0f)
-```
+Fresh Unity automated and visual verification remain mandatory.
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:END -->
 
-### Root cause
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:BEGIN -->
+## V10.9.32 verification contract
 
-The runtime light targets correctly follow the forward device position:
+The QA scanner must aggregate these four Runtime sources:
 
-- key: `DeviceRestPosition.z + 0.40f`
-- fill: `DeviceRestPosition.z + 0.45f`
-- separation: `DeviceRestPosition.z + 0.60f`
+- `BDModernHandheld3DPresenter.IntroToMainMenuTransition.cs`
+- `BDModernHandheld3DPresenter.ChildApproachCinematic.cs`
+- `BDModernHandheld3DPresenter.CinematicEnvironment.cs`
+- `BDModernHandheld3DPresenter.CinematicWallpaperBackWall.cs`
 
-The standalone handheld validator still required the retired centered key-light target.
+The repair validates that the wallpaper partial file is required and included in the concatenated Runtime source, that C# delimiters remain balanced, and that `git diff --check` passes. Fresh Unity evidence remains mandatory.
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:END -->
 
-### Required next evidence
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:BEGIN -->
+## 2026-06-11 — Kitchen-entrance start, complete room shell and filmic fade V10.9.31
 
-A fresh Unity compile and `TEST EVERYTHING` result of `0 blockers / 0 warnings / 0 info`, followed by the pending visual acceptance of V10.9.9 placement and final angle.
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+The post-intro child POV cinematic remains the active task. This pass implements the latest visual corrections in the game:
+
+- the child now starts at a kitchen-entrance distance, farther behind and farther left of the chair;
+- the entrance-to-chair walk follows a curved cubic route instead of a direct straight-line interpolation;
+- the first frame stays fully black for `0.42s`, followed by a dedicated filmic fade that completes at `1.20s` before walking begins;
+- the room now contains a real ceiling and a physical right wall, both extending across the camera route;
+- the right wall continues the approved fruit wallpaper and includes a matching baseboard;
+- the sequence remains shorter than the older `8.25s` version while allowing the longer entrance route and professional fade;
+- the accepted chair climb, screen-off contract, power-on direction and animated tutorial-content reveal are preserved.
+
+Acceptance requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review from the first black frame through tutorial readiness.
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:BEGIN -->
+## 2026-06-11 — Child approach fade, speed and transition smoothing V10.9.30
+
+The post-intro child POV cinematic remains the active task. This pass:
+
+- starts the child farther behind and farther left of the chair while preserving the accepted child eye height;
+- begins from a fully black frame and fades the room in before visible movement starts;
+- shortens the complete sequence from `8.25s` to `7.45s` without rushing the screen power-on;
+- replaces the segmented chair climb with a tangent-continuous Catmull-Rom route;
+- blends the chair-clearance release instead of switching at a hard threshold;
+- replaces the two-step post-climb look movement with one cubic camera curve and one cubic look-target curve;
+- preserves the accepted screen power direction and content fade-in.
+
+Acceptance still requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review.
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:BEGIN -->
+## V10.9.29 verification
+Automated checks require the new farther-left start vector, revised timings, six-step cadence, seat-edge waypoint, three-stage Bezier climb, explicit left-edge clearance guard, removal of the retired direct-through-chair control points, C# balance, and `git diff --check`. Realtime collision and motion acceptance remain mandatory.
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:BEGIN -->
+## V10.9.28 verification
+Automated checks cover new timing/POV constants, removed unused field, chair orientation, curved climb helper, delayed content reveal, transform restoration, screen ordering, C# balance and `git diff --check`. Realtime visual acceptance remains mandatory.
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:BEGIN -->
+## V10.9.27 verification contract
+
+Automated checks cover required runtime files/tokens, screen-off ownership, power-on ordering, skip finalization, removal of white-start tokens, C# delimiter balance and `git diff --check`.
+
+Manual realtime evidence remains mandatory because compilation cannot prove physical walking, chair clearance, weight, comfort, focus, frame-perfect darkness or seamless tutorial handoff.
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:END -->
+
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:BEGIN -->
+## 2026-06-11 — Post-intro chair + QA access repair V10.9.26
+- Added a centered wooden dining chair in front of the table, aligned with the handheld.
+- The chair uses the new `BDCinematicDiningChair` texture resource and stays in the same physical room staging.
+- Added chair geometry and chair contact shadows in `BDModernHandheld3DPresenter.CinematicEnvironment.cs`.
+- Repaired the Unity editor compile blocker by changing `BDFirstLaunchTutorialQA.Scan()` from private to internal so `BDOneClickQAWindow` can call it.
+- Runtime focus: no limbo/cyclorama reintroduction; room staging remains the active implementation.
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:END -->
+
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:BEGIN -->
+## V10.9.25 verification contract
+
+Automated contracts require `BuildCinematicRoomFloor`, `Cinematic Real Room Floor`, `BD Cinematic Warm Room Floor`, `Cinematic Wallpaper Baseboard`, `Cinematic Warm Room Fill`, `Cinematic Wallpaper Wall Wash`, final camera `(0, -1.94, -4.18)`, approach point `(-0.14, -0.22, -6.48)`, and final lens `37.8°–30.6°`.
+
+Automated contracts forbid `BuildCinematicFloorAndCyclorama`, `Cinematic Cyclorama`, `BD Cinematic Charcoal Floor`, and `BD Cinematic Charcoal Cyclorama`.
+
+Unity `TEST EVERYTHING 0/0/0` and visual review remain required.
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:END -->
+
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:BEGIN -->
+## V10.9.24 verification contract
+
+The installer derives the current look target from the already-aligned `HANDHELD_3D_PHYSICAL_STAGING_MISSING` Require block, verifies it exists in the transition Runtime, and normalizes only the named first-launch camera contract.
+
+It tests both supported incoming variants:
+
+- a stale look target is present and must be replaced;
+- no look target is present and the current one must be inserted.
+
+It also tests idempotent reapplication, C# lexical/delimiter balance, protected-file hashes, rollback, and `git diff --check`.
+
+Fresh Unity `TEST EVERYTHING 0/0/0` remains required.
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:END -->
+
+Resolved authoritative final-look target: `new Vector3(0f, -7.18f, -4.18f)`.
+
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:BEGIN -->
+## V10.9.16 verification contract
+
+### Static/package truth
+
+The package targets Git HEAD `38ac49268a9afa0d711bd3cb8c1668c49cdc079f` with V10.9.13 installed. It owns the cinematic transition, depth-of-field Runtime, cinematic environment, both QA files and maintained documentation. It verifies exact patch anchors, C# delimiter balance, idempotent markers, rollback, and `git diff --check`.
+
+### Unity evidence required
+
+- Unity `6000.0.76f1` compiles without newly introduced errors.
+- `Boredom And Dungeons -> TEST EVERYTHING` returns `PASS`, `0 blockers`, `0 warnings`, `0 info`.
+- The final shot shows the complete handheld with a small visible wood strip below it.
+- DOF remains restrained and the wallpaper is visible mainly during the wide/middle portions.
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:END -->
 
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## V10.9.4 verification record — 2026-06-10

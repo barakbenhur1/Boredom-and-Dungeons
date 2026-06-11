@@ -1,3 +1,41 @@
+<!-- BND_POST_INTRO_CINEMATIC_BACKWALL_STABLE_REPAIR_V10921:BEGIN -->
+## V10.9.21 final shot
+
+- camera `(0, -1.68, -4.18)`;
+- look target `(0, -7.18, -4.18)`;
+- FOV `38.8°–31.8°`;
+- whole device visible with a small lower tabletop margin;
+- exact fruit wallpaper on one wide back wall at `z=23.82`;
+- no spawned side wallpaper walls or wall slats;
+- subtle full-resolution DOF.
+<!-- BND_POST_INTRO_CINEMATIC_BACKWALL_STABLE_REPAIR_V10921:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:BEGIN -->
+## V10.9.16 final-shot handheld spec
+
+- authoritative final direct camera: `(0, -1.58, -3.94)`;
+- authoritative final look target: `(0, -7.22, -3.94)`;
+- final responsive FOV: `40.5°` narrow to `34.6°` wide;
+- full device must remain inside frame;
+- visible tabletop margin below device must remain small but explicit;
+- DOF settings: near `2.15`, far `8.20`, strength `0.28`, max blur `2.10`, full-resolution blur chain;
+- wallpaper dressing is allowed but must remain secondary to the handheld.
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_FOCUSED_ROOM_POLISH_V10912:BEGIN -->
+## V10.9.12 tabletop product-shot specification
+
+- physical device scale remains `0.16`;
+- authoritative rest position: `(0, -7.27, -4.28)`;
+- direct final camera: `(0, -1.92, -3.82)`, rotation `(90, 0, 0)`;
+- final responsive perspective FOV: `39°` at narrow aspect to `33.5°` at wide aspect;
+- device remains fully inside frame and approximately 70%–80% of wide-frame height;
+- front table margin remains positive and visibly intentional;
+- depth-of-field focus target is the actual device transform, not a fixed arbitrary distance;
+- near/far blur is restrained and the screen must remain readable;
+- room dressing is secondary, dark, warm-accented and physically grounded.
+<!-- BND_POST_INTRO_CINEMATIC_FOCUSED_ROOM_POLISH_V10912:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:BEGIN -->
 ## V10.9.9 physical table placement and direct viewing geometry
 

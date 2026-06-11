@@ -1,8 +1,91 @@
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
-## V10.9.11 active QA-contract repair
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
+## V10.9.33 active implementation
 
-The current task remains the post-intro cinematic. Automated verification is blocked only because `BDModernHandheld3DQA` requires the retired centered key-light target instead of the three current `DeviceRestPosition.z`-relative targets. Apply the QA-only repair, obtain `TEST EVERYTHING 0/0/0`, and resume the pending visual confirmation. Do not modify the approved camera movement, device placement, table, lighting runtime or tutorial mechanics in this repair.
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+Keep the accepted child entrance, walk, climb, settlement, room shell and screen power effect. Close the chair backrest visually, reduce the lower-rail-to-seat gap, and add a slightly longer dark-screen pause after settlement before ignition.
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:END -->
+
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:BEGIN -->
+## V10.9.32 active QA repair
+
+The child-approach cinematic remains the active task. Repair only the automated QA source aggregation for the V10.9.31 room shell. Do not modify the approved visual implementation in this pass.
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:END -->
+
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:BEGIN -->
+## 2026-06-11 — Kitchen-entrance start, complete room shell and filmic fade V10.9.31
+
+The post-intro child POV cinematic remains the active task. This pass implements the latest visual corrections in the game:
+
+- the child now starts at a kitchen-entrance distance, farther behind and farther left of the chair;
+- the entrance-to-chair walk follows a curved cubic route instead of a direct straight-line interpolation;
+- the first frame stays fully black for `0.42s`, followed by a dedicated filmic fade that completes at `1.20s` before walking begins;
+- the room now contains a real ceiling and a physical right wall, both extending across the camera route;
+- the right wall continues the approved fruit wallpaper and includes a matching baseboard;
+- the sequence remains shorter than the older `8.25s` version while allowing the longer entrance route and professional fade;
+- the accepted chair climb, screen-off contract, power-on direction and animated tutorial-content reveal are preserved.
+
+Acceptance requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review from the first black frame through tutorial readiness.
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:BEGIN -->
+## 2026-06-11 — Child approach fade, speed and transition smoothing V10.9.30
+
+The post-intro child POV cinematic remains the active task. This pass:
+
+- starts the child farther behind and farther left of the chair while preserving the accepted child eye height;
+- begins from a fully black frame and fades the room in before visible movement starts;
+- shortens the complete sequence from `8.25s` to `7.45s` without rushing the screen power-on;
+- replaces the segmented chair climb with a tangent-continuous Catmull-Rom route;
+- blends the chair-clearance release instead of switching at a hard threshold;
+- replaces the two-step post-climb look movement with one cubic camera curve and one cubic look-target curve;
+- preserves the accepted screen power direction and content fade-in.
+
+Acceptance still requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review.
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:BEGIN -->
+## V10.9.29 active implementation
+Visually verify the farther-left approach and collision-safe natural climb. Do not move to later tutorial scope until the camera clears every chair component at runtime.
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:BEGIN -->
+## V10.9.28 active implementation
+Polish and visually verify the child approach/climb/power-on shot. Do not move to later tutorial scope before this shot is accepted.
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:BEGIN -->
+## V10.9.27 active implementation
+
+Implement and verify the child-POV walk/climb/power-on sequence before moving to later tutorial work. The chair, table, handheld and tutorial design remain authoritative and must not be redesigned.
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:END -->
+
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:BEGIN -->
+## 2026-06-11 — Post-intro chair + QA access repair V10.9.26
+- Added a centered wooden dining chair in front of the table, aligned with the handheld.
+- The chair uses the new `BDCinematicDiningChair` texture resource and stays in the same physical room staging.
+- Added chair geometry and chair contact shadows in `BDModernHandheld3DPresenter.CinematicEnvironment.cs`.
+- Repaired the Unity editor compile blocker by changing `BDFirstLaunchTutorialQA.Scan()` from private to internal so `BDOneClickQAWindow` can call it.
+- Runtime focus: no limbo/cyclorama reintroduction; room staging remains the active implementation.
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:END -->
+
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:BEGIN -->
+## V10.9.25 active implementation
+
+Continue the post-intro cinematic task. Replace the black cyclorama stage with a real room floor and distant wallpapered back wall, brighten the room, and move the final camera slightly closer without cropping the handheld. Do not modify tutorial mechanics or gameplay.
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:END -->
+
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:BEGIN -->
+## V10.9.24 active QA repair
+
+The post-intro cinematic remains the active task. Repair only the final inconsistent first-launch look-target contract. Do not modify the existing visual implementation. After `TEST EVERYTHING 0/0/0`, resume visual acceptance.
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:END -->
+
+Resolved authoritative final-look target: `new Vector3(0f, -7.18f, -4.18f)`.
+
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:BEGIN -->
+## V10.9.16 active implementation
+
+The active task remains the post-intro cinematic. This pass specifically refines blur, end framing and room character. Implement the gentler DOF, full-device final framing with a small bottom tabletop margin, and stylized wallpaper dressing. Preserve all approved tutorial and handheld-system behavior.
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:END -->
 
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## V10.9.4 interruption and exact resume point

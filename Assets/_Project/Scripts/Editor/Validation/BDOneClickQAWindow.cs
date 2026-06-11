@@ -112,7 +112,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "first_launch_tutorial",
                 "First-launch tutorial",
-                "After a clean tutorial-state reset, white light reveals the deterministic 2D lesson before Main Menu. Complete the horse/enemy/heal opening and every listed lesson with keyboard, controller and physical controls. EXIT uses the safe confirmation guard; Continue resumes exactly; confirmed Leave persists Skipped before transition; completion persists Completed; neither terminal state auto-replays."),
+                "After a clean tutorial-state reset, the child walks to the chair, climbs without a cut, settles on the handheld, and only then powers the display on from black with no white frame. Complete the horse/enemy/heal opening and every listed lesson with keyboard, controller and physical controls. EXIT uses the safe confirmation guard; Continue resumes exactly; confirmed Leave persists Skipped before transition; completion persists Completed; neither terminal state auto-replays."),
             new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
@@ -492,6 +492,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanBBHBootIntroContracts(result);
             BDBBHCinematicIntroQA.Scan(result);
             BDFirstLaunchTutorialQA.Scan(result);
+            BDChildApproachCinematicQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);
             BDHorseExhaustedFollowPetQA.Scan(result);

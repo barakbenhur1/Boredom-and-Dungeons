@@ -1,0 +1,14 @@
+{
+  "files": {
+    "Assets/_Project/Scripts/Runtime/UI/BDModernHandheld3DPresenter.CinematicEnvironment.cs": true,
+    "Assets/_Project/Scripts/Editor/Validation/BDFirstLaunchTutorialQA.cs": true,
+    "Assets/_Project/Resources/ModernHandheld/Textures/BDCinematicDiningChair.png": false,
+    "Assets/_Project/Resources/ModernHandheld/Textures/BDCinematicDiningChair.png.meta": false,
+    "ProjectGuide/Status/CURRENT.md": true,
+    "ProjectGuide/Status/BUGS.md": true,
+    "ProjectGuide/Status/WORK_QUEUE.md": true,
+    "ProjectGuide/Status/VERIFICATION.md": true,
+    "ProjectGuide/QA/INTRO_TO_MAIN_MENU_CINEMATIC_V105_QA.md": true,
+    "ProjectGuide/Tasks/ACTIVE/FIRST_LAUNCH_TUTORIAL_AND_HANDHELD_PRODUCTION_REPAIR.md": true
+  }
+}

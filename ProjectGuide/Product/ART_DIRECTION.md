@@ -1,3 +1,58 @@
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:BEGIN -->
+## 2026-06-11 — Kitchen-entrance start, complete room shell and filmic fade V10.9.31
+
+The post-intro child POV cinematic remains the active task. This pass implements the latest visual corrections in the game:
+
+- the child now starts at a kitchen-entrance distance, farther behind and farther left of the chair;
+- the entrance-to-chair walk follows a curved cubic route instead of a direct straight-line interpolation;
+- the first frame stays fully black for `0.42s`, followed by a dedicated filmic fade that completes at `1.20s` before walking begins;
+- the room now contains a real ceiling and a physical right wall, both extending across the camera route;
+- the right wall continues the approved fruit wallpaper and includes a matching baseboard;
+- the sequence remains shorter than the older `8.25s` version while allowing the longer entrance route and professional fade;
+- the accepted chair climb, screen-off contract, power-on direction and animated tutorial-content reveal are preserved.
+
+Acceptance requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review from the first black frame through tutorial readiness.
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:END -->
+
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:BEGIN -->
+## V10.9.25 room art direction
+
+The cinematic environment must read as a warm real room, not a studio limbo. Camera-visible architecture is deliberately simple: a large wooden floor, the complete table, and one distant fruit-wallpaper back wall with a physical baseboard. Side walls continue outside the camera bounds rather than appearing as a small box. Lighting is warm and readable while the handheld remains the focal subject.
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_BACKWALL_STABLE_REPAIR_V10921:BEGIN -->
+## V10.9.21 room art direction
+
+Use the supplied fruit wallpaper literally across the single visible back wall. Keep the wall broad enough that side boundaries never enter the shot. The table remains physically separated from the wall; the handheld remains the sharp visual hero.
+<!-- BND_POST_INTRO_CINEMATIC_BACKWALL_STABLE_REPAIR_V10921:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:BEGIN -->
+## V10.9.16 room art direction note
+
+The room should feel like a warm stylized domestic set, not a blank studio. Introduce wallpaper language similar to kitchen walls in animated films and series: soft repeated motifs, warm neutrals and a slightly nostalgic graphic rhythm. Keep the treatment tasteful and a little out of focus so it enriches the space without competing with the device.
+
+The hierarchy remains:
+1. handheld screen and shell;
+2. tabletop and contact shadow;
+3. complete table mass;
+4. softened room dressing and wallpaper.
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:END -->
+
+<!-- BND_POST_INTRO_CINEMATIC_FOCUSED_ROOM_POLISH_V10912:BEGIN -->
+## V10.9.12 post-intro room art direction
+
+Treat the shot as a premium handheld product reveal in a real, quiet room—not a gray-box studio. The environment uses dark walnut, charcoal fabric, warm practical light, restrained brass accents, books, greenery and vertical wall rhythm. Keep silhouettes simple enough to read through bokeh.
+
+The visual hierarchy is absolute:
+
+1. live handheld screen and shell;
+2. immediate wood surface/contact shadow;
+3. complete table volume;
+4. softly defocused room dressing.
+
+Avoid decorative clutter, bright competing colors, sharp background detail, synthetic full-frame blur, focus pulsing and excessive bloom.
+<!-- BND_POST_INTRO_CINEMATIC_FOCUSED_ROOM_POLISH_V10912:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_FINAL_ALIGNMENT_V1099:BEGIN -->
 ## Post-intro product-shot final alignment V10.9.9
 

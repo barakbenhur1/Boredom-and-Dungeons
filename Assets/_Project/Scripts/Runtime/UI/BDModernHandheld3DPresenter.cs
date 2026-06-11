@@ -40,7 +40,7 @@ namespace BoredomAndDungeons
         // physically seated on the surface while its upper edge reads farther
         // from the camera.
         private static readonly Vector3 DeviceRestPosition =
-            new Vector3(0f, -7.27f, -3.60f);
+            new Vector3(0f, -7.27f, -4.28f);
         private static readonly Vector3 DeviceRestScale =
             Vector3.one * DeviceRealWorldScale;
         private static readonly Vector3 TableRestPosition =
@@ -531,6 +531,7 @@ namespace BoredomAndDungeons
             BuildDeviceCamera();
             BuildScreenRenderer();
             BuildDeviceModel();
+            ConfigureCinematicDepthOfField();
             BuildAudio();
 
             presentationReady = true;

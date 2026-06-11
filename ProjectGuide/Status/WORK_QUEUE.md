@@ -1,17 +1,134 @@
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:BEGIN -->
-## Current immediate gate — V10.9.11
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
+## Immediate gate — V10.9.33
 
-1. Apply the focused lighting-QA contract repair over installed V10.9.10.
-2. Let Unity compile.
+1. Apply the focused chair-backrest and screen-delay polish.
+2. Wait for Unity compilation.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING` and require automated PASS.
+4. Confirm the slats touch the lower rail and the rail-to-seat gap is reduced.
+5. Confirm the screen remains off slightly longer after settlement before ignition.
+6. Continue the active cinematic task only after visual acceptance.
+<!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:END -->
+
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:BEGIN -->
+## Immediate gate — V10.9.32
+
+1. Apply the focused QA aggregation repair.
+2. Wait for Unity compilation.
 3. Run `Boredom And Dungeons -> TEST EVERYTHING`.
-4. Require `0 blockers / 0 warnings / 0 info`.
-5. Confirm the cinematic runtime files are unchanged by this QA-only repair.
-6. Resume the pending visual confirmation of:
-   - device position near the lower/front edge with a safe margin;
-   - no table clipping;
-   - final camera directly facing the device like the original menu.
-7. Do not start the queued retro tutorial redesign until explicit cinematic acceptance.
-<!-- BND_POST_INTRO_CINEMATIC_LIGHTING_QA_REPAIR_V10911:END -->
+4. Require `PASS | blockers=0, warnings=0, info=0`.
+5. Resume visual validation of the entrance start, fade, ceiling, right wall, walk, climb, device focus, and screen power-on.
+<!-- BND_CHILD_APPROACH_ROOM_SHELL_QA_AGGREGATION_REPAIR_V10932:END -->
+
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:BEGIN -->
+## 2026-06-11 — Kitchen-entrance start, complete room shell and filmic fade V10.9.31
+
+The post-intro child POV cinematic remains the active task. This pass implements the latest visual corrections in the game:
+
+- the child now starts at a kitchen-entrance distance, farther behind and farther left of the chair;
+- the entrance-to-chair walk follows a curved cubic route instead of a direct straight-line interpolation;
+- the first frame stays fully black for `0.42s`, followed by a dedicated filmic fade that completes at `1.20s` before walking begins;
+- the room now contains a real ceiling and a physical right wall, both extending across the camera route;
+- the right wall continues the approved fruit wallpaper and includes a matching baseboard;
+- the sequence remains shorter than the older `8.25s` version while allowing the longer entrance route and professional fade;
+- the accepted chair climb, screen-off contract, power-on direction and animated tutorial-content reveal are preserved.
+
+Acceptance requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review from the first black frame through tutorial readiness.
+<!-- BND_CHILD_APPROACH_ROOM_ENTRANCE_FADE_V10931:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:BEGIN -->
+## 2026-06-11 — Child approach fade, speed and transition smoothing V10.9.30
+
+The post-intro child POV cinematic remains the active task. This pass:
+
+- starts the child farther behind and farther left of the chair while preserving the accepted child eye height;
+- begins from a fully black frame and fades the room in before visible movement starts;
+- shortens the complete sequence from `8.25s` to `7.45s` without rushing the screen power-on;
+- replaces the segmented chair climb with a tangent-continuous Catmull-Rom route;
+- blends the chair-clearance release instead of switching at a hard threshold;
+- replaces the two-step post-climb look movement with one cubic camera curve and one cubic look-target curve;
+- preserves the accepted screen power direction and content fade-in.
+
+Acceptance still requires Unity compilation, `TEST EVERYTHING 0/0/0`, and real-time visual review.
+<!-- BND_CHILD_APPROACH_CINEMATIC_FADE_SPEED_SMOOTHING_V10930:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:BEGIN -->
+## Current gate — V10.9.29
+1. Apply V10.9.29 and wait for Unity compilation.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; retain `0/0/0`.
+3. Watch from the first visible frame through the seated settle.
+4. Confirm the child starts farther back and left, walks toward the chair, passes around its left side, rises outside the backrest, and only moves inward after reaching seat height.
+5. Confirm there is no geometry penetration at low and high frame rates.
+6. Reconfirm the screen stays off until settlement and the V10.9.28 content feed-in is unchanged.
+<!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:BEGIN -->
+## Current gate — V10.9.28
+1. Apply V10.9.28 and wait for Unity compilation.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; retain `0/0/0`.
+3. Review the shot from the first visible frame through tutorial readiness.
+4. Confirm raised behind-chair POV, correct travel direction, restrained walk, curved climb, stable final framing, dark screen until settle, and delayed professional content feed-in.
+5. Verify skip still lands in the exact valid final state.
+<!-- BND_CHILD_APPROACH_CINEMATIC_POLISH_V10928:END -->
+
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:BEGIN -->
+## Current gate — V10.9.27
+
+1. Apply V10.9.27.
+2. Wait for all Unity C# compilation/import work to finish.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Run the first-launch flow from BBH intro through tutorial readiness.
+5. Verify child-height start, grounded walk, collision-free chair climb, stable final framing, fully dark screen before power-on, black-to-content power-on, seamless tutorial handoff and correct skip state.
+6. Repeat at low and high frame rates before acceptance.
+<!-- BND_CHILD_APPROACH_CINEMATIC_V10927:END -->
+
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:BEGIN -->
+## 2026-06-11 — Post-intro chair + QA access repair V10.9.26
+- Added a centered wooden dining chair in front of the table, aligned with the handheld.
+- The chair uses the new `BDCinematicDiningChair` texture resource and stays in the same physical room staging.
+- Added chair geometry and chair contact shadows in `BDModernHandheld3DPresenter.CinematicEnvironment.cs`.
+- Repaired the Unity editor compile blocker by changing `BDFirstLaunchTutorialQA.Scan()` from private to internal so `BDOneClickQAWindow` can call it.
+- Runtime focus: no limbo/cyclorama reintroduction; room staging remains the active implementation.
+<!-- BND_POST_INTRO_CHAIR_AND_QA_REPAIR_V10926:END -->
+
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:BEGIN -->
+## Current gate — V10.9.25
+
+1. Apply the real-room and closer-framing implementation.
+2. Wait for Unity compilation.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0/0/0`.
+4. Check the wide shot: no ramp, no limbo, no visible side-wall boundary, normal warm floor, wallpaper wall at believable distance.
+5. Check the final shot: slightly closer, complete handheld visible, small wood margin below.
+6. Keep the post-intro cinematic active until explicit visual acceptance.
+<!-- BND_POST_INTRO_REAL_ROOM_AND_CLOSER_FRAMING_V10925:END -->
+
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:BEGIN -->
+## Immediate gate — V10.9.24
+
+1. Apply the focused first-launch QA repair.
+2. Wait for Unity compilation.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+4. Require `PASS | blockers=0, warnings=0, info=0`.
+5. Continue visual validation of the already-installed cinematic.
+6. Commit and push only after automated PASS and visual acceptance.
+<!-- BND_POST_INTRO_FINAL_FIRST_LAUNCH_QA_REPAIR_V10924:END -->
+
+Resolved authoritative final-look target: `new Vector3(0f, -7.18f, -4.18f)`.
+
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:BEGIN -->
+## Current task gate — V10.9.16 wallpaper and focus polish
+
+1. Apply V10.9.16 over installed V10.9.13.
+2. Let Unity compile all Runtime/QA changes.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0/0/0`.
+4. Review the shot, especially the final frame.
+5. Verify:
+   - blur is subtle and clean, not smeary;
+   - the full handheld is inside frame;
+   - a small wood margin remains visible under the device;
+   - wallpaper contributes character to the room;
+   - screen readability remains perfect.
+6. Do not move to the retro tutorial redesign before explicit cinematic acceptance.
+<!-- BND_POST_INTRO_CINEMATIC_WALLPAPER_FOCUS_DELIVERY_REPAIR_V10916:END -->
 
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## Current immediate gate — V10.9.4 latest-commit-aligned QA repair
