@@ -212,4 +212,5 @@ releases/
 
 # B&D local patch/audit extraction safety V2
 /.package_payload/
+/.bnd_backups/
 /.repository_size_audit_tmp/

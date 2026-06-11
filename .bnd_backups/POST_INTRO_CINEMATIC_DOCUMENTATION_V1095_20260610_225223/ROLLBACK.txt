@@ -1,2 +1,0 @@
-From the repository root run:
-python3 "/Users/barakbenhur/Downloads/Boredom-and-Dungeons/.bnd_backups/POST_INTRO_CINEMATIC_DOCUMENTATION_V1095_20260610_225223/rollback_patch.py" "/Users/barakbenhur/Downloads/Boredom-and-Dungeons/.bnd_backups/POST_INTRO_CINEMATIC_DOCUMENTATION_V1095_20260610_225223" --repo .
