@@ -130,13 +130,13 @@ namespace BoredomAndDungeons
                 "Tutorial Ground",
                 -36f,
                 112f,
-                new Color(0.055f, 0.18f, 0.15f, 1f)
+                new Color(0.035f, 0.13f, 0.14f, 1f)
             );
             ResizeFirstLaunchTutorialCourseSurface(
                 "Tutorial Path",
                 -104f,
                 58f,
-                new Color(0.43f, 0.28f, 0.14f, 1f)
+                new Color(0.48f, 0.29f, 0.13f, 1f)
             );
 
             BuildFirstLaunchTutorialCourseDecorations();
@@ -225,13 +225,17 @@ namespace BoredomAndDungeons
                 return;
 
             Color treeDark =
-                new Color(0.025f, 0.15f, 0.15f, 0.98f);
+                new Color(0.025f, 0.13f, 0.14f, 1f);
             Color treeLight =
-                new Color(0.055f, 0.27f, 0.23f, 0.98f);
+                new Color(0.06f, 0.28f, 0.21f, 1f);
+            Color trunk =
+                new Color(0.25f, 0.13f, 0.075f, 1f);
             Color stone =
-                new Color(0.22f, 0.20f, 0.34f, 0.94f);
+                new Color(0.25f, 0.23f, 0.38f, 1f);
+            Color grass =
+                new Color(0.18f, 0.48f, 0.25f, 1f);
             Color marker =
-                new Color(0.96f, 0.58f, 0.20f, 0.88f);
+                new Color(1f, 0.58f, 0.18f, 1f);
 
             float[] stations =
             {
@@ -258,25 +262,62 @@ namespace BoredomAndDungeons
                 float x = stations[index];
                 float side = index % 2 == 0 ? 1f : -1f;
 
-                firstLaunchTutorialCourseDecorations.Add(
-                    CreateFirstLaunchTutorialCourseDecoration(
-                        "Course Tree " + index,
-                        x + 54f * side,
-                        112f,
-                        54f,
-                        76f,
-                        index % 3 == 0 ? treeLight : treeDark
-                    )
+                float treeX = x + 54f * side;
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Tree Trunk " + index,
+                    treeX,
+                    88f,
+                    16f,
+                    72f,
+                    trunk
                 );
-                firstLaunchTutorialCourseDecorations.Add(
-                    CreateFirstLaunchTutorialCourseDecoration(
-                        "Course Stone " + index,
-                        x - 68f * side,
-                        -105f,
-                        30f,
-                        18f,
-                        stone
-                    )
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Tree Canopy Lower " + index,
+                    treeX,
+                    126f,
+                    72f,
+                    36f,
+                    treeDark
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Tree Canopy Upper " + index,
+                    treeX + 8f * side,
+                    154f,
+                    48f,
+                    28f,
+                    index % 3 == 0 ? treeLight : treeDark
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Stone Base " + index,
+                    x - 68f * side,
+                    -105f,
+                    32f,
+                    12f,
+                    stone
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Stone Cap " + index,
+                    x - 64f * side,
+                    -95f,
+                    20f,
+                    8f,
+                    stone
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Grass Left " + index,
+                    x - 26f,
+                    -112f,
+                    8f,
+                    16f,
+                    grass
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Grass Right " + index,
+                    x - 18f,
+                    -116f,
+                    8f,
+                    12f,
+                    grass
                 );
             }
 
@@ -301,17 +342,52 @@ namespace BoredomAndDungeons
                  index < lessonMarkers.Length;
                  index++)
             {
-                firstLaunchTutorialCourseDecorations.Add(
-                    CreateFirstLaunchTutorialCourseDecoration(
-                        "Course Lesson Marker " + index,
-                        lessonMarkers[index],
-                        -101f,
-                        18f,
-                        8f,
-                        marker
-                    )
+                float markerX = lessonMarkers[index];
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Path Rune Center " + index,
+                    markerX,
+                    -101f,
+                    8f,
+                    8f,
+                    marker
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Path Rune Left " + index,
+                    markerX - 8f,
+                    -101f,
+                    4f,
+                    4f,
+                    marker
+                );
+                AddFirstLaunchTutorialCourseDecoration(
+                    "Course Path Rune Right " + index,
+                    markerX + 8f,
+                    -101f,
+                    4f,
+                    4f,
+                    marker
                 );
             }
+        }
+
+        private void AddFirstLaunchTutorialCourseDecoration(
+            string name,
+            float x,
+            float y,
+            float width,
+            float height,
+            Color color)
+        {
+            firstLaunchTutorialCourseDecorations.Add(
+                CreateFirstLaunchTutorialCourseDecoration(
+                    name,
+                    SnapFirstLaunchTutorialPixelValue(x),
+                    SnapFirstLaunchTutorialPixelValue(y),
+                    SnapFirstLaunchTutorialPixelValue(width),
+                    SnapFirstLaunchTutorialPixelValue(height),
+                    color
+                )
+            );
         }
 
         private Image CreateFirstLaunchTutorialCourseDecoration(

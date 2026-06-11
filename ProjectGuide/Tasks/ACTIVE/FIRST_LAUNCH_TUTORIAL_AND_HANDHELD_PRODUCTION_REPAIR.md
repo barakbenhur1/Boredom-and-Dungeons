@@ -1,3 +1,13 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
+## Retro visual redesign pass 1 — active implementation
+
+The opening scene is accepted and the queued tutorial redesign is active. The first focused pass changes presentation only: dedicated action silhouettes for the player, horse, enemies and mini-boss; action-over-locomotion visual ownership; stepped pixel instruction motion; and a block-built limited-palette course environment. Tutorial mechanics, inputs, checkpoints, progression, damage and lesson order remain unchanged.
+
+Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully. The earlier automated PASS predates this implementation.
+
+**Resume after local implementation:** fresh TEST EVERYTHING `0/0/0` -> one complete tutorial visual review -> user acceptance -> continue the remaining retro art, animation, UI, effects and game-feel production backlog.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->
+
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
 ## V10.9.33 active implementation
 

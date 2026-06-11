@@ -1,3 +1,13 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
+## Immediate gate — tutorial retro visual redesign pass 1
+
+1. Unity `6000.0.76f1` compilation: PASS.
+2. Run a fresh `Boredom And Dungeons -> TEST EVERYTHING` and require `0 blockers / 0 warnings / 0 info`.
+3. Reset first launch and complete the full tutorial while reviewing action silhouettes, no-walk-during-action behavior, stepped instruction presentation and block-built environment art.
+4. Record remaining visual defects and continue the broader retro art, animation, UI, effects and game-feel redesign.
+5. Do not mark the full tutorial redesign complete or commit before user acceptance.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->
+
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
 ## Immediate gate — V10.9.33
 

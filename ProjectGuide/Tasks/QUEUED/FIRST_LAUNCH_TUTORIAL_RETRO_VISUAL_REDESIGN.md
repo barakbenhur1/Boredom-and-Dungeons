@@ -1,7 +1,7 @@
 # First-Launch Tutorial Retro Visual Redesign
 
 ```text
-Status: CAPTURED / QUEUED AFTER CURRENT MECHANICS GATE / NOT FULLY IMPLEMENTED
+Status: ACTIVE FIRST PRODUCTION PASS / NOT FULLY IMPLEMENTED
 Classification: CURRENT-CATEGORY FOLLOW-UP — visual/art/animation polish after blocker repair
 Source: user-supplied authoritative Hebrew redesign prompt, 2026-06-10
 Protected rule: improve additively; do not remove mechanics, instructions, accessibility, input routes or verified behavior

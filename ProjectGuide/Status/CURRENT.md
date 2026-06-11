@@ -1,3 +1,22 @@
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
+## 2026-06-11 — First-launch tutorial retro visual redesign pass 1
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / COMPILES / QA AND VISUAL VERIFICATION REQUIRED`
+
+The user accepted the opening scene and resumed the queued tutorial redesign. The first focused pass preserves every tutorial mechanic, input route, checkpoint and lesson while replacing more of the placeholder presentation language:
+
+- player, horse, enemy and mini-boss actions use dedicated pixel silhouettes instead of reusing locomotion frames;
+- locomotion frames stop while an authored action pose is active;
+- tutorial instruction entrance and accent pulse use deliberate stepped pixel timing instead of smooth tween motion;
+- course trees, stones, grass and path markers use a limited retro palette and block-built pixel forms instead of isolated placeholder rectangles.
+
+This is the first visual-production pass, not completion of the full redesign or animation backlog.
+
+Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully after this pass. The earlier `TEST EVERYTHING 0/0/0` result predates these changes and is not accepted as evidence for them.
+
+**Exact resume point:** run a fresh `Boredom And Dungeons -> TEST EVERYTHING`, then visually review the complete tutorial for action readability, pixel stability, environment consistency and any remaining Flash-like presentation before expanding the next production pass.
+<!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->
+
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
 ## 2026-06-11 — Chair backrest closure and screen-power pause V10.9.33
 
