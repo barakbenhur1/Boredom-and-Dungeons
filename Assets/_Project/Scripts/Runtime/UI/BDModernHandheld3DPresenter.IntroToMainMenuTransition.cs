@@ -10,7 +10,7 @@ namespace BoredomAndDungeons
             IntroToMainMenuTransition
         }
 
-        private const float IntroMainMenuTotalSeconds = 8.05f;
+        private const float IntroMainMenuTotalSeconds = 10.67f;
         private const float IntroMainMenuCameraNearClip = 0.05f;
         private const float IntroMainMenuCameraFarClip = 120f;
 
@@ -39,6 +39,7 @@ namespace BoredomAndDungeons
         {
             ForceChildApproachScreenOnImmediate();
             SetChildApproachSceneFadeImmediate(0f);
+            DisposeChildApproachDialogue();
             RestoreRegularMainMenuCameraPose();
             introToMainMenuTransitionActive = false;
             currentMainMenuEntryMode = MainMenuEntryMode.RegularMainMenuEntry;
@@ -125,6 +126,7 @@ namespace BoredomAndDungeons
             RestoreStaticIntroScenePose();
             SetChildApproachScreenOff();
             SetChildApproachSceneFadeImmediate(1f);
+            ResetChildApproachDialogueForPlayback();
             ApplyChildApproachCameraPose(0f);
         }
 
@@ -153,6 +155,7 @@ namespace BoredomAndDungeons
             );
 
             UpdateChildApproachSceneFade(elapsed);
+            UpdateChildApproachDialogue(elapsed);
             ApplyChildApproachCameraPose(progress);
             UpdateChildApproachScreenPower(progress);
 
@@ -187,6 +190,8 @@ namespace BoredomAndDungeons
         private void CompleteIntroToMainMenuTransition()
         {
             ApplyChildApproachCameraPose(1f);
+            SetChildApproachDialogueImmediate(0f);
+            StopChildApproachDialogueVoice();
             ForceChildApproachScreenOnImmediate();
             SetChildApproachSceneFadeImmediate(0f);
             RestoreRegularMainMenuCameraPose();

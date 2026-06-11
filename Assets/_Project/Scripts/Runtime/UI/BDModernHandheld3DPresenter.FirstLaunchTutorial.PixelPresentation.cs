@@ -1031,6 +1031,7 @@ namespace BoredomAndDungeons
             UpdateFirstLaunchTutorialPixelAnimation();
             UpdateFirstLaunchTutorialActionPresentation();
             UpdateFirstLaunchTutorialFeedbackPresentation();
+            UpdateFirstLaunchTutorialV1011Polish();
         }
 
         private void UpdateFirstLaunchTutorialInstructionPresentation()

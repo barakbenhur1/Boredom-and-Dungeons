@@ -1,3 +1,15 @@
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 dialogue bubble visual composition
+
+The opening line remains `honey come here a second`, but the visual is now one animated group. A tail shadow and tail fill are drawn behind the rounded body, the body is drawn above them, and a small fill-colored seam cover removes the body-outline collision at the joint. Fade, scale and position are applied only to the shared visual parent, so the tail cannot enter or leave independently from the body.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 pre-walk off-screen mother cue
+
+After the room fade reaches fully revealed, hold a short clean beat. A top-left speech bubble enters through combined opacity and 0.88-to-1.00 scale settle and shows exactly `honey come here a second`. A feminine nonverbal voice texture plays once. After the reading hold, opacity, scale and offset run through the exact reverse curve. Only after the bubble is fully absent and the voice is stopped may child walk motion begin. Skip removes both immediately before forcing the existing final state.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_CHILD_APPROACH_CINEMATIC_PATH_CLEARANCE_V10929:BEGIN -->
 ## V10.9.29 path-clearance addendum
 The child begins well behind the chair and clearly left of its centerline at the previously accepted POV height. The child does not climb through the backrest. The route approaches the left-rear corner, climbs outside the chair footprint, advances to a seat-side point after clearing the backrest, and then settles inward over the seat.
@@ -191,3 +203,12 @@ The playable tutorial now includes deterministic point-filtered step-frame pairs
 
 Ranged and Hook actions also obey impact/completion events: visual projectile impact precedes damage, and visible Hook pull completion precedes target damage/progression. These timing rules are permanent even when final authored animation assets replace the procedural pixel frames.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## V10.11.6 accepted micro-polish contract
+
+- Camera settlement remains `9.02s`.
+- Screen power-on begins at `9.20s` and ends at `10.20s`.
+- Dialogue bubble rest position is `(72, -84)` at the `1920x1080` reference resolution.
+- Bubble tail uses a `28x28` square rotated 45 degrees, centered at `(62, -20)` relative to the bubble's lower-left anchor. Its upper corner must meet the bubble edge without visibly overlapping the fill.
+- No camera path, room geometry, dialogue text, voice timing, input lock, skip behavior, or final menu pose changes are part of this pass.
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->

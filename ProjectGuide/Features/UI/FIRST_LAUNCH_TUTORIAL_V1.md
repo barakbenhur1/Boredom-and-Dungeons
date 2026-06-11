@@ -1,3 +1,50 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## V10.11.10 player, text, combat and completion invariants
+
+- Initial player position is `(-900, -108)` so the opening movement lesson has readable approach space.
+- Tutorial player art is generated as clean side-profile pixel art: natural skin, blond hair, red shirt, blue trousers, dark shoes and a visible-side eye.
+- Modern typography applies to every tutorial Text owner, not only the headline. Each owner uses bounded best-fit sizing, wrap, vertical truncation, outline, contextual colors and restrained per-character entrance/motion.
+- Ordinary boss shots explicitly select the active boss and use the existing projectile transaction. Damage is single-target and resolves only at the endpoint. Ordinary projectiles may damage during windup; charged and melee recovery rules remain unchanged.
+- Environment use is a timed visual transaction: attack launch, enemy arc toward the hazard, visible impact, short hold, then lesson advance.
+- The final relic is contact-collected. Its prompt never requests `E`/interact, and its bright outlined gem presentation distinguishes it from background decoration.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 wall-jump, typography and boss-combat invariants
+
+- Wall-jump eligibility is a per-airborne-cycle transaction. A successful wall jump consumes it; landing on the ground, platform or upper ground resets it.
+- Platform and upper-ground collision use explicit character standing baselines above the rendered surface. The platform extends to `3370`, wall-jump foot speed is `250`, and platform launch uses `1.28 × TutorialJumpVelocity`.
+- The left-side wall clamp applies only while the player remains left of the wall. It cannot pull the player back after crossing.
+- Tutorial headline authored size is 58 with a minimum 840×258 instruction panel. Detail, bindings, feedback and HUD sizes are raised and outlined.
+- `BDTutorialLetterPulseEffect` owns per-character entrance, color cycling and restrained motion; text changes restart the entrance phase.
+- Mini-boss phase one includes a projectile on sequence 2; phase two begins with a projectile and alternates projectile/slam attacks.
+- Boss slam telegraph is a floor warning zone. Boss projectile telegraph is a compact charge orb followed by the existing physical enemy projectile transaction.
+- During either boss phase, holding ranged starts a dedicated charge transaction. At 100% it stays armed and auto-fires on the first recovery frame; release is not required.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## V10.11.7 completion and ownership invariants
+
+- The mother-bubble diamond is a sibling rendered immediately before the panel, not a panel child, so it remains behind the bubble body while sharing its animated scale and offset.
+- Horse facing is derived from `firstLaunchTutorialLastMoveDirection.x` in ordinary rendering and authored horse action poses.
+- The ordinary mounted-shot lesson creates exactly one living target. A shot transaction locks that target and damage resolves only when the continuously rendered projectile reaches the endpoint.
+- Step maximum-X values are instructional guidance, never physical collision. Physical collision remains limited to visible active obstacles and visible living actors.
+- Actors whose images are inactive in the hierarchy cannot be targeted, counted, rendered or used as invisible collision blockers.
+- Tutorial completion remains Mini-Boss defeat -> open finish route -> collectible/contact -> persisted `Completed`.
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 focused tutorial invariants
+
+- The pre-walk mother bubble uses exactly `honey come here a second`, appears top-left after the room reveal and blocks walk timing until its reverse exit completes.
+- The feminine nonverbal cue is presentation-only and does not falsely complete the future global dialogue system.
+- Leaving supported wall-jump geometry releases grounded state and produces a real fall.
+- Jump Attack explicitly requires Jump + Attack and shows both input routes.
+- A mounted projectile transaction owns exactly one selected target and resolves damage only at its visible endpoint.
+- The existing local Mini-Boss telegraph/impact visuals remain authoritative; every third phase-two attack uses the ranged path.
+- Decorative colored blocks remain behind gameplay actors. Major instruction text is larger and uses a restrained stepped per-letter pulse.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_V1081_HOTFIX:BEGIN -->
 ## Mounted shooting progression invariant
 
@@ -313,5 +360,5 @@ No separate combat owner is introduced. The tutorial transaction layer presents 
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
 ## Contact, facing and traversal teaching contract
 
-Tutorial attacks are owned by player facing and apply damage only at visible contact. The early traversal course teaches a grounded jump, an airborne forward attack, then a physical wall-jump sequence with the wall on the right, a raised platform on the left, and upper ground to the right above the wall. Ordinary walking cannot pass through active obstacles or living enemies.
+Tutorial attacks are owned by player facing and apply damage only at visible contact. Airborne attack is taught against a normal grounded enemy. The final lesson before the boss is a physical wall-jump sequence with a reachable wall on the right, a clearly separated platform on the left, and upper ground to the right above the wall. Boss attacks must visibly communicate windup, attack lane, impact and recovery. Ordinary walking cannot pass through active obstacles or living enemies.
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->

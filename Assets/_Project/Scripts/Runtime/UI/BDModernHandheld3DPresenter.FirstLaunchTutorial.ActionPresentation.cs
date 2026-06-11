@@ -605,8 +605,16 @@ namespace BoredomAndDungeons
                     worldPosition +
                     new Vector2(horizontalOffset, verticalOffset)
                 );
+            float facing =
+                Mathf.Abs(firstLaunchTutorialLastMoveDirection.x) > 0.01f
+                    ? Mathf.Sign(firstLaunchTutorialLastMoveDirection.x)
+                    : 1f;
             firstLaunchTutorialHorse.rectTransform.localScale =
-                new Vector3(horizontalScale, verticalScale, 1f);
+                new Vector3(
+                    facing * horizontalScale,
+                    verticalScale,
+                    1f
+                );
         }
 
         private void ApplyFirstLaunchTutorialEnemyActionPose(
@@ -664,8 +672,10 @@ namespace BoredomAndDungeons
                     );
                     break;
                 case FirstLaunchTutorialActionPresentationType.RangedAttack:
+                    // Projectile travel must remain continuous so impact and
+                    // damage cannot visually precede the projectile endpoint.
                     UpdateFirstLaunchTutorialRangedAttackPresentation(
-                        stepped
+                        progress
                     );
                     break;
                 case FirstLaunchTutorialActionPresentationType.Dodge:

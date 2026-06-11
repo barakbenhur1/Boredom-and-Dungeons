@@ -427,8 +427,11 @@ namespace BoredomAndDungeons
                  index++)
             {
                 TutorialEnemyActor actor = firstLaunchTutorialActors[index];
-                if (!actor.Active || actor.Dead || actor.Image == null)
+                if (!actor.Active || actor.Dead || actor.Image == null ||
+                    !actor.Image.gameObject.activeInHierarchy)
+                {
                     continue;
+                }
 
                 float actorRadius = actor.Role == TutorialEnemyRole.MiniBoss
                     ? 64f
@@ -616,8 +619,14 @@ namespace BoredomAndDungeons
                 float elapsed =
                     Time.unscaledTime - boss.ActionStartedAt;
                 if (elapsed < 0.52f)
-                    return "WINDUP — MOVE / DODGE";
-                return "IMPACT — DO NOT TRADE";
+                {
+                    return boss.UsesProjectileAttack
+                        ? "RANGED WINDUP — MOVE"
+                        : "SLAM WINDUP — DODGE";
+                }
+                return boss.UsesProjectileAttack
+                    ? "SHOT RELEASE — PARRY / MOVE"
+                    : "SLAM IMPACT — DO NOT TRADE";
             }
             if (Time.unscaledTime < boss.NextActionAt)
                 return "RECOVERY — ATTACK NOW";

@@ -1,3 +1,53 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## Immediate gate — V10.11.10
+
+1. Compile in Unity `6000.0.76f1` and confirm the CS0114 warning is absent.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Start the tutorial and verify the player begins at X `-900`, visibly separated from the first obstacle.
+4. Verify player colors/profile: natural skin, blond hair, red shirt, blue trousers, eye on the visible side.
+5. Inspect every tutorial text surface for larger bounded text, outline, step color and restrained letter animation without leaving its panel.
+6. In the environment lesson, attack and watch the enemy travel into the hazard, impact, linger briefly, then advance.
+7. Fight the boss with ordinary shots and charged shots; both must resolve only at projectile impact.
+8. At the final relic, verify the instruction says to walk into it, the object reads as collectible, and contact completes the tutorial.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## Immediate gate — V10.11.8
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Replay the opening and verify the dialogue bubble body and diamond read as one shape during enter, hold and reverse exit.
+4. In wall-jump training, verify repeated airborne jump presses do not create infinite jumps.
+5. Land on the left platform, confirm the character is not sunk, jump right, clear the wall and land on upper ground.
+6. Verify headline/detail/binding text is visibly larger, colored and animated without clipping.
+7. Fight the boss through both phases; confirm the redesigned slam, visible projectile attacks and hold-to-charge auto-fire.
+8. Complete the entire tutorial and persist `Completed` before resuming the broader retro redesign queue.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## Immediate gate — V10.11.7
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Replay the opening and confirm the diamond is behind the bubble body.
+4. Ride both directions and confirm the horse turns with movement, including during mounted action presentation.
+5. Complete mounted shooting and confirm one enemy dies only when the continuously visible projectile arrives.
+6. Complete the entire tutorial without an invisible mid-course wall, collect the final item and reach `Completed`.
+7. Resume the broader retro tutorial production pass only after this full-run gate passes.
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## Immediate gate — exact-local-state V10.11.3
+
+1. Install the V10.11.3 package built from the captured local snapshot; do not stash or discard the existing scene/gameplay work.
+2. Let Unity 6000.0.76f1 compile with no project warning or error.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Reset first launch and verify: room reveal -> short pause -> bubble fade/scale in -> feminine nonverbal cue -> readable hold -> exact reverse exit -> clean beat -> first child step.
+5. Verify ESC during bubble entry, hold and exit reaches the exact final camera/screen/tutorial state with no lingering bubble or audio.
+6. Complete the tutorial and verify natural wall-jump falls, explicit Jump + Attack, one-target impact-timed mounted shots, background-only decorations, larger animated type and distinct Mini-Boss slam/occasional-shot patterns.
+7. Keep the broader retro art/animation pass active after this gate.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
 ## Immediate gate — tutorial contact, facing, traversal and ESC skip
 
@@ -6,7 +56,9 @@
 3. Verify one normal `ESC` press during either opening phase lands at the exact valid final state.
 4. Verify attacks always follow player facing and only damage at visible contact.
 5. Verify living enemies and active obstacles cannot be walked through.
-6. Complete the new airborne-attack and wall-jump route: right wall -> left platform -> right upper ground -> continue right.
+6. Confirm the airborne-attack lesson uses a normal grounded enemy.
+7. After the combined encounter, complete the final pre-boss wall-jump route: reachable right wall -> clearly separated left platform -> right upper ground -> boss intro.
+8. Confirm every boss attack visibly shows windup pose and lane, impact flash, then recovery pose before another attack.
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
 
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
@@ -895,3 +947,8 @@ The post-tutorial persistent-run/Continue/regular-exit/Abandon-scoring task rema
 
 Install V10.7.2, verify both post-BBH landing destinations and run TEST EVERYTHING. After acceptance continue in order: final-boss clarity, solid enemy blocking, locomotion animation, then the complete BBH intro color-direction pass.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## Immediate verification — V10.11.6
+
+Run `Boredom And Dungeons -> TEST EVERYTHING`, then replay the first-launch cinematic and verify only: the bubble is slightly lower, its tail is tangent without overlap, and the handheld starts powering on slightly sooner after the child settles. Resume the existing active tutorial repair task afterward.
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->

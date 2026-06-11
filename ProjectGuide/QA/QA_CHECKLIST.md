@@ -1,3 +1,73 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## V10.11.10 focused acceptance matrix
+
+- [ ] Unity compile emits no CS0114 warning from `BDTutorialLetterPulseEffect`.
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Player begins at `(-900, -108)` and is not visually attached to the first obstacle.
+- [ ] Player sprite has blond hair, natural skin, red shirt, blue trousers and one correctly placed profile eye.
+- [ ] Prompt, detail, progress, feedback, keyboard title/value, handheld title/value, divider, health, ammo and boss text all use modern color/outline/per-letter motion.
+- [ ] All text uses best-fit with wrap and vertical truncation; no text leaves its assigned panel or card.
+- [ ] Environment attack keeps enemy and hazard visible during travel, shows impact, then advances after `0.92s` rather than deleting both immediately.
+- [ ] Ordinary boss shot targets the live boss and damages at the visible endpoint even if the boss is winding up.
+- [ ] Charged boss shot still waits for its valid recovery behavior and is not regressed by ordinary-shot support.
+- [ ] Final instruction says `COLLECT THE GREEN RELIC` and explains contact collection.
+- [ ] Final green relic is visually outlined, highlighted and pulsing, not mistaken for background decoration.
+- [ ] Contact with the relic completes and persists the tutorial; interact is not required.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Dialogue body, tail shadow, tail fill and seam cover share one animated parent and one CanvasGroup alpha.
+- [ ] Tail is behind the panel, visually joined, and no black border crosses the joint.
+- [ ] Enter and exit never reveal body/tail timing separation.
+- [ ] One airborne wall contact can trigger only one wall jump; landing resets eligibility.
+- [ ] Platform standing baseline is `8`, upper-ground standing baseline is `64`, and the character does not sink.
+- [ ] Rightward platform jump clears the wall and lands inside the upper-ground range.
+- [ ] The right-side wall clamp never pulls a player back after the player has crossed the wall center.
+- [ ] Instruction headline is 58px authored size, panel minimum is 840×258, and bindings/detail/feedback are enlarged.
+- [ ] Per-character color/wave/entrance animation refreshes after every instruction text change without harming readability.
+- [ ] Boss slam presents a ground warning zone and local impact flash; no full-length generic beam remains.
+- [ ] Boss projectile windup presents a compact charge orb, then launches the real enemy projectile transaction.
+- [ ] Phase one reaches projectile attack sequence; phase two begins with a projectile and alternates thereafter.
+- [ ] Holding ranged in either boss phase charges; reaching 100% does not require release and waits for recovery before auto-fire.
+- [ ] Charged boss damage resolves only at the player projectile endpoint and obeys boss recovery vulnerability.
+- [ ] Mounted ordinary shot remains single-target and damage still resolves only at visible projectile impact.
+- [ ] Full tutorial reaches upper ground, boss defeat, collectible and persisted `Completed`.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## V10.11.7 focused regression and completion matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Bubble diamond is a root sibling before the panel in draw order, visually behind the body, attached at all animation scales and never drawn over the text panel.
+- [ ] Horse faces right while moving right and flips left while moving left/backward; mount, dismount, recoil and hit poses preserve facing.
+- [ ] Mounted-shot lesson contains exactly one active target.
+- [ ] Projectile position advances continuously rather than in six stepped jumps.
+- [ ] No target health or active state changes before projectile endpoint contact.
+- [ ] One ordinary mounted shot cannot kill or hide a second enemy.
+- [ ] Hidden/inactive actors do not participate in targeting, enemy counts, rendering or collision.
+- [ ] Crossing a lesson guidance boundary shows feedback but never clamps player movement to an invisible wall.
+- [ ] Full tutorial reaches Mini-Boss defeat, opens the finish route, reaches the collectible and persists `Completed`.
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 opening dialogue and tutorial polish gate
+
+- [ ] Room fade finishes before any bubble pixel is visible.
+- [ ] Bubble begins after a short visible-room pause, is top-left and reads exactly `honey come here a second`.
+- [ ] Entry is professional fade+scale; exit is the exact reverse; the first walk step starts only after full disappearance.
+- [ ] Voice reads feminine and nonverbal, plays once and is absent after skip/completion.
+- [ ] ESC during entry, hold or exit leaves no bubble/audio and reaches the exact final screen/camera state.
+- [ ] Walking off either wall-jump support causes a real fall; no hover or invisible support remains.
+- [ ] Jump Attack simultaneously shows Jump + Attack and both input combinations.
+- [ ] One mounted shot damages only its chosen living enemy and only when the projectile visually arrives.
+- [ ] Existing Mini-Boss slam/telegraph presentation remains intact and every third phase-two attack is a distinct ranged shot.
+- [ ] Colored course decorations remain behind actors and do not read as foreground floating blocks.
+- [ ] Prompt, detail, bindings and HUD remain large, colorful and readable while the per-letter pulse runs.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## V10.9.4 latest-commit alignment and partial-source regression check
 
@@ -1024,7 +1094,21 @@ When activated, verify normal Exit preserves Continue, Abandon removes it, New G
 - [ ] Melee attacks behind the player or outside range do not damage.
 - [ ] Projectiles do not damage before reaching their visible endpoint and misses do not show hit feedback.
 - [ ] Left-facing and right-facing attacks travel and hit only in the facing direction.
-- [ ] The airborne-attack lesson advances only after a visible airborne hit on the forward target.
-- [ ] Wall-jump route is physically completed in order: approach right wall, jump left to platform, jump right to upper ground, continue right.
+- [ ] The airborne-attack lesson uses a grounded enemy and advances only after a visible airborne hit on the forward target.
+- [ ] Wall-jump is the final lesson after the combined encounter and before boss intro.
+- [ ] Wall-jump route is physically completed in order: approach reachable right wall, cross a clearly visible gap left to the platform, jump right to upper ground, continue to boss intro.
+- [ ] Boss melee and projectile attacks show a readable body windup, pulsing attack lane, visible impact and clearly exposed recovery.
+- [ ] No boss damage occurs without a corresponding visible impact or projectile contact.
 - [ ] One normal `ESC` press during BBH intro or child approach skips to the exact final valid state; Enter, Space and controller confirm do not skip.
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## V10.11.6 first-launch micro-polish checks
+
+- [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
+- [ ] Bubble appears at the upper-left slightly lower than V10.11.4 and remains fully inside the frame.
+- [ ] Tail is visually connected to the bubble but does not overlap the bubble body.
+- [ ] Child remains stationary until dialogue exit completes.
+- [ ] Camera settles at the unchanged final pose before the screen powers on.
+- [ ] Screen begins powering on at `9.20s`, completes at `10.20s`, and never flashes white.
+- [ ] Skip still produces the valid final camera, powered screen, and active tutorial state.
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->

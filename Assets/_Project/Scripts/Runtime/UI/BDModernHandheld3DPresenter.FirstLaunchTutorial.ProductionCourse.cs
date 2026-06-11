@@ -41,6 +41,8 @@ namespace BoredomAndDungeons
             public bool Active;
             public bool AttackCommitted;
             public bool DamageApplied;
+            public bool UsesProjectileAttack;
+            public int AttackSequence;
             public bool Dead;
         }
 
@@ -48,13 +50,15 @@ namespace BoredomAndDungeons
         private const float TutorialJumpVelocity = 390f;
         private const float TutorialGravity = 980f;
         private const float TutorialJumpObstacleX = -760f;
-        private const float TutorialWallJumpWallX = -430f;
-        private const float TutorialWallJumpPlatformMinX = -760f;
-        private const float TutorialWallJumpPlatformMaxX = -500f;
+        private const float TutorialWallJumpWallX = 3480f;
+        private const float TutorialWallJumpPlatformMinX = 3060f;
+        private const float TutorialWallJumpPlatformMaxX = 3370f;
         private const float TutorialWallJumpPlatformY = -10f;
-        private const float TutorialWallJumpUpperGroundMinX = -403f;
-        private const float TutorialWallJumpUpperGroundMaxX = -80f;
+        private const float TutorialWallJumpPlatformStandingY = 8f;
+        private const float TutorialWallJumpUpperGroundMinX = 3507f;
+        private const float TutorialWallJumpUpperGroundMaxX = 3650f;
         private const float TutorialWallJumpUpperGroundY = 46f;
+        private const float TutorialWallJumpUpperGroundStandingY = 64f;
         private const float TutorialHazardStationX = 2750f;
         private const float TutorialMountedStationX = 1900f;
         private const float TutorialSecretBranchX = 3000f;
@@ -78,6 +82,8 @@ namespace BoredomAndDungeons
         private Image firstLaunchTutorialWallJumpWall;
         private Image firstLaunchTutorialWallJumpPlatform;
         private Image firstLaunchTutorialWallJumpUpperGround;
+        private Image firstLaunchTutorialBossAttackTelegraph;
+        private Image firstLaunchTutorialBossImpactFlash;
         private Text firstLaunchTutorialHealthText;
         private Text firstLaunchTutorialAmmoText;
         private float firstLaunchTutorialVerticalVelocity;
@@ -92,6 +98,7 @@ namespace BoredomAndDungeons
         private int firstLaunchTutorialAmmo;
         private bool firstLaunchTutorialGrounded;
         private bool firstLaunchTutorialWallJumpPlatformReached;
+        private bool firstLaunchTutorialWallJumpConsumed;
         private bool firstLaunchTutorialSecretCollected;
         private bool firstLaunchTutorialCombinedStarted;
         private bool firstLaunchTutorialMiniBossPhaseTwo;
@@ -112,6 +119,12 @@ namespace BoredomAndDungeons
         private string firstLaunchTutorialDisplayedBossState = string.Empty;
         private bool firstLaunchTutorialPlayerDeathActive;
         private bool firstLaunchTutorialRespawnResetApplied;
+        private TutorialEnemyActor firstLaunchTutorialHazardKnockbackActor;
+        private Vector2 firstLaunchTutorialHazardKnockbackStart;
+        private Vector2 firstLaunchTutorialHazardKnockbackTarget;
+        private float firstLaunchTutorialHazardKnockbackStartedAt;
+        private bool firstLaunchTutorialHazardKnockbackActive;
+        private bool firstLaunchTutorialHazardKnockbackImpactApplied;
 
         private void InitializeFirstLaunchTutorialProductionCourse()
         {
@@ -156,9 +169,30 @@ namespace BoredomAndDungeons
                 44f,
                 new Color(0.24f, 0.38f, 0.28f, 1f)
             );
+            DecorateFirstLaunchTutorialWallJumpGeometry();
             firstLaunchTutorialWallJumpWall.gameObject.SetActive(false);
             firstLaunchTutorialWallJumpPlatform.gameObject.SetActive(false);
             firstLaunchTutorialWallJumpUpperGround.gameObject.SetActive(false);
+            firstLaunchTutorialBossAttackTelegraph = CreateTutorialEntity(
+                firstLaunchTutorialCourseRoot,
+                "Tutorial Boss Attack Telegraph",
+                0f,
+                TutorialGroundY - 16f,
+                300f,
+                20f,
+                new Color(1f, 0.64f, 0.16f, 0.88f)
+            );
+            firstLaunchTutorialBossImpactFlash = CreateTutorialEntity(
+                firstLaunchTutorialCourseRoot,
+                "Tutorial Boss Impact Flash",
+                0f,
+                TutorialGroundY + 18f,
+                84f,
+                104f,
+                new Color(1f, 0.18f, 0.12f, 0.82f)
+            );
+            firstLaunchTutorialBossAttackTelegraph.gameObject.SetActive(false);
+            firstLaunchTutorialBossImpactFlash.gameObject.SetActive(false);
             firstLaunchTutorialEnemySecondary = CreateTutorialEntity(
                 firstLaunchTutorialCourseRoot,
                 "Tutorial Enemy Secondary",
@@ -269,6 +303,7 @@ namespace BoredomAndDungeons
 
             firstLaunchTutorialVerticalVelocity = 0f;
             firstLaunchTutorialGrounded = true;
+            firstLaunchTutorialWallJumpConsumed = false;
             firstLaunchTutorialPlayerHealth = 6;
             firstLaunchTutorialAmmo = TutorialMagazineSize;
             firstLaunchTutorialCheckpointX = firstLaunchTutorialPlayerWorldPosition.x;
@@ -289,6 +324,12 @@ namespace BoredomAndDungeons
             firstLaunchTutorialDisplayedReloading = false;
             firstLaunchTutorialDisplayedBossVisible = false;
             firstLaunchTutorialDisplayedBossState = string.Empty;
+            firstLaunchTutorialHazardKnockbackActor = null;
+            firstLaunchTutorialHazardKnockbackStart = Vector2.zero;
+            firstLaunchTutorialHazardKnockbackTarget = Vector2.zero;
+            firstLaunchTutorialHazardKnockbackStartedAt = 0f;
+            firstLaunchTutorialHazardKnockbackActive = false;
+            firstLaunchTutorialHazardKnockbackImpactApplied = false;
             firstLaunchTutorialHintLevel = 0;
             firstLaunchTutorialHintAt = Time.unscaledTime + 7f;
             SetProductionEntitiesVisible(false);
@@ -309,6 +350,107 @@ namespace BoredomAndDungeons
             });
         }
 
+        private void DecorateFirstLaunchTutorialWallJumpGeometry()
+        {
+            Color outline = new Color(0.075f, 0.075f, 0.13f, 1f);
+            Color stoneDark = new Color(0.13f, 0.18f, 0.28f, 1f);
+            Color stoneLight = new Color(0.40f, 0.48f, 0.58f, 1f);
+            Color mossDark = new Color(0.08f, 0.24f, 0.18f, 1f);
+            Color mossLight = new Color(0.28f, 0.58f, 0.30f, 1f);
+
+            AddOutline(
+                firstLaunchTutorialWallJumpWall.gameObject,
+                outline,
+                4f
+            );
+            for (int row = 0; row < 7; row++)
+            {
+                float y = -126f + row * 42f;
+                CreatePanel(
+                    firstLaunchTutorialWallJumpWall.rectTransform,
+                    "Wall Stone Light " + row,
+                    row % 2 == 0 ? -12f : 10f,
+                    y,
+                    22f,
+                    8f,
+                    stoneLight
+                ).raycastTarget = false;
+                CreatePanel(
+                    firstLaunchTutorialWallJumpWall.rectTransform,
+                    "Wall Stone Shadow " + row,
+                    row % 2 == 0 ? 10f : -12f,
+                    y - 12f,
+                    18f,
+                    8f,
+                    stoneDark
+                ).raycastTarget = false;
+            }
+
+            DecorateFirstLaunchTutorialPlatform(
+                firstLaunchTutorialWallJumpPlatform,
+                mossDark,
+                mossLight,
+                stoneDark,
+                stoneLight
+            );
+            DecorateFirstLaunchTutorialPlatform(
+                firstLaunchTutorialWallJumpUpperGround,
+                mossDark,
+                mossLight,
+                stoneDark,
+                stoneLight
+            );
+        }
+
+        private void DecorateFirstLaunchTutorialPlatform(
+            Image platform,
+            Color mossDark,
+            Color mossLight,
+            Color stoneDark,
+            Color stoneLight)
+        {
+            if (platform == null)
+                return;
+
+            RectTransform rect = platform.rectTransform;
+            CreatePanel(
+                rect,
+                "Pixel Grass Dark",
+                0f,
+                14f,
+                rect.sizeDelta.x,
+                8f,
+                mossDark
+            ).raycastTarget = false;
+            CreatePanel(
+                rect,
+                "Pixel Grass Light",
+                -8f,
+                20f,
+                rect.sizeDelta.x - 16f,
+                4f,
+                mossLight
+            ).raycastTarget = false;
+            CreatePanel(
+                rect,
+                "Pixel Stone Highlight",
+                -12f,
+                -2f,
+                rect.sizeDelta.x - 24f,
+                6f,
+                stoneLight
+            ).raycastTarget = false;
+            CreatePanel(
+                rect,
+                "Pixel Stone Shadow",
+                10f,
+                -14f,
+                rect.sizeDelta.x - 20f,
+                8f,
+                stoneDark
+            ).raycastTarget = false;
+        }
+
         private void DisposeFirstLaunchTutorialProductionCourse()
         {
             firstLaunchTutorialActors.Clear();
@@ -323,6 +465,8 @@ namespace BoredomAndDungeons
             firstLaunchTutorialWallJumpWall = null;
             firstLaunchTutorialWallJumpPlatform = null;
             firstLaunchTutorialWallJumpUpperGround = null;
+            firstLaunchTutorialBossAttackTelegraph = null;
+            firstLaunchTutorialBossImpactFlash = null;
             firstLaunchTutorialHealthText = null;
             firstLaunchTutorialAmmoText = null;
             firstLaunchTutorialBossHealthText = null;
@@ -334,6 +478,9 @@ namespace BoredomAndDungeons
             firstLaunchTutorialChargedShotPendingStartedAt = -1f;
             firstLaunchTutorialChargedShotStartedAt = -1f;
             firstLaunchTutorialReloadCompletesAt = 0f;
+            firstLaunchTutorialHazardKnockbackActor = null;
+            firstLaunchTutorialHazardKnockbackActive = false;
+            firstLaunchTutorialHazardKnockbackImpactApplied = false;
             ResetFirstLaunchTutorialV108Transactions();
         }
 
@@ -351,6 +498,7 @@ namespace BoredomAndDungeons
             UpdateFirstLaunchTutorialEnemyTransactions();
             UpdateFirstLaunchTutorialProductionHeldCombat();
             UpdateFirstLaunchTutorialMountedImpact();
+            UpdateFirstLaunchTutorialHazardKnockbackSequence();
             UpdateFirstLaunchTutorialHintEscalation();
             UpdateFirstLaunchTutorialProductionHud();
 
@@ -430,7 +578,10 @@ namespace BoredomAndDungeons
             if (!firstLaunchTutorialMounted)
             {
                 firstLaunchTutorialMountedCurrentSpeed = 0f;
-                return TutorialFootMoveSpeed;
+                return firstLaunchTutorialStep ==
+                        FirstLaunchTutorialStep.WallJump
+                    ? 250f
+                    : TutorialFootMoveSpeed;
             }
 
             float target = Mathf.Abs(movement.x) > 0.01f
@@ -453,37 +604,13 @@ namespace BoredomAndDungeons
             {
                 firstLaunchTutorialVerticalVelocity = 0f;
                 firstLaunchTutorialGrounded = true;
-                if (firstLaunchTutorialGroundedY ==
-                        TutorialWallJumpUpperGroundY &&
-                    firstLaunchTutorialPlayerWorldPosition.x <=
-                        TutorialWallJumpUpperGroundMaxX)
-                {
-                    firstLaunchTutorialPlayerWorldPosition.y =
-                        TutorialWallJumpUpperGroundY;
-                }
-                else
-                {
-                    firstLaunchTutorialGroundedY = TutorialGroundY;
-                    firstLaunchTutorialPlayerWorldPosition.y =
-                        TutorialGroundY;
-                    firstLaunchTutorialHorseWorldPosition =
-                        firstLaunchTutorialPlayerWorldPosition;
-                    SetTutorialEntityActive(
-                        firstLaunchTutorialWallJumpWall,
-                        false
-                    );
-                    SetTutorialEntityActive(
-                        firstLaunchTutorialWallJumpPlatform,
-                        false
-                    );
-                    SetTutorialEntityActive(
-                        firstLaunchTutorialWallJumpUpperGround,
-                        false
-                    );
-                }
+                firstLaunchTutorialGroundedY = TutorialGroundY;
+                firstLaunchTutorialPlayerWorldPosition.y =
+                    TutorialGroundY;
                 return;
             }
 
+            ReleaseFirstLaunchTutorialWallJumpSupportIfNeeded();
             if (firstLaunchTutorialGrounded)
             {
                 firstLaunchTutorialPlayerWorldPosition.y = firstLaunchTutorialGroundedY;
@@ -501,15 +628,17 @@ namespace BoredomAndDungeons
                     TutorialWallJumpPlatformMinX &&
                 firstLaunchTutorialPlayerWorldPosition.x <=
                     TutorialWallJumpPlatformMaxX &&
-                previousY >= TutorialWallJumpPlatformY &&
+                previousY >= TutorialWallJumpPlatformStandingY &&
                 firstLaunchTutorialPlayerWorldPosition.y <=
-                    TutorialWallJumpPlatformY)
+                    TutorialWallJumpPlatformStandingY)
             {
-                firstLaunchTutorialGroundedY = TutorialWallJumpPlatformY;
+                firstLaunchTutorialGroundedY =
+                    TutorialWallJumpPlatformStandingY;
                 firstLaunchTutorialPlayerWorldPosition.y =
-                    TutorialWallJumpPlatformY;
+                    TutorialWallJumpPlatformStandingY;
                 firstLaunchTutorialVerticalVelocity = 0f;
                 firstLaunchTutorialGrounded = true;
+                firstLaunchTutorialWallJumpConsumed = false;
                 firstLaunchTutorialWallJumpPlatformReached = true;
                 ShowFirstLaunchTutorialSuccess("PLATFORM REACHED — JUMP RIGHT");
                 return;
@@ -522,15 +651,17 @@ namespace BoredomAndDungeons
                     TutorialWallJumpUpperGroundMinX &&
                 firstLaunchTutorialPlayerWorldPosition.x <=
                     TutorialWallJumpUpperGroundMaxX &&
-                previousY >= TutorialWallJumpUpperGroundY &&
+                previousY >= TutorialWallJumpUpperGroundStandingY &&
                 firstLaunchTutorialPlayerWorldPosition.y <=
-                    TutorialWallJumpUpperGroundY)
+                    TutorialWallJumpUpperGroundStandingY)
             {
-                firstLaunchTutorialGroundedY = TutorialWallJumpUpperGroundY;
+                firstLaunchTutorialGroundedY =
+                    TutorialWallJumpUpperGroundStandingY;
                 firstLaunchTutorialPlayerWorldPosition.y =
-                    TutorialWallJumpUpperGroundY;
+                    TutorialWallJumpUpperGroundStandingY;
                 firstLaunchTutorialVerticalVelocity = 0f;
                 firstLaunchTutorialGrounded = true;
+                firstLaunchTutorialWallJumpConsumed = false;
                 ShowFirstLaunchTutorialSuccess("ABOVE THE WALL — CONTINUE RIGHT");
                 return;
             }
@@ -541,6 +672,7 @@ namespace BoredomAndDungeons
             firstLaunchTutorialPlayerWorldPosition.y = firstLaunchTutorialGroundedY;
             firstLaunchTutorialVerticalVelocity = 0f;
             firstLaunchTutorialGrounded = true;
+            firstLaunchTutorialWallJumpConsumed = false;
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.Jump &&
                 firstLaunchTutorialPlayerWorldPosition.x >= TutorialJumpObstacleX + 44f)
             {
@@ -549,7 +681,7 @@ namespace BoredomAndDungeons
                     TutorialLearningState.Demonstrated
                 );
                 ShowFirstLaunchTutorialSuccess("JUMP CLEARED");
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.JumpAttack);
+                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MountHorse);
             }
         }
 
@@ -564,6 +696,7 @@ namespace BoredomAndDungeons
             if (!firstLaunchTutorialGrounded)
             {
                 if (firstLaunchTutorialStep != FirstLaunchTutorialStep.WallJump ||
+                    firstLaunchTutorialWallJumpConsumed ||
                     Mathf.Abs(
                         firstLaunchTutorialPlayerWorldPosition.x -
                         TutorialWallJumpWallX) > 70f)
@@ -571,9 +704,10 @@ namespace BoredomAndDungeons
                     return;
                 }
 
+                firstLaunchTutorialWallJumpConsumed = true;
                 firstLaunchTutorialLastMoveDirection = Vector2.left;
                 firstLaunchTutorialPlayerWorldPosition.x =
-                    TutorialWallJumpWallX - 72f;
+                    TutorialWallJumpWallX - 82f;
                 firstLaunchTutorialVerticalVelocity =
                     TutorialJumpVelocity * 1.08f;
                 ShowFirstLaunchTutorialSuccess("WALL JUMP");
@@ -582,12 +716,20 @@ namespace BoredomAndDungeons
             }
 
             firstLaunchTutorialGrounded = false;
+            firstLaunchTutorialWallJumpConsumed = false;
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.WallJump &&
-                firstLaunchTutorialGroundedY == TutorialWallJumpPlatformY)
+                firstLaunchTutorialGroundedY ==
+                    TutorialWallJumpPlatformStandingY)
             {
                 firstLaunchTutorialGroundedY = TutorialGroundY;
+                firstLaunchTutorialVerticalVelocity =
+                    TutorialJumpVelocity * 1.28f;
             }
-            firstLaunchTutorialVerticalVelocity = TutorialJumpVelocity;
+            else
+            {
+                firstLaunchTutorialVerticalVelocity =
+                    TutorialJumpVelocity;
+            }
             SetFirstLaunchTutorialLearningState(
                 "Jump",
                 TutorialLearningState.Performed
@@ -824,18 +966,97 @@ namespace BoredomAndDungeons
 
         private void ResolveFirstLaunchTutorialHazardKnockback()
         {
+            if (firstLaunchTutorialHazardKnockbackActive)
+                return;
+
             TutorialEnemyActor actor =
-                FindClosestLivingTutorialActor(240f, requireForward: false);
-            if (actor != null)
+                FindClosestLivingTutorialActor(260f, requireForward: false);
+            if (actor == null ||
+                firstLaunchTutorialHazard == null ||
+                !firstLaunchTutorialHazard.gameObject.activeInHierarchy)
             {
-                actor.Position = new Vector2(TutorialHazardStationX, TutorialGroundY - 34f);
-                ApplyFirstLaunchTutorialActorDamage(actor, actor.Health);
+                ShowFirstLaunchTutorialSuccess(
+                    "ATTACK THE ENEMY TOWARD THE HAZARD"
+                );
+                return;
             }
+
+            firstLaunchTutorialHazardKnockbackActor = actor;
+            firstLaunchTutorialHazardKnockbackStart = actor.Position;
+            firstLaunchTutorialHazardKnockbackTarget =
+                firstLaunchTutorialHazardWorldPosition +
+                new Vector2(-8f, 20f);
+            firstLaunchTutorialHazardKnockbackStartedAt = Time.unscaledTime;
+            firstLaunchTutorialHazardKnockbackActive = true;
+            firstLaunchTutorialHazardKnockbackImpactApplied = false;
+            actor.AttackCommitted = false;
+            actor.DamageApplied = false;
+            PlayFirstLaunchTutorialHeavyAttackAnimation(false);
+            ShowFirstLaunchTutorialSuccess("KNOCK IT INTO THE HAZARD");
+        }
+
+        private void UpdateFirstLaunchTutorialHazardKnockbackSequence()
+        {
+            if (!firstLaunchTutorialHazardKnockbackActive)
+                return;
+
+            TutorialEnemyActor actor =
+                firstLaunchTutorialHazardKnockbackActor;
+            if (actor == null)
+            {
+                firstLaunchTutorialHazardKnockbackActive = false;
+                return;
+            }
+
+            float elapsed =
+                Time.unscaledTime -
+                firstLaunchTutorialHazardKnockbackStartedAt;
+            float travel = Mathf.Clamp01(elapsed / 0.56f);
+            float eased = travel * travel * (3f - 2f * travel);
+            Vector2 position = Vector2.Lerp(
+                firstLaunchTutorialHazardKnockbackStart,
+                firstLaunchTutorialHazardKnockbackTarget,
+                eased
+            );
+            position.y += Mathf.Sin(travel * Mathf.PI) * 58f;
+            actor.Position = position;
+            if (actor.Image != null)
+            {
+                actor.Image.gameObject.SetActive(true);
+                float spin = Mathf.Lerp(0f, -160f, eased);
+                actor.Image.rectTransform.localRotation =
+                    Quaternion.Euler(0f, 0f, spin);
+            }
+
+            if (firstLaunchTutorialHazard != null)
+            {
+                float pulse = travel < 1f
+                    ? 1f + Mathf.Sin(travel * Mathf.PI) * 0.10f
+                    : 1f + Mathf.Sin(elapsed * 24f) * 0.06f;
+                firstLaunchTutorialHazard.rectTransform.localScale =
+                    new Vector3(pulse, pulse, 1f);
+            }
+
+            if (!firstLaunchTutorialHazardKnockbackImpactApplied &&
+                travel >= 1f)
+            {
+                firstLaunchTutorialHazardKnockbackImpactApplied = true;
+                ApplyFirstLaunchTutorialActorDamage(actor, actor.Health);
+                ShowFirstLaunchTutorialSuccess("ENVIRONMENT IMPACT");
+            }
+
+            if (elapsed < 0.92f)
+                return;
+
+            if (firstLaunchTutorialHazard != null)
+                firstLaunchTutorialHazard.rectTransform.localScale = Vector3.one;
+            firstLaunchTutorialHazardKnockbackActor = null;
+            firstLaunchTutorialHazardKnockbackActive = false;
+            firstLaunchTutorialHazardKnockbackImpactApplied = false;
             SetFirstLaunchTutorialLearningState(
                 "HazardKnockback",
                 TutorialLearningState.Demonstrated
             );
-            ShowFirstLaunchTutorialSuccess("HAZARD USED");
             SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.SidePath);
         }
 
@@ -899,8 +1120,14 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            TutorialEnemyActor actor =
-                FindClosestLivingTutorialActor(520f);
+            bool bossStep =
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo;
+            TutorialEnemyActor actor = bossStep
+                ? FindTutorialBoss()
+                : FindClosestLivingTutorialActor(520f);
+            if (actor != null && (!actor.Active || actor.Dead))
+                actor = null;
             Vector2 target = actor != null
                 ? actor.Position
                 : firstLaunchTutorialPlayerWorldPosition +
@@ -970,8 +1197,11 @@ namespace BoredomAndDungeons
             for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
             {
                 TutorialEnemyActor actor = firstLaunchTutorialActors[i];
-                if (!actor.Active || actor.Dead)
+                if (!actor.Active || actor.Dead || actor.Image == null ||
+                    !actor.Image.gameObject.activeInHierarchy)
+                {
                     continue;
+                }
                 Vector2 delta =
                     actor.Position - firstLaunchTutorialPlayerWorldPosition;
                 if (requireForward &&
@@ -1009,7 +1239,11 @@ namespace BoredomAndDungeons
             {
                 if (Time.unscaledTime - firstLaunchTutorialMiniBossPhaseStartedAt < 0.55f)
                     return;
-                if (actor.AttackCommitted)
+                bool ordinaryProjectileImpact =
+                    firstLaunchTutorialPendingShotTarget == actor &&
+                    firstLaunchTutorialPendingShotImpactResolved &&
+                    !firstLaunchTutorialPendingShotCharged;
+                if (actor.AttackCommitted && !ordinaryProjectileImpact)
                 {
                     ShowFirstLaunchTutorialSuccess(
                         "WAIT FOR RECOVERY — ATTACK NOW"
@@ -1040,7 +1274,8 @@ namespace BoredomAndDungeons
                 bool usesProjectile =
                     actor.Role == TutorialEnemyRole.Ranged ||
                     (actor.Role == TutorialEnemyRole.MiniBoss &&
-                     firstLaunchTutorialMiniBossPhaseTwo);
+                     firstLaunchTutorialMiniBossPhaseTwo &&
+                     actor.UsesProjectileAttack);
 
                 if (actor.AttackCommitted)
                 {
@@ -1051,6 +1286,14 @@ namespace BoredomAndDungeons
                         attackElapsed >= impactTime)
                     {
                         actor.DamageApplied = true;
+                        if (actor.Role == TutorialEnemyRole.MiniBoss)
+                        {
+                            ShowFirstLaunchTutorialSuccess(
+                                actor.UsesProjectileAttack
+                                    ? "BOSS SHOT RELEASE — MOVE / PARRY"
+                                    : "BOSS SLAM IMPACT — DODGE"
+                            );
+                        }
                         if (usesProjectile)
                         {
                             LaunchFirstLaunchTutorialEnemyProjectile(actor);
@@ -1078,6 +1321,8 @@ namespace BoredomAndDungeons
                     {
                         actor.AttackCommitted = false;
                         actor.DamageApplied = false;
+                        if (actor.Role == TutorialEnemyRole.MiniBoss)
+                            ShowFirstLaunchTutorialSuccess("RECOVERY — ATTACK NOW");
                         actor.NextActionAt = now +
                             (actor.Role == TutorialEnemyRole.MiniBoss
                                 ? 1.45f
@@ -1095,9 +1340,31 @@ namespace BoredomAndDungeons
                     continue;
                 }
 
+                if (actor.Role == TutorialEnemyRole.MiniBoss)
+                {
+                    actor.AttackSequence++;
+                    actor.UsesProjectileAttack =
+                        firstLaunchTutorialMiniBossPhaseTwo
+                            ? actor.AttackSequence % 2 == 1
+                            : actor.AttackSequence % 3 == 2;
+                }
+                else
+                {
+                    actor.UsesProjectileAttack =
+                        actor.Role == TutorialEnemyRole.Ranged;
+                }
+
                 actor.ActionStartedAt = now;
                 actor.AttackCommitted = true;
                 actor.DamageApplied = false;
+                if (actor.Role == TutorialEnemyRole.MiniBoss)
+                {
+                    ShowFirstLaunchTutorialSuccess(
+                        actor.UsesProjectileAttack
+                            ? "RANGED WINDUP — MOVE"
+                            : "SLAM WINDUP — DODGE"
+                    );
+                }
                 firstLaunchTutorialNextEnemyAttackAt = now + 0.90f;
                 break;
             }
@@ -1264,6 +1531,7 @@ namespace BoredomAndDungeons
             firstLaunchTutorialMountedCurrentSpeed = 0f;
             firstLaunchTutorialGrounded = true;
             firstLaunchTutorialVerticalVelocity = 0f;
+            firstLaunchTutorialWallJumpConsumed = false;
             firstLaunchTutorialPlayerWorldPosition = new Vector2(firstLaunchTutorialCheckpointX, TutorialGroundY);
             if (firstLaunchTutorialPlayer != null)
             {
@@ -1315,7 +1583,7 @@ namespace BoredomAndDungeons
             if (CountLivingTutorialActors(TutorialEnemyRole.MiniBoss) == 0 &&
                 CountLivingNonBossTutorialActors() == 0)
             {
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossIntro);
+                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.WallJump);
             }
         }
 
@@ -1370,8 +1638,14 @@ namespace BoredomAndDungeons
             for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
             {
                 TutorialEnemyActor actor = firstLaunchTutorialActors[i];
-                if (actor.Role != TutorialEnemyRole.MiniBoss && actor.Active && !actor.Dead)
+                if (actor.Role != TutorialEnemyRole.MiniBoss &&
+                    actor.Active &&
+                    !actor.Dead &&
+                    actor.Image != null &&
+                    actor.Image.gameObject.activeInHierarchy)
+                {
                     count++;
+                }
             }
             return count;
         }
@@ -1382,8 +1656,14 @@ namespace BoredomAndDungeons
             for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
             {
                 TutorialEnemyActor actor = firstLaunchTutorialActors[i];
-                if (actor.Role == role && actor.Active && !actor.Dead)
+                if (actor.Role == role &&
+                    actor.Active &&
+                    !actor.Dead &&
+                    actor.Image != null &&
+                    actor.Image.gameObject.activeInHierarchy)
+                {
                     count++;
+                }
             }
             return count;
         }
@@ -1414,6 +1694,8 @@ namespace BoredomAndDungeons
                 actor.Dead = false;
                 actor.AttackCommitted = false;
                 actor.DamageApplied = false;
+                actor.UsesProjectileAttack = role == TutorialEnemyRole.Ranged;
+                actor.AttackSequence = 0;
                 actor.NextActionAt = Time.unscaledTime + 0.80f;
                 if (actor.Image == firstLaunchTutorialEnemy)
                     firstLaunchTutorialEnemyWorldPosition = actor.Position;
@@ -1425,6 +1707,7 @@ namespace BoredomAndDungeons
 
         private void ConfigureFirstLaunchTutorialProductionStep(FirstLaunchTutorialStep step)
         {
+            ResetFirstLaunchTutorialBossChargeState();
             bool ownsPrimaryActor =
                 step == FirstLaunchTutorialStep.JumpAttack ||
                 step == FirstLaunchTutorialStep.SpinAttack ||
@@ -1453,7 +1736,7 @@ namespace BoredomAndDungeons
                     SpawnTutorialActor(
                         firstLaunchTutorialEnemy,
                         TutorialEnemyRole.Small,
-                        -570f,
+                        1360f,
                         1f
                     );
                     TutorialEnemyActor jumpTarget =
@@ -1461,7 +1744,7 @@ namespace BoredomAndDungeons
                     if (jumpTarget != null)
                     {
                         jumpTarget.Position =
-                            new Vector2(-570f, TutorialGroundY + 92f);
+                            new Vector2(1360f, TutorialGroundY);
                         jumpTarget.SpawnPosition = jumpTarget.Position;
                         jumpTarget.NextActionAt = float.PositiveInfinity;
                     }
@@ -1506,12 +1789,6 @@ namespace BoredomAndDungeons
                         TutorialMountedStationX + 130f,
                         1f
                     );
-                    SpawnTutorialActor(
-                        firstLaunchTutorialEnemySecondary,
-                        TutorialEnemyRole.Small,
-                        TutorialMountedStationX + 300f,
-                        1f
-                    );
                     break;
                 case FirstLaunchTutorialStep.Reload:
                     break;
@@ -1539,9 +1816,27 @@ namespace BoredomAndDungeons
                     SpawnTutorialActor(firstLaunchTutorialEnemySecondary, TutorialEnemyRole.Small, TutorialCombinedStationX + 220f, 1f);
                     break;
                 case FirstLaunchTutorialStep.MiniBossIntro:
+                    firstLaunchTutorialAmmo = TutorialMagazineSize;
+                    firstLaunchTutorialReloadCompletesAt = 0f;
+                    SpawnTutorialActor(
+                        firstLaunchTutorialMiniBoss,
+                        TutorialEnemyRole.MiniBoss,
+                        TutorialMiniBossStationX + 170f,
+                        12f
+                    );
+                    break;
                 case FirstLaunchTutorialStep.MiniBossPhaseOne:
                 case FirstLaunchTutorialStep.MiniBossPhaseTwo:
-                    SpawnTutorialActor(firstLaunchTutorialMiniBoss, TutorialEnemyRole.MiniBoss, TutorialMiniBossStationX + 170f, 12f);
+                    firstLaunchTutorialAmmo = Mathf.Max(
+                        firstLaunchTutorialAmmo,
+                        TutorialBossChargedShotAmmoCost
+                    );
+                    SpawnTutorialActor(
+                        firstLaunchTutorialMiniBoss,
+                        TutorialEnemyRole.MiniBoss,
+                        TutorialMiniBossStationX + 170f,
+                        12f
+                    );
                     break;
                 case FirstLaunchTutorialStep.MiniBossDefeated:
                     if (firstLaunchTutorialMiniBoss != null)
@@ -1591,12 +1886,14 @@ namespace BoredomAndDungeons
 
         private void RenderFirstLaunchTutorialProductionCourse()
         {
-
             for (int i = 0; i < firstLaunchTutorialActors.Count; i++)
             {
                 TutorialEnemyActor actor = firstLaunchTutorialActors[i];
-                if (actor.Image == null || !actor.Active || actor.Dead)
+                if (actor.Image == null || !actor.Active || actor.Dead ||
+                    !actor.Image.gameObject.activeInHierarchy)
+                {
                     continue;
+                }
                 actor.Image.rectTransform.anchoredPosition =
                     SnapFirstLaunchTutorialWorldPosition(actor.Position);
                 if (actor.AttackCommitted)
@@ -1614,6 +1911,178 @@ namespace BoredomAndDungeons
                 if (actor.Image == firstLaunchTutorialEnemy)
                     firstLaunchTutorialEnemyWorldPosition = actor.Position;
             }
+            RenderFirstLaunchTutorialBossAttack();
+        }
+
+        private void RenderFirstLaunchTutorialBossAttack()
+        {
+            TutorialEnemyActor boss = FindTutorialBoss();
+            bool active =
+                boss != null &&
+                boss.Active &&
+                !boss.Dead &&
+                boss.AttackCommitted &&
+                (firstLaunchTutorialStep ==
+                     FirstLaunchTutorialStep.MiniBossPhaseOne ||
+                 firstLaunchTutorialStep ==
+                     FirstLaunchTutorialStep.MiniBossPhaseTwo);
+            if (!active)
+            {
+                SetTutorialEntityActive(
+                    firstLaunchTutorialBossAttackTelegraph,
+                    false
+                );
+                SetTutorialEntityActive(
+                    firstLaunchTutorialBossImpactFlash,
+                    false
+                );
+                return;
+            }
+
+            float elapsed = Time.unscaledTime - boss.ActionStartedAt;
+            bool projectileAttack = boss.UsesProjectileAttack;
+            float impactTime = projectileAttack ? 0.56f : 0.62f;
+            Vector2 direction =
+                firstLaunchTutorialPlayerWorldPosition - boss.Position;
+            if (direction.sqrMagnitude < 0.001f)
+                direction = Vector2.left;
+            direction.Normalize();
+
+            Vector2 playerTarget =
+                firstLaunchTutorialPlayerWorldPosition +
+                new Vector2(0f, 18f);
+            if (elapsed < impactTime)
+            {
+                float windup = Mathf.Clamp01(elapsed / impactTime);
+                float eased = windup * windup * (3f - 2f * windup);
+                float pulse =
+                    0.5f + 0.5f * Mathf.Sin(elapsed * 24f);
+
+                SetTutorialEntityActive(
+                    firstLaunchTutorialBossAttackTelegraph,
+                    true
+                );
+                SetTutorialEntityActive(
+                    firstLaunchTutorialBossImpactFlash,
+                    false
+                );
+
+                RectTransform telegraph =
+                    firstLaunchTutorialBossAttackTelegraph.rectTransform;
+                if (projectileAttack)
+                {
+                    // A compact charge orb replaces the old full-length beam.
+                    // The released projectile is rendered by the projectile
+                    // transaction only after this readable windup completes.
+                    Vector2 chargePosition =
+                        boss.Position +
+                        new Vector2(direction.x * 46f, 34f);
+                    telegraph.anchoredPosition =
+                        SnapFirstLaunchTutorialWorldPosition(chargePosition);
+                    float chargeSize = Mathf.Lerp(22f, 62f, eased);
+                    telegraph.sizeDelta =
+                        new Vector2(chargeSize, chargeSize);
+                    telegraph.localRotation = Quaternion.Euler(
+                        0f,
+                        0f,
+                        45f + elapsed * 92f
+                    );
+                    telegraph.localScale = Vector3.one;
+                    firstLaunchTutorialBossAttackTelegraph.color =
+                        Color.Lerp(
+                            new Color(0.16f, 0.72f, 1f, 0.72f),
+                            new Color(0.82f, 0.28f, 1f, 0.98f),
+                            Mathf.Clamp01(eased * 0.72f + pulse * 0.28f)
+                        );
+                    boss.Image.rectTransform.localScale =
+                        new Vector3(
+                            0.92f - eased * 0.08f,
+                            1.08f + eased * 0.10f,
+                            1f
+                        );
+                    boss.Image.rectTransform.localRotation =
+                        Quaternion.Euler(0f, 0f, -direction.x * 7f);
+                }
+                else
+                {
+                    // The slam now warns on the floor where it will land,
+                    // rather than drawing a generic line through the scene.
+                    Vector2 warningPosition =
+                        firstLaunchTutorialPlayerWorldPosition +
+                        new Vector2(0f, -42f);
+                    telegraph.anchoredPosition =
+                        SnapFirstLaunchTutorialWorldPosition(warningPosition);
+                    telegraph.sizeDelta = new Vector2(
+                        Mathf.Lerp(96f, 196f, eased),
+                        Mathf.Lerp(10f, 24f, pulse)
+                    );
+                    telegraph.localRotation = Quaternion.identity;
+                    telegraph.localScale = Vector3.one;
+                    firstLaunchTutorialBossAttackTelegraph.color =
+                        Color.Lerp(
+                            new Color(1f, 0.68f, 0.12f, 0.62f),
+                            new Color(1f, 0.10f, 0.06f, 0.96f),
+                            Mathf.Clamp01(eased * 0.74f + pulse * 0.26f)
+                        );
+                    boss.Image.rectTransform.localScale =
+                        new Vector3(
+                            1.08f + eased * 0.20f,
+                            0.94f - eased * 0.22f,
+                            1f
+                        );
+                    boss.Image.rectTransform.localRotation =
+                        Quaternion.Euler(0f, 0f, -direction.x * 12f * eased);
+                }
+                return;
+            }
+
+            SetTutorialEntityActive(
+                firstLaunchTutorialBossAttackTelegraph,
+                false
+            );
+            bool impactVisible = elapsed < impactTime + 0.24f;
+            SetTutorialEntityActive(
+                firstLaunchTutorialBossImpactFlash,
+                impactVisible
+            );
+            if (!impactVisible)
+            {
+                boss.Image.rectTransform.localScale = Vector3.one;
+                boss.Image.rectTransform.localRotation = Quaternion.identity;
+                return;
+            }
+
+            RectTransform impact =
+                firstLaunchTutorialBossImpactFlash.rectTransform;
+            Vector2 endpoint = projectileAttack
+                ? playerTarget
+                : firstLaunchTutorialPlayerWorldPosition +
+                    new Vector2(0f, -12f);
+            impact.anchoredPosition =
+                SnapFirstLaunchTutorialWorldPosition(endpoint);
+            float impactProgress = Mathf.Clamp01(
+                (elapsed - impactTime) / 0.24f
+            );
+            float impactPulse = Mathf.Sin(impactProgress * Mathf.PI);
+            impact.sizeDelta = projectileAttack
+                ? new Vector2(54f, 54f)
+                : new Vector2(138f, 92f);
+            impact.localRotation = projectileAttack
+                ? Quaternion.Euler(0f, 0f, 45f + impactProgress * 90f)
+                : Quaternion.identity;
+            impact.localScale = Vector3.one * (1f + impactPulse * 0.48f);
+            firstLaunchTutorialBossImpactFlash.color = projectileAttack
+                ? new Color(0.40f, 0.86f, 1f, 0.90f)
+                : new Color(1f, 0.16f, 0.08f, 0.86f);
+            boss.Image.rectTransform.localScale = projectileAttack
+                ? new Vector3(1.12f, 0.90f, 1f)
+                : new Vector3(0.82f, 1.24f, 1f);
+            boss.Image.rectTransform.localRotation =
+                Quaternion.Euler(
+                    0f,
+                    0f,
+                    direction.x * (projectileAttack ? -8f : 12f)
+                );
         }
         private void UpdateFirstLaunchTutorialProductionHud()
         {

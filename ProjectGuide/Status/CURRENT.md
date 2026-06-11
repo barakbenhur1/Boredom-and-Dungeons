@@ -1,3 +1,43 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## 2026-06-11 — Tutorial player, typography, boss shooting, collectible and environment interaction V10.11.10
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This cumulative pass preserves V10.11.9 and addresses the latest Play Mode findings: the player starts farther from the first obstacle; the tutorial player is rendered as a clear side-profile pixel character with natural skin, blond hair, red shirt, blue trousers and a correctly placed eye; every tutorial text layer receives larger bounded typography, outline, color and restrained per-letter motion; ordinary shots explicitly target and damage the mini-boss at projectile impact; the environment lesson now shows a complete enemy-to-hazard knockback and impact sequence before advancing; and the final green relic is visually distinct and is collected by contact, with no misleading interact instruction.
+
+The latest supplied automated report was green (`0 blockers / 0 warnings / 0 info`) before this pass. A fresh Unity compile, `TEST EVERYTHING`, and full tutorial Play Mode run remain mandatory because runtime and QA contracts changed.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## 2026-06-11 — Wall-jump, boss-combat, tutorial typography and dialogue-shape repair V10.11.8
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This cumulative focused repair preserves all accepted opening and tutorial work while correcting the reported Play Mode defects: the wall-jump route now has one wall jump per airborne cycle, a reachable platform-to-upper-ground jump and raised standing baselines; the opening speech bubble is animated as one visual group with a behind-body tail, dedicated shadow and seam cover; tutorial instruction typography is larger, outlined, step-colored and animated per character; and the mini-boss now visibly alternates a redesigned ground-warning slam with real projectile attacks. The ranged hold taught earlier is available during both boss phases and auto-fires a charged shot on the first valid recovery frame without requiring release.
+
+The last supplied automated report before this repair was green, but this package changes runtime behavior and QA contracts. Unity compilation, a fresh `TEST EVERYTHING` run and a complete Play Mode tutorial pass remain mandatory.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## 2026-06-11 — Tutorial completion integrity and presentation repair V10.11.7
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This focused cumulative repair keeps the accepted opening and tutorial work and corrects four reported regressions: the mother-bubble diamond is rendered as a sibling behind the bubble body while following the same fade/scale motion; the horse faces the actual horizontal travel direction, including reverse movement and action poses; the mounted-shot lesson owns one visible target and resolves damage only after the continuously rendered projectile reaches that target; and lesson guidance boundaries no longer become invisible collision walls. Hidden actors are excluded from targeting, counts, rendering and collision.
+
+The last supplied `TEST EVERYTHING` report before this repair passed at `0 blockers / 0 warnings / 0 info`. Unity compilation, a fresh automated run and complete Play Mode completion remain required after installation.
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## 2026-06-11 — Exact-local-state tutorial opening and polish V10.11.3
+
+**Classification:** `CURRENT / LOCAL PACKAGE READY / UNITY VERIFICATION REQUIRED`
+
+This package is built from the exact local snapshot captured at commit `ce725693d7a88f7304ad070a073c00237ffe54f3`. It preserves the existing local wall-jump reorder, professional wall geometry, Mini-Boss telegraph/impact presentation, scene edits and gameplay edits. It adds the missing top-left `honey come here a second` mother bubble after the room reveal, restrained fade+scale entry, a feminine nonverbal cue, exact reverse exit and a hard timing gate that prevents walking until the bubble is fully gone. It also releases unsupported wall-jump grounded state, makes Jump + Attack explicit, keeps course decorations behind actors, enlarges and animates tutorial typography, and changes phase-two Mini-Boss ranged attacks from every attack to an occasional authored third-attack variation while retaining the existing local slam/telegraph owner.
+
+No Unity compilation, TEST EVERYTHING, focused Play Mode or user acceptance is claimed by the package. Resume at: install V10.11.3, compile in Unity 6000.0.76f1, run TEST EVERYTHING at 0/0/0, then play the complete opening and tutorial matrix.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
 ## 2026-06-11 — Tutorial contact, facing, traversal lessons and ESC skip V10.10
 
@@ -7,11 +47,13 @@
 - Melee damage resolves at the visible strike impact; projectile damage resolves only at the visible projectile endpoint.
 - Target selection and attack presentation follow the player's horizontal facing.
 - The opening sequence skips to its exact final state on one normal `ESC` press.
-- The opening traversal now includes an airborne-attack lesson followed by a wall-jump route: wall on the right, wall jump left to the raised platform, jump right to the ground above the wall, then continue right.
+- The airborne-attack lesson uses a grounded enemy; no floating tutorial enemy is used.
+- The wall-jump route is the final lesson after the combined encounter and immediately before the boss: reachable wall on the right, a visibly separated platform on the left, then upper ground to the right.
+- Boss attacks now use a strong body windup pose, pulsing attack lane, impact flash and exposed recovery pose in addition to the state label.
 
-Unity `6000.0.76f1` compiled the current changes. A fresh `TEST EVERYTHING` run generated at `2026-06-11T01:21:54.6750990Z` passed with `0 blockers / 0 warnings / 0 info`.
+Unity `6000.0.76f1` compiled the current changes. A fresh `TEST EVERYTHING` run generated at `2026-06-11T01:37:38.1661840Z` passed with `0 blockers / 0 warnings / 0 info`.
 
-**Exact resume point:** play the complete opening and tutorial while verifying the focused contact, facing, airborne-attack, wall-jump and ESC matrix.
+**Exact resume point:** play the complete opening and tutorial while verifying the focused contact, facing, grounded airborne-attack target, final pre-boss wall jump, readable boss attacks and ESC matrix.
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
 
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
@@ -2309,3 +2351,8 @@ The latest Unity run was blocked by `FIRST_LAUNCH_TUTORIAL_CONTRACT_INVALID` bec
 
 V10.7.1 accepted the authoritative tutorial source but its post-write validator scanned the editor QA source as Runtime code and rejected the validator's own forbidden-token strings. V10.7.2 scopes runtime validation correctly and makes package cleanup unconditional on success or failure. Unity verification remains required before continuing the tutorial gameplay and animation tasks.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## V10.11.6 — child dialogue bubble and post-seat power timing
+
+A narrowly scoped first-launch cinematic polish pass is implemented locally and awaits Unity Play Mode acceptance. The handheld power-on now begins at `9.20s` and completes at `10.20s`, reducing the settled-seat delay without changing the camera path, dialogue duration, tutorial state, or final menu pose. The dialogue bubble rests at `(72, -84)` and its `28x28` rotated tail is centered at `(62, -20)`, keeping the tail tangent to the bubble instead of overlapping it.
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->

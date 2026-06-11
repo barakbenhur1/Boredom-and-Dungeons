@@ -145,7 +145,7 @@ namespace BoredomAndDungeons
             );
 
             firstLaunchTutorialPlayerWorldPosition =
-                new Vector2(-820f, -108f);
+                new Vector2(-900f, -108f);
             firstLaunchTutorialHorseWorldPosition =
                 new Vector2(TutorialHorseStartX, -116f);
             firstLaunchTutorialEnemyWorldPosition =
@@ -410,6 +410,11 @@ namespace BoredomAndDungeons
             image.raycastTarget = false;
             image.sprite = null;
             image.type = Image.Type.Simple;
+            AddOutline(
+                image.gameObject,
+                new Color(0.025f, 0.025f, 0.075f, 0.92f),
+                2f
+            );
             return image;
         }
 
@@ -516,10 +521,13 @@ namespace BoredomAndDungeons
                 speed *
                 Time.unscaledDeltaTime;
 
-            float maximumPlayerX = Mathf.Min(
+            float lessonGuidanceX = Mathf.Min(
                 TutorialWorldMaxX,
                 ResolveFirstLaunchTutorialMaximumPlayerX()
             );
+            // Lesson limits are guidance only. They must never become an
+            // invisible collision wall that can strand a valid tutorial run.
+            float maximumPlayerX = TutorialWorldMaxX;
             float currentPlayerX =
                 firstLaunchTutorialPlayerWorldPosition.x;
             float requestedPlayerX = currentPlayerX + delta.x;
@@ -529,12 +537,13 @@ namespace BoredomAndDungeons
                     requestedPlayerX
                 );
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.WallJump &&
+                currentPlayerX < TutorialWallJumpWallX &&
                 requestedPlayerX > currentPlayerX &&
                 firstLaunchTutorialPlayerWorldPosition.y <
-                    TutorialWallJumpUpperGroundY &&
-                collisionResolvedX > TutorialWallJumpWallX - 58f)
+                    TutorialWallJumpUpperGroundStandingY + 12f &&
+                collisionResolvedX > TutorialWallJumpWallX - 52f)
             {
-                collisionResolvedX = TutorialWallJumpWallX - 58f;
+                collisionResolvedX = TutorialWallJumpWallX - 52f;
             }
             firstLaunchTutorialPlayerWorldPosition.x = Mathf.Clamp(
                 collisionResolvedX,
@@ -543,7 +552,7 @@ namespace BoredomAndDungeons
             );
 
             if (movement.x > 0.05f &&
-                requestedPlayerX > maximumPlayerX + 0.5f)
+                requestedPlayerX > lessonGuidanceX + 0.5f)
             {
                 NotifyFirstLaunchTutorialLessonGate();
             }
@@ -592,18 +601,18 @@ namespace BoredomAndDungeons
 
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.WallJump &&
                 firstLaunchTutorialGroundedY ==
-                    TutorialWallJumpUpperGroundY &&
-                firstLaunchTutorialPlayerWorldPosition.x >= -180f)
+                    TutorialWallJumpUpperGroundStandingY &&
+                firstLaunchTutorialPlayerWorldPosition.x >= 3600f)
             {
+                firstLaunchTutorialGrounded = false;
+                firstLaunchTutorialGroundedY = TutorialGroundY;
                 firstLaunchTutorialLastMoveDirection = Vector2.right;
-                firstLaunchTutorialHorseWorldPosition =
-                    new Vector2(-80f, TutorialWallJumpUpperGroundY - 8f);
                 SetFirstLaunchTutorialLearningState(
                     "WallJump",
                     TutorialLearningState.Demonstrated
                 );
                 ShowFirstLaunchTutorialSuccess("WALL JUMP CLEARED");
-                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MountHorse);
+                SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.MiniBossIntro);
             }
         }
 
@@ -731,9 +740,10 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.Move:
                     return TutorialJumpObstacleX + 20f;
                 case FirstLaunchTutorialStep.Jump:
-                case FirstLaunchTutorialStep.JumpAttack:
                 case FirstLaunchTutorialStep.MountHorse:
                     return TutorialHorseStartX + 170f;
+                case FirstLaunchTutorialStep.JumpAttack:
+                    return TutorialParryTargetX + 220f;
                 case FirstLaunchTutorialStep.WallJump:
                     return TutorialWallJumpUpperGroundMaxX + 40f;
                 case FirstLaunchTutorialStep.RideHorse:
@@ -848,9 +858,17 @@ namespace BoredomAndDungeons
             if (IsFirstLaunchTutorialActionInputLocked())
                 return;
 
-            // Ranged input is consumed before generic interaction. The charged
-            // lesson starts a hold transaction and fires automatically only when
-            // the real charge duration reaches 100 percent.
+            // Ranged input is consumed before generic interaction. Boss combat
+            // uses the same hold-to-charge, auto-fire contract taught earlier.
+            if (IsFirstLaunchTutorialBossCombatStep() &&
+                ReadFirstLaunchTutorialRangedPressed())
+            {
+                BeginFirstLaunchTutorialBossChargeInput();
+                return;
+            }
+
+            // The charged lesson starts a hold transaction and fires
+            // automatically only when the real charge duration reaches 100%.
             if (firstLaunchTutorialStep ==
                     FirstLaunchTutorialStep.ChargedShot &&
                 ReadFirstLaunchTutorialRangedPressed())
@@ -1031,6 +1049,10 @@ namespace BoredomAndDungeons
                         firstLaunchTutorialHealHoldStartedAt =
                             Time.unscaledTime;
                     }
+                    else if (IsFirstLaunchTutorialBossCombatStep())
+                    {
+                        BeginFirstLaunchTutorialBossChargeInput();
+                    }
                     else if (firstLaunchTutorialStep ==
                                  FirstLaunchTutorialStep.ChargedShot)
                     {
@@ -1080,22 +1102,7 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            if (firstLaunchTutorialStep ==
-                    FirstLaunchTutorialStep.Collectible)
-            {
-                if (Vector2.Distance(
-                        firstLaunchTutorialPlayerWorldPosition,
-                        firstLaunchTutorialCollectibleWorldPosition) >
-                    TutorialMountRange)
-                {
-                    ShowFirstLaunchTutorialSuccess("MOVE CLOSER");
-                    return;
-                }
-
-                CompleteFirstLaunchTutorialCourse();
-                return;
-            }
-
+            // Collectibles are contact-owned; interact never completes them.
             float horseDistance = Vector2.Distance(
                 firstLaunchTutorialPlayerWorldPosition,
                 firstLaunchTutorialHorseWorldPosition
@@ -1389,6 +1396,13 @@ namespace BoredomAndDungeons
 
         private void UpdateFirstLaunchTutorialHeldActions()
         {
+            if (IsFirstLaunchTutorialBossCombatStep())
+            {
+                if (!IsFirstLaunchTutorialActionInputLocked())
+                    UpdateFirstLaunchTutorialBossChargeHold();
+                return;
+            }
+
             if (firstLaunchTutorialStep ==
                     FirstLaunchTutorialStep.ChargedShot)
             {
@@ -1807,17 +1821,18 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.JumpAttack:
                     firstLaunchTutorialInstructionRequested = true;
                     SetFirstLaunchTutorialCheckpoint(
-                        firstLaunchTutorialPlayerWorldPosition.x - 80f
+                        1190f
                     );
                     firstLaunchTutorialLastMoveDirection = Vector2.right;
                     break;
                 case FirstLaunchTutorialStep.WallJump:
                     firstLaunchTutorialInstructionRequested = true;
-                    firstLaunchTutorialCheckpointX = -620f;
+                    firstLaunchTutorialCheckpointX = 3360f;
                     firstLaunchTutorialGroundedY = TutorialGroundY;
                     firstLaunchTutorialWallJumpPlatformReached = false;
+                    firstLaunchTutorialWallJumpConsumed = false;
                     firstLaunchTutorialPlayerWorldPosition =
-                        new Vector2(-620f, TutorialGroundY);
+                        new Vector2(3360f, TutorialGroundY);
                     firstLaunchTutorialLastMoveDirection = Vector2.right;
                     break;
                 case FirstLaunchTutorialStep.MountHorse:
@@ -1977,11 +1992,7 @@ namespace BoredomAndDungeons
 
             ConfigureFirstLaunchTutorialProductionStep(step);
             bool wallJumpActive =
-                step == FirstLaunchTutorialStep.WallJump ||
-                step == FirstLaunchTutorialStep.MountHorse ||
-                (step == FirstLaunchTutorialStep.RideHorse &&
-                 firstLaunchTutorialGroundedY ==
-                    TutorialWallJumpUpperGroundY);
+                step == FirstLaunchTutorialStep.WallJump;
             SetTutorialEntityActive(
                 firstLaunchTutorialWallJumpWall,
                 wallJumpActive
@@ -2043,8 +2054,6 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.WhiteBoot:
                 case FirstLaunchTutorialStep.Move:
                 case FirstLaunchTutorialStep.Jump:
-                case FirstLaunchTutorialStep.JumpAttack:
-                case FirstLaunchTutorialStep.WallJump:
                     section = 1;
                     break;
                 case FirstLaunchTutorialStep.MountHorse:
@@ -2057,6 +2066,7 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.HeavyAttack:
                 case FirstLaunchTutorialStep.Dodge:
                 case FirstLaunchTutorialStep.Parry:
+                case FirstLaunchTutorialStep.JumpAttack:
                     section = 3;
                     break;
                 case FirstLaunchTutorialStep.HorseReturn:
@@ -2084,6 +2094,7 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.CombinedEncounter:
                     section = 9;
                     break;
+                case FirstLaunchTutorialStep.WallJump:
                 default:
                     section = 10;
                     break;
@@ -2141,6 +2152,14 @@ namespace BoredomAndDungeons
                     firstLaunchTutorialHorseInjured
                         ? new Color(0.62f, 0.14f, 0.16f, 1f)
                         : new Color(0.58f, 0.35f, 0.18f, 1f);
+                float horseFacing =
+                    Mathf.Abs(firstLaunchTutorialLastMoveDirection.x) > 0.01f
+                        ? Mathf.Sign(firstLaunchTutorialLastMoveDirection.x)
+                        : 1f;
+                firstLaunchTutorialHorse.rectTransform.localScale =
+                    new Vector3(horseFacing, 1f, 1f);
+                firstLaunchTutorialHorse.rectTransform.localRotation =
+                    Quaternion.identity;
             }
 
             if (firstLaunchTutorialPlayer != null)
@@ -2282,7 +2301,7 @@ namespace BoredomAndDungeons
             {
                 ShowFirstLaunchTutorialSuccess("AIR ATTACK");
                 SetFirstLaunchTutorialStep(
-                    FirstLaunchTutorialStep.WallJump
+                    FirstLaunchTutorialStep.HorseReturn
                 );
                 return;
             }
@@ -2388,7 +2407,7 @@ namespace BoredomAndDungeons
                 );
                 ShowFirstLaunchTutorialSuccess("PARRIED");
                 SetFirstLaunchTutorialStep(
-                    FirstLaunchTutorialStep.HorseReturn
+                    FirstLaunchTutorialStep.JumpAttack
                 );
             }
         }

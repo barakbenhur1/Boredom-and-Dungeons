@@ -1,3 +1,29 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## V10.11.10 ownership
+
+- `V1011Polish.cs` remains the single tutorial presentation extension. It owns whole-interface text styling, the generated player sprite and the generated collectible sprite; it does not own gameplay state.
+- `BDTutorialLetterPulseEffect` remains the reusable Text mesh effect and now correctly overrides the Unity UI lifecycle method.
+- `Gameplay.cs` owns initial position and contact-based completion routing.
+- `ProductionCourse.cs` owns environment knockback sequencing, boss target selection and boss damage rules.
+- Existing projectile, damage, input and tutorial step state machines remain authoritative; no parallel system is introduced.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 tutorial ownership additions
+
+- `BDModernHandheld3DPresenter.FirstLaunchTutorial.BossCharge.cs` is a partial extension of the existing tutorial presenter. It owns only boss-phase charged-input state and delegates projectile presentation/damage to the existing action-presentation and shot-transaction owners.
+- `ProductionCourse.cs` remains the owner of wall-jump physics, boss AI scheduling and boss telegraph rendering.
+- `V1011Polish.cs` remains the owner of tutorial typography sizing/palette application; `BDTutorialLetterPulseEffect` remains the reusable mesh animation component.
+- `ChildApproachDialogue.cs` remains the sole owner of opening dialogue visual composition, voice and enter/exit animation.
+No parallel input, projectile, damage, camera or tutorial state machine is introduced.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 ownership clarification
+
+`BDModernHandheld3DPresenter.ChildApproachDialogue` is a cohesive presentation partial of the existing post-BBH camera owner. It owns only the one-shot overlay, deterministic feminine nonverbal clip and cleanup; it is not a global dialogue owner. Tutorial support release and prompt/backdrop/typography presentation remain in cohesive tutorial partials. Mini-Boss attack selection extends `FirstLaunchTutorial.ProductionCourse` and feeds the existing local `RenderFirstLaunchTutorialBossAttack` visual owner. Projectile damage remains owned by the visible-impact transaction.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## V10.9.4 latest-commit-aligned QA ownership boundary
 

@@ -18,12 +18,17 @@ namespace BoredomAndDungeons
 
         private const float ChildApproachBlackHoldEndsAtSeconds = 0.42f;
         private const float ChildApproachSceneFadeEndsAtSeconds = 1.20f;
-        private const float ChildApproachWalkEndsAtSeconds = 4.10f;
-        private const float ChildApproachClimbStartsAtSeconds = 4.32f;
-        private const float ChildApproachSeatReachSeconds = 5.62f;
-        private const float ChildApproachCameraSettleSeconds = 6.40f;
-        private const float ChildApproachPowerOnStartsAtSeconds = 6.80f;
-        private const float ChildApproachPowerOnEndsAtSeconds = 7.80f;
+        private const float ChildApproachDialogueEnterStartsAtSeconds = 1.55f;
+        private const float ChildApproachDialogueEnterEndsAtSeconds = 1.90f;
+        private const float ChildApproachDialogueHoldEndsAtSeconds = 3.35f;
+        private const float ChildApproachDialogueExitEndsAtSeconds = 3.70f;
+        private const float ChildApproachWalkStartsAtSeconds = 3.82f;
+        private const float ChildApproachWalkEndsAtSeconds = 6.72f;
+        private const float ChildApproachClimbStartsAtSeconds = 6.94f;
+        private const float ChildApproachSeatReachSeconds = 8.24f;
+        private const float ChildApproachCameraSettleSeconds = 9.02f;
+        private const float ChildApproachPowerOnStartsAtSeconds = 9.20f;
+        private const float ChildApproachPowerOnEndsAtSeconds = 10.20f;
 
         // Authored around the V10.9.26 chair: well behind it and clearly
         // offset to the left, while preserving the established child POV
@@ -83,6 +88,7 @@ namespace BoredomAndDungeons
             childApproachContentTransformCaptured = false;
             childApproachSceneFadeRoot = null;
             childApproachSceneFadeCanvasGroup = null;
+            InitializeChildApproachDialogueState();
         }
 
         private void ResetChildApproachCinematicState()
@@ -90,6 +96,7 @@ namespace BoredomAndDungeons
             childApproachScreenPowerState =
                 ChildApproachScreenPowerState.On;
             SetChildApproachSceneFadeImmediate(0f);
+            ResetChildApproachDialogueForPlayback();
         }
 
         private void ApplyChildApproachCameraPose(float progress)
@@ -108,7 +115,7 @@ namespace BoredomAndDungeons
             if (seconds <= ChildApproachWalkEndsAtSeconds)
             {
                 float raw = Mathf.InverseLerp(
-                    ChildApproachSceneFadeEndsAtSeconds,
+                    ChildApproachWalkStartsAtSeconds,
                     ChildApproachWalkEndsAtSeconds,
                     seconds
                 );

@@ -1,3 +1,58 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## V10.11.10 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-CS0114-LETTER-EFFECT | Compilation | FIXED IN CODE / UNITY VERIFY | `BDTutorialLetterPulseEffect.OnEnable()` overrides `BaseMeshEffect.OnEnable()` and calls `base.OnEnable()`; no CS0114 warning remains. |
+| FL-TUT-PLAYER-GENERIC | Player visual | FIXED IN CODE / VISUAL VERIFY | Player reads as a side-profile child with natural skin, blond hair, red shirt, blue trousers and correctly placed eye. |
+| FL-TUT-START-TOO-CLOSE | Tutorial start | FIXED IN CODE / PLAY MODE VERIFY | Initial player X is `-900`, leaving readable approach distance before the first obstacle. |
+| FL-TUT-TEXT-PARTIAL-POLISH | Tutorial UI | FIXED IN CODE / VISUAL VERIFY | Prompt, detail, progress, feedback, both binding titles and values, divider, health, ammo and boss text are larger, outlined, colored and animated without clipping. |
+| FL-TUT-BOSS-ORDINARY-SHOT | Mini-boss | FIXED IN CODE / PLAY MODE VERIFY | Ordinary ranged input selects the living boss explicitly and resolves one point of damage at visible projectile impact, including during boss windup. |
+| FL-TUT-COLLECTIBLE-WRONG-INSTRUCTION | Completion | FIXED IN CODE / PLAY MODE VERIFY | Final prompt says to walk into the relic; interact is not presented as required and contact completes collection. |
+| FL-TUT-COLLECTIBLE-BACKGROUND-LIKE | Completion visual | FIXED IN CODE / VISUAL VERIFY | Green relic uses a bright outlined gem sprite with highlight and pulse, clearly separated from background decoration. |
+| FL-TUT-ENVIRONMENT-NO-FEEDBACK | Environment lesson | FIXED IN CODE / PLAY MODE VERIFY | Attack visibly knocks the enemy into the hazard, shows impact, then advances only after the complete sequence. |
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-WALL-JUMP-INFINITE | Wall jump | FIXED IN CODE / PLAY MODE VERIFY | A wall contact grants at most one wall jump until the player lands on ground, platform or upper ground. |
+| FL-TUT-WALL-JUMP-UPPER-UNREACHABLE | Wall jump route | FIXED IN CODE / PLAY MODE VERIFY | The player can jump right from the platform, clear the wall and land on the upper ground without a returning invisible clamp. |
+| FL-TUT-WALL-JUMP-SUNK | Character grounding | FIXED IN CODE / VISUAL VERIFY | Player baseline sits above the platform and upper-ground surfaces instead of sinking into them. |
+| FL-CIN-DIALOGUE-TAIL-SEPARATE | Opening dialogue | FIXED IN CODE / VISUAL VERIFY | Body, tail, shadow and seam animate under one parent; no intersecting black outlines or split disappearance. |
+| FL-TUT-TYPOGRAPHY-UNDERSIZED | Tutorial UI | FIXED IN CODE / VISUAL VERIFY | Headline, detail, bindings, feedback and HUD are materially larger, high-contrast, step-colored and animated. |
+| FL-TUT-BOSS-OLD-VISUAL | Mini-boss | FIXED IN CODE / PLAY MODE VERIFY | Slam uses a ground warning zone; projectile uses a compact charge orb and visible projectile release, not the old generic beam. |
+| FL-TUT-BOSS-NO-SHOTS | Mini-boss | FIXED IN CODE / PLAY MODE VERIFY | Phase one shoots on a predictable sequence and phase two opens with and repeatedly alternates projectile attacks. |
+| FL-TUT-BOSS-CHARGE-BROKEN | Mini-boss/player combat | FIXED IN CODE / PLAY MODE VERIFY | Holding ranged charges during either boss phase and auto-fires at full charge on a valid recovery frame. |
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## V10.11.7 tutorial completion integrity defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-CIN-BUBBLE-TAIL-LAYER | Opening dialogue | FIXED IN CODE / VISUAL VERIFY | The diamond is drawn behind the bubble body, stays attached and follows the same entrance/exit transform. |
+| FL-TUT-HORSE-REVERSE-FACING | Horse presentation | FIXED IN CODE / PLAY MODE VERIFY | Left/backward travel flips the horse and rider presentation; right/forward travel restores forward facing. |
+| FL-TUT-MOUNTED-SHOT-DOUBLE-KILL | Mounted shooting | FIXED IN CODE / PLAY MODE VERIFY | The lesson spawns one target, the projectile moves continuously, and only the locked living target is damaged at visible impact. |
+| FL-TUT-INVISIBLE-PROGRESSION-WALL | Course traversal | FIXED IN CODE / FULL-RUN VERIFY | Lesson limits provide guidance only and hidden actors never block movement; the complete tutorial can reach the collectible and completion state. |
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 — opening dialogue and focused tutorial defects
+
+| ID | Status | Acceptance condition |
+|---|---|---|
+| `OPENING-V10113-001` | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The mother bubble appears only after the room is visible, uses fade+scale in, holds, reverses out and is fully gone before walking. |
+| `OPENING-V10113-002` | `IMPLEMENTED / UNITY VERIFICATION REQUIRED` | The exact text is `honey come here a second`; the cue is feminine, nonverbal, deterministic and non-spatial. |
+| `TUTORIAL-V10113-003` | `IMPLEMENTED / PLAY MODE REQUIRED` | Leaving either real wall-jump support releases grounded state and produces a fall; no hovering remains. |
+| `TUTORIAL-V10113-004` | `IMPLEMENTED / PLAY MODE REQUIRED` | Jump Attack visibly states Jump + Attack with keyboard/mouse and handheld combinations. |
+| `TUTORIAL-V10113-005` | `PRESERVED / PLAY MODE REQUIRED` | Mounted fire damages exactly its selected living target only at visible projectile impact. |
+| `TUTORIAL-V10113-006` | `IMPLEMENTED / PLAY MODE REQUIRED` | The existing local Mini-Boss slam presentation is preserved and every third phase-two attack becomes a readable ranged shot. |
+| `TUTORIAL-V10113-007` | `IMPLEMENTED / VISUAL VERIFICATION REQUIRED` | Colored course decorations remain behind actors and the larger per-letter animation remains readable. |
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
 ## V10.9.33 — chair backrest gaps and premature screen ignition
 
@@ -394,3 +449,12 @@ Do not close these findings from static inspection or the earlier V10.1 automate
 - Correction: scan only `/Runtime/` files for runtime tokens; validate editor QA independently.
 - Cleanup correction: source ZIP and extracted installer residue must be removed on every exit path.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## V10.11.6 focused visual fixes
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-CIN-BUBBLE-TAIL-OVERLAP | Opening dialogue bubble | FIXED IN CODE / PLAY MODE VERIFY | Tail touches the lower bubble edge without drawing over the bubble body. |
+| FL-CIN-BUBBLE-VERTICAL-POSITION | Opening dialogue bubble | FIXED IN CODE / PLAY MODE VERIFY | Entire bubble sits slightly lower while remaining fully readable and inside frame. |
+| FL-CIN-POWER-ON-DELAY | Opening power-on | FIXED IN CODE / PLAY MODE VERIFY | After camera settlement at `9.02s`, power-on starts at `9.20s` and ends at `10.20s`, with no white frame or camera discontinuity. |
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->

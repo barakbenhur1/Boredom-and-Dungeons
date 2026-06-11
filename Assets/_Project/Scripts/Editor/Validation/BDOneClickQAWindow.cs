@@ -112,7 +112,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             new ManualCheck(
                 "first_launch_tutorial",
                 "First-launch tutorial",
-                "After a clean tutorial-state reset, the child walks to the chair, climbs without a cut, settles on the handheld, and only then powers the display on from black with no white frame. Complete the horse/enemy/heal opening and every listed lesson with keyboard, controller and physical controls. EXIT uses the safe confirmation guard; Continue resumes exactly; confirmed Leave persists Skipped before transition; completion persists Completed; neither terminal state auto-replays."),
+                "After the room reveal, the top-left mother bubble appears with professional fade/scale, plays the female nonverbal cue, reverses out completely, and only then may the child walk. Verify the wall-jump route can be failed by falling naturally, Jump + Attack is explicit, mounted shots damage one target only at projectile impact, the existing local Mini-Boss telegraph/slam presentation remains intact with an occasional phase-two shot, backdrop blocks stay behind gameplay, and the larger animated tutorial type remains readable. Complete all lessons with keyboard, controller and physical controls; EXIT, persistence and no-auto-replay behavior remain unchanged."),
             new ManualCheck(
                 "room_boundaries",
                 "Tall room walls and camera stop",
@@ -492,6 +492,7 @@ namespace BoredomAndDungeons.EditorTools.Validation
             ScanBBHBootIntroContracts(result);
             BDBBHCinematicIntroQA.Scan(result);
             BDFirstLaunchTutorialQA.Scan(result);
+            BDTutorialOpeningPolishV1011QA.Scan(result);
             BDChildApproachCinematicQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);

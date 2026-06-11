@@ -1,3 +1,9 @@
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 authored mother-call prototype cue
+
+The pre-walk `honey come here a second` bubble uses one short feminine nonverbal vocal texture synchronized to bubble entry. It is non-spatial, moderate in level, deterministic, stops on skip and never continues into walking. This is a scoped cinematic cue and does not falsely complete the future reusable wordless-character-voice system.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 # Boredom & Dungeons — Canonical Music and Audio Direction
 
 > **Canonical root source, organized under ProjectGuide.** Every music, ambience, SFX, voice, mixer, mastering, transition and audio-accessibility change must read this file.

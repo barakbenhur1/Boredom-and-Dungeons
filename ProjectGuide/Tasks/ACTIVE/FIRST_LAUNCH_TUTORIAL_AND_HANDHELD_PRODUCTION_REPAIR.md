@@ -1,7 +1,31 @@
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
+## V10.11.10 active focused repair
+
+Preserve all accepted V10.11.9 work while completing the reported gaps in player art, start spacing, whole-interface typography, ordinary boss shooting, environment interaction feedback, and final collectible communication. Acceptance is a complete real-time tutorial run with no compiler warnings, no QA findings, no clipped text and successful contact-based completion.
+<!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:END -->
+
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
+## V10.11.8 active focused repair
+
+Preserve the accepted opening camera, room, device, tutorial order, mounted-shot impact ownership and completion route. Repair the currently blocking Play Mode issues as one cumulative pass: unified dialogue shape, finite wall-jump transaction, reachable and correctly grounded upper route, modern readable typography, redesigned boss attacks, guaranteed boss projectiles and charged-shot support in boss combat. Acceptance requires a full first-launch run, not compilation alone.
+<!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:END -->
+
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:BEGIN -->
+## V10.11.7 active focused repair
+
+Preserve all accepted opening, camera, tutorial mechanics, boss work and retro presentation. Repair only the reported completion regressions: bubble-tail draw order, horse reverse facing, single-target impact-owned mounted shooting and removal of invisible lesson/hidden-actor traversal blockers. Acceptance requires a complete first-launch Play Mode run through persisted tutorial completion, not compilation alone.
+<!-- BND_TUTORIAL_COMPLETION_INTEGRITY_V10117:END -->
+
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
+## V10.11.3 exact-local-state focused implementation
+
+Preserve every accepted local mechanic and scene change. The room is fully visible before the mother bubble starts; entry uses restrained fade+scale, exit is the exact reverse, and walking is temporally impossible until the bubble is fully absent. The cue is a feminine nonverbal utterance. Wall support release, impact ownership, instruction copy, typography and backdrop ordering remain inside the existing presenter. Mini-Boss attack variation extends the already-authored local telegraph/impact presentation instead of replacing it or creating a parallel boss system.
+<!-- BND_TUTORIAL_OPENING_POLISH_V10113:END -->
+
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
 ## V10.10 active implementation
 
-Complete and verify the focused tutorial gameplay repair: solid traversal blockers, impact-timed damage, facing-owned attacks, single-press `ESC` opening skip, airborne-attack teaching, and the authored right-wall/left-platform/right-upper-ground wall-jump route. Do not change the wider tutorial lesson order or game systems.
+Complete and verify the focused tutorial gameplay repair: solid traversal blockers, impact-timed damage, facing-owned attacks, single-press `ESC` opening skip, airborne attack against a grounded enemy, final pre-boss wall-jump route, stronger SNES-style terrain treatment, and unambiguous boss windup/impact/recovery visuals.
 <!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
 
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
@@ -344,3 +368,8 @@ Implementation is contained in the existing tutorial presenter partials plus one
 
 This slice is `IMPLEMENTED / UNITY VERIFICATION REQUIRED`. After acceptance, continue the broader animation-production pass in `FIRST_LAUNCH_TUTORIAL_ENTRY_AND_ANIMATION_V11.md`; do not treat the new tutorial leg frames as completion of the separate main-game rig/animation roadmap.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:BEGIN -->
+## V10.11.6 focused continuation
+
+Implemented the user-requested opening micro-polish without changing the broader active-task priority: slightly earlier post-seat handheld power-on, a slightly lower dialogue bubble, and a non-overlapping tangent tail. Acceptance remains blocked on Unity `TEST EVERYTHING` and visual Play Mode confirmation. After acceptance, return to the pre-existing tutorial production repair sequence.
+<!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->
