@@ -267,7 +267,7 @@ The two center labels are equal-size recessed shell engravings, not bright float
 - The small card below it remains text-only and changes content with the selected Main option.
 - Hardware hover has no blue outline, blue frame or emission treatment. Hardware moves only on actual press; tutorial guidance is a restrained scale-only pulse.
 - Pause is a compact internal screen menu, not a duplicate of the Main Menu hero/card composition.
-- Tutorial visuals are deliberately simple authored 2D shapes inside the glass, but they must read as one coherent game scene rather than debug UI. White boot light, instruction hierarchy, success feedback and exit confirmation share the handheld screen language.
+- Tutorial visuals use a coherent point-filtered retro game scene inside the glass rather than debug UI. The tutorial begins directly from the black pixel choice screen without a white boot light; instruction hierarchy, success feedback and exit confirmation share the handheld screen language.
 - All page text must remain inside its own card at supported landscape aspect ratios.
 <!-- B&D HANDHELD PRODUCTION REPAIR + TUTORIAL ART V1 END -->
 

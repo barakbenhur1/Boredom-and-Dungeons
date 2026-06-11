@@ -139,7 +139,8 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            if (ShouldSkipChildApproachCinematic())
+            if (BDBBHBootIntro.TryConsumeSkipToFinalStateRequest() ||
+                ShouldSkipChildApproachCinematic())
             {
                 CompleteIntroToMainMenuTransition();
                 return;

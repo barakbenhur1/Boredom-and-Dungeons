@@ -10,7 +10,16 @@ namespace BoredomAndDungeons
         private bool firstLaunchTutorialPendingShotCharged;
         private bool firstLaunchTutorialPendingShotAdvancesLesson;
         private bool firstLaunchTutorialPendingShotImpactResolved;
+        private bool firstLaunchTutorialPendingShotHitResolved;
         private bool firstLaunchTutorialChargedShotAutoFired;
+
+        private TutorialEnemyActor firstLaunchTutorialPendingMeleeTarget;
+        private float firstLaunchTutorialPendingMeleeDamage;
+        private float firstLaunchTutorialPendingMeleeRange;
+        private Vector2 firstLaunchTutorialPendingMeleeDirection;
+        private bool firstLaunchTutorialPendingMeleeHeavy;
+        private bool firstLaunchTutorialPendingMeleeImpactResolved;
+        private bool firstLaunchTutorialPendingMeleeHitResolved;
 
         private TutorialEnemyActor firstLaunchTutorialPendingHookTarget;
         private float firstLaunchTutorialPendingHookDamage;
@@ -24,6 +33,7 @@ namespace BoredomAndDungeons
         private const float TutorialPlayerCollisionRadius = 30f;
         private const float TutorialMountedCollisionRadius = 54f;
         private const float TutorialEnemyCollisionRadius = 32f;
+        private const float TutorialProjectileHitRadius = 58f;
 
         private void ResetFirstLaunchTutorialV108Transactions()
         {
@@ -33,7 +43,15 @@ namespace BoredomAndDungeons
             firstLaunchTutorialPendingShotCharged = false;
             firstLaunchTutorialPendingShotAdvancesLesson = false;
             firstLaunchTutorialPendingShotImpactResolved = false;
+            firstLaunchTutorialPendingShotHitResolved = false;
             firstLaunchTutorialChargedShotAutoFired = false;
+            firstLaunchTutorialPendingMeleeTarget = null;
+            firstLaunchTutorialPendingMeleeDamage = 0f;
+            firstLaunchTutorialPendingMeleeRange = 0f;
+            firstLaunchTutorialPendingMeleeDirection = Vector2.right;
+            firstLaunchTutorialPendingMeleeHeavy = false;
+            firstLaunchTutorialPendingMeleeImpactResolved = false;
+            firstLaunchTutorialPendingMeleeHitResolved = false;
             firstLaunchTutorialPendingHookTarget = null;
             firstLaunchTutorialPendingHookDamage = 0f;
             firstLaunchTutorialEnemyProjectileStart = Vector2.zero;
@@ -55,6 +73,75 @@ namespace BoredomAndDungeons
             firstLaunchTutorialPendingShotCharged = charged;
             firstLaunchTutorialPendingShotAdvancesLesson = advancesLesson;
             firstLaunchTutorialPendingShotImpactResolved = false;
+            firstLaunchTutorialPendingShotHitResolved = false;
+        }
+
+        private void BeginFirstLaunchTutorialMeleeTransaction(
+            TutorialEnemyActor target,
+            float damage,
+            float range,
+            bool heavy)
+        {
+            firstLaunchTutorialPendingMeleeTarget = target;
+            firstLaunchTutorialPendingMeleeDamage = Mathf.Max(0f, damage);
+            firstLaunchTutorialPendingMeleeRange = Mathf.Max(0f, range);
+            firstLaunchTutorialPendingMeleeDirection =
+                ResolveFirstLaunchTutorialActionDirection();
+            firstLaunchTutorialPendingMeleeHeavy = heavy;
+            firstLaunchTutorialPendingMeleeImpactResolved = false;
+            firstLaunchTutorialPendingMeleeHitResolved = false;
+        }
+
+        private void ResolveFirstLaunchTutorialMeleeImpact()
+        {
+            if (firstLaunchTutorialPendingMeleeImpactResolved)
+                return;
+
+            firstLaunchTutorialPendingMeleeImpactResolved = true;
+            TutorialEnemyActor target =
+                firstLaunchTutorialPendingMeleeTarget;
+            if (target == null)
+                return;
+
+            Vector2 delta = target != null
+                ? target.Position - firstLaunchTutorialPlayerWorldPosition
+                : Vector2.zero;
+            bool hit =
+                target != null &&
+                target.Active &&
+                !target.Dead &&
+                delta.magnitude <= firstLaunchTutorialPendingMeleeRange &&
+                Vector2.Dot(
+                    delta.normalized,
+                    firstLaunchTutorialPendingMeleeDirection
+                   ) >= 0.35f;
+            firstLaunchTutorialPendingMeleeHitResolved = hit;
+            if (hit)
+            {
+                ApplyFirstLaunchTutorialActorDamage(
+                    target,
+                    firstLaunchTutorialPendingMeleeDamage
+                );
+                if (firstLaunchTutorialPendingMeleeHeavy &&
+                    target.Role != TutorialEnemyRole.MiniBoss)
+                {
+                    target.Position.x +=
+                        firstLaunchTutorialPendingMeleeDirection.x * 72f;
+                }
+                SetFirstLaunchTutorialLearningState(
+                    firstLaunchTutorialPendingMeleeHeavy
+                        ? "Heavy"
+                        : "Light",
+                    TutorialLearningState.Demonstrated
+                );
+            }
+            else
+            {
+                ShowFirstLaunchTutorialSuccess("ATTACK MISSED");
+            }
+
+            firstLaunchTutorialPendingMeleeTarget = null;
+            firstLaunchTutorialPendingMeleeDamage = 0f;
         }
 
         private void ResolveFirstLaunchTutorialRangedProjectileImpact()
@@ -64,8 +151,16 @@ namespace BoredomAndDungeons
 
             firstLaunchTutorialPendingShotImpactResolved = true;
             TutorialEnemyActor target = firstLaunchTutorialPendingShotTarget;
+            Vector2 impactWorld =
+                firstLaunchTutorialActionTargetWorld -
+                new Vector2(0f, 18f);
             bool hitLivingTarget =
-                target != null && target.Active && !target.Dead;
+                target != null &&
+                target.Active &&
+                !target.Dead &&
+                Vector2.Distance(target.Position, impactWorld) <=
+                    TutorialProjectileHitRadius;
+            firstLaunchTutorialPendingShotHitResolved = hitLivingTarget;
             if (hitLivingTarget)
             {
                 ApplyFirstLaunchTutorialActorDamage(
@@ -81,7 +176,8 @@ namespace BoredomAndDungeons
             {
                 CompleteFirstLaunchTutorialMountedShotLessonAtImpact();
             }
-            else if (firstLaunchTutorialPendingShotCharged &&
+            else if (hitLivingTarget &&
+                     firstLaunchTutorialPendingShotCharged &&
                      firstLaunchTutorialPendingShotStep ==
                          FirstLaunchTutorialStep.ChargedShot)
             {
@@ -230,7 +326,7 @@ namespace BoredomAndDungeons
             Vector2 targetWorld = target != null
                 ? target.Position
                 : firstLaunchTutorialPlayerWorldPosition +
-                    Vector2.right * 360f;
+                    ResolveFirstLaunchTutorialActionDirection() * 360f;
 
             firstLaunchTutorialAmmo = Mathf.Max(
                 0,
@@ -272,7 +368,7 @@ namespace BoredomAndDungeons
             Vector2 targetWorld = target != null
                 ? target.Position
                 : firstLaunchTutorialPlayerWorldPosition +
-                    Vector2.right * 420f;
+                    ResolveFirstLaunchTutorialActionDirection() * 420f;
             float damage = Mathf.Max(2f, firstLaunchTutorialAmmo);
             firstLaunchTutorialAmmo = 0;
 
@@ -315,7 +411,8 @@ namespace BoredomAndDungeons
 
         private float ResolveFirstLaunchTutorialCollisionX(
             float currentX,
-            float requestedX)
+            float requestedX,
+            bool includeStaticObstacles = true)
         {
             float direction = Mathf.Sign(requestedX - currentX);
             if (Mathf.Abs(direction) < 0.001f)
@@ -364,7 +461,78 @@ namespace BoredomAndDungeons
                     );
                 }
             }
+
+            if (!includeStaticObstacles)
+                return resolvedX;
+
+            if (firstLaunchTutorialGrounded &&
+                firstLaunchTutorialJumpObstacle != null &&
+                firstLaunchTutorialJumpObstacle.gameObject.activeSelf)
+            {
+                resolvedX = ResolveFirstLaunchTutorialSolidCollisionX(
+                    currentX,
+                    resolvedX,
+                    TutorialJumpObstacleX,
+                    34f,
+                    playerRadius
+                );
+            }
+            if (firstLaunchTutorialHazard != null &&
+                firstLaunchTutorialHazard.gameObject.activeSelf)
+            {
+                resolvedX = ResolveFirstLaunchTutorialSolidCollisionX(
+                    currentX,
+                    resolvedX,
+                    firstLaunchTutorialHazardWorldPosition.x,
+                    48f,
+                    playerRadius
+                );
+            }
+            if (firstLaunchTutorialGap != null &&
+                firstLaunchTutorialGap.gameObject.activeSelf)
+            {
+                resolvedX = ResolveFirstLaunchTutorialSolidCollisionX(
+                    currentX,
+                    resolvedX,
+                    firstLaunchTutorialGapWorldPosition.x,
+                    90f,
+                    playerRadius
+                );
+            }
+            if (!firstLaunchTutorialFinishGateOpen &&
+                firstLaunchTutorialFinishGate != null &&
+                firstLaunchTutorialFinishGate.gameObject.activeSelf)
+            {
+                resolvedX = ResolveFirstLaunchTutorialSolidCollisionX(
+                    currentX,
+                    resolvedX,
+                    TutorialFinishX,
+                    34f,
+                    playerRadius
+                );
+            }
             return resolvedX;
+        }
+
+        private static float ResolveFirstLaunchTutorialSolidCollisionX(
+            float currentX,
+            float requestedX,
+            float solidX,
+            float solidRadius,
+            float playerRadius)
+        {
+            float separation = solidRadius + playerRadius;
+            if (currentX <= solidX &&
+                requestedX > solidX - separation)
+            {
+                return Mathf.Min(requestedX, solidX - separation);
+            }
+            if (currentX >= solidX &&
+                requestedX < solidX + separation)
+            {
+                return Mathf.Max(requestedX, solidX + separation);
+            }
+            return requestedX;
         }
 
         private void SetFirstLaunchTutorialCheckpoint(float safeX)

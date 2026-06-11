@@ -1,9 +1,20 @@
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
+## Immediate gate — tutorial contact, facing, traversal and ESC skip
+
+1. Compile the current Runtime changes in Unity.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Verify one normal `ESC` press during either opening phase lands at the exact valid final state.
+4. Verify attacks always follow player facing and only damage at visible contact.
+5. Verify living enemies and active obstacles cannot be walked through.
+6. Complete the new airborne-attack and wall-jump route: right wall -> left platform -> right upper ground -> continue right.
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
 ## Immediate gate — tutorial retro visual redesign pass 1
 
 1. Unity `6000.0.76f1` compilation: PASS.
-2. Run a fresh `Boredom And Dungeons -> TEST EVERYTHING` and require `0 blockers / 0 warnings / 0 info`.
-3. Reset first launch and complete the full tutorial while reviewing action silhouettes, no-walk-during-action behavior, stepped instruction presentation and block-built environment art.
+2. Fresh `Boredom And Dungeons -> TEST EVERYTHING`: PASS, `0 blockers / 0 warnings / 0 info`.
+3. Reset first launch and confirm there is no white boot light, then complete the full tutorial while reviewing the visible retro night scene, action silhouettes, no-walk-during-action behavior, stepped instruction presentation and block-built environment art.
 4. Record remaining visual defects and continue the broader retro art, animation, UI, effects and game-feel redesign.
 5. Do not mark the full tutorial redesign complete or commit before user acceptance.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->

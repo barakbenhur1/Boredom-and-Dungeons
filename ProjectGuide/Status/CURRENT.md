@@ -1,7 +1,23 @@
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
+## 2026-06-11 — Tutorial contact, facing, traversal lessons and ESC skip V10.10
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / COMPILES / AUTOMATED QA PASS / VISUAL VERIFICATION REQUIRED`
+
+- Living enemies and active obstacles block ordinary traversal.
+- Melee damage resolves at the visible strike impact; projectile damage resolves only at the visible projectile endpoint.
+- Target selection and attack presentation follow the player's horizontal facing.
+- The opening sequence skips to its exact final state on one normal `ESC` press.
+- The opening traversal now includes an airborne-attack lesson followed by a wall-jump route: wall on the right, wall jump left to the raised platform, jump right to the ground above the wall, then continue right.
+
+Unity `6000.0.76f1` compiled the current changes. A fresh `TEST EVERYTHING` run generated at `2026-06-11T01:21:54.6750990Z` passed with `0 blockers / 0 warnings / 0 info`.
+
+**Exact resume point:** play the complete opening and tutorial while verifying the focused contact, facing, airborne-attack, wall-jump and ESC matrix.
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
 ## 2026-06-11 — First-launch tutorial retro visual redesign pass 1
 
-**Classification:** `CURRENT / IMPLEMENTED LOCALLY / COMPILES / QA AND VISUAL VERIFICATION REQUIRED`
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / COMPILES / AUTOMATED QA PASS / VISUAL VERIFICATION REQUIRED`
 
 The user accepted the opening scene and resumed the queued tutorial redesign. The first focused pass preserves every tutorial mechanic, input route, checkpoint and lesson while replacing more of the placeholder presentation language:
 
@@ -9,12 +25,14 @@ The user accepted the opening scene and resumed the queued tutorial redesign. Th
 - locomotion frames stop while an authored action pose is active;
 - tutorial instruction entrance and accent pulse use deliberate stepped pixel timing instead of smooth tween motion;
 - course trees, stones, grass and path markers use a limited retro palette and block-built pixel forms instead of isolated placeholder rectangles.
+- the retired white boot light is no longer shown before gameplay; the black pixel choice now reveals the tutorial directly;
+- the first visible tutorial frame now has an unmistakable retro night-sky composition with stepped sky bands, pixel moon, stars and distant ruin silhouettes.
 
 This is the first visual-production pass, not completion of the full redesign or animation backlog.
 
-Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully after this pass. The earlier `TEST EVERYTHING 0/0/0` result predates these changes and is not accepted as evidence for them.
+Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully after this pass. A fresh `TEST EVERYTHING` run generated at `2026-06-11T00:50:05.7003810Z` passed with `0 blockers / 0 warnings / 0 info`.
 
-**Exact resume point:** run a fresh `Boredom And Dungeons -> TEST EVERYTHING`, then visually review the complete tutorial for action readability, pixel stability, environment consistency and any remaining Flash-like presentation before expanding the next production pass.
+**Exact resume point:** reset first launch, choose `PLAY TUTORIAL`, confirm the white boot light is absent and visually review the complete tutorial for the visible retro night scene, action readability, pixel stability, environment consistency and any remaining Flash-like presentation before expanding the next production pass.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->
 
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->

@@ -54,13 +54,35 @@ namespace BoredomAndDungeons
             // Remembered-console palette: deep indigo space, dark teal
             // vegetation, warm path and a few readable accent pixels.
             // Decorations stay at the edges so the lesson action remains clear.
-            Color horizon = new Color(0.18f, 0.20f, 0.36f, 0.78f);
+            Color skyHigh = new Color(0.055f, 0.055f, 0.16f, 1f);
+            Color skyLow = new Color(0.12f, 0.10f, 0.25f, 1f);
+            Color horizon = new Color(0.28f, 0.18f, 0.36f, 1f);
             Color canopyDark = new Color(0.035f, 0.16f, 0.16f, 0.96f);
             Color canopyLight = new Color(0.06f, 0.26f, 0.22f, 0.96f);
             Color trunk = new Color(0.22f, 0.12f, 0.08f, 1f);
             Color stone = new Color(0.22f, 0.20f, 0.34f, 0.92f);
             Color grass = new Color(0.20f, 0.48f, 0.28f, 0.92f);
             Color ember = new Color(1f, 0.54f, 0.20f, 0.96f);
+            Color moon = new Color(1f, 0.78f, 0.30f, 1f);
+
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Sky High",
+                0f,
+                126f,
+                820f,
+                138f,
+                skyHigh
+            );
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Sky Low",
+                0f,
+                30f,
+                820f,
+                58f,
+                skyLow
+            );
 
             CreateTutorialDecoration(
                 parent,
@@ -70,6 +92,85 @@ namespace BoredomAndDungeons
                 820f,
                 4f,
                 horizon
+            );
+
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Moon Core",
+                252f,
+                118f,
+                40f,
+                40f,
+                moon
+            );
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Moon Cut",
+                264f,
+                126f,
+                28f,
+                28f,
+                skyHigh
+            );
+
+            Vector2[] starPositions =
+            {
+                new Vector2(-284f, 138f),
+                new Vector2(-218f, 92f),
+                new Vector2(-82f, 146f),
+                new Vector2(68f, 112f),
+                new Vector2(164f, 150f),
+                new Vector2(334f, 78f)
+            };
+            for (int index = 0; index < starPositions.Length; index++)
+            {
+                Vector2 position = starPositions[index];
+                CreateTutorialDecoration(
+                    parent,
+                    "Pixel Star " + index,
+                    position.x,
+                    position.y,
+                    index % 2 == 0 ? 8f : 4f,
+                    index % 2 == 0 ? 8f : 4f,
+                    moon
+                );
+            }
+
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Distant Ruin Left",
+                -172f,
+                -30f,
+                86f,
+                64f,
+                stone
+            );
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Distant Ruin Left Cut",
+                -172f,
+                -14f,
+                34f,
+                32f,
+                skyLow
+            );
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Distant Tower",
+                82f,
+                -18f,
+                42f,
+                88f,
+                stone
+            );
+            CreateTutorialDecoration(
+                parent,
+                "Pixel Distant Tower Crown",
+                82f,
+                30f,
+                62f,
+                12f,
+                stone
             );
 
             CreateTutorialDecoration(

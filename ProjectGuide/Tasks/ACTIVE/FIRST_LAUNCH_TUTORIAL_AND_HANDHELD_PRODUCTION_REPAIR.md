@@ -1,11 +1,17 @@
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
+## V10.10 active implementation
+
+Complete and verify the focused tutorial gameplay repair: solid traversal blockers, impact-timed damage, facing-owned attacks, single-press `ESC` opening skip, airborne-attack teaching, and the authored right-wall/left-platform/right-upper-ground wall-jump route. Do not change the wider tutorial lesson order or game systems.
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->
+
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:BEGIN -->
 ## Retro visual redesign pass 1 — active implementation
 
 The opening scene is accepted and the queued tutorial redesign is active. The first focused pass changes presentation only: dedicated action silhouettes for the player, horse, enemies and mini-boss; action-over-locomotion visual ownership; stepped pixel instruction motion; and a block-built limited-palette course environment. Tutorial mechanics, inputs, checkpoints, progression, damage and lesson order remain unchanged.
 
-Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully. The earlier automated PASS predates this implementation.
+Unity `6000.0.76f1` compiled the changed Runtime and Editor assemblies successfully. A fresh `TEST EVERYTHING` run generated at `2026-06-11T00:50:05.7003810Z` passed with `0 blockers / 0 warnings / 0 info`.
 
-**Resume after local implementation:** fresh TEST EVERYTHING `0/0/0` -> one complete tutorial visual review -> user acceptance -> continue the remaining retro art, animation, UI, effects and game-feel production backlog.
+**Resume after local implementation:** reset first launch -> one complete tutorial visual review -> user acceptance -> continue the remaining retro art, animation, UI, effects and game-feel production backlog.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_RETRO_REDIRECTION_V1:END -->
 
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
@@ -150,7 +156,7 @@ This task combines the user-approved handheld correction pass, the first-launch 
 
 ### First launch
 
-- on `NotStarted` or interrupted `InProgress`, show white boot light then a deterministic 2D tutorial inside the handheld glass before Main Menu content;
+- on `NotStarted` or interrupted `InProgress`, reveal the deterministic 2D tutorial directly from the black pixel choice screen inside the handheld glass before Main Menu content, with no white boot light;
 - teach one mechanic at a time through an isolated scripted sequence;
 - preserve the required horse/enemy/heal opening event;
 - use the existing normalized handheld actions and actual project keyboard/controller bindings represented by the tutorial input map;

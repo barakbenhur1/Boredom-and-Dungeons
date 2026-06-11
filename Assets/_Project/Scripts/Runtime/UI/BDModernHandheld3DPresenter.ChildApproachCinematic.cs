@@ -781,28 +781,10 @@ namespace BoredomAndDungeons
         private static bool ShouldSkipChildApproachCinematic()
         {
 #if ENABLE_INPUT_SYSTEM
-            if (Keyboard.current != null &&
-                (Keyboard.current.escapeKey.wasPressedThisFrame ||
-                 Keyboard.current.enterKey.wasPressedThisFrame ||
-                 Keyboard.current.spaceKey.wasPressedThisFrame))
-            {
-                return true;
-            }
-
-            if (Gamepad.current != null &&
-                (Gamepad.current.buttonSouth.wasPressedThisFrame ||
-                 Gamepad.current.startButton.wasPressedThisFrame))
-            {
-                return true;
-            }
-
-            return false;
+            return Keyboard.current != null &&
+                   Keyboard.current.escapeKey.wasPressedThisFrame;
 #else
-            return Input.GetKeyDown(KeyCode.Escape) ||
-                   Input.GetKeyDown(KeyCode.Return) ||
-                   Input.GetKeyDown(KeyCode.Space) ||
-                   Input.GetKeyDown(KeyCode.JoystickButton0) ||
-                   Input.GetKeyDown(KeyCode.JoystickButton7);
+            return Input.GetKeyDown(KeyCode.Escape);
 #endif
         }
     }

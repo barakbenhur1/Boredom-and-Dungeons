@@ -1,5 +1,9 @@
 using UnityEngine;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
 namespace BoredomAndDungeons
 {
     [DefaultExecutionOrder(-10000)]
@@ -43,6 +47,7 @@ namespace BoredomAndDungeons
         private static bool playedThisApplicationSession;
         private static bool currentlyPlaying;
         private static bool introToMainMenuTransitionRequested;
+        private static bool skipToFinalStateRequested;
         private static BDBBHBootIntro activeInstance;
 
         private float startedAt;
@@ -61,6 +66,15 @@ namespace BoredomAndDungeons
         public static bool HasPlayedThisSession => playedThisApplicationSession;
         public static bool HasPendingIntroToMainMenuTransition =>
             introToMainMenuTransitionRequested;
+
+        public static bool TryConsumeSkipToFinalStateRequest()
+        {
+            if (!skipToFinalStateRequested)
+                return false;
+
+            skipToFinalStateRequested = false;
+            return true;
+        }
 
         public static bool TryConsumeIntroToMainMenuTransition()
         {
@@ -83,6 +97,7 @@ namespace BoredomAndDungeons
             playedThisApplicationSession = false;
             currentlyPlaying = false;
             introToMainMenuTransitionRequested = false;
+            skipToFinalStateRequested = false;
             activeInstance = null;
         }
 
@@ -136,10 +151,27 @@ namespace BoredomAndDungeons
 
         private void Update()
         {
+            if (active && ReadEscapePressed())
+            {
+                skipToFinalStateRequested = true;
+                CompleteIntro();
+                return;
+            }
+
             if (!active || !renderClockStarted || Elapsed < TotalDuration)
                 return;
 
             CompleteIntro();
+        }
+
+        private static bool ReadEscapePressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            return Keyboard.current != null &&
+                   Keyboard.current.escapeKey.wasPressedThisFrame;
+#else
+            return Input.GetKeyDown(KeyCode.Escape);
+#endif
         }
 
         private float Elapsed =>

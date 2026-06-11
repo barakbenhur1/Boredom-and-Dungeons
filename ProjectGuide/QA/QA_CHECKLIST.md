@@ -857,7 +857,7 @@ The presenter owns one semantic action per physical control: center SELECT activ
 <!-- B&D FIRST LAUNCH + HANDHELD DIRECT REPAIR QA START -->
 ## First-launch tutorial and direct handheld repair gate
 
-- [ ] Clean tutorial state: white boot light appears inside glass; Main Menu never flashes first.
+- [ ] Clean tutorial state: black pixel choice reveals tutorial gameplay directly; no white boot light or Main Menu flash appears first.
 - [ ] Opening sequence: mount, scripted enemy arrival, guaranteed horse hit/dismount/retreat, one-hit enemy defeat, injured horse return and heal occur in order.
 - [ ] Every tutorial lesson waits for its correct action; early/repeated inputs cannot skip future steps.
 - [ ] Keyboard, gamepad, physical device, mouse and touch each complete the tutorial; prompt copy follows the last input source.
@@ -1016,3 +1016,15 @@ When activated, verify normal Exit preserves Continue, Abandon removes it, New G
 - [ ] Editor QA rules cannot self-trigger from their own string literals.
 - [ ] `NO_COLOR=1` remains readable.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
+## Tutorial contact, facing, traversal and ESC skip
+
+- [ ] A living enemy, jump root, active hazard, active gap and closed finish gate cannot be crossed by ordinary walking.
+- [ ] Dead or inactive enemies no longer block traversal.
+- [ ] Melee attacks behind the player or outside range do not damage.
+- [ ] Projectiles do not damage before reaching their visible endpoint and misses do not show hit feedback.
+- [ ] Left-facing and right-facing attacks travel and hit only in the facing direction.
+- [ ] The airborne-attack lesson advances only after a visible airborne hit on the forward target.
+- [ ] Wall-jump route is physically completed in order: approach right wall, jump left to platform, jump right to upper ground, continue right.
+- [ ] One normal `ESC` press during BBH intro or child approach skips to the exact final valid state; Enter, Space and controller confirm do not skip.
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->

@@ -18,7 +18,7 @@ Normal-run side effects: NONE
 
 ## Purpose
 
-A clean installation opens the existing physical handheld product shot, but the normal Main Menu is not shown inside the glass yet. A white boot light reveals a short, deterministic two-dimensional tutorial. Completion or confirmed abandonment permanently suppresses automatic replay and returns smoothly to the normal Main Menu inside the same handheld screen.
+A clean installation opens the existing physical handheld product shot, but the normal Main Menu is not shown inside the glass yet. The black pixel choice screen reveals a short, deterministic two-dimensional tutorial directly without a white boot light. Completion or confirmed abandonment permanently suppresses automatic replay and returns smoothly to the normal Main Menu inside the same handheld screen.
 
 The tutorial is intentionally not a real run. It does not create a procedural map, increment run counters, alter seeds, grant rewards, consume items, change meta progression, write gameplay statistics, or mutate the production horse/enemy state.
 
@@ -36,7 +36,7 @@ The tutorial is intentionally not a real run. It does not create a procedural ma
 ## Presentation flow
 
 1. Existing handheld, table, glass and physical controls appear normally.
-2. The screen content begins as a white boot light.
+2. The screen content begins on the black pixel choice screen and reveals tutorial gameplay directly without a white boot light.
 3. The light fades into a dedicated 2D tutorial scene contained entirely within the glass.
 4. Only one scripted lesson is active at a time.
 5. The regular Main Menu never appears underneath or between tutorial frames.
@@ -177,7 +177,7 @@ The following scenarios are mandatory and are also reproduced in the package ver
 
 ### Presentation and regression
 
-37. White boot light reveals tutorial content without a flash or black-frame regression.
+37. The black pixel choice screen reveals tutorial content directly without a white flash or legacy-frame regression.
 38. Main Menu content never appears underneath or before the tutorial.
 39. Completion-to-menu transition is continuous inside the same glass.
 40. Leave-to-menu transition is continuous inside the same glass.
@@ -310,3 +310,8 @@ The tutorial mirrors `BDPlayerCombat` instead of inventing a release-to-fire act
 
 No separate combat owner is introduced. The tutorial transaction layer presents and forwards completion to the existing tutorial actor/damage/learning-state owners.
 <!-- BND_FIRST_LAUNCH_TUTORIAL_MECHANICS_REPAIR_V108:END -->
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:BEGIN -->
+## Contact, facing and traversal teaching contract
+
+Tutorial attacks are owned by player facing and apply damage only at visible contact. The early traversal course teaches a grounded jump, an airborne forward attack, then a physical wall-jump sequence with the wall on the right, a raised platform on the left, and upper ground to the right above the wall. Ordinary walking cannot pass through active obstacles or living enemies.
+<!-- BND_TUTORIAL_CONTACT_DIRECTION_TRAVERSAL_SKIP_V1010:END -->

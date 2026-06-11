@@ -15,6 +15,8 @@ namespace BoredomAndDungeons
             WhiteBoot,
             Move,
             Jump,
+            JumpAttack,
+            WallJump,
             MountHorse,
             RideHorse,
             EnemyArrival,
@@ -275,7 +277,7 @@ namespace BoredomAndDungeons
                 -10f,
                 900f,
                 850f,
-                new Color(0.012f, 0.016f, 0.028f, 1f)
+                new Color(0.018f, 0.020f, 0.055f, 1f)
             );
             firstLaunchTutorialGameplayRoot = rootPanel.gameObject;
             AddOutline(
@@ -294,7 +296,7 @@ namespace BoredomAndDungeons
                 44f,
                 28,
                 TextAnchor.MiddleCenter,
-                new Color(0.90f, 0.96f, 1f, 1f),
+                new Color(1f, 0.78f, 0.30f, 1f),
                 FontStyle.Bold
             );
 
@@ -319,7 +321,7 @@ namespace BoredomAndDungeons
                 78f,
                 820f,
                 390f,
-                new Color(0.055f, 0.045f, 0.105f, 1f)
+                new Color(0.055f, 0.055f, 0.16f, 1f)
             );
             AddOutline(
                 firstLaunchTutorialWorldPanel.gameObject,
@@ -337,7 +339,7 @@ namespace BoredomAndDungeons
                 -154f,
                 820f,
                 82f,
-                new Color(0.075f, 0.20f, 0.16f, 1f)
+                new Color(0.035f, 0.13f, 0.14f, 1f)
             );
             CreatePanel(
                 firstLaunchTutorialWorldPanel.rectTransform,
@@ -346,7 +348,7 @@ namespace BoredomAndDungeons
                 -128f,
                 640f,
                 48f,
-                new Color(0.42f, 0.27f, 0.13f, 1f)
+                new Color(0.48f, 0.29f, 0.13f, 1f)
             );
 
             firstLaunchTutorialPlayer = CreateTutorialEntity(
@@ -582,18 +584,18 @@ namespace BoredomAndDungeons
 
             firstLaunchTutorialWhiteOverlay = CreatePanel(
                 pageRoot,
-                "Tutorial White Boot Light",
+                "Tutorial Dark Transition Overlay",
                 0f,
                 0f,
                 CanvasSize.x,
                 CanvasSize.y,
-                Color.white
+                new Color(0.003f, 0.006f, 0.014f, 1f)
             );
             firstLaunchTutorialWhiteOverlay.transform.SetAsLastSibling();
             firstLaunchTutorialWhiteOverlay.gameObject.SetActive(false);
 
             InitializeFirstLaunchTutorialFreePlayCourse();
-            SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.WhiteBoot);
+            SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.Move);
             SetTutorialExitTargetsActive(false);
             BuildFirstLaunchTutorialEntryChoice();
             SetFirstLaunchTutorialEntryChoiceActive(true);
@@ -876,11 +878,7 @@ namespace BoredomAndDungeons
                 if (firstLaunchTutorialGameplayRoot != null)
                     firstLaunchTutorialGameplayRoot.SetActive(true);
                 if (firstLaunchTutorialWhiteOverlay != null)
-                {
-                    firstLaunchTutorialWhiteOverlay.gameObject.SetActive(true);
-                    firstLaunchTutorialWhiteOverlay.color = Color.white;
-                    firstLaunchTutorialWhiteOverlay.transform.SetAsLastSibling();
-                }
+                    firstLaunchTutorialWhiteOverlay.gameObject.SetActive(false);
 
                 firstLaunchTutorialEntryPhase =
                     FirstLaunchTutorialEntryPhase.Playing;
@@ -1262,6 +1260,9 @@ namespace BoredomAndDungeons
                 firstLaunchTutorialWhiteOverlay.gameObject.SetActive(true);
                 firstLaunchTutorialWhiteOverlay.transform.SetAsLastSibling();
                 Color color = firstLaunchTutorialWhiteOverlay.color;
+                color.r = 0.003f;
+                color.g = 0.006f;
+                color.b = 0.014f;
                 color.a = progress;
                 firstLaunchTutorialWhiteOverlay.color = color;
             }
@@ -1576,6 +1577,8 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.WhiteBoot: return "WAKING THE HANDHELD...";
                 case FirstLaunchTutorialStep.Move: return "MOVE";
                 case FirstLaunchTutorialStep.Jump: return "JUMP THE ROOT";
+                case FirstLaunchTutorialStep.JumpAttack: return "ATTACK IN THE AIR";
+                case FirstLaunchTutorialStep.WallJump: return "WALL JUMP TO HIGH GROUND";
                 case FirstLaunchTutorialStep.MountHorse: return "RIDE";
                 case FirstLaunchTutorialStep.RideHorse: return "FEEL THE HORSE'S WEIGHT";
                 case FirstLaunchTutorialStep.EnemyArrival: return "AN AMBUSH";
@@ -1613,6 +1616,8 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.WhiteBoot: return "A short playable adventure is loading.";
                 case FirstLaunchTutorialStep.Move: return "Explore the clearing. The guide appears only when it matters.";
                 case FirstLaunchTutorialStep.Jump: return "Clear the obstacle and land safely.";
+                case FirstLaunchTutorialStep.JumpAttack: return "Jump, face the target and attack before landing.";
+                case FirstLaunchTutorialStep.WallJump: return "Jump into the wall, jump left to the platform, then jump right onto the ground above the wall.";
                 case FirstLaunchTutorialStep.MountHorse: return "Walk close, then use the active interaction binding.";
                 case FirstLaunchTutorialStep.RideHorse: return "The horse accelerates, turns wider and takes longer to stop.";
                 case FirstLaunchTutorialStep.EnemyArrival: return "Read the enemy before committing.";
@@ -1649,7 +1654,9 @@ namespace BoredomAndDungeons
             {
                 case FirstLaunchTutorialStep.Move:
                 case FirstLaunchTutorialStep.RideHorse: return "MOVE";
-                case FirstLaunchTutorialStep.Jump: return "JUMP";
+                case FirstLaunchTutorialStep.Jump:
+                case FirstLaunchTutorialStep.WallJump: return "JUMP";
+                case FirstLaunchTutorialStep.JumpAttack: return "ATTACK";
                 case FirstLaunchTutorialStep.MountHorse:
                 case FirstLaunchTutorialStep.RemountHorse:
                 case FirstLaunchTutorialStep.DismountHorse:

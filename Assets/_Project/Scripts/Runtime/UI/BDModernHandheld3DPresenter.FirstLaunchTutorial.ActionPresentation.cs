@@ -445,7 +445,8 @@ namespace BoredomAndDungeons
             target.x = Mathf.Clamp(
                 ResolveFirstLaunchTutorialCollisionX(
                     firstLaunchTutorialPlayerWorldPosition.x,
-                    target.x
+                    target.x,
+                    includeStaticObstacles: false
                 ),
                 TutorialWorldMinX,
                 TutorialWorldMaxX
@@ -477,7 +478,8 @@ namespace BoredomAndDungeons
                 0.36f,
                 advancesLesson,
                 firstLaunchTutorialPlayerWorldPosition,
-                firstLaunchTutorialEnemyWorldPosition
+                firstLaunchTutorialPlayerWorldPosition +
+                    direction * 92f
             );
             firstLaunchTutorialActionDirection = direction;
             PlayClick();
@@ -516,7 +518,8 @@ namespace BoredomAndDungeons
                 FindClosestLivingTutorialActor(560f);
             Vector2 target = actor != null
                 ? actor.Position
-                : new Vector2(TutorialGapX + 190f, TutorialGroundY);
+                : firstLaunchTutorialPlayerWorldPosition +
+                    ResolveFirstLaunchTutorialActionDirection() * 360f;
             BeginFirstLaunchTutorialActionPresentation(
                 FirstLaunchTutorialActionPresentationType.Grapple,
                 0.72f,
@@ -553,10 +556,11 @@ namespace BoredomAndDungeons
 
         private Vector2 ResolveFirstLaunchTutorialActionDirection()
         {
-            Vector2 direction = firstLaunchTutorialLastMoveDirection;
-            if (direction.sqrMagnitude < 0.001f)
-                direction = Vector2.right;
-            return direction.normalized;
+            float facing =
+                Mathf.Abs(firstLaunchTutorialLastMoveDirection.x) > 0.01f
+                    ? Mathf.Sign(firstLaunchTutorialLastMoveDirection.x)
+                    : 1f;
+            return new Vector2(facing, 0f);
         }
 
         private void ApplyFirstLaunchTutorialPlayerActionPose(
@@ -899,6 +903,9 @@ namespace BoredomAndDungeons
                     shake
                 );
             }
+
+            if (progress >= 0.66f)
+                ResolveFirstLaunchTutorialMeleeImpact();
         }
         private void UpdateFirstLaunchTutorialRangedAttackPresentation(
             float progress)
@@ -986,15 +993,14 @@ namespace BoredomAndDungeons
             );
 
             if (!firstLaunchTutorialRangedImpactResolved &&
-                progress >= 0.82f)
+                progress >= 1f)
             {
                 firstLaunchTutorialRangedImpactResolved = true;
                 ResolveFirstLaunchTutorialRangedProjectileImpact();
             }
 
-            if ((firstLaunchTutorialActionAdvancesLesson ||
-                 firstLaunchTutorialActionRangedCharged) &&
-                progress >= 0.78f)
+            if (firstLaunchTutorialPendingShotHitResolved &&
+                progress >= 1f)
             {
                 float hitPulse =
                     1f + Mathf.Sin((progress - 0.78f) * 16f) * 0.16f;
@@ -1112,6 +1118,9 @@ namespace BoredomAndDungeons
                     direction.x * 12f * squash
                 );
             }
+
+            if (progress >= 0.78f)
+                ResolveFirstLaunchTutorialMeleeImpact();
         }
         private void UpdateFirstLaunchTutorialSpinPresentation(
             float progress)
