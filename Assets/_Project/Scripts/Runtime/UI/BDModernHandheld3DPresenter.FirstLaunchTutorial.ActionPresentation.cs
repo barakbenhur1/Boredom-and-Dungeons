@@ -438,10 +438,11 @@ namespace BoredomAndDungeons
             if (direction.sqrMagnitude < 0.001f)
                 direction = Vector2.right;
             direction.Normalize();
-
-            Vector2 target =
-                firstLaunchTutorialPlayerWorldPosition +
-                direction * 138f;
+            Vector2 defaultTarget =
+                firstLaunchTutorialPlayerWorldPosition + direction * 138f;
+            Vector2 target = ResolveFirstLaunchTutorialDodgeTargetV101128(
+                defaultTarget
+            );
             target.x = Mathf.Clamp(
                 ResolveFirstLaunchTutorialCollisionX(
                     firstLaunchTutorialPlayerWorldPosition.x,
@@ -451,15 +452,12 @@ namespace BoredomAndDungeons
                 TutorialWorldMinX,
                 TutorialWorldMaxX
             );
-            target.y = Mathf.Clamp(
-                target.y,
-                TutorialWorldMinY,
-                TutorialWorldMaxY
-            );
-
+            target.y = Mathf.Clamp(target.y, TutorialWorldMinY, TutorialWorldMaxY);
+            // BD DODGE TRAVERSES THE OBSTACLE V10.11.28
             BeginFirstLaunchTutorialActionPresentation(
                 FirstLaunchTutorialActionPresentationType.Dodge,
-                0.28f,
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.Dodge
+                    ? 0.38f : 0.28f,
                 advancesLesson,
                 firstLaunchTutorialPlayerWorldPosition,
                 target
@@ -714,6 +712,7 @@ namespace BoredomAndDungeons
                 FirstLaunchTutorialActionPresentationType.None;
             firstLaunchTutorialActionAdvancesLesson = false;
             SetFirstLaunchTutorialActionEffectsVisible(false);
+            ResetFirstLaunchTutorialEnemyVisualPoses();
 
             switch (completedType)
             {

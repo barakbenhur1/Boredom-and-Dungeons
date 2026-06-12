@@ -6,7 +6,7 @@ namespace BoredomAndDungeons
     public sealed partial class BDModernHandheld3DPresenter
     {
         private const string ChildApproachDialogueLine =
-            "honey come here a second";
+            "Sweety, where are you?";
 
         private GameObject childApproachDialogueRoot;
         private CanvasGroup childApproachDialogueCanvasGroup;
@@ -88,7 +88,7 @@ namespace BoredomAndDungeons
             childApproachDialogueVisualRect.anchorMin = new Vector2(0f, 1f);
             childApproachDialogueVisualRect.anchorMax = new Vector2(0f, 1f);
             childApproachDialogueVisualRect.pivot = new Vector2(0f, 1f);
-            childApproachDialogueRestPosition = new Vector2(72f, -84f);
+            childApproachDialogueRestPosition = new Vector2(72f, -108f);
             childApproachDialogueVisualRect.anchoredPosition =
                 childApproachDialogueRestPosition;
             childApproachDialogueVisualRect.sizeDelta = new Vector2(650f, 164f);
@@ -136,8 +136,8 @@ namespace BoredomAndDungeons
             tailShadowRect.anchorMin = new Vector2(0f, 1f);
             tailShadowRect.anchorMax = new Vector2(0f, 1f);
             tailShadowRect.pivot = new Vector2(0.5f, 0.5f);
-            tailShadowRect.anchoredPosition = new Vector2(62f, -136f);
-            tailShadowRect.sizeDelta = new Vector2(34f, 34f);
+            tailShadowRect.anchoredPosition = new Vector2(-16f, -68f);
+            tailShadowRect.sizeDelta = new Vector2(40f, 40f);
             tailShadowRect.localRotation = Quaternion.Euler(0f, 0f, 45f);
             Image tailShadow = tailShadowObject.GetComponent<Image>();
             tailShadow.color = outline.effectColor;
@@ -156,15 +156,13 @@ namespace BoredomAndDungeons
             childApproachDialogueTailRect.anchorMax = new Vector2(0f, 1f);
             childApproachDialogueTailRect.pivot = new Vector2(0.5f, 0.5f);
             childApproachDialogueTailRect.anchoredPosition =
-                new Vector2(62f, -134f);
-            childApproachDialogueTailRect.sizeDelta = new Vector2(28f, 28f);
+                new Vector2(-14f, -66f);
+            childApproachDialogueTailRect.sizeDelta = new Vector2(34f, 34f);
             childApproachDialogueTailRect.localRotation =
                 Quaternion.Euler(0f, 0f, 45f);
             Image tail = tailObject.GetComponent<Image>();
             tail.color = panel.color;
             tail.raycastTarget = false;
-
-            panelObject.transform.SetAsLastSibling();
 
             GameObject seamObject = new GameObject(
                 "Mother Speech Bubble Tail Seam Cover",
@@ -177,11 +175,41 @@ namespace BoredomAndDungeons
             seamRect.anchorMin = new Vector2(0f, 1f);
             seamRect.anchorMax = new Vector2(0f, 1f);
             seamRect.pivot = new Vector2(0.5f, 0.5f);
-            seamRect.anchoredPosition = new Vector2(62f, -131f);
-            seamRect.sizeDelta = new Vector2(22f, 10f);
+            seamRect.anchoredPosition = new Vector2(3f, -66f);
+            seamRect.sizeDelta = new Vector2(18f, 30f);
             Image seam = seamObject.GetComponent<Image>();
             seam.color = panel.color;
             seam.raycastTarget = false;
+
+
+            GameObject farTailObject = new GameObject(
+                "Mother Tail Curve Far",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image)
+            );
+            farTailObject.transform.SetParent(visualObject.transform, false);
+            RectTransform farTailRect =
+                farTailObject.GetComponent<RectTransform>();
+            farTailRect.anchorMin = new Vector2(0f, 1f);
+            farTailRect.anchorMax = new Vector2(0f, 1f);
+            farTailRect.pivot = new Vector2(0.5f, 0.5f);
+            farTailRect.anchoredPosition = new Vector2(-42f, -66f);
+            farTailRect.sizeDelta = new Vector2(18f, 18f);
+            farTailRect.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            Image farTail = farTailObject.GetComponent<Image>();
+            farTail.color = panel.color;
+            farTail.raycastTarget = false;
+
+            // BD LEFT-POINTING MOTHER BUBBLE TAIL V10.11.30.19
+            // The pointer is a horizontal left-facing composition. Its shadow
+            // and outer diamonds stay behind the panel; only the seam cover is
+            // allowed above the panel to close the join cleanly.
+            tailShadowObject.transform.SetSiblingIndex(0);
+            farTailObject.transform.SetSiblingIndex(1);
+            tailObject.transform.SetSiblingIndex(2);
+            panelObject.transform.SetSiblingIndex(3);
+            seamObject.transform.SetSiblingIndex(4);
 
             GameObject textObject = new GameObject(
                 "Mother Speech Bubble Text",
@@ -304,7 +332,7 @@ namespace BoredomAndDungeons
             if (childApproachDialogueVoiceClip == null)
             {
                 childApproachDialogueVoiceClip =
-                    CreateChildApproachFemaleMurmurClip();
+                    CreateChildApproachMurmurClip();
             }
 
             childApproachDialogueAudioSource.Stop();
@@ -313,7 +341,7 @@ namespace BoredomAndDungeons
             childApproachDialogueAudioSource.Play();
         }
 
-        private static AudioClip CreateChildApproachFemaleMurmurClip()
+        private static AudioClip CreateChildApproachMurmurClip()
         {
             const int sampleRate = 44100;
             const float duration = 1.95f;

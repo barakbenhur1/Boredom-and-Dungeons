@@ -1,3 +1,316 @@
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
+## 2026-06-12 — Move-threshold QA contract realignment V10.11.30.20
+
+**Classification:** `CURRENT / QA-ONLY BLOCKER REPAIR IMPLEMENTED IN PATCH / UNITY RERUN REQUIRED`
+
+The post-V10.11.30.19 Unity report generated at `2026-06-12T18:27:10.9805520Z` reached compilation and `TEST EVERYTHING`, then blocked on two mutually contradictory legacy tokens in `BDTutorialOpeningPolishV1011QA`: the scanner still required the retired `12f` Move threshold and simultaneously forbade the active `118f` threshold. Runtime already contains the intended `118f` world-travel requirement from V10.11.30.19.
+
+V10.11.30.20 changes no Runtime, input, presentation, camera, dialogue, lesson ordering or progression behavior. It realigns the older scanner to require `firstLaunchTutorialTravelDistance >= 118f` and forbid `firstLaunchTutorialTravelDistance >= 12f`, matching the authoritative runtime-integrity QA owner.
+
+No `0/0/0` result is claimed yet. **Exact resume point:** install V10.11.30.20, let Unity recompile the Editor assembly, rerun `Boredom And Dungeons -> TEST EVERYTHING`, require `0 blockers / 0 warnings / 0 info`, then continue the complete V10.11.30.19 Play Mode matrix without reinstalling or changing Runtime.
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
+
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## 2026-06-12 — tutorial runtime integrity recovery V10.11.30.19
+
+**Classification:** `CURRENT / BLOCKING REGRESSION REPAIR IMPLEMENTED IN PATCH / UNITY VERIFICATION REQUIRED`
+
+The exact local V10.11.30 state bundle exposed seven connected regressions and this cumulative repair addresses them in the existing owners:
+
+- the opening Move lesson requires 118 world units of real travel, so a single tap cannot instantly finish it and trigger a screen change;
+- verified lesson completion explicitly releases the persistent-instruction latch before disabling the complete composed card, so an empty panel cannot be reactivated;
+- lesson-to-lesson changes use fade-in, a real fully opaque hold, then fade-out, and the next step/layout is applied only inside that hold, so screen changes cannot read as a checkpoint respawn;
+- the superseded station-travel presenter is disabled whenever the authoritative lesson-screen owner is active, preventing duplicate “NEW LESSON AREA” feedback or a second instruction gate;
+- enemies, projectiles, hazard transactions and death/respawn presentation from the completed lesson are suspended before travel and reset before the next screen is configured;
+- displayed bindings and real readers now share the canonical routes: WASD/arrows, Space, E, J/left mouse, K/right mouse, Q/hold Q, F hold, controller face/shoulder controls and physical handheld buttons;
+- holding Q is the ranged/charged transaction. Generic left mouse is no longer misclassified as a ranged hold;
+- the mother bubble remains at the approved lower position while its multi-part pointer is laid out horizontally to the left with deterministic sibling order;
+- the handheld screen RenderTexture is explicitly descriptor-created with no depth/stencil attachment and `RenderTextureMemoryless.None`; the screen camera requests no depth texture.
+
+The supplied pre-repair Unity report was green at `0 blockers / 0 warnings / 0 info`. That report predates this Runtime and QA change. No post-repair Unity compile, TEST EVERYTHING result, Metal warning result or Play Mode acceptance is claimed.
+
+**Exact resume point:** install V10.11.30.19 over the supplied local state, compile in Unity `6000.0.76f1`, run `Boredom And Dungeons -> TEST EVERYTHING` and require `0/0/0`, confirm neither memoryless-depth message appears, then complete one uninterrupted first-launch run from the mother bubble through persisted relic completion using keyboard/mouse and physical/controller controls.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_DIALOGUE_SCOPE_COMPILE_REPAIR_V1011315 -->
+## V10.11.30.15 — child-dialogue compile recovery
+
+- Restored `BDModernHandheld3DPresenter.ChildApproachDialogue.cs` from its tracked HEAD structure after the generated dialogue method escaped the presenter field scope.
+- Reapplied only the approved lower mother-bubble position (`72, -108`).
+- Added installer validation that the dialogue fields and `SetChildApproachDialogueImmediate` are inside the same `BDModernHandheld3DPresenter` partial class.
+- Preserved the tutorial-flow, Jump, child-camera and warning-source changes from V10.11.30.14.
+
+<!-- BND_TUTORIAL_FLOW_JUMP_CINEMATIC_V1011314 -->
+## V10.11.30.14 — tutorial flow, Jump and child-cinematic recovery
+
+- Lesson completion hides the complete instruction composition atomically: panel, shadow, progress, accent, text and binding cards.
+- A persistent navigation message remains outside the card until the next-screen transition begins.
+- The next lesson card is rebuilt only at transition midpoint, with no empty shell between lessons.
+- Jump input is read before generic action locks and is controlled only by its actual unlock, mounted state and screen-transition state.
+- The mother speech bubble is slightly lower.
+- The raised child POV remains fully applied during the walk and chair climb, then blends smoothly into the regular menu camera.
+
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:BEGIN -->
+## Final tutorial QA path alignment and ZIP cleanup V10.11.30.10
+
+- The final world-proof QA token now checks LessonScreens.cs, where the impact-owned lesson completion method actually lives.
+- No Runtime method was duplicated and no dead compatibility token was added to Gameplay.cs.
+- Tutorial delivery ZIPs are deleted on every installer exit, including failed installs; stale tutorial ZIPs in the same delivery folder are removed too.
+- Unity compile, TEST EVERYTHING 0/0/0 and the full manual tutorial pass remain required before Commit.
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:END -->
+
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:BEGIN -->
+## Tutorial QA semantic alignment and child-camera height V10.11.30.9
+
+- Nine obsolete string-token checks now validate the current lesson-screen, input-routing, world-proof damage, Dodge crossing and mounted-impact contracts.
+- No retired runtime behavior or dead compatibility strings were restored.
+- The child POV camera is raised by 0.16 local units through the authored approach/climb path, then blends smoothly to the unchanged regular menu camera.
+- Unity compile, TEST EVERYTHING 0/0/0 and manual presentation/gameplay verification remain required.
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:END -->
+
+<!-- BND_V1011307_CURRENT -->
+## V10.11.30.7 — lesson-screen import and compilation recovery
+
+- Repaired malformed Unity `.meta` files that caused the new lesson-screen
+  partial and its QA scanner to be ignored.
+- Restored the full lesson-screen contract to compilation: one mechanic lesson
+  per screen, current tutorial hidden immediately after world-proof completion,
+  and the next tutorial shown only after the next-screen transition.
+- Kept the Jump → Mount Horse → Ride Horse exception.
+- Restored static compatibility for the E / interact reader.
+- Integrated the retained unlock and impact-proof fields into the active
+  contracts instead of leaving dead assigned state.
+- Unity compilation, TEST EVERYTHING `0/0/0`, and the manual lesson-screen,
+  input and Parry run remain required before commit.
+
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
+## Tutorial lesson-screen repair V10.11.30.6
+
+- Every mechanic lesson now owns a separate screen. The only lesson exception is jump -> mount -> ride, which may continue on the jump screen.
+- Completing an objective hides that lesson instruction immediately and queues the next lesson without displaying it.
+- The next lesson is applied only after the player moves through the right-side screen exit and the dark screen transition completes.
+- Lesson targets default to the camera center unless the mechanic requires a paired or offset arrangement.
+- Left click/J = Light; hold = Spin after unlock. Right click/K = Heavy; hold = Grapple after unlock. Q = Ranged, E = Interact, F = Heal.
+- Parry uses timed Light or Heavy, the parry enemy is non-blocking, and actor scale is reset after action presentation.
+- Unity compile, TEST EVERYTHING 0/0/0 and one uninterrupted playthrough remain required.
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:END -->
+
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:BEGIN -->
+## V10.11.30.5 — full input restoration, mechanic availability and mounted-impact contact
+
+The previous V10.11.30.1 package incorrectly replaced WASD with arrow-only input and coupled mechanic execution to lesson progression. V10.11.30.5 restores WASD plus arrows, E, Q, mouse, controller and physical controls; keeps tap/hold Light/Spin and Heavy/Grapple available across the tutorial; and lets the current lesson decide only whether a valid action advances. Mounted Impact bypasses actor/static collision during the contact lesson and guarantees a visible fallback target rather than hard-locking behind an invisible wall. Unity compilation, TEST EVERYTHING and focused Play Mode verification remain required.
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:END -->
+
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:BEGIN -->
+## 2026-06-12 — Tutorial player canonical asset-name alignment V10.11.30.4
+
+**Classification:** `CURRENT / FOCUSED QA-RUNTIME CONTRACT ALIGNMENT / UNITY VERIFICATION REQUIRED`
+
+V10.11.30.3 restored the actual visible pixel-child player and named its idle
+asset `B&D Tutorial Player Simple Right Facing Idle`. Four maintained validators
+already used the canonical asset contract `B&D Tutorial Player Simple Right
+Facing Sprite`, producing four identical blockers despite the player renderer
+being present. V10.11.30.4 renames the real idle sprite asset to the canonical
+name and aligns the V10.11.30.3 focused validator. No gameplay, input, movement,
+damage, encounter, animation timing or rendering ownership changes.
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:END -->
+
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:BEGIN -->
+## 2026-06-12 — Tutorial player visibility runtime repair V10.11.30.3
+
+**Classification:** `CURRENT / RUNTIME REPAIR / UNITY VERIFICATION REQUIRED`
+
+The V10.11.30.1 simplification disabled every child under the tutorial-player source while the authoritative rendered sprite is itself the `Tutorial Player Pixel Visual` child. The source Image is intentionally disabled by the pixel-presentation owner, so assigning a replacement sprite to that source could never render. V10.11.30.3 binds the simple colored player to the existing pixel child, reactivates that child, preserves the established walk/action frame owner, keeps the parent transform responsible for facing, and does not restore the retired articulated model.
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:BEGIN -->
+## 2026-06-12 — Tutorial player QA contract realignment V10.11.30.2
+
+**Classification:** `CURRENT / QA-ONLY LOCAL PATCH / UNITY VERIFICATION REQUIRED`
+
+The V10.11.30.1 Runtime compiled, but TEST EVERYTHING reported seven blockers from older V10.11.11/V10.11.17 validators that still required the retired `82x118` player size, exact superseded palette literals and old player-sprite marker names. This repair changes no Runtime behavior. It preserves valid typography checks and realigns only the stale player-visual requirements to the current compact sprite contract: composite child pieces disabled, one simple side profile, positive X authored facing right, and existing runtime facing flips retained.
+
+A fresh Unity compile and TEST EVERYTHING `0/0/0` remain required; no pass is claimed by this package.
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## 2026-06-12 — Final tutorial input, target lethality and player readability V10.11.30.1
+
+**Classification:** `CURRENT / LOCAL PATCH READY / UNITY VERIFICATION REQUIRED`
+
+This focused cumulative repair preserves accepted tutorial/cinematic work and fixes the local malformed `RightArrowownArrow` compile regression without substring-based key rewriting. Tutorial navigation/movement use explicit Arrow-key branches while controller, physical-handheld, mouse and touch routes remain active. The first Light and Heavy lesson targets are re-synchronized with the registered `TutorialEnemyActor` and open the existing melee transaction; damage is applied only at the authored strike impact and lesson progression requires the confirmed hit. Spin requires one in-range enemy on each side and resolves both at the same impact. Dodge advances only after the player finishes on the opposite side of the obstacle. The articulated child overlay is disabled and the existing presentation owner renders a compact right-authored side-profile sprite that flips from movement direction.
+
+No Unity compilation, TEST EVERYTHING result or Play Mode acceptance is claimed by this package.
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+## V10.11.28 — atomic lesson death and colored tutorial text
+- Correct authored hits now kill and hide focused lesson targets at the impact frame, including the first quick-attack enemy.
+- Spin is all-or-nothing across one enemy in front and one behind; both die together or neither takes damage.
+- Dodge and environmental lessons complete from their world outcome, not button input alone.
+- Tutorial prompt/detail/progress/feedback and both binding cards use an explicit professional color hierarchy.
+- The articulated yellow-hair/red-shirt/blue-trousers player model is created and updated every tutorial frame.
+
+## Tutorial enemy lesson lethality — V10.11.26
+
+- Every focused non-boss tutorial target dies from the mechanic authored for its lesson.
+- Quick, air, heavy, spin, hazard, mounted shot, charged shot and mounted impact use the target's remaining lesson health on a confirmed authored hit.
+- The initial grapple connection deliberately preserves at least one health; the same pulled enemy must then be killed with an already unlocked attack.
+- Wrong mechanics remain usable but cannot damage that lesson's protected target.
+- Boss and combined-combat health tuning remains unchanged.
+
+<!-- BD ALL LESSON TARGETS LETHAL V10.11.26 -->
+
+# BD TUTORIAL LESSON ENTRY + DAMAGE OWNERSHIP V10.11.25
+
+- Every lesson instruction appears as soon as its step/room becomes active and remains until verified completion.
+- The taught mechanic is usable immediately; same-frame stale input is ignored, not time-locked.
+- Unlocked mechanics remain available, but only the current lesson mechanic can damage/kill lesson targets.
+- MountedImpact survives unrelated attacks and completes only from horse collision.
+- Grapple remains active after the pull and advances only after the pulled enemy is killed.
+- Opening runway, reveal _MainTex compatibility and depth-free UI screen RT are repaired.
+
+## BD V10.11.24 MOUNTED RANGED SEQUENCE AND NO MOUNTED DODGE
+- RangedAttack, Reload, ChargedShot and MountedImpact now use an order-independent two-confirmation barrier.
+- Ordinary and charged lessons advance only after both projectile impact and reload completion are confirmed.
+- Misses restore a deterministic retry state instead of latching the tutorial.
+- Dodge is disabled while mounted across keyboard, mouse, gamepad and physical controls.
+
+## BD V10.11.23 LESSON PERSISTENCE AND PROGRESSION GATE
+- Tutorial instructions now remain visible after introduction until the active lesson completes.
+- Forward traversal is clamped at the active lesson boundary; backtracking and movement inside the lesson remain available.
+- Existing keyboard, mouse, gamepad and physical-handheld input parity remains unchanged.
+
+## BD V10.11.22.2 QA CONTRACT RECONCILIATION
+- Restored the canonical 9.20–10.20 post-settle power-on timing while preserving the one-second true reveal.
+- Restored two simultaneous professional keyboard/mouse and physical-handheld binding cards.
+- Reconciled the validator after V10.11.22.1 rewrote both required and forbidden timing tokens.
+
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:BEGIN -->
+## 2026-06-12 — Complete tutorial input parity, professional bindings and true screen reveal V10.11.22
+
+**Classification:** `CURRENT / RUNTIME FIX / UNITY PLAY MODE AND VISUAL VERIFICATION REQUIRED`
+
+All tutorial lessons now share one contextual desktop-mouse dispatcher projected against the real 3D display. Keyboard, gamepad and physical handheld controls keep their existing bindings. Direct display mouse input supports movement direction, jump, interaction, ordinary attack, heavy attack, dodge double-click, parry, heal hold, spin hold, grapple hold, ranged fire, charged hold, combined combat and boss combat without leaking clicks outside the display.
+
+The tutorial binding card is rebuilt as one centered, bordered control panel with a distinct source label, inset key plate, restrained accent and safe responsive text sizing. It no longer presents two loose flat rectangles or allows labels to overlap controls.
+
+The handheld power-on duration is unchanged. Its start is moved to four hundredths of a second after camera settlement, and the existing decorative scanline is replaced by a real top-to-bottom screen mask: content is hidden below the moving frontier and becomes visible only after the line passes.
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:END -->
+
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:BEGIN -->
+## 2026-06-12 — Smooth opening melt and physical-screen mouse attack V10.11.21
+
+**Classification:** `CURRENT / RUNTIME FIX / UNITY VISUAL AND PLAY MODE VERIFICATION REQUIRED`
+
+The prior repair did not change the visible drip quality and the ordinary-attack lesson still ignored desktop left click. This focused pass changes only the melt mechanism inside the BBH opening screen: the completed frame is captured unchanged, then removed by one continuous GPU liquid frontier with broad rounded lobes, sub-pixel antialiasing, restrained refraction and downward motion while the existing room remains behind it. No BBH text, color, composition, camera, room, dialogue or tutorial content is redesigned by the drip change.
+
+Separately, tutorial left click is projected against the real 3D handheld display instead of comparing desktop coordinates with the off-screen RenderTexture Canvas. During `AttackEnemy`, one click on the physical display invokes the existing ordinary melee transaction before generic screen hit processing; damage and lesson progression still occur only at the existing visible impact point.
+
+Exact resume point: install V10.11.21, compile in Unity 6000.0.76f1, run `TEST EVERYTHING` at `0/0/0`, then replay the opening without skipping and verify the smooth downward melt. In the ordinary-attack lesson, click the physical screen and confirm exactly one attack and impact-timed progression. Continue the complete tutorial to verify every existing trigger remains intact before Commit and Push.
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:BEGIN -->
+## 2026-06-12 — Tutorial QA contract and world-mouse recovery V10.11.20.3
+
+**Classification:** `CURRENT / BLOCKING QA REPAIR / UNITY VERIFICATION REQUIRED`
+
+The supplied `TEST EVERYTHING` report contained four blockers and no warnings: the world-screen left-click contract, the indie keycap marker, the `PHYSICAL HANDHELD` marker, and the mount-handoff persistence marker were absent. This repair adds a direct world-viewport mouse transaction before handheld-screen hit handling, preserves locked abilities, keeps the MountHorse prompt present until the real mount animation completes, and restores the exact binding/mount contracts without replacing the existing tutorial implementation.
+
+The Unity AI Toolkit account timeout is external package noise and is not one of the four project blockers. Exact resume point: install V10.11.20.3, compile in Unity 6000.0.76f1, run `Boredom And Dungeons -> TEST EVERYTHING` at `0/0/0`, then verify left-click attack, Jump → MountHorse → RideHorse, bounded keycap art and the full tutorial trigger sequence before Commit and Push.
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:END -->
+
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:BEGIN -->
+## V10.11.18 — physical handheld binding contract aligned; Unity verification required
+
+The illustrated handheld binding presenter now owns the exact visible title `PHYSICAL HANDHELD`. This resolves the V10.11.17 automated blocker without removing the keycap/D-pad/button artwork. Unity compilation, TEST EVERYTHING and Play Mode visual acceptance are still required.
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## V10.11.17 — opening/tutorial recovery installed; Unity verification required
+
+The current integration repairs the BBH-owned liquid exit, removes the post-intro black/stripe re-arm, lets the mother bubble remain through the first child steps, makes `Jump -> MountHorse -> RideHorse` deterministic, and makes the blond-hair/red-shirt/blue-trousers player art the final renderer. Tutorial instructions now show a cyan desktop/controller keycap and a drawn physical handheld control at the same time. The supplied square artwork is installed as the application icon through Unity 6 `NamedBuildTarget` icon APIs.
+
+Do not mark this task done until Unity compiles cleanly, `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`, and the complete opening plus unskipped tutorial passes in Play Mode.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## 2026-06-11 — Intro drip contract and dual-binding QA repair V10.11.16
+
+**Classification:** `IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The child-approach scene is covered before the BBH drip, becomes visible behind the BBH artwork only while `BDBBHBootIntro.IsDripping` is true, and starts its own animation after the intro handoff. This restores ownership of the visible drip to the intro layer instead of leaking it into the first menu/camera frame.
+
+Tutorial lessons with controls show the active keyboard/controller route and the corresponding physical handheld control simultaneously. The divider is enabled only for actionable lessons.
+
+This package resolves the three automated blockers reported after V10.11.15. Unity compilation, `TEST EVERYTHING`, and visual Play Mode verification remain mandatory.
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:BEGIN -->
+## 2026-06-11 — V10.11.15 tutorial QA compilation hotfix
+
+**Classification:** `IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+Corrected the malformed multiline C# string introduced in `BDTutorialOpeningPolishV1011QA.cs` by encoding the intended line break as `\n` inside one valid string literal. Runtime tutorial behavior is unchanged. Unity compilation and `TEST EVERYTHING` must be rerun before acceptance.
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## 2026-06-11 — Tutorial drip, mount timing, attack input and dual bindings V10.11.14
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The BBH intro now owns the full-screen black layer and drip while the already-rendered kitchen scene remains visible behind it. The child-approach presenter no longer inserts a one-frame black scene fade when the intro releases control.
+
+The Mount Horse lesson is immediate after the successful first jump because the horse is already beside the landing position. It no longer adds a second travel gate that can make the player pass the horse before receiving the instruction.
+
+World-space left mouse attack input bypasses the physical-device pointer de-duplication path while clicks on the real X button remain single actions. Every instruction with bindings now shows the keyboard/controller route and the matching physical handheld control at the same time.
+
+Unity compile, `TEST EVERYTHING`, and a complete unskipped Play Mode run remain mandatory.
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## 2026-06-11 — Tutorial trigger, unlock, collision and opening cleanup V10.11.13
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This focused cumulative repair restores the child to the authored position immediately before the first obstacle and makes the Move lesson complete before contact, so Jump becomes available at the obstacle rather than after it. Tutorial abilities are now explicitly unlocked only when their own lesson begins; keyboard, gamepad and physical handheld inputs share the same gate.
+
+Instruction ownership is synchronized: travel-station state is evaluated before lesson visibility, every step change forces a fresh prompt lifecycle, and immediate lessons such as Jump and Attack Enemy are not hidden behind an additional travel gate. Living visible enemies now block horizontal movement until defeated.
+
+The standalone tutorial suppresses the full-game HUD, preventing the `TAB PET` card from appearing outside the handheld. The child reply bubble has been removed. The only opening line is `Sweety, where are you?`, spoken by the off-screen mother. The BBH drip now staggers from the center outward so no isolated line descends at the left edge before the room dialogue.
+
+Unity compile, `TEST EVERYTHING`, and a complete unskipped tutorial run remain mandatory.
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:BEGIN -->
+## 2026-06-11 — Tutorial QA contract alignment and mother dialogue correction V10.11.12
+
+**Classification:** `IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The mother dialogue line is now exactly `Sweety, where are you?`. The V10.11.11 child-approach timing contract and BBH drip rendering contract are aligned with the current runtime implementation so `TEST EVERYTHING` validates the implementation that is actually installed rather than obsolete pre-reply/pre-drip tokens.
+
+This hotfix changes no tutorial gameplay, combat, course geometry, camera path, audio timing, or menu behavior beyond the requested dialogue text. A fresh Unity compile and `Boredom And Dungeons -> TEST EVERYTHING` remain mandatory.
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## 2026-06-11 — Final tutorial production course, boss and cinematic handoff V10.11.11
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This cumulative pass converts the first-launch tutorial into a forward-only production course. Every major mechanic is taught at a separate station with real travel between lessons; future enemies and geometry are authored ahead of the camera, spawning is forced outside the visible viewport, persistent obstacles never pop out while visible, and the camera/progression floor prevents returning to an earlier screen after the course advances.
+
+The tutorial child now visibly uses blond/yellow hair, a red shirt and blue trousers. Ground attacks present a straight horizontal sword strike; airborne attacks present an overhead-to-downward sword swing; the existing contact transaction remains authoritative so damage occurs only when the visible strike reaches a valid target. Player and enemies receive a short, readable hit flicker/jitter.
+
+The mini-boss fires three projectiles in a vertical fan at range. At close range it alternates a clearly model-telegraphed slash and jump-slam, with explicit map-space hit-range markers. Ordinary boss shots and hold-to-charge auto-fire both use the real projectile impact transaction.
+
+The opening now uses a quick BBH drip reveal. The mother bubble points with a curved tail to an off-screen speaker; after it exits, a matching child bubble above the child's implied position says `רק שניה` with a nonverbal child voice. Walking begins only after the reply exits. Keyboard, mouse and other virtual input pulse the corresponding physical handheld control.
+
+At completion the player lifts the green relic over their head. Magical light originates at the held relic, expands across the handheld screen, and fades to reveal the main menu without a visible cut.
+
+A fresh Unity `6000.0.76f1` compile, `TEST EVERYTHING`, and full real-time tutorial completion remain mandatory.
+
+The full-game horse acceleration/braking/weight pass has been captured as a queued follow-up task. It does not interrupt or expand the current tutorial release gate.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## 2026-06-11 — Tutorial player, typography, boss shooting, collectible and environment interaction V10.11.10
 
@@ -2356,3 +2669,24 @@ V10.7.1 accepted the authoritative tutorial source but its post-write validator 
 
 A narrowly scoped first-launch cinematic polish pass is implemented locally and awaits Unity Play Mode acceptance. The handheld power-on now begins at `9.20s` and completes at `10.20s`, reducing the settled-seat delay without changing the camera path, dialogue duration, tutorial state, or final menu pose. The dialogue bubble rests at `(72, -84)` and its `28x28` rotated tail is centered at `(62, -20)`, keeping the tail tangent to the bubble instead of overlapping it.
 <!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->
+
+<!-- BD_TUTORIAL_FINAL_INPUT_TARGET_PLAYER_V101130 -->
+- Tutorial focused targets are synchronized, and quick/heavy handlers now start the missing real melee damage transactions. Letter action bindings were removed in favor of arrows, Space, mouse and physical controls.
+- The tutorial player was simplified and faces the current obstacle/target.
+
+<!-- BND_V1011308_CURRENT -->
+## V10.11.30.8 — lesson-screen QA result API repair
+
+- Replaced unsupported `BDOneClickQAResult.AddBlocker(...)` calls in the
+  V10.11.30.6 lesson-screen scanner with the repository-standard
+  `BDOneClickQAFinding` insertion path.
+- Runtime lesson screens, input mappings, objective proof and Parry behavior
+  remain unchanged from V10.11.30.6/V10.11.30.7.
+- Unity compilation, TEST EVERYTHING `0/0/0`, and the manual tutorial run are
+  still required before Commit and Push.
+
+## V10.11.30.16 — dialogue and lesson-complete contract repair
+<!-- BND_TUTORIAL_CONTRACT_REPAIR_V1011316 -->
+The active mother dialogue, curved far-tail element, audio method, and lesson-complete travel message are restored in their real Runtime owners. Unity validation is required.
+<!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
+- The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.

@@ -1037,7 +1037,8 @@ namespace BoredomAndDungeons
         private void UpdateFirstLaunchTutorialInstructionPresentation()
         {
             if (firstLaunchTutorialInstructionRect == null ||
-                firstLaunchTutorialInstructionCanvasGroup == null)
+                firstLaunchTutorialInstructionCanvasGroup == null ||
+                !firstLaunchTutorialInstructionRect.gameObject.activeInHierarchy)
             {
                 return;
             }

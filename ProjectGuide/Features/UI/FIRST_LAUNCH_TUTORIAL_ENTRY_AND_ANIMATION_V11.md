@@ -1,3 +1,43 @@
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## V10.11.30.19 current mother-bubble pointer contract
+
+The accepted lowered mother-bubble root remains `(72,-108)` at the authored reference resolution. The visible pointer is horizontal and exits the body to the left: shadow, far tip and fill sit behind the rounded body, while one body-colored seam cover closes the joint above it. All pieces remain children of the single animated visual root, so enter, hold, exit and skip cannot separate the pointer from the body. Older downward-tail coordinates in historical sections are superseded by this current contract.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## V10.11.17 BBH-to-room handoff
+
+The BBH overlay is the sole owner of the exit effect. It moves its already-rendered boot surface downward through clipped liquid strips while the static kitchen start frame is visible behind it. `PrimeIntroToMainMenuFirstFrame` never re-arms a dark room fade, so the child-camera animation starts without a stripe or black flash.
+
+The mother bubble remains fully held until 4.18 seconds and fades by 4.78 seconds. Walking begins at 3.84 seconds, so the dialogue remains for the first steps and then exits naturally during movement.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## V10.11.16 corrected drip ownership
+
+Before the BBH drip begins, the child-approach scene remains covered. While `BDBBHBootIntro.IsDripping` is true, the scene is visible behind the dissolving BBH artwork. After the drip completes, the child cinematic begins without replaying the dissolve or introducing a separate scene-fade stripe.
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## V10.11.14 BBH drip ownership
+
+The kitchen/child-approach scene is rendered behind the BBH overlay before the drip starts. The BBH overlay owns the black hold and the entire drip. The child-approach scene fade stays transparent throughout this handoff, preventing a one-frame black glitch when the camera animation begins.
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## V10.11.13 opening cleanup
+
+After BBH, the intro surface drips from the center outward without a lone left-edge strip. Only the off-screen mother bubble is shown. Its exact text is `Sweety, where are you?`; its curved tail still points left outside the frame. After it exits, the child begins walking immediately.
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 opening dialogue and drip addendum
+
+The BBH intro does not fade away. During a fast `0.34s` exit it drips downward in vertical strips while the already-prepared room is visible behind it. Room/dialogue timing starts only after the drip completes.
+
+Mother dialogue uses the established bubble style, with a curved segmented tail leaving the left screen edge to establish an off-screen speaker. After it fully exits, an identical child bubble appears logically above the child's implied camera position, displays `רק שניה`, and plays a short nonverbal child voice. The child begins walking only after the reply exits.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_WALLJUMP_BOSS_TYPOGRAPHY_DIALOGUE_V10118:BEGIN -->
 ## V10.11.8 dialogue bubble visual composition
 

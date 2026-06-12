@@ -493,6 +493,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDBBHCinematicIntroQA.Scan(result);
             BDFirstLaunchTutorialQA.Scan(result);
             BDTutorialOpeningPolishV1011QA.Scan(result);
+            BDTutorialFinalInputCombatPlayerV1011301QA.Scan(result);
+            BDTutorialLegacyPlayerContractRealignmentV1011302QA.Scan(result);
+            BDTutorialPlayerVisibilityRuntimeV1011303QA.Scan(result);
+            BDTutorialPlayerCanonicalAssetNameV1011304QA.Scan(result);
+            BDTutorialInputMechanicsMountedImpactV1011305QA.Scan(result);
+            BDTutorialLessonScreensInputParryV1011306QA.Scan(result);
+            BDTutorialRuntimeIntegrityV1011319QA.Scan(result);
             BDChildApproachCinematicQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);

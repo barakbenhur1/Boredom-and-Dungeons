@@ -19,6 +19,12 @@ namespace BoredomAndDungeons
                 if (BDBBHBootIntro.IsPlaying)
                     return false;
 
+                // The modern handheld owns the whole presentation during the
+                // first-launch tutorial and menus. Gameplay HUD prompts, including
+                // the horse Pet card, must never leak outside the device.
+                if (BDModernHandheld3DPresenter.SuppressLegacyMenu)
+                    return false;
+
                 return true;
             }
         }

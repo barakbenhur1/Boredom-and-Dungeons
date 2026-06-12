@@ -1,3 +1,72 @@
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## V10.11.30.19 tutorial transition, input and screen-render ownership
+
+`FirstLaunchTutorial.LessonScreens.cs` remains the screen-transition owner. A verified objective queues pending state, explicitly releases the Gameplay-owned instruction latch, suspends the completed screen's transient world, and applies the next step only during the fully opaque transition hold. It does not create a respawn transaction or a second lesson state machine. The superseded FinalProductionPass station-travel gate exits immediately whenever this owner is initialized, so it cannot hide the new card or emit duplicate arrival feedback.
+
+`FirstLaunchTutorial.Gameplay.cs` remains movement/lesson coordination and persistent-instruction ownership. `FirstLaunchTutorial.cs` remains canonical input reading and displayed-binding resolution. The same mapping is used by both; mouse screen-surface actions are distinguished from physical-button targets, and held input is routed by semantic action rather than by a generic mouse button.
+
+`ChildApproachDialogue.cs` remains the only owner of mother-bubble geometry and animation. `BDModernHandheld3DPresenter.BuildScreenRenderer` remains the only owner of the cached screen RenderTexture; it uses an explicit depthless, non-memoryless descriptor and a screen camera with `DepthTextureMode.None`. No parallel UI, input, camera, damage or render owner is added.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_V1011307_ARCH -->
+## Lesson-screen partial ownership
+
+`BDModernHandheld3DPresenter.FirstLaunchTutorial.LessonScreens.cs` owns the
+screen queue, transition state, mechanic-unlock rank bridge, centered lesson
+layout, objective-proof helpers, unified Parry resolution and visual-pose
+reset. Its Unity `.meta` is a required source identity and must remain valid
+YAML with a stable 32-character GUID.
+
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
+## Lesson-screen state authority
+
+`FirstLaunchTutorialStep` remains the active lesson. `firstLaunchTutorialPendingScreenStep` is separate pending state and cannot become active until screen travel and transition. Objective completion owns instruction removal. Screen entry owns mechanic unlock, target layout and instruction presentation. Input readers own canonical device bindings; lesson progression never remaps a physical input.
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:END -->
+
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:BEGIN -->
+## Tutorial input versus lesson authority
+
+Input availability and mechanic execution belong to the existing presenter/action owners. `FirstLaunchTutorialStep` controls instruction, scripted setup and progression evidence; it must not disable supported controls. Tap/hold arbitration is shared across every step. Mounted Impact explicitly opts out of collision only for its contact window, while ordinary collision ownership remains unchanged elsewhere.
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:END -->
+
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:BEGIN -->
+## V10.11.30.4 tutorial-player asset identity
+
+The authoritative visible tutorial player remains the pixel child owned by
+`BindFirstLaunchTutorialSimplePlayerVisual`. Its idle asset has the canonical
+name `B&D Tutorial Player Simple Right Facing Sprite`; walk and action variants
+remain separate assets. QA validates the actual asset identity rather than a
+dead compatibility token.
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:END -->
+
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:BEGIN -->
+## Tutorial player visual ownership V10.11.30.3
+
+`ApplyFirstLaunchTutorialPixelSprite` keeps the entity source Image disabled and creates the visible pixel child. Player polish must therefore supply sprites to `firstLaunchTutorialPlayerPixelImage` and update the existing `TutorialPixelWalkVisual` entry. The source entity remains the position/facing/lifecycle owner; the child Image remains the sole rendered visual owner.
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:BEGIN -->
+## V10.11.30.2 automated-contract ownership
+
+The player presentation remains owned by `FirstLaunchTutorial.V1011Polish`; this repair adds no Runtime owner and changes no gameplay state. Older focused validators are maintained in place by replacing only superseded player-visual literals with semantic tokens from the current owner. `BDTutorialLegacyPlayerContractRealignmentV1011302QA` guards against reintroducing those obsolete validation contracts and is wired into the existing TEST EVERYTHING entry point.
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## V10.11.30.1 ownership clarification
+
+`FirstLaunchTutorial.Gameplay` remains the input/lesson coordinator, `FirstLaunchTutorial.V108Repair` remains the visible-impact transaction owner, `FirstLaunchTutorial.ProductionCourse` remains the authoritative actor health/death owner, and `FirstLaunchTutorial.V1011Polish` remains the player/text presentation owner. The repair adds no parallel input, damage, actor or model state machine. Entry/movement key handling uses whole-method explicit branches so one key name can never corrupt another through substring replacement.
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 ownership
+
+- Existing `Gameplay.cs`, `ProductionCourse.cs`, projectile transactions and input readers remain authoritative.
+- `FinalProductionPass.cs` is a presentation/integration partial: forward station gate, persistent geometry presentation, boss fan/telegraphs, hit reactions, physical-control mirroring and relic completion overlay. It does not create a parallel save, damage or input system.
+- `ChildApproachDialogue.cs` owns both speaker bubbles and generated nonverbal clips.
+- `BDBBHBootIntro` owns the fast drip mask; the existing presenter remains the next scene behind it.
+- `V1011Polish.cs` owns all tutorial text styling and generated player/collectible art.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## V10.11.10 ownership
 

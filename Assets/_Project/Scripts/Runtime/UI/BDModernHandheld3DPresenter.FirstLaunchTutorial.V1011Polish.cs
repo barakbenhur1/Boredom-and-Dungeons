@@ -13,6 +13,11 @@ namespace BoredomAndDungeons
         private Image firstLaunchTutorialPlayerVisualOwner;
         private Image firstLaunchTutorialCollectibleVisualOwner;
         private Sprite firstLaunchTutorialPolishedPlayerSprite;
+
+        private Sprite firstLaunchTutorialSimplePlayerWalkASprite;
+        private Sprite firstLaunchTutorialSimplePlayerWalkBSprite;
+        private Sprite firstLaunchTutorialSimplePlayerActionASprite;
+        private Sprite firstLaunchTutorialSimplePlayerActionBSprite;
         private Sprite firstLaunchTutorialPolishedCollectibleSprite;
 
         private void UpdateFirstLaunchTutorialV1011Polish()
@@ -34,8 +39,8 @@ namespace BoredomAndDungeons
             {
                 Vector2 size = firstLaunchTutorialInstructionRect.sizeDelta;
                 firstLaunchTutorialInstructionRect.sizeDelta = new Vector2(
-                    Mathf.Clamp(Mathf.Max(820f, size.x), 820f, 860f),
-                    Mathf.Clamp(Mathf.Max(280f, size.y), 280f, 304f)
+                    Mathf.Clamp(Mathf.Max(872f, size.x), 872f, 916f),
+                    Mathf.Clamp(Mathf.Max(320f, size.y), 320f, 348f)
                 );
             }
 
@@ -49,66 +54,66 @@ namespace BoredomAndDungeons
             );
 
             ConfigureFirstLaunchTutorialText(
-                firstLaunchTutorialPrompt, 54, 42, 54, 2.8f, 0.90f,
+                firstLaunchTutorialPrompt, 62, 48, 62, 2.8f, 0.90f,
                 Color.white, accent, secondary, new Vector2(3f, -3f)
             );
             ConfigureFirstLaunchTutorialText(
-                firstLaunchTutorialDetail, 30, 24, 30, 1.25f, 0.42f,
+                firstLaunchTutorialDetail, 34, 27, 34, 1.25f, 0.42f,
                 new Color(0.90f, 0.96f, 1f, 1f),
                 Color.Lerp(Color.white, accent, 0.56f),
                 secondary, new Vector2(2f, -2f)
             );
             ConfigureFirstLaunchTutorialText(
-                firstLaunchTutorialProgress, 24, 20, 24, 0.72f, 0.24f,
+                firstLaunchTutorialProgress, 27, 22, 27, 0.72f, 0.24f,
                 accent, Color.white, secondary, new Vector2(2f, -2f)
             );
             ConfigureFirstLaunchTutorialText(
-                firstLaunchTutorialFeedback, 27, 22, 27, 1.45f, 0.52f,
+                firstLaunchTutorialFeedback, 31, 25, 31, 1.45f, 0.52f,
                 new Color(1f, 0.92f, 0.46f, 1f),
                 accent, secondary, new Vector2(2f, -2f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialKeyboardBindingTitle,
-                19, 16, 19, 0.64f, 0.20f,
+                22, 18, 22, 0.64f, 0.20f,
                 Color.Lerp(Color.white, accent, 0.58f),
                 accent, secondary, new Vector2(1f, -1f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialHandheldBindingTitle,
-                19, 16, 19, 0.64f, 0.20f,
+                22, 18, 22, 0.64f, 0.20f,
                 Color.Lerp(Color.white, secondary, 0.52f),
                 secondary, accent, new Vector2(1f, -1f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialKeyboardBinding,
-                36, 28, 36, 1.10f, 0.36f,
+                40, 31, 40, 1.10f, 0.36f,
                 Color.white, accent, secondary, new Vector2(2f, -2f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialHandheldBinding,
-                36, 28, 36, 1.10f, 0.36f,
+                40, 31, 40, 1.10f, 0.36f,
                 Color.white, secondary, accent, new Vector2(2f, -2f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialBindingDivider,
-                22, 18, 22, 0.54f, 0.18f,
+                25, 20, 25, 0.54f, 0.18f,
                 accent, secondary, Color.white, new Vector2(1f, -1f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialHealthText,
-                22, 18, 22, 0.46f, 0.14f,
+                25, 20, 25, 0.46f, 0.14f,
                 new Color(1f, 0.42f, 0.52f, 1f),
                 Color.white, accent, new Vector2(1f, -1f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialAmmoText,
-                22, 18, 22, 0.46f, 0.14f,
+                25, 20, 25, 0.46f, 0.14f,
                 new Color(0.42f, 0.88f, 1f, 1f),
                 Color.white, secondary, new Vector2(1f, -1f)
             );
             ConfigureFirstLaunchTutorialText(
                 firstLaunchTutorialBossHealthText,
-                22, 18, 22, 0.52f, 0.16f,
+                25, 20, 25, 0.52f, 0.16f,
                 new Color(1f, 0.34f, 0.42f, 1f),
                 Color.white, accent, new Vector2(1f, -1f)
             );
@@ -211,67 +216,267 @@ namespace BoredomAndDungeons
                 return;
 
             if (firstLaunchTutorialPlayerVisualOwner !=
-                    firstLaunchTutorialPlayer ||
-                firstLaunchTutorialPolishedPlayerSprite == null)
+                    firstLaunchTutorialPlayer)
             {
                 firstLaunchTutorialPlayerVisualOwner =
                     firstLaunchTutorialPlayer;
-                firstLaunchTutorialPolishedPlayerSprite =
-                    CreateFirstLaunchTutorialPolishedPlayerSprite();
             }
 
-            firstLaunchTutorialPlayer.sprite =
-                firstLaunchTutorialPolishedPlayerSprite;
-            firstLaunchTutorialPlayer.color = Color.white;
-            firstLaunchTutorialPlayer.preserveAspect = true;
+            EnsureFirstLaunchTutorialSimplePlayerSprites();
+            BindFirstLaunchTutorialSimplePlayerVisual();
         }
 
         private Sprite CreateFirstLaunchTutorialPolishedPlayerSprite()
         {
-            const int width = 24;
-            const int height = 32;
+            return CreateFirstLaunchTutorialSimplePlayerSprite(
+                "B&D Tutorial Player Simple Right Facing Sprite",
+                0
+            );
+        }
+
+        private void EnsureFirstLaunchTutorialSimplePlayerSprites()
+        {
+            if (firstLaunchTutorialPolishedPlayerSprite == null)
+            {
+                firstLaunchTutorialPolishedPlayerSprite =
+                    CreateFirstLaunchTutorialPolishedPlayerSprite();
+            }
+            if (firstLaunchTutorialSimplePlayerWalkASprite == null)
+            {
+                firstLaunchTutorialSimplePlayerWalkASprite =
+                    CreateFirstLaunchTutorialSimplePlayerSprite(
+                        "B&D Tutorial Player Simple Right Facing Walk A",
+                        1
+                    );
+            }
+            if (firstLaunchTutorialSimplePlayerWalkBSprite == null)
+            {
+                firstLaunchTutorialSimplePlayerWalkBSprite =
+                    CreateFirstLaunchTutorialSimplePlayerSprite(
+                        "B&D Tutorial Player Simple Right Facing Walk B",
+                        2
+                    );
+            }
+            if (firstLaunchTutorialSimplePlayerActionASprite == null)
+            {
+                firstLaunchTutorialSimplePlayerActionASprite =
+                    CreateFirstLaunchTutorialSimplePlayerSprite(
+                        "B&D Tutorial Player Simple Right Facing Action A",
+                        3
+                    );
+            }
+            if (firstLaunchTutorialSimplePlayerActionBSprite == null)
+            {
+                firstLaunchTutorialSimplePlayerActionBSprite =
+                    CreateFirstLaunchTutorialSimplePlayerSprite(
+                        "B&D Tutorial Player Simple Right Facing Action B",
+                        4
+                    );
+            }
+        }
+
+        private void BindFirstLaunchTutorialSimplePlayerVisual()
+        {
+            if (firstLaunchTutorialPlayer == null)
+                return;
+
+            if (firstLaunchTutorialPlayerPixelVisual == null ||
+                firstLaunchTutorialPlayerPixelImage == null)
+            {
+                Transform child = firstLaunchTutorialPlayer.rectTransform.Find(
+                    "Tutorial Player Pixel Visual"
+                );
+                if (child != null)
+                {
+                    firstLaunchTutorialPlayerPixelVisual =
+                        child as RectTransform;
+                    firstLaunchTutorialPlayerPixelImage =
+                        child.GetComponent<Image>();
+                }
+            }
+
+            if (firstLaunchTutorialPlayerPixelVisual == null ||
+                firstLaunchTutorialPlayerPixelImage == null)
+            {
+                return;
+            }
+
+            // ApplyFirstLaunchTutorialPixelSprite intentionally disables the
+            // source Image and gives visual ownership to this child Image.
+            firstLaunchTutorialPlayer.enabled = false;
+            firstLaunchTutorialPlayer.color = Color.white;
+            firstLaunchTutorialPlayerPixelVisual.gameObject.SetActive(true);
+            firstLaunchTutorialPlayerPixelVisual.SetAsLastSibling();
+            firstLaunchTutorialPlayerPixelVisual.sizeDelta =
+                new Vector2(64f, 92f);
+            firstLaunchTutorialPlayerPixelImage.enabled = true;
+            firstLaunchTutorialPlayerPixelImage.type = Image.Type.Simple;
+            firstLaunchTutorialPlayerPixelImage.preserveAspect = true;
+            firstLaunchTutorialPlayerPixelImage.color = Color.white;
+
+            for (int index = 0;
+                 index < firstLaunchTutorialWalkVisuals.Count;
+                 index++)
+            {
+                TutorialPixelWalkVisual entry =
+                    firstLaunchTutorialWalkVisuals[index];
+                if (!entry.IsPlayer ||
+                    entry.Source != firstLaunchTutorialPlayer)
+                {
+                    continue;
+                }
+
+                entry.Visual = firstLaunchTutorialPlayerPixelImage;
+                entry.Idle = firstLaunchTutorialPolishedPlayerSprite;
+                entry.StepA = firstLaunchTutorialSimplePlayerWalkASprite;
+                entry.StepB = firstLaunchTutorialSimplePlayerWalkBSprite;
+                entry.ActionA = firstLaunchTutorialSimplePlayerActionASprite;
+                entry.ActionB = firstLaunchTutorialSimplePlayerActionBSprite;
+            }
+
+            int frame = Mathf.FloorToInt(Time.unscaledTime * 4f);
+            bool acting = IsFirstLaunchTutorialPlayerVisualActing();
+            bool walking = firstLaunchTutorialMovementActive &&
+                !firstLaunchTutorialMounted;
+            firstLaunchTutorialPlayerPixelImage.sprite = acting
+                ? (frame % 2 == 0
+                    ? firstLaunchTutorialSimplePlayerActionASprite
+                    : firstLaunchTutorialSimplePlayerActionBSprite)
+                : walking
+                    ? (frame % 2 == 0
+                        ? firstLaunchTutorialSimplePlayerWalkASprite
+                        : firstLaunchTutorialSimplePlayerWalkBSprite)
+                    : firstLaunchTutorialPolishedPlayerSprite;
+        }
+
+        private Sprite CreateFirstLaunchTutorialSimplePlayerSprite(
+            string spriteName,
+            int pose)
+        {
+            const int width = 18;
+            const int height = 26;
             Texture2D texture = new Texture2D(
                 width,
                 height,
                 TextureFormat.RGBA32,
                 false
             );
-            texture.name = "B&D Tutorial Player Modern Pixel Sprite";
+            texture.name = spriteName + " Texture";
             texture.filterMode = FilterMode.Point;
             texture.wrapMode = TextureWrapMode.Clamp;
             Color[] pixels = new Color[width * height];
             for (int index = 0; index < pixels.Length; index++)
                 pixels[index] = Color.clear;
 
-            Color outline = new Color(0.035f, 0.045f, 0.08f, 1f);
-            Color skin = new Color(0.92f, 0.67f, 0.47f, 1f);
-            Color skinLight = new Color(1f, 0.79f, 0.58f, 1f);
-            Color hair = new Color(0.96f, 0.76f, 0.18f, 1f);
-            Color hairLight = new Color(1f, 0.90f, 0.38f, 1f);
-            Color shirt = new Color(0.82f, 0.10f, 0.14f, 1f);
-            Color shirtLight = new Color(1f, 0.22f, 0.20f, 1f);
-            Color pants = new Color(0.08f, 0.28f, 0.72f, 1f);
-            Color pantsLight = new Color(0.16f, 0.48f, 0.94f, 1f);
-            Color shoe = new Color(0.08f, 0.07f, 0.09f, 1f);
+            Color outline = new Color(0.025f, 0.035f, 0.07f, 1f);
+            Color skin = new Color(0.97f, 0.72f, 0.50f, 1f);
+            Color hair = new Color(1f, 0.78f, 0.10f, 1f);
+            Color hairLight = new Color(1f, 0.92f, 0.34f, 1f);
+            Color shirt = new Color(0.92f, 0.08f, 0.12f, 1f);
+            Color shirtLight = new Color(1f, 0.24f, 0.20f, 1f);
+            Color pants = new Color(0.06f, 0.28f, 0.88f, 1f);
+            Color pantsLight = new Color(0.16f, 0.52f, 1f, 1f);
+            Color shoe = new Color(0.06f, 0.05f, 0.08f, 1f);
 
-            FillFirstLaunchTutorialPolishRect(pixels, width, 6, 1, 6, 3, shoe);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 13, 1, 6, 3, shoe);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 7, 4, 5, 8, pants);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 13, 4, 5, 8, pants);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 8, 8, 3, 4, pantsLight);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 5, 11, 14, 10, outline);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 6, 12, 12, 9, shirt);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 7, 17, 10, 3, shirtLight);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 3, 13, 3, 7, skin);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 18, 13, 3, 7, skin);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 8, 20, 10, 9, outline);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 9, 21, 8, 7, skin);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 10, 25, 7, 3, skinLight);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 7, 27, 11, 4, hair);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 8, 29, 9, 2, hairLight);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 7, 24, 3, 5, hair);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 16, 24, 2, 2, outline);
-            FillFirstLaunchTutorialPolishRect(pixels, width, 18, 21, 2, 3, skin);
+            int leftLegX = pose == 1 ? 3 : pose == 2 ? 6 : 4;
+            int rightLegX = pose == 1 ? 11 : pose == 2 ? 9 : 10;
+            int leftFootX = pose == 1 ? 1 : pose == 2 ? 5 : 3;
+            int rightFootX = pose == 1 ? 11 : pose == 2 ? 9 : 10;
+
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, leftFootX, 1, 5, 3, shoe
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, rightFootX, 1, 5, 3, shoe
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, leftLegX, 4, 3, 7, pants
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, rightLegX, 4, 3, 7, pants
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, leftLegX + 1, 7, 2, 3, pantsLight
+            );
+
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 4, 10, 10, 8, outline
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 5, 11, 8, 7, shirt
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 6, 15, 7, 2, shirtLight
+            );
+
+            if (pose == 1)
+            {
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 2, 11, 2, 5, skin
+                );
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 14, 14, 2, 5, skin
+                );
+            }
+            else if (pose == 2)
+            {
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 2, 14, 2, 5, skin
+                );
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 14, 11, 2, 5, skin
+                );
+            }
+            else if (pose == 3)
+            {
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 1, 15, 4, 2, skin
+                );
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 13, 13, 3, 2, skin
+                );
+            }
+            else if (pose == 4)
+            {
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 3, 11, 2, 5, skin
+                );
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 13, 14, 5, 2, skin
+                );
+            }
+            else
+            {
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 2, 12, 2, 6, skin
+                );
+                FillFirstLaunchTutorialPolishRect(
+                    pixels, width, 14, 12, 2, 6, skin
+                );
+            }
+
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 6, 18, 8, 7, outline
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 7, 19, 7, 5, skin
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 6, 23, 8, 3, hair
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 7, 24, 7, 2, hairLight
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 6, 21, 2, 3, hair
+            );
+            // Positive X is authored facing right: eye and nose are on the right.
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 12, 21, 1, 1, outline
+            );
+            FillFirstLaunchTutorialPolishRect(
+                pixels, width, 14, 19, 2, 2, skin
+            );
 
             texture.SetPixels(pixels);
             texture.Apply(false, false);
@@ -279,9 +484,11 @@ namespace BoredomAndDungeons
                 texture,
                 new Rect(0f, 0f, width, height),
                 new Vector2(0.5f, 0.5f),
-                1f
+                1f,
+                0u,
+                SpriteMeshType.FullRect
             );
-            sprite.name = "B&D Tutorial Player Modern Pixel Sprite";
+            sprite.name = spriteName;
             firstLaunchTutorialPixelTextures.Add(texture);
             firstLaunchTutorialPixelSprites.Add(sprite);
             return sprite;

@@ -125,8 +125,12 @@ namespace BoredomAndDungeons
 
             RestoreStaticIntroScenePose();
             SetChildApproachScreenOff();
-            SetChildApproachSceneFadeImmediate(1f);
-            ResetChildApproachDialogueForPlayback();
+            // BD INTRO DRIP UNDERLAY HANDOFF V10.11.17
+            // The BBH overlay is already fully opaque before its liquid exit.
+            // Keep the static room visible behind it for the entire handoff so
+            // the intro strips reveal the room directly and no dark fade can be
+            // re-armed when the BBH component disables itself.
+            SetChildApproachSceneFadeImmediate(0f);
             ApplyChildApproachCameraPose(0f);
         }
 
@@ -154,7 +158,7 @@ namespace BoredomAndDungeons
                 elapsed / IntroMainMenuTotalSeconds
             );
 
-            UpdateChildApproachSceneFade(elapsed);
+            SetChildApproachSceneFadeImmediate(0f);
             UpdateChildApproachDialogue(elapsed);
             ApplyChildApproachCameraPose(progress);
             UpdateChildApproachScreenPower(progress);

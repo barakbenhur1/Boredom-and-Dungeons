@@ -20,15 +20,17 @@ namespace BoredomAndDungeons
         private const float ChildApproachSceneFadeEndsAtSeconds = 1.20f;
         private const float ChildApproachDialogueEnterStartsAtSeconds = 1.55f;
         private const float ChildApproachDialogueEnterEndsAtSeconds = 1.90f;
-        private const float ChildApproachDialogueHoldEndsAtSeconds = 3.35f;
-        private const float ChildApproachDialogueExitEndsAtSeconds = 3.70f;
-        private const float ChildApproachWalkStartsAtSeconds = 3.82f;
+        private const float ChildApproachDialogueHoldEndsAtSeconds = 4.18f;
+        private const float ChildApproachDialogueExitEndsAtSeconds = 4.78f;
+        // BD MOTHER BUBBLE OVERLAPS FIRST CHILD STEPS V10.11.17
+        private const float ChildApproachWalkStartsAtSeconds = 3.84f;
         private const float ChildApproachWalkEndsAtSeconds = 6.72f;
         private const float ChildApproachClimbStartsAtSeconds = 6.94f;
         private const float ChildApproachSeatReachSeconds = 8.24f;
         private const float ChildApproachCameraSettleSeconds = 9.02f;
         private const float ChildApproachPowerOnStartsAtSeconds = 9.20f;
         private const float ChildApproachPowerOnEndsAtSeconds = 10.20f;
+        private const float ChildApproachCameraHeightOffset = 0.24f;
 
         // Authored around the V10.9.26 chair: well behind it and clearly
         // offset to the left, while preserving the established child POV
@@ -337,6 +339,19 @@ namespace BoredomAndDungeons
                 finalRotationBlend = 1f;
                 lensBlend = 1f;
             }
+
+            // Preserve the higher child POV at full strength throughout the
+            // complete walk and chair climb. Only the final settle dissolves
+            // the offset into the unchanged regular-menu camera.
+            float childCameraHeightBlend = 1f - SmoothestStep01(
+                Mathf.InverseLerp(
+                    ChildApproachSeatReachSeconds,
+                    ChildApproachCameraSettleSeconds,
+                    seconds
+                )
+            );
+            cameraPosition.y +=
+                ChildApproachCameraHeightOffset * childCameraHeightBlend;
 
             // The authored path clears the chair front, rises above the seat,
             // then leans over the table. Keep a hard floor safety margin too.
@@ -689,33 +704,124 @@ namespace BoredomAndDungeons
             if (screenTransitionRoot != null)
                 screenTransitionRoot.gameObject.SetActive(false);
         }
+        // BD TRUE SCREEN POWER REVEAL V10.11.22
+        private Image childApproachPowerRevealOverlayV101122;
+        private Material childApproachPowerRevealMaterialV101122;
 
-        private void ApplyChildApproachContentReveal(float reveal)
+        private void EnsureChildApproachPowerRevealV101122()
         {
-            if (pageCanvasGroup == null)
+            if (childApproachPowerRevealOverlayV101122 != null ||
+                screenCanvasRoot == null)
+            {
                 return;
+            }
 
-            CaptureChildApproachDisplayState();
-            float t = Mathf.Clamp01(reveal);
-            pageCanvasGroup.alpha = t;
+            GameObject overlayObject = new GameObject(
+                "Handheld True Power Reveal V10.11.22",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image)
+            );
+            overlayObject.transform.SetParent(
+                screenCanvasRoot.transform,
+                worldPositionStays: false
+            );
 
-            if (!childApproachContentTransformCaptured)
+            RectTransform rect =
+                overlayObject.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localScale = Vector3.one;
+
+            childApproachPowerRevealOverlayV101122 =
+                overlayObject.GetComponent<Image>();
+            childApproachPowerRevealOverlayV101122.raycastTarget = false;
+            childApproachPowerRevealOverlayV101122.color = Color.white;
+
+            Shader shader = Shader.Find(
+                "Hidden/BoredomAndDungeons/HandheldScreenPowerReveal"
+            );
+            if (shader == null)
+            {
+                childApproachPowerRevealOverlayV101122.color = Color.black;
                 return;
+            }
 
-            Vector3 hiddenPosition =
-                childApproachContentRestLocalPosition +
-                new Vector3(0f, -22f, 0f);
-            pageCanvasGroup.transform.localPosition = Vector3.Lerp(
-                hiddenPosition,
-                childApproachContentRestLocalPosition,
-                t
+            childApproachPowerRevealMaterialV101122 = new Material(shader)
+            {
+                name = "BD Handheld True Screen Reveal V10.11.22"
+            };
+            generatedMaterials.Add(
+                childApproachPowerRevealMaterialV101122
             );
-            pageCanvasGroup.transform.localScale = Vector3.Lerp(
-                childApproachContentRestLocalScale * 0.988f,
-                childApproachContentRestLocalScale,
-                t
+            childApproachPowerRevealMaterialV101122.SetFloat(
+                "_EdgeWidth",
+                0.016f
             );
+            childApproachPowerRevealMaterialV101122.SetFloat(
+                "_GlowStrength",
+                0.92f
+            );
+            childApproachPowerRevealOverlayV101122.material =
+                childApproachPowerRevealMaterialV101122;
         }
+
+        private void ApplyChildApproachContentReveal(float t)
+        {
+            float progress = SmoothestStep01(Mathf.Clamp01(t));
+
+            if (pageCanvasGroup != null)
+            {
+                if (!childApproachContentTransformCaptured)
+                {
+                    childApproachContentTransformCaptured = true;
+                    childApproachContentRestLocalPosition =
+                        pageCanvasGroup.transform.localPosition;
+                    childApproachContentRestLocalScale =
+                        pageCanvasGroup.transform.localScale;
+                }
+
+                // Content is fully rendered behind a real moving mask. It is not
+                // exposed early and then decorated with a scanline afterward.
+                pageCanvasGroup.alpha = 1f;
+                pageCanvasGroup.transform.localPosition =
+                    childApproachContentRestLocalPosition;
+                pageCanvasGroup.transform.localScale =
+                    childApproachContentRestLocalScale;
+            }
+
+            EnsureChildApproachPowerRevealV101122();
+            if (childApproachPowerRevealOverlayV101122 != null)
+            {
+                bool revealing = progress < 0.999f;
+                childApproachPowerRevealOverlayV101122.gameObject.SetActive(
+                    revealing
+                );
+                if (revealing)
+                {
+                    childApproachPowerRevealOverlayV101122.transform
+                        .SetAsLastSibling();
+                }
+            }
+
+            if (childApproachPowerRevealMaterialV101122 != null)
+            {
+                childApproachPowerRevealMaterialV101122.SetFloat(
+                    "_Progress",
+                    progress
+                );
+            }
+
+            // The old scanline was decorative and appeared over already-visible
+            // content. The reveal shader owns the moving frontier instead.
+            if (screenScanlineRoot != null)
+            {
+                screenScanlineRoot.gameObject.SetActive(progress >= 0.999f);
+            }
+        }
+
 
         private void ApplyChildApproachDisplayPower(float power)
         {

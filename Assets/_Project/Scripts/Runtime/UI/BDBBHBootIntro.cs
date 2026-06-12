@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 #if ENABLE_INPUT_SYSTEM
@@ -28,7 +29,7 @@ namespace BoredomAndDungeons
         private const float GapAfterLetter = 0.12f;
         private const float CircleGrowthDuration = 0.58f;
         private const float CircleFullHoldDuration = 0.50f;
-        private const float FadeOutDuration = 0.18f;
+        private const float FadeOutDuration = 0.62f;
 
         [Header("Composition")]
         [SerializeField, Range(0.50f, 1.20f)]
@@ -62,10 +63,28 @@ namespace BoredomAndDungeons
         private Texture2D bootScanlineTexture;
         private Texture2D bootVignetteTexture;
 
+
+        // BD SMOOTH CONTINUOUS DRIP V10.11.21
+        // This state affects only the final BBH-screen melt. It does not alter
+        // logo text, colors, composition, camera staging or the scene behind it.
+        private const float SmoothDripCaptureLeadSecondsV101121 = 0.08f;
+        private const float SmoothDripDurationV101121 = 1.38f;
+        private bool smoothDripCaptureRequestedV101121;
+        private bool smoothDripCaptureReadyV101121;
+        private bool smoothDripReleasedTransitionV101121;
+        private float smoothDripStartedAtV101121;
+        private Texture2D smoothDripCaptureV101121;
+        private Material smoothDripMaterialV101121;
+
         public static bool IsPlaying => currentlyPlaying;
         public static bool HasPlayedThisSession => playedThisApplicationSession;
         public static bool HasPendingIntroToMainMenuTransition =>
             introToMainMenuTransitionRequested;
+        public static bool IsDripping =>
+            activeInstance != null &&
+            activeInstance.active &&
+            activeInstance.renderClockStarted &&
+            activeInstance.Elapsed >= FadeStartTime;
 
         public static bool TryConsumeSkipToFinalStateRequest()
         {
@@ -136,6 +155,7 @@ namespace BoredomAndDungeons
 
         private void OnDestroy()
         {
+            DisposeSmoothDripResourcesV101121();
             if (activeInstance == this)
                 activeInstance = null;
 
@@ -148,7 +168,6 @@ namespace BoredomAndDungeons
             DestroyTexture(ref bootVignetteTexture);
             letterStyle = null;
         }
-
         private void Update()
         {
             if (active && ReadEscapePressed())
@@ -158,11 +177,27 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            if (!active || !renderClockStarted || Elapsed < TotalDuration)
+            if (!active || !renderClockStarted)
                 return;
 
-            CompleteIntro();
+            if (!smoothDripCaptureRequestedV101121 &&
+                Elapsed >= FadeStartTime - SmoothDripCaptureLeadSecondsV101121)
+            {
+                smoothDripCaptureRequestedV101121 = true;
+                StartCoroutine(CaptureSmoothDripFrameV101121());
+                return;
+            }
+
+            if (!smoothDripCaptureReadyV101121)
+                return;
+
+            if (Time.realtimeSinceStartup - smoothDripStartedAtV101121 >=
+                SmoothDripDurationV101121)
+            {
+                CompleteIntro();
+            }
         }
+
 
         private static bool ReadEscapePressed()
         {
@@ -205,7 +240,9 @@ namespace BoredomAndDungeons
             active = false;
             currentlyPlaying = false;
             playedThisApplicationSession = true;
-            introToMainMenuTransitionRequested = true;
+            if (!smoothDripReleasedTransitionV101121)
+                introToMainMenuTransitionRequested = true;
+            DisposeSmoothDripResourcesV101121();
             enabled = false;
 
             Cursor.visible = true;
@@ -218,6 +255,20 @@ namespace BoredomAndDungeons
                 return;
 
             EnsureResources();
+
+
+            if (smoothDripCaptureReadyV101121)
+            {
+                DrawSmoothDripFrameV101121();
+                if (Event.current != null &&
+                    (Event.current.isKey ||
+                     Event.current.isMouse ||
+                     Event.current.type == EventType.ScrollWheel))
+                {
+                    Event.current.Use();
+                }
+                return;
+            }
 
             // Start the visible timeline on the first actual repaint, not in
             // Awake. Scene loading can take longer than InitialBlackHold and
@@ -237,16 +288,18 @@ namespace BoredomAndDungeons
             GUI.depth = -10000;
             GUI.matrix = Matrix4x4.identity;
 
-            float globalAlpha = ResolveGlobalAlpha();
-            GUI.color = new Color(0f, 0f, 0f, globalAlpha);
-            GUI.DrawTexture(
-                new Rect(0f, 0f, Screen.width, Screen.height),
-                solidTexture
-            );
-
-            DrawProfessionalBootSurface(globalAlpha);
-            DrawComposition(globalAlpha);
-            DrawProfessionalBootGlass(globalAlpha);
+            if (Elapsed < FadeStartTime)
+            {
+                DrawBootLayer(1f);
+            }
+            else
+            {
+                float dripProgress = Mathf.Clamp01(
+                    (Elapsed - FadeStartTime) /
+                    Mathf.Max(0.01f, FadeOutDuration)
+                );
+                DrawDrippingBootLayer(dripProgress);
+            }
 
             if (Event.current != null &&
                 (Event.current.isKey ||
@@ -259,6 +312,66 @@ namespace BoredomAndDungeons
             GUI.color = previousColor;
             GUI.matrix = previousMatrix;
             GUI.depth = previousDepth;
+        }
+
+        private const int DripStripCount = 32;
+
+        private void DrawBootLayer(float alpha)
+        {
+            Color previous = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, alpha);
+            GUI.DrawTexture(
+                new Rect(0f, 0f, Screen.width, Screen.height),
+                solidTexture
+            );
+            DrawProfessionalBootSurface(alpha);
+            DrawComposition(alpha);
+            DrawProfessionalBootGlass(alpha);
+            GUI.color = previous;
+        }
+
+        private void DrawDrippingBootLayer(float progress)
+        {
+            // BD INTRO TRUE DRIP V10.11.17
+            // Draw the BBH surface once per clipped strip. Nested GUI groups
+            // keep every strip aligned to the original full-screen artwork and
+            // move only that intro artwork down, never the room/camera layer.
+            float safeProgress = Mathf.Clamp01(progress);
+            float stripWidth = Screen.width / (float)DripStripCount;
+            Color previousColor = GUI.color;
+
+            for (int index = 0; index < DripStripCount; index++)
+            {
+                float normalizedCenter =
+                    (index + 0.5f) / DripStripCount;
+                float centerDistance =
+                    Mathf.Abs(normalizedCenter - 0.5f) * 2f;
+                float organicWave =
+                    0.5f + 0.5f * Mathf.Sin((index + 1) * 2.399f);
+                float delay =
+                    centerDistance * 0.085f + organicWave * 0.030f;
+                float local = Mathf.Clamp01(
+                    (safeProgress - delay) /
+                    Mathf.Max(0.01f, 1f - delay)
+                );
+                float eased = local * local * (3f - 2f * local);
+                float stretch =
+                    Mathf.Sin(local * Mathf.PI) *
+                    Mathf.Lerp(8f, 36f, organicWave);
+                float offsetY =
+                    eased * (Screen.height + 190f) + stretch;
+                float x = Mathf.Floor(index * stripWidth) - 1f;
+                float nextX = Mathf.Ceil((index + 1) * stripWidth) + 1f;
+                float width = Mathf.Max(2f, nextX - x);
+
+                GUI.BeginGroup(new Rect(x, 0f, width, Screen.height));
+                GUI.BeginGroup(new Rect(-x, offsetY, Screen.width, Screen.height));
+                DrawBootLayer(1f);
+                GUI.EndGroup();
+                GUI.EndGroup();
+            }
+
+            GUI.color = previousColor;
         }
 
         // BD PROFESSIONAL BBH BOOT SURFACE V23R19Q
@@ -1246,6 +1359,102 @@ namespace BoredomAndDungeons
             GUI.color = previousColor;
             GUI.matrix = previousMatrix;
         }
+        private IEnumerator CaptureSmoothDripFrameV101121()
+        {
+            yield return new WaitForEndOfFrame();
+
+            if (!active)
+                yield break;
+
+            Texture2D captured = ScreenCapture.CaptureScreenshotAsTexture();
+            if (captured == null)
+            {
+                smoothDripCaptureRequestedV101121 = false;
+                yield break;
+            }
+
+            DisposeSmoothDripResourcesV101121();
+            smoothDripCaptureV101121 = captured;
+            smoothDripCaptureV101121.name = "BBH Smooth Drip Capture V10.11.21";
+            smoothDripCaptureV101121.wrapMode = TextureWrapMode.Clamp;
+            smoothDripCaptureV101121.filterMode = FilterMode.Bilinear;
+
+            Shader shader = Resources.Load<Shader>(
+                "Shaders/BDBBHSmoothDrip"
+            );
+            if (shader == null)
+            {
+                shader = Shader.Find(
+                    "Hidden/BoredomAndDungeons/BBHSmoothDrip"
+                );
+            }
+            if (shader == null)
+            {
+                Debug.LogError(
+                    "B&D smooth drip shader is missing; intro completion was " +
+                    "kept safe without changing the BBH screen."
+                );
+                Destroy(smoothDripCaptureV101121);
+                smoothDripCaptureV101121 = null;
+                smoothDripCaptureRequestedV101121 = false;
+                CompleteIntro();
+                yield break;
+            }
+
+            smoothDripMaterialV101121 = new Material(shader)
+            {
+                name = "BBH Smooth Continuous Drip V10.11.21",
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            smoothDripMaterialV101121.SetTexture(
+                "_MainTex",
+                smoothDripCaptureV101121
+            );
+            smoothDripMaterialV101121.SetFloat("_EdgeSoftness", 0.0075f);
+
+            smoothDripStartedAtV101121 = Time.realtimeSinceStartup;
+            smoothDripCaptureReadyV101121 = true;
+            smoothDripReleasedTransitionV101121 = true;
+            currentlyPlaying = false;
+            introToMainMenuTransitionRequested = true;
+        }
+
+        private void DrawSmoothDripFrameV101121()
+        {
+            if (smoothDripCaptureV101121 == null ||
+                smoothDripMaterialV101121 == null)
+            {
+                return;
+            }
+
+            float progress = Mathf.Clamp01(
+                (Time.realtimeSinceStartup - smoothDripStartedAtV101121) /
+                SmoothDripDurationV101121
+            );
+            smoothDripMaterialV101121.SetFloat("_Progress", progress);
+
+            Graphics.DrawTexture(
+                new Rect(0f, 0f, Screen.width, Screen.height),
+                smoothDripCaptureV101121,
+                smoothDripMaterialV101121
+            );
+        }
+
+        private void DisposeSmoothDripResourcesV101121()
+        {
+            if (smoothDripMaterialV101121 != null)
+            {
+                Destroy(smoothDripMaterialV101121);
+                smoothDripMaterialV101121 = null;
+            }
+            if (smoothDripCaptureV101121 != null)
+            {
+                Destroy(smoothDripCaptureV101121);
+                smoothDripCaptureV101121 = null;
+            }
+            smoothDripCaptureReadyV101121 = false;
+        }
+
 
         private float ResolveGlobalAlpha()
         {

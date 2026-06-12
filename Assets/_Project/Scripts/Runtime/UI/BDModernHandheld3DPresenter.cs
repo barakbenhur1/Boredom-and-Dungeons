@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -900,12 +901,25 @@ namespace BoredomAndDungeons
 
         private void BuildScreenRenderer()
         {
-            screenRenderTexture = new RenderTexture(
-                960,
-                1080,
-                16,
-                RenderTextureFormat.ARGB32
-            );
+            RenderTextureDescriptor screenDescriptor =
+                new RenderTextureDescriptor(
+                    960,
+                    1080,
+                    RenderTextureFormat.ARGB32,
+                    0
+                );
+            // BD EXPLICIT NON-MEMORYLESS DEPTHLESS SCREEN RT V10.11.30.19
+            screenDescriptor.depthStencilFormat = GraphicsFormat.None;
+            screenDescriptor.memoryless = RenderTextureMemoryless.None;
+            screenDescriptor.msaaSamples = 1;
+            screenDescriptor.bindMS = false;
+            screenDescriptor.useMipMap = false;
+            screenDescriptor.autoGenerateMips = false;
+            screenDescriptor.enableRandomWrite = false;
+            screenDescriptor.sRGB =
+                QualitySettings.activeColorSpace == ColorSpace.Linear;
+
+            screenRenderTexture = new RenderTexture(screenDescriptor);
             screenRenderTexture.name =
                 "BD Modern Handheld Screen RT";
             screenRenderTexture.useMipMap = false;
@@ -937,6 +951,7 @@ namespace BoredomAndDungeons
             screenCamera.farClipPlane = 30f;
             screenCamera.allowHDR = false;
             screenCamera.allowMSAA = false;
+            screenCamera.depthTextureMode = DepthTextureMode.None;
             screenCamera.depth = 80f;
 
             screenCanvasRoot = new GameObject(
@@ -3718,6 +3733,17 @@ namespace BoredomAndDungeons
         {
             if (target == null)
                 return;
+
+            // BD SCREEN ITEM MIRRORS PHYSICAL CONFIRM V10.11.11
+            // Clicking an on-screen option is the virtual equivalent of
+            // pressing the handheld's physical select/confirm control.
+            if (target.Action ==
+                BDModernHandheldControlTarget.ControlAction.ScreenItem)
+            {
+                PulsePersistentControl(
+                    BDModernHandheldControlTarget.ControlAction.Confirm
+                );
+            }
 
             if (HandleFirstLaunchTutorialControl(target))
                 return;

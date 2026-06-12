@@ -1,3 +1,9 @@
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 opening child reply
+
+The child reply `רק שניה` uses the same established non-lexical voice language as the mother line, but shorter, lighter and higher in pitch. It must not sound like synthesized spoken words and must finish before walking begins.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_OPENING_POLISH_V10113:BEGIN -->
 ## V10.11.3 authored mother-call prototype cue
 

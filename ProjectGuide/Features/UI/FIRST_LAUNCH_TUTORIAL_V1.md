@@ -1,3 +1,66 @@
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## V10.11.30.19 authoritative lesson-screen and input contract
+
+Every mechanic lesson begins on a new screen and displays its populated instruction only after that screen becomes active. Jump -> Mount -> Ride is the sole mechanic exception. Objective completion hides the complete current instruction composition, freezes the completed lesson's transient hazards/actors/projectiles, and leaves only the external move-right message. The next step and layout are applied during a fully opaque screen-transition hold; this handoff is not a death, checkpoint restore or respawn.
+
+Canonical desktop controls are: WASD/arrows Move; Space Jump; E Interact; J/left mouse Light; K/right mouse Heavy; Q/hold Q Ranged/Charged; hold F Heal; double-tap A/D or left/right Dodge; hold J/left mouse Spin; hold K/right mouse Grapple. Controller and physical handheld cards present their matching semantic controls at the same time. A lesson completes only from its authored world result, never merely from button input.
+
+The mother bubble stays at the approved lower position and points left. The project-owned handheld screen render target carries color only and explicitly requests no depth/stencil or memoryless attachment.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## V10.11.30.1 final blocking invariants
+
+- Keyboard navigation and movement use explicit Arrow keys; mouse, controller and physical-handheld actions remain simultaneous and non-duplicating.
+- Light and Heavy lesson completion is owned by a registered living actor and confirmed visible melee impact, never by hiding an Image at animation completion.
+- Spin is atomic across the required front/back pair; Dodge is proven by crossing the obstacle.
+- The tutorial child is a compact readable side-profile sprite authored facing positive X and flipped only by the existing facing owner.
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## V10.11.17 early-course and binding contract
+
+The opening course begins with the player in front of the obstacle. Abilities remain locked until their own lesson. Clearing the root during `Jump` normalizes the player to `TutorialHorseStartX - 64f`, enters `MountHorse`, and keeps that instruction visible until the interaction succeeds; mounting enters `RideHorse` immediately.
+
+Every actionable instruction simultaneously presents the active keyboard/mouse or controller route and an illustrated physical handheld control. `JumpAttack` shows B + X, movement/dodge show the D-pad, and hold actions include a HOLD label. The final visible player art is blond hair, red shirt, and blue trousers rather than the generic entity tint.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## V10.11.16 binding presentation contract
+
+Every actionable tutorial lesson presents two simultaneous routes: the current keyboard/controller binding and the matching physical handheld button. Input-source changes may update the left card but may not hide the physical-handheld card.
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## V10.11.14 input and lesson-order contract
+
+Mount Horse is an immediate post-jump lesson, not a travel-gated lesson. The player lands beside the already-present horse and receives the interaction instruction there.
+
+Tutorial attack input distinguishes world-space mouse clicks from clicks on physical handheld controls so the pointer system cannot consume a legitimate light attack. Binding information always teaches both the active desktop/controller route and the physical handheld equivalent.
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## V10.11.13 trigger and unlock contract
+
+The player begins at `x = -820`, directly before the authored first obstacle. The Move lesson completes after a short 12-unit run-up, enabling Jump before obstacle contact. Every active ability is locked until its lesson begins and all input routes use the same unlock state.
+
+Travel-station gating is resolved before instruction visibility. Each step transition resets and restarts the instruction lifecycle; Jump and Attack Enemy are immediate lessons and are never given a second travel gate. Visible living enemies are solid horizontal blockers.
+
+The modern handheld suppresses all full-game HUD while it owns first-launch presentation. Opening dialogue contains the mother only, with exact text `Sweety, where are you?`; no child bubble or voice remains.
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 production-course contract
+
+The tutorial is a continuous forward course: teach one major mechanic, travel to the next station, then teach the next mechanic. Course geometry is persistent and authored ahead of the camera. Actors are spawned outside the visible viewport. The camera and progression floor are monotonic, so a completed screen cannot be revisited.
+
+Boss range behavior is a three-projectile vertical fan. Close behavior alternates a model-telegraphed straight slash and a jump-slam whose floor radius is visibly marked. All damage is impact-owned. Player/enemy damage feedback is a short model flicker/jitter.
+
+The player palette is fixed to blond/yellow hair, red shirt and blue trousers. Ground sword presentation is horizontal; airborne sword presentation is overhead-to-downward.
+
+Completion is contact collection followed by an authored sequence: lift relic overhead, originate magical light at the relic, expand to full screen, reveal main menu as the light fades.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## V10.11.10 player, text, combat and completion invariants
 
@@ -118,13 +181,14 @@ The tutorial does not create a second global input system. It is an explicit scr
 | Tutorial action | Physical handheld | Keyboard | Gamepad |
 |---|---|---|---|
 | Move | D-Pad | WASD / arrows | bound movement control |
-| Interact / confirm | SELECT | E (Enter/Space also accepted for menu confirmation) | bound Interact / Confirm control |
-| Light attack / spin hold | X | Left Mouse or J | bound Light Attack control |
-| Heal horse | A | hold F | bound Horse Heal control |
-| Dodge | B | Space | bound Dodge control |
-| Heavy attack | Y | Right Mouse or K | bound Heavy Attack control |
-| Parry | Y | Q at impact | bound Parry control |
-| Grapple | Y | hold Right Mouse or K | bound Heavy / Grapple control |
+| Interact / confirm | SELECT | E | East / B |
+| Light attack / spin hold | X | J / Left Mouse; hold for Spin after unlock | West / X |
+| Heal horse | A | hold F | hold LB |
+| Jump | B | Space | South / A |
+| Dodge | D-Pad | double-tap A/D or Left/Right | double-tap D-Pad Left/Right |
+| Heavy attack / grapple hold | Y | K / Right Mouse; hold for Grapple after unlock | North / Y |
+| Ranged / charged hold | A | Q / hold Q | RB / hold RB |
+| Parry | X or Y | timed J/K or Left/Right Mouse | timed West/North |
 | Exit request | EXIT | Escape / Backspace | bound Menu / Select control |
 
 Mouse and touch interact with the actual physical model through the existing device raycast path. The dominant instruction card always shows the keyboard/mouse route and the physical-handheld route at the same time; using one route never hides the other. Gamepad input remains accepted through the normalized action gate. Multiple sources still feed one tutorial action gate, and every stage is idempotent against repeated input.

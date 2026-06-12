@@ -1,0 +1,16 @@
+BND V10.11.30.17 local-state baseline
+
+Source bundle:
+BND_CURRENT_STATE_20260612_114215.zip
+
+Branch:
+main
+
+HEAD:
+6cb67a61a2b76c78ae372b683686269c16ae6ba8
+
+QA blocker repaired:
+TUTORIAL_V1011306_LESSON_SCREEN_STATE_MISSING
+
+Missing contract reported:
+LESSON COMPLETE — MOVE RIGHT TO THE NEXT SCREEN

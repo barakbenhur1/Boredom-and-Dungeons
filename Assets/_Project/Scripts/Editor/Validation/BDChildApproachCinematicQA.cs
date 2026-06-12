@@ -24,6 +24,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "Assets/_Project/Scripts/Runtime/UI/" +
                 "BDModernHandheld3DPresenter.ChildApproachCinematic.cs"
             );
+            string dialoguePath = Path.Combine(
+                root,
+                "Assets/_Project/Scripts/Runtime/UI/" +
+                "BDModernHandheld3DPresenter.ChildApproachDialogue.cs"
+            );
             string environmentPath = Path.Combine(
                 root,
                 "Assets/_Project/Scripts/Runtime/UI/" +
@@ -38,12 +43,14 @@ namespace BoredomAndDungeons.EditorTools.Validation
             var errors = new List<string>();
             RequireFile(errors, transitionPath);
             RequireFile(errors, childPath);
+            RequireFile(errors, dialoguePath);
             RequireFile(errors, environmentPath);
             RequireFile(errors, wallpaperPath);
 
             string runtime =
                 ReadIfPresent(transitionPath) +
                 ReadIfPresent(childPath) +
+                ReadIfPresent(dialoguePath) +
                 ReadIfPresent(environmentPath) +
                 ReadIfPresent(wallpaperPath);
 
@@ -55,6 +62,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "ChildApproachBlackHoldEndsAtSeconds = 0.42f",
                 "ChildApproachSceneFadeEndsAtSeconds = 1.20f",
                 "ChildApproachWalkEndsAtSeconds = 6.72f",
+                "ChildApproachDialogueHoldEndsAtSeconds = 4.18f",
+                "ChildApproachDialogueExitEndsAtSeconds = 4.78f",
                 "ChildApproachClimbStartsAtSeconds = 6.94f",
                 "ChildApproachSeatReachSeconds = 8.24f",
                 "ChildApproachCameraSettleSeconds = 9.02f",
@@ -75,8 +84,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "float slatTopY =",
                 "float slatHeight = slatTopY - slatBottomY",
                 "new Vector3(-6.85f, -9.40f, -34.20f)",
-                "SetChildApproachSceneFadeImmediate(1f)",
-                "UpdateChildApproachSceneFade(elapsed)",
+                "BD INTRO DRIP UNDERLAY HANDOFF V10.11.17",
+                "SetChildApproachSceneFadeImmediate(0f)",
                 "RenderMode.ScreenSpaceOverlay",
                 "canvas.sortingOrder = 32760",
                 "roomFloorY + 4.65f",
@@ -86,7 +95,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "chairLeftClearanceX",
                 "Mathf.InverseLerp(0.64f, 0.86f, climbRaw)",
                 "new Vector3(-0.82f, -6.78f, -9.72f)",
-                "CinematicChairCenterZ -"
+                "CinematicChairCenterZ -",
+                "ChildApproachWalkStartsAtSeconds = 3.84f",
+                "BD MOTHER BUBBLE OVERLAPS FIRST CHILD STEPS V10.11.17",
+                "Sweety, where are you?"
             );
             RequireTokens(
                 errors,
@@ -101,9 +113,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "poweredOffGlass",
                 "ForceScreenRender()",
                 "ApplyChildApproachContentReveal",
-                "Mathf.InverseLerp(0.56f, 0.97f, t)",
+                "BD TRUE SCREEN POWER REVEAL V10.11.22",
                 "pageCanvasGroup.transform.localPosition",
-                "screenScanlineRoot.gameObject.SetActive(t >= 0.54f)"
+                "childApproachPowerRevealMaterialV101122.SetFloat"
             );
             RequireTokens(
                 errors,
@@ -116,8 +128,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             ForbidTokens(
                 errors,
-                ReadIfPresent(childPath),
-                "white-screen startup",
+                ReadIfPresent(childPath) + ReadIfPresent(dialoguePath),
+                "white-screen startup and removed child reply",
                 "transitionFlash.color = Color.white",
                 "new Color(1f, 1f, 1f, 1f)",
                 "screenCanvasRoot.SetActive(true); // before walk",
@@ -138,7 +150,12 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "float slatHeight = backPanelHeight - 0.58f",
                 "ChildApproachPowerOnStartsAtSeconds = 6.55f",
                 "ChildApproachPowerOnEndsAtSeconds = 7.55f",
-                "IntroMainMenuTotalSeconds = 7.80f"
+                "IntroMainMenuTotalSeconds = 7.80f",
+                "ChildApproachChildReplyEnterStartsAtSeconds",
+                "ChildApproachChildReplyExitEndsAtSeconds",
+                "BDBBHBootIntro.IsDripping ? 0f : 1f",
+                "Child Speech Bubble Visual",
+                "רק שניה"
             );
 
             if (errors.Count == 0)

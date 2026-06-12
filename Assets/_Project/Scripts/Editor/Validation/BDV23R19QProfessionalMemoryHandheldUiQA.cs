@@ -22,7 +22,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "CreateBootScanlineTexture",
                 "CreateBootVignetteTexture",
                 "DrawProfessionalBootSurface",
-                "DrawComposition(globalAlpha)"
+                "DrawDrippingBootLayer",
+                "DrawComposition(alpha)"
             );
 
             Require(result, root,

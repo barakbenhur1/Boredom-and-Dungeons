@@ -1,3 +1,281 @@
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
+## V10.11.30.20 QA blocker
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-QA-MOVE-THRESHOLD-CONFLICT` | Automated QA | `FIXED IN QA / UNITY RERUN REQUIRED` | The legacy opening-polish scanner requires the active `118f` Move threshold, forbids retired `12f`, and produces neither `TUTORIAL_V101111_FORWARD_COURSE_MISSING` nor `TUTORIAL_V101113_START_OR_TRIGGER_REGRESSION`. |
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
+
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## V10.11.30.19 blocking tutorial regressions
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-MOVE-INSTANT-COMPLETE` | Move lesson | `FIXED IN CODE / PLAY MODE VERIFY` | Move requires 118 world units of actual horizontal travel; one small tap cannot complete the lesson or start the next-screen transition. |
+| `FL-TUT-EMPTY-INSTRUCTION-CARD` | Lesson UI | `FIXED IN CODE / PLAY MODE VERIFY` | Completion releases the instruction latch, disables the whole composition, and no empty panel/shadow/card returns while travelling. |
+| `FL-TUT-SCREEN-CHANGE-READS-AS-RESPAWN` | Lesson transition | `FIXED IN CODE / PLAY MODE VERIFY` | The next scene/layout changes only under a fully opaque dark hold; no respawn overlay/label or visible player teleport appears between Move and Jump or any later lessons. |
+| `FL-TUT-STALE-LESSON-ACTORS` | Progression safety | `FIXED IN CODE / FULL-RUN VERIFY` | Completed-screen enemies, projectiles, hazards and transactions cannot attack, collide, kill or block the player while travelling to the next screen. |
+| `FL-TUT-DUPLICATE-TRAVEL-OWNER` | Lesson ownership | `FIXED IN CODE / FULL-RUN VERIFY` | The legacy station-travel gate remains inactive once lesson screens initialize and never emits duplicate arrival feedback or hides the active card. |
+| `FL-TUT-BINDING-COPY-MISMATCH` | Input/UI | `FIXED IN CODE / INPUT-MATRIX VERIFY` | Every card states the same keyboard, mouse, gamepad and physical action accepted by the active reader. |
+| `FL-TUT-Q-HOLD-MISROUTED` | Charged/ranged input | `FIXED IN CODE / PLAY MODE VERIFY` | Q/RB/physical A own ranged hold; left mouse remains Light/Spin and never starts a charged ranged transaction. |
+| `FL-CIN-MOTHER-TAIL-DOWN` | Opening dialogue | `FIXED IN CODE / VISUAL VERIFY` | Bubble stays at `(72,-108)` and the complete pointer visibly exits the left edge of the body, never downward. |
+| `FL-RENDER-MEMORYLESS-DEPTH` | Handheld screen rendering | `MITIGATION IMPLEMENTED / UNITY-METAL VERIFY` | Project-owned screen RT has no depth/stencil and no memoryless surface; both `Ignoring depth surface ... as it is memoryless` messages are absent in a fresh Editor run. |
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_DIALOGUE_SCOPE_COMPILE_REPAIR_BUG_V1011315 -->
+## Resolved locally in V10.11.30.15
+
+- `SetChildApproachDialogueImmediate` compiled outside the field-owning presenter scope, producing CS0103 errors for the dialogue canvas, visual rect and rest position.
+- The file is now rebuilt from the tracked canonical structure before applying the single approved layout delta.
+
+<!-- BND_TUTORIAL_FLOW_JUMP_CINEMATIC_BUG_V1011314 -->
+## Resolved locally in V10.11.30.14
+
+- Empty instruction frame remained after lesson completion.
+- The between-screen state looked frozen because its travel instruction expired.
+- Jump could be rejected by an unrelated generic action lock after its lesson unlocked.
+- The mother bubble sat too high.
+- The child-camera height correction needed an explicit full-strength walk/climb guarantee.
+
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:BEGIN -->
+## Resolved locally; Unity verification pending
+
+- One validator still looked for HandleFirstLaunchTutorialMeleeLessonDeathAtImpact in Gameplay.cs instead of LessonScreens.cs.
+- Delivery ZIPs remained in Downloads after installers completed or failed.
+- The validator path and unconditional ZIP cleanup are now corrected.
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:END -->
+
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:BEGIN -->
+## Resolved locally; Unity verification pending
+
+- TEST EVERYTHING reported nine false blockers from superseded tutorial implementation tokens.
+- Child approach/menu POV sat slightly lower than requested.
+- Validators now inspect the active semantic owners and the child camera receives a small blended height correction.
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:END -->
+
+<!-- BND_V1011307_BUGS -->
+## Closed by V10.11.30.7
+
+- `LessonScreens.cs` ignored because its `.meta` contained literal `\n`
+  characters instead of YAML line breaks.
+- `BDTutorialLessonScreensInputParryV1011306QA.cs` ignored for the same reason.
+- `ReadFirstLaunchTutorialConfirmPressed` could not call the E / interact
+  reader after that reader was converted to an instance method.
+- Retained tutorial unlock and impact-proof fields produced assigned-but-unused
+  compiler warnings.
+
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
+## Resolved locally; Unity verification pending
+
+- Immediate next-tutorial display on the same screen.
+- Mechanics unlocking only near the target instead of at screen entry.
+- Left mouse incorrectly routed to Ranged.
+- Parry target acting as a transparent wall.
+- Parry not resolving through the canonical Light/Heavy inputs.
+- Parry enemy retaining a squashed action scale.
+- Attack lessons advancing without target death.
+- Dodge lesson advancing without crossing the hazard.
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:END -->
+
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:BEGIN -->
+## V10.11.30.5 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-WASD-REMOVED | Keyboard movement | FIXED IN CODE / PLAY MODE VERIFY | WASD and Arrow keys work in parallel under both Unity input backends. |
+| FL-TUT-E-Q-STEP-LOCKED | Interact/ranged input | FIXED IN CODE / PLAY MODE VERIFY | E and Q are routed regardless of the highlighted lesson; healing remains contextual near the injured horse. |
+| FL-TUT-MECHANICS-LESSON-LOCKED | Combat mechanics | FIXED IN CODE / PLAY MODE VERIFY | Light, Heavy, Spin, Grapple, Dodge, Parry and ordinary ranged execution are not disabled merely because another lesson is highlighted. |
+| FL-TUT-MOUNTED-IMPACT-INVISIBLE-WALL | Horse ram | FIXED IN CODE / PLAY MODE VERIFY | Horse contact reaches and defeats the target without a transparent collision wall or hard lock. |
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:END -->
+
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:BEGIN -->
+## V10.11.30.4 — duplicated canonical player-name QA blockers
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-PLAYER-ASSET-NAME-SPLIT | QA/runtime contract | FIXED IN PACKAGE / UNITY VERIFY | The real visible idle sprite and all maintained validators use `B&D Tutorial Player Simple Right Facing Sprite`; no obsolete `... Idle` contract remains and `TEST EVERYTHING` returns `0/0/0`. |
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:END -->
+
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:BEGIN -->
+## V10.11.30.3 focused defect
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-PLAYER-INVISIBLE-CHILD-DISABLED | Tutorial player rendering | FIXED IN CODE / PLAY MODE VERIFY | The authoritative `Tutorial Player Pixel Visual` child stays active, displays the simple colored player, retains walk/action frames and inherits left/right facing from the player parent. |
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:BEGIN -->
+## V10.11.30.2 focused QA defect
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-STALE-PLAYER-QA-V101111-V101117 | Automated QA | FIXED IN PATCH / UNITY VERIFY | Legacy validators no longer demand retired player dimensions, exact palette literals or obsolete sprite markers; they validate the current simple right-facing sprite contract while preserving unrelated typography checks. |
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## V10.11.30.1 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| FL-TUT-RIGHTARROWOWNARROW | Compilation/input | FIXED IN PATCH / UNITY VERIFY | No malformed `KeyCode` member remains; Arrow movement/entry compile and work. |
+| FL-TUT-FIRST-ENEMY-IMMORTAL | First melee lesson | FIXED IN PATCH / PLAY MODE VERIFY | The registered actor receives lethal damage at visible Light impact; misses do not hide or advance it. |
+| FL-TUT-HEAVY-BYPASSES-DAMAGE | Heavy lesson | FIXED IN PATCH / PLAY MODE VERIFY | Heavy uses the same authoritative melee transaction and advances only after confirmed lethal impact. |
+| FL-TUT-PLAYER-REVERSED-CLUTTERED | Player visual | FIXED IN PATCH / VISUAL VERIFY | One compact side-profile sprite is visible; positive X faces right and runtime flipping follows movement. |
+| FL-TUT-SPIN-NONATOMIC | Spin lesson | FIXED IN PATCH / PLAY MODE VERIFY | Both opposite-side targets must be in the same spin; partial coverage kills neither and does not advance. |
+| FL-TUT-DODGE-BUTTON-ONLY | Dodge lesson | FIXED IN PATCH / PLAY MODE VERIFY | Dodge completes only after crossing to the other side of the obstacle. |
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+## TUTORIAL_ATOMIC_LETHALITY_PALETTE_PLAYER_MODEL_V101128 — FIXED
+- Removed delayed/unsynchronized first-enemy death, flat monochrome tutorial text, partial spin kills and input-only dodge completion.
+- Installer uses method boundaries and verifies installed method bodies before PASS.
+
+## Resolved — tutorial targets surviving the correct lesson hit
+
+The ownership gate previously allowed the correct source but retained generic combat damage, so a two-health target could survive a one-damage quick attack. Focused lesson hits now consume the target's remaining health; grapple is the intentional exception until its follow-up kill.
+
+<!-- BD ALL LESSON TARGETS LETHAL V10.11.26 -->
+
+# BD TUTORIAL LESSON ENTRY + DAMAGE OWNERSHIP V10.11.25
+
+Resolved: crowded opening obstacle, late/disappearing mounted-shot guidance, completion on wrong damage sources, stale MountedImpact wall, reveal _MainTex warning and handheld UI depth warnings.
+
+## BD V10.11.24 MOUNTED RANGED SEQUENCE AND NO MOUNTED DODGE
+- Fixed: reload could finish before projectile impact, causing Reload or ChargedShot to wait forever.
+- Fixed: charged auto-fire could remain latched after a miss.
+- Fixed: directional double-tap could grant dodge invulnerability while riding.
+- Pending local proof: Unity compilation, TEST EVERYTHING and the complete mounted tutorial sequence.
+
+## BD V10.11.23 LESSON PERSISTENCE AND PROGRESSION GATE
+- Fixed: later tutorial stations could be passed before completing the current lesson, leaving required state behind and hard-locking progression.
+- Fixed: tutorial instruction text could disappear because proximity/time presentation logic released it before success.
+- Pending local proof: Unity compilation, TEST EVERYTHING and a complete Play Mode tutorial run.
+
+## BD V10.11.22.2 QA CONTRACT RECONCILIATION
+- Resolved: five false blockers caused by conflicting power timing and hidden dual-binding contracts.
+- Pending local proof: Unity compilation, TEST EVERYTHING 0/0/0 and focused Play Mode verification.
+
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:BEGIN -->
+## V10.11.22 — tutorial parity, binding presentation and screen power reveal
+
+| ID | Status | Acceptance condition |
+|---|---|---|
+| `TUTORIAL-ALL-INPUT-PARITY-V101122` | `FIXED IN CODE / PLAY MODE VERIFY` | Every lesson accepts its documented keyboard/gamepad input, the matching physical handheld control and contextual mouse input on the real display. |
+| `TUTORIAL-HEAVY-MOUSE-V101122` | `FIXED IN CODE / PLAY MODE VERIFY` | Heavy attack responds to `K`, gamepad north, physical `Y`, right mouse on the display and the contextual lesson click. |
+| `TUTORIAL-BINDING-CARD-V101122` | `FIXED IN CODE / VISUAL VERIFY` | One centered professional card remains inside the screen with no overlap, clipping or loose labels. |
+| `HANDHELD-POWER-REVEAL-V101122` | `FIXED IN CODE / VISUAL VERIFY` | Power-on begins immediately after camera settlement, preserves its duration, and the moving line reveals content rather than decorating an already-visible screen. |
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:END -->
+
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:BEGIN -->
+## V10.11.21 — visible drip and ordinary mouse attack regressions
+
+| ID | Status | Acceptance condition |
+|---|---|---|
+| `OPENING-DRIP-QUALITY-V101121` | `FIXED IN CODE / VISUAL VERIFY` | The unchanged BBH frame melts downward through a continuous antialiased liquid edge; no 32-strip, shutter, stair-step or pixelated silhouette is visible. |
+| `TUTORIAL-MOUSE-LIGHT-ATTACK-V101121` | `FIXED IN CODE / PLAY MODE VERIFY` | During `AttackEnemy`, one desktop left click on the real physical display produces exactly one ordinary attack and uses the existing visible impact transaction. |
+| `OPENING-DRIP-SCOPE-V101121` | `GUARDED` | The drip pass does not change BBH text, colors, logo movement, camera, room, dialogue, device, tutorial layout or gameplay state. |
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:BEGIN -->
+## V10.11.20.3 — tutorial QA contract blockers
+
+| ID | Status | Acceptance condition |
+|---|---|---|
+| `TUTORIAL_V101114_WORLD_MOUSE_ATTACK_MISSING` | `FIXED IN CODE / PLAY MODE VERIFY` | A left click inside the tutorial world reaches the light-attack action before handheld screen controls can consume the frame. |
+| `TUTORIAL_V101117_INDIE_BINDING_VISUALS_MISSING` | `CONTRACT RESTORED / VISUAL VERIFY` | Keyboard/mouse keycaps retain the indie-card implementation and the exact `BD INDIE INPUT KEYCAPS V10.11.17` contract. |
+| `TUTORIAL_V101117_PHYSICAL_HANDHELD_MISSING` | `CONTRACT RESTORED / VISUAL VERIFY` | The physical side retains its illustrated control and exact `PHYSICAL HANDHELD` contract. |
+| `TUTORIAL_V101117_MOUNT_HANDOFF_MISSING` | `FIXED IN CODE / PLAY MODE VERIFY` | Mount guidance persists through the real mount animation and advances only from `MountHorse` to `RideHorse` on successful completion. |
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:END -->
+
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:BEGIN -->
+## V10.11.18 resolved automated blocker
+
+- Fixed `TUTORIAL_V101117_INDIE_BINDING_VISUALS_MISSING`: the illustrated binding source now contains and applies the exact `PHYSICAL HANDHELD` title required by the QA contract.
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## V10.11.17 fixes awaiting local acceptance
+
+- BBH exit effect previously leaked into the child-camera shot instead of moving the intro layer itself.
+- The room fade could be re-armed after the drip and create a black/left-edge glitch.
+- Jump landing could miss the exact threshold and never expose the horse-mount lesson.
+- The player could fall back to a generic visual instead of the requested blond/red/blue art.
+- Mother dialogue disappeared before the child began walking.
+- Physical handheld bindings were shown as plain text rather than illustrated controls.
+- The supplied application icon was not assigned through current Unity 6 APIs.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## V10.11.16 focused defects
+
+| ID | Status | Acceptance |
+|---|---|---|
+| FL-INTRO-DRIP-HANDOFF-CONTRACT | FIXED IN CODE / VISUAL VERIFY | BBH artwork visibly drips while the kitchen is behind it; no drip stripe appears after the intro disappears. |
+| FL-TUT-PHYSICAL-CARD-QA-CONTRACT | FIXED IN CODE / VISUAL VERIFY | Keyboard/controller and physical handheld cards are both visible for every actionable lesson. |
+| FL-QA-V101114-STALE-DRIP-ASSERTION | FIXED IN CODE / AUTOMATED VERIFY | QA no longer requires the obsolete always-transparent child-scene fade. |
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:BEGIN -->
+## V10.11.15 focused compiler defect
+
+| ID | Status | Acceptance |
+|---|---|---|
+| FL-QA-MULTILINE-STRING-COMPILE | FIXED IN CODE / UNITY VERIFY | `BDTutorialOpeningPolishV1011QA.cs` compiles with no CS1010, CS1003 or CS1026 errors, then `TEST EVERYTHING` reaches runtime QA. |
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## V10.11.14 focused defects
+
+| ID | Status | Acceptance |
+|---|---|---|
+| FL-INTRO-DRIP-WRONG-LAYER | FIXED IN CODE / VISUAL VERIFY | BBH artwork itself drips away and no strip/fade glitch appears when the room animation starts. |
+| FL-TUT-MOUNT-PROMPT-LATE | FIXED IN CODE / PLAY MODE VERIFY | Mount instruction appears immediately beside the horse after the first jump. |
+| FL-TUT-WORLD-LMB-NO-ATTACK | FIXED IN CODE / PLAY MODE VERIFY | Left mouse click performs light attack in the game screen and physical X remains a single equivalent action. |
+| FL-TUT-PHYSICAL-BINDING-HIDDEN | FIXED IN CODE / VISUAL VERIFY | Every binding lesson shows keyboard/controller and physical handheld controls together. |
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## V10.11.13 focused defects
+
+| ID | Status | Acceptance |
+|---|---|---|
+| FL-TUT-PROMPT-LIFECYCLE | FIXED IN CODE / PLAY MODE VERIFY | Every lesson prompt appears when its lesson starts and disappears when it completes or travel begins. |
+| FL-TUT-MOVE-JUMP-ORDER | FIXED IN CODE / PLAY MODE VERIFY | Player starts before the obstacle; Move completes before contact; Jump remains locked until its lesson. |
+| FL-TUT-PREMATURE-ABILITIES | FIXED IN CODE / PLAY MODE VERIFY | Jump, interact, light, heavy, dodge, parry and ranged input are unavailable before their lessons. |
+| FL-TUT-ENEMY-PHASE-THROUGH | FIXED IN CODE / PLAY MODE VERIFY | Living visible enemies block horizontal traversal; dead/hidden enemies do not. |
+| FL-TUT-HORSE-PET-HUD-LEAK | FIXED IN CODE / PLAY MODE VERIFY | No full-game horse prompt is drawn outside the Game Boy during the tutorial. |
+| FL-TUT-CHILD-BUBBLE-REMOVAL | FIXED IN CODE / VISUAL VERIFY | No child reply bubble or child voice is created. |
+| FL-TUT-LEFT-DRIP-GLITCH | FIXED IN CODE / VISUAL VERIFY | BBH drip begins as a coherent center-out wipe with no isolated left-edge strip. |
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:BEGIN -->
+## V10.11.12 focused QA defects
+
+| ID | Status | Acceptance |
+|---|---|---|
+| CHILD_APPROACH_CINEMATIC_CONTRACT_INVALID | FIXED IN QA CONTRACT / RERUN REQUIRED | Validator expects V10.11.11 two-speaker timings and drip handoff tokens. |
+| V23R19Q_BOOT_POLISH_MISSING | FIXED IN QA CONTRACT / RERUN REQUIRED | Validator accepts the current `DrawBootLayer`/`DrawDrippingBootLayer` structure and `DrawComposition(alpha)`. |
+| OPENING-MOTHER-LINE-TYPO | FIXED IN CODE / VISUAL VERIFY | Bubble reads exactly `Sweety, where are you?`. |
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 focused defects
+
+| ID | Status | Acceptance |
+|---|---|---|
+| FL-TUT-COURSE-SAME-LOCATION | FIXED IN CODE / PLAY MODE VERIFY | Major lessons occupy separate forward stations with travel between them. |
+| FL-TUT-VISIBLE-SPAWN-POP | FIXED IN CODE / PLAY MODE VERIFY | New actors spawn beyond the visible right edge; wall/platform geometry exists before approach. |
+| FL-TUT-VISIBLE-OBSTACLE-DESPAWN | FIXED IN CODE / PLAY MODE VERIFY | Persistent wall, platforms and finish gate never disappear in view; the gate opens by moving. |
+| FL-TUT-BACKTRACK | FIXED IN CODE / PLAY MODE VERIFY | Camera and progression floor advance only forward. |
+| FL-TUT-BOSS-PATTERN | FIXED IN CODE / PLAY MODE VERIFY | Boss uses three-shot vertical fan at range and telegraphed slash/jump-slam at close range. |
+| FL-TUT-HIT-FEEDBACK | FIXED IN CODE / VISUAL VERIFY | Player/enemies flicker and jitter briefly on real damage. |
+| FL-TUT-PLAYER-PALETTE | FIXED IN CODE / VISUAL VERIFY | Blond/yellow hair, red shirt and blue trousers are unmistakable. |
+| FL-TUT-ATTACK-VISUAL-CONTACT | FIXED IN CODE / PLAY MODE VERIFY | Ground slash is horizontal; airborne slash travels top-to-bottom; damage remains impact-owned. |
+| FL-TUT-VIRTUAL-PHYSICAL-INPUT | FIXED IN CODE / PLAY MODE VERIFY | Keyboard/mouse virtual actions pulse the corresponding physical handheld control. |
+| FL-TUT-OPENING-DIALOGUE-SEQUENCE | FIXED IN CODE / AUDIO-VISUAL VERIFY | Off-screen mother bubble, child `רק שניה` reply, then walking. |
+| FL-TUT-INTRO-DRIP | FIXED IN CODE / VISUAL VERIFY | BBH screen drips rapidly to reveal the already-prepared room. |
+| FL-TUT-RELIC-HANDOFF | FIXED IN CODE / PLAY MODE VERIFY | Player lifts relic overhead; light grows from it and fades to main menu. |
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## V10.11.10 focused defects
 
@@ -458,3 +736,19 @@ Do not close these findings from static inspection or the earlier V10.1 automate
 | FL-CIN-BUBBLE-VERTICAL-POSITION | Opening dialogue bubble | FIXED IN CODE / PLAY MODE VERIFY | Entire bubble sits slightly lower while remaining fully readable and inside frame. |
 | FL-CIN-POWER-ON-DELAY | Opening power-on | FIXED IN CODE / PLAY MODE VERIFY | After camera settlement at `9.02s`, power-on starts at `9.20s` and ends at `10.20s`, with no white frame or camera discontinuity. |
 <!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->
+
+<!-- BD_TUTORIAL_FINAL_INPUT_TARGET_PLAYER_V101130 -->
+- Resolved: AttackEnemy only played its animation and never called ResolveFirstLaunchTutorialProductionMelee, so no impact transaction existed. The handler now starts the real transaction.
+- Resolved: player model was visually dense and could face away from the lesson target.
+
+<!-- BND_V1011308_BUGS -->
+## Closed by V10.11.30.8
+
+- `BDTutorialLessonScreensInputParryV1011306QA` called a nonexistent
+  `BDOneClickQAResult.AddBlocker` API and blocked Unity compilation.
+
+## Resolved in V10.11.30.16
+<!-- BND_TUTORIAL_CONTRACT_REPAIR_V1011316 -->
+Resolved five QA blockers caused by dialogue-contract loss and the lesson-complete travel message living outside Gameplay.cs.
+<!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
+- The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.

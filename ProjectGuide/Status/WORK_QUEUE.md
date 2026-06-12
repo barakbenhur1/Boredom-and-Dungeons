@@ -1,3 +1,301 @@
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
+## Immediate gate — V10.11.30.20
+
+1. Apply the QA-only threshold realignment over installed V10.11.30.19.
+2. Let Unity recompile; no Runtime file should change.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING` and require `0 blockers / 0 warnings / 0 info`.
+4. Confirm both stale threshold blocker codes are absent.
+5. Resume the V10.11.30.19 full tutorial Play Mode and input matrix only after automated PASS.
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
+
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## Immediate blocking gate — V10.11.30.19
+
+1. Install the cumulative patch over the captured V10.11.30 local state without discarding unrelated work.
+2. Compile with Unity `6000.0.76f1`; require no compiler error or warning.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. In Move, verify one brief tap does not complete the lesson; travel at least 118 world units before completion.
+5. Re-enter Play Mode from a fresh first-launch reset and confirm the Console does not emit either memoryless depth load/store message.
+6. Verify the lower mother bubble has one attached left-facing pointer throughout enter, hold and exit.
+7. Complete Move, walk right, and verify: no empty tutorial shell, no respawn text/cover, one fully dark screen change, then the populated Jump instruction.
+8. Continue every lesson. Each mechanic unlocks only on its screen, completes only from its required world result, and no previous-screen actor/projectile/hazard can interfere during travel.
+9. Verify keyboard/mouse mapping exactly: Move WASD/arrows; Jump Space; Interact E; Light J/left mouse; Heavy K/right mouse; Ranged Q/hold Q; Heal hold F; Dodge double-tap A/D or arrows; Spin hold J/left mouse; Grapple hold K/right mouse.
+10. Repeat the actionable matrix with controller and physical handheld controls, including physical held X/Y/A routes.
+11. Defeat the boss, collect the relic by contact, persist `Completed`, then commit/push only after the complete run is accepted.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_TUTORIAL_FLOW_JUMP_CINEMATIC_QUEUE_V1011314 -->
+## Active verification — V10.11.30.14
+
+- [x] Remove empty tutorial-card chrome between lessons.
+- [x] Restore Space / controller / physical Jump after the Jump screen unlocks.
+- [x] Keep the next tutorial absent until the next-screen transition.
+- [x] Lower the mother speech bubble slightly.
+- [x] Preserve the higher child camera through walking and climbing.
+- [ ] Require Unity compilation, TEST EVERYTHING 0/0/0 and one uninterrupted tutorial run before Commit.
+
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:BEGIN -->
+## Active verification after V10.11.30.10
+
+1. Compile in Unity 6000.0.76f1.
+2. Run TEST EVERYTHING and require 0 blockers, 0 warnings, 0 info.
+3. Confirm TUTORIAL_V1011301_INPUT_DAMAGE_WORLD_PROOF_MISSING does not return.
+4. Complete one uninterrupted tutorial run and recheck the child menu camera.
+5. Only after all gates pass, run the separate Commit and Push commands.
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:END -->
+
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:BEGIN -->
+## Active verification after V10.11.30.9
+
+1. Compile in Unity 6000.0.76f1.
+2. Run TEST EVERYTHING and require 0 blockers, 0 warnings, 0 info.
+3. Verify the nine obsolete-token blockers do not return.
+4. Replay the child approach and confirm the POV is slightly higher without a snap at the regular menu handoff.
+5. Recheck lesson-screen flow, mouse/Q/E input, Parry, mounted impact and one uninterrupted tutorial run.
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:END -->
+
+<!-- BND_V1011307_QUEUE -->
+## Current release gate — V10.11.30.7
+
+1. Let Unity import and compile the corrected lesson-screen partial.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+3. Require `blockers=0, warnings=0, info=0`.
+4. Complete the manual lesson-screen, mouse mapping and Parry checks.
+5. Only after all gates pass, run the separate Commit command and then the
+   separate Push command supplied with this package.
+
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
+## Active verification after V10.11.30.6
+
+1. Compile in Unity 6000.0.76f1.
+2. Run TEST EVERYTHING and require 0 blockers, 0 warnings, 0 info.
+3. Verify each completed lesson hides its instruction and never displays the next one before the next screen.
+4. Verify all physical targets are centered by default and each objective requires world-state proof.
+5. Verify canonical keyboard/mouse, gamepad and physical handheld mappings.
+6. Verify the parry target is passable, parry works with timed Light or Heavy, and the enemy is not squashed.
+7. Complete one uninterrupted tutorial run.
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:END -->
+
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:BEGIN -->
+## Immediate gate — V10.11.30.5
+
+Verify every keyboard, mouse, controller and physical route, then verify free mechanic execution outside the highlighted lesson and complete Mounted Impact by direct horse contact with no invisible collision wall. Do not return to the ordered queue until TEST EVERYTHING is 0/0/0 and one uninterrupted tutorial run completes.
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:END -->
+
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:BEGIN -->
+## Immediate gate — V10.11.30.4
+
+1. Apply the canonical player asset-name alignment over V10.11.30.3.
+2. Wait for Unity compilation.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0/0/0`.
+4. Confirm the visible player from V10.11.30.3 still appears and animates.
+5. Continue the existing full tutorial Play Mode acceptance run.
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:END -->
+
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:BEGIN -->
+## Immediate gate — V10.11.30.3
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Start the tutorial and confirm the blond/red/blue player is immediately visible at the left side of the course.
+4. Move left and right; confirm the full player flips with direction and remains visible.
+5. Jump, light attack, heavy attack and spin; confirm walk/action frames remain active and no player layer disappears.
+6. Continue the existing enemy-lethality and full tutorial completion verification.
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:BEGIN -->
+## Immediate gate — V10.11.30.2
+
+1. Install the QA-only contract realignment package.
+2. Let Unity recompile the changed Editor validation assembly.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Confirm no blocker still requests `82x118`, the retired exact hair/shirt/pants literals, or V10.11.17 sprite markers.
+5. Continue the V10.11.30.1 focused Play Mode checks: first Light/Heavy kill at visible impact, Arrow/mouse/controller/physical input, atomic Spin, outcome-owned Dodge and correctly facing compact player.
+6. Complete the full tutorial before acceptance or commit.
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## Immediate gate — V10.11.30.1
+
+1. Install the backup-aware package and confirm its PASS line.
+2. Let Unity `6000.0.76f1` compile with no `RightArrowownArrow` error and no `CS0414` mouse-capture warnings.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Verify Arrow keys, mouse buttons, controller and physical controls each execute their tutorial actions once.
+5. In the first melee lesson, a miss does not progress; the valid visible Light impact kills the first enemy and advances. Repeat for Heavy.
+6. Verify the compact player sprite faces travel/attack direction and no articulated child pieces remain visible.
+7. Verify Spin kills neither target unless one spin contains both; verify Dodge requires reaching the other side.
+8. Complete the full tutorial before acceptance or commit.
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+## V10.11.28 focused verification
+- Run TEST EVERYTHING and a complete tutorial pass.
+- Verify first quick-attack target disappears on the correct impact, colored text persists, spin kills both together only, dodge crosses the obstacle, and the articulated model remains visible.
+
+## Completed — all tutorial enemy lesson lethality
+
+- [x] Correct authored hit is lethal for every focused non-boss enemy lesson.
+- [x] Wrong mechanics remain available but cannot damage protected lesson targets.
+- [x] Grapple pull stays non-lethal and requires the follow-up kill.
+- [x] Per-lesson hit confirmation resets on every step transition.
+
+<!-- BD ALL LESSON TARGETS LETHAL V10.11.26 -->
+
+# BD TUTORIAL LESSON ENTRY + DAMAGE OWNERSHIP V10.11.25
+
+Current verification target: complete every focused lesson only by hitting its target with the requested mechanic while all previously unlocked mechanics remain usable.
+
+## BD V10.11.24 MOUNTED RANGED SEQUENCE AND NO MOUNTED DODGE
+1. Verify ordinary projectile impact and reload can finish in either order.
+2. Verify Reload remains visible briefly and always reaches ChargedShot.
+3. Verify charged auto-fire reaches MountedImpact after impact plus reload, and a miss can be retried.
+4. Verify all mounted dodge inputs remain movement only and never grant invulnerability.
+
+## BD V10.11.23 LESSON PERSISTENCE AND PROGRESSION GATE
+1. Run Unity compilation and TEST EVERYTHING.
+2. Complete every lesson using keyboard/mouse and repeat critical actions with physical controls.
+3. At each lesson, hold forward before completing it and verify the player stops at the boundary without a visual divider.
+4. Verify the instruction remains visible until success, then changes only to the next lesson.
+
+## BD V10.11.22.2 QA CONTRACT RECONCILIATION
+1. Run Unity compilation and TEST EVERYTHING.
+2. Verify heavy attack with K, right mouse and physical Y.
+3. Verify both binding cards remain visible and unclipped.
+4. Verify screen power begins after camera settle and reveals behind the moving line.
+
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:BEGIN -->
+## Immediate release gate — V10.11.22
+
+1. Compile with Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Replay the opening: after the child sits and the camera settles, power-on must begin almost immediately; duration must feel unchanged.
+4. Confirm the moving power line exposes only the portion it has crossed. The full screen must never appear before the line.
+5. Complete every tutorial lesson once with keyboard/gamepad bindings.
+6. Complete every tutorial lesson with physical handheld controls.
+7. Verify direct mouse display input: left/context click, right heavy click, middle ranged click, hold actions and directional dodge double-click.
+8. Confirm clicks outside the physical display never trigger world actions.
+9. Confirm the binding panel remains centered, readable and unclipped at the supported aspect ratios.
+10. Commit and Push only after the complete matrix passes.
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:END -->
+
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:BEGIN -->
+## Immediate gate — V10.11.21
+
+1. Compile with Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Replay the complete BBH opening at 16:9 and confirm only the melt changed: same logo, color, timing before melt and scene behind.
+4. Confirm the melt moves downward, uses broad connected rounded liquid forms, has a smooth antialiased edge and contains no visible strips or pixel stairs.
+5. At the ordinary-attack lesson, click once on the physical display; require exactly one light attack, existing visible impact and correct lesson advance.
+6. Click outside the physical display and on hardware controls; no accidental world attack may occur.
+7. Complete all remaining tutorial lessons and verify no existing trigger was skipped, hidden early or stuck.
+8. Commit and Push only after automated and focused Play Mode acceptance.
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:BEGIN -->
+## Immediate gate — V10.11.20.3
+
+1. Compile with Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Start from Move and confirm every instruction appears and disappears only at its authored trigger.
+4. At the first normal enemy, click inside the tutorial world and confirm one light attack occurs; clicks on D-pad/handheld controls must not create an extra attack.
+5. Complete Jump → MountHorse → RideHorse; the mount instruction must not disappear before mounting succeeds.
+6. Verify keyboard/mouse keycaps and the physical handheld illustration remain bounded and readable.
+7. Complete the tutorial through the boss and relic, then run Commit and Push as separate commands.
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:END -->
+
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:BEGIN -->
+## Immediate verification — V10.11.18
+
+1. Compile in Unity with no Console errors.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Confirm the tutorial instruction panel shows the desktop/controller keycap and the illustrated physical handheld control together, with the title `PHYSICAL HANDHELD`, inside bounds.
+4. Continue the full unskipped opening/tutorial acceptance run before committing.
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## Immediate release gate — V10.11.17
+
+1. Compile with zero Console errors and zero compiler warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Watch the BBH ending frame-by-frame: the BBH surface itself must drip downward while the room is already behind it; no isolated strip, black flash, or duplicate fade may enter the child shot.
+4. Confirm `Sweety, where are you?` remains visible during the first child steps and fades while walking.
+5. Complete `Move -> Jump -> MountHorse -> RideHorse` without pausing; landing must normalize beside the horse, the mount prompt must remain visible, and the correct interaction must advance to riding.
+6. Confirm every lesson remains timed correctly, abilities remain locked until their lesson, left-click attack works when unlocked, enemies block the player, and full-game horse prompts remain hidden during the handheld tutorial.
+7. Confirm the player is visibly blond with a red shirt and blue trousers throughout normal, hit, airborne, mounted, and death/retry presentation.
+8. Confirm desktop/controller keycaps and illustrated physical handheld controls are both visible and stay inside the instruction panel.
+9. Confirm the supplied artwork is visible in Player Settings and a Standalone development build.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## Immediate verification gate — V10.11.16
+
+1. Let Unity compile with no C# errors.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Watch the BBH handoff frame-by-frame: the drip belongs to the intro artwork, the kitchen is visible behind it only during the drip, and no stripe/glitch starts the child animation.
+4. Verify each actionable tutorial lesson displays both input cards and the correct physical handheld button.
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:BEGIN -->
+## Immediate verification gate — V10.11.15
+
+1. Let Unity finish recompiling.
+2. Confirm the Console has no compiler errors from `BDTutorialOpeningPolishV1011QA.cs`.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+4. Continue the pending V10.11.14 Play Mode checks only after automated QA runs.
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## Immediate verification gate — V10.11.14
+
+1. Compile in Unity `6000.0.76f1` with zero errors and zero warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Watch the BBH ending frame-by-frame: the BBH layer drips off the screen, the kitchen is already behind it, and the child camera starts only after the drip finishes.
+4. Complete Move and Jump: the Mount Horse prompt must appear while the player is still beside the horse.
+5. At Quick Attack, use world-space left click and verify one real attack transaction and damage only on contact.
+6. Verify every lesson displays both the keyboard/controller binding and the physical handheld button.
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## Immediate verification gate — V10.11.13
+
+1. Compile in Unity `6000.0.76f1` with zero warnings/errors.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Start the opening without skipping: verify no left-edge descending line, only the mother bubble appears, and the exact line is `Sweety, where are you?`.
+4. Start the tutorial: verify the full-game `TAB PET` prompt never appears outside the Game Boy.
+5. Verify Move registers within the short run-up before the first obstacle, its text exits, and Jump text appears at the obstacle.
+6. Verify Jump and every later ability do nothing before its lesson, then work immediately when the lesson begins.
+7. Verify every lesson text appears and clears exactly once through the complete course.
+8. Verify the player cannot pass through any living visible enemy and can continue after it is defeated.
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:BEGIN -->
+## Immediate verification gate — V10.11.12
+
+1. Compile in Unity `6000.0.76f1` with zero errors and zero warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Play the opening and confirm the mother bubble reads exactly `Sweety, where are you?`.
+4. Continue the existing V10.11.11 full opening/tutorial Play Mode acceptance pass without changing scope.
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## Immediate verification gate — V10.11.11
+
+1. Compile in Unity `6000.0.76f1`; require zero compiler warnings/errors.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Play the complete opening and tutorial without skipping.
+4. Verify BBH drips quickly, mother/child bubbles sequence correctly, and walking starts only after the child reply exits.
+5. Verify each major lesson is reached by forward travel; no enemy/obstacle appears or disappears while visible; backtracking to a completed screen is impossible.
+6. Verify the player's blond hair/red shirt/blue trousers and all enlarged bounded animated text.
+7. Verify straight ground slash, overhead-down airborne slash, and damage only at visible contact.
+8. Verify player/enemy hit reactions.
+9. Verify boss three-shot vertical fan, slash and jump-slam telegraphs/ranges, ordinary shot and charged shot.
+10. Collect the relic by contact, watch the player lift it, and verify magical light fades directly to the main menu.
+
+### Queued immediately after the current tutorial release gate
+
+- Implement the full-game horse acceleration, braking, direction-change, animation, rider, hoof-audio and speed-scaled effects task defined in `ProjectGuide/Tasks/BACKLOG/FULL_GAME_HORSE_ACCELERATION_BRAKING_AND_WEIGHT.md`.
+- This queued task is **not part of V10.11.11** and must not be applied to the standalone tutorial unless a later task explicitly unifies the systems.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## Immediate gate — V10.11.10
 
@@ -952,3 +1250,23 @@ Install V10.7.2, verify both post-BBH landing destinations and run TEST EVERYTHI
 
 Run `Boredom And Dungeons -> TEST EVERYTHING`, then replay the first-launch cinematic and verify only: the bubble is slightly lower, its tail is tangent without overlap, and the handheld starts powering on slightly sooner after the child settles. Resume the existing active tutorial repair task afterward.
 <!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->
+
+<!-- BD_TUTORIAL_FINAL_INPUT_TARGET_PLAYER_V101130 -->
+- Validate left click starts the real quick-attack transaction, kills the visible first enemy on impact and advances exactly once. Confirm no J/K/F/Q/E/WASD labels or readers remain.
+- Validate the heavy target is recreated and killable.
+- Validate the simplified player faces obstacles and focused enemies.
+
+<!-- BND_V1011308_QUEUE -->
+## Current release gate — V10.11.30.8
+
+1. Let Unity compile the corrected lesson-screen QA scanner.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+3. Require `blockers=0, warnings=0, info=0`.
+4. Complete the manual lesson-screen/input/Parry run.
+5. Run the supplied Commit command, then the separate Push command.
+
+## V10.11.30.16 verification
+<!-- BND_TUTORIAL_CONTRACT_REPAIR_V1011316 -->
+Run Unity compilation, TEST EVERYTHING 0/0/0, then verify the mother dialogue and the post-lesson travel message in Play Mode.
+<!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
+- The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.

@@ -104,15 +104,7 @@ namespace BoredomAndDungeons
                     now - firstLaunchTutorialBossChargePendingStartedAt;
                 if (!held)
                 {
-                    firstLaunchTutorialBossChargePendingStartedAt = -1f;
-                    ShowFirstLaunchTutorialHoldProgress(
-                        string.Empty,
-                        0f,
-                        visible: false
-                    );
-                    ShowFirstLaunchTutorialSuccess(
-                        "CHARGE CANCELLED — KEEP HOLDING"
-                    );
+                    FireFirstLaunchTutorialBossOrdinaryShot();
                     return;
                 }
 
@@ -174,6 +166,46 @@ namespace BoredomAndDungeons
                 return;
 
             FireFirstLaunchTutorialBossChargedShotAutomatically(boss);
+        }
+
+
+        private void FireFirstLaunchTutorialBossOrdinaryShot()
+        {
+            firstLaunchTutorialBossChargePendingStartedAt = -1f;
+            firstLaunchTutorialBossChargeStartedAt = -1f;
+            ShowFirstLaunchTutorialHoldProgress(
+                string.Empty,
+                0f,
+                visible: false
+            );
+
+            TutorialEnemyActor boss = FindTutorialBoss();
+            if (boss == null || boss.Dead || !boss.Active)
+                return;
+            if (firstLaunchTutorialAmmo <= 0)
+            {
+                BeginFirstLaunchTutorialReload();
+                return;
+            }
+
+            firstLaunchTutorialAmmo = Mathf.Max(
+                0,
+                firstLaunchTutorialAmmo - 1
+            );
+            BeginFirstLaunchTutorialShotTransaction(
+                boss,
+                1f,
+                charged: false,
+                advancesLesson: false
+            );
+            PlayFirstLaunchTutorialRangedAttackAnimation(
+                boss.Position,
+                advancesLesson: false,
+                chargedShot: false
+            );
+            ShowFirstLaunchTutorialSuccess("ORDINARY SHOT");
+            if (firstLaunchTutorialAmmo <= 0)
+                BeginFirstLaunchTutorialReload();
         }
 
         private void FireFirstLaunchTutorialBossChargedShotAutomatically(

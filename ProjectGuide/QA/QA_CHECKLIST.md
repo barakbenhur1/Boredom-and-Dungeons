@@ -1,3 +1,360 @@
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
+## V10.11.30.20 focused QA-contract gate
+
+- [ ] `BDTutorialOpeningPolishV1011QA` requires `firstLaunchTutorialTravelDistance >= 118f`.
+- [ ] The same scanner forbids retired `firstLaunchTutorialTravelDistance >= 12f`.
+- [ ] Runtime `Gameplay.cs` remains byte-identical to installed V10.11.30.19.
+- [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
+- [ ] Neither `TUTORIAL_V101111_FORWARD_COURSE_MISSING` nor `TUTORIAL_V101113_START_OR_TRIGGER_REGRESSION` appears.
+- [ ] Full V10.11.30.19 Play Mode verification remains pending and unchanged.
+<!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
+
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
+## V10.11.30.19 tutorial runtime-integrity acceptance matrix
+
+- [ ] Move remains active through a small tap and completes only after at least 118 world units of actual travel.
+- [ ] Unity `6000.0.76f1` compiles with no error or warning.
+- [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`, including `BDTutorialRuntimeIntegrityV1011319QA`.
+- [ ] A fresh Editor/Play Mode entry emits neither `Ignoring depth surface load action as it is memoryless` nor `Ignoring depth surface store action as it is memoryless`.
+- [ ] Mother bubble root remains at `(72,-108)` and its shadow/fill/far-tip point left as one joined shape during the whole animation.
+- [ ] Completing Move removes every instruction-card component and leaves only the external `LESSON COMPLETE — MOVE RIGHT TO THE NEXT SCREEN` message.
+- [ ] Reaching the exit fades to full dark, holds full dark while Jump is configured, then reveals a populated Jump card; no respawn overlay, label or visible teleport occurs.
+- [ ] The same hide/travel/dark-hold/new-card sequence works for every non-exempt lesson transition.
+- [ ] The retired station-travel gate never emits `NEW LESSON AREA` or hides a card after lesson-screen initialization.
+- [ ] Jump -> Mount -> Ride remains the sole mechanic-lesson same-screen exception.
+- [ ] Completed-screen actors, projectiles and hazards are inactive during exit travel and cannot damage, collide with or target the player.
+- [ ] WASD and arrows both move; double-tap A/D and double-tap arrows both submit Dodge.
+- [ ] E/Controller East/physical SELECT all perform Interact where taught.
+- [ ] J or left mouse performs Light; hold J or left mouse performs Spin only after Spin unlock.
+- [ ] K or right mouse performs Heavy; hold K or right mouse performs Grapple only after Grapple unlock.
+- [ ] Q/RB/physical A fires ranged; holding the same route charges. Left mouse never charges ranged.
+- [ ] Holding F/LB/physical A heals only in the healing context.
+- [ ] Jump Attack presents and requires Jump + Light; Parry completes only after a timed Light/Heavy parry.
+- [ ] Attack lessons advance only after the correct target dies at the authored impact; obstacle lessons advance only after the player actually clears/crosses them.
+- [ ] The uninterrupted run reaches boss death, contact relic collection and persisted `Completed` without a progression lock.
+<!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:END -->
+
+<!-- BND_DIALOGUE_SCOPE_COMPILE_REPAIR_QA_V1011315 -->
+## V10.11.30.15 focused gate
+
+- Unity compilation has no CS0103 errors in `ChildApproachDialogue.cs`.
+- The mother bubble is slightly lower.
+- The dialogue still enters, holds, exits and plays its voice once.
+- TEST EVERYTHING reports `blockers=0, warnings=0, info=0` before Commit.
+
+<!-- BND_TUTORIAL_FLOW_JUMP_CINEMATIC_QA_V1011314 -->
+## V10.11.30.14 focused Play Mode gate
+
+- Complete Move: the entire card, progress and shadow disappear; the external move-right instruction remains.
+- Cross the nearby right boundary: the Jump screen appears with populated title, detail and binding card.
+- Press Space, controller South and the physical Jump button: each starts a real jump after unlock.
+- Clear the root before the Jump lesson completes.
+- Replay the intro: mother bubble is lower; child POV stays higher through walking and chair climbing; no snap occurs at menu handoff.
+
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:BEGIN -->
+## V10.11.30.10 QA
+
+- [ ] Unity compiles without errors.
+- [ ] TEST EVERYTHING reports 0/0/0.
+- [ ] The impact-owned melee lesson completion contract is read from LessonScreens.cs.
+- [ ] The installer source ZIP and stale Boredom-and-Dungeons_Tutorial_*.zip delivery packages are absent after both success and simulated failure.
+- [ ] Full tutorial and child-menu-camera manual checks pass.
+<!-- BND_TUTORIAL_FINAL_QA_ZIP_CLEANUP_V1011310:END -->
+
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:BEGIN -->
+## V10.11.30.9 manual QA
+
+- [ ] TEST EVERYTHING reports 0/0/0; none of the nine obsolete-token blockers remains.
+- [ ] Child POV is visibly but subtly higher throughout approach and climb.
+- [ ] No vertical snap occurs when the camera settles into the regular menu pose.
+- [ ] Existing cinematic timing, chair clearance, device focus and power-on framing remain unchanged.
+- [ ] Lesson-screen, input, world-proof objective, Parry and mounted-impact checks still pass.
+<!-- BND_TUTORIAL_QA_SEMANTIC_CAMERA_HEIGHT_V1011309:END -->
+
+<!-- BND_V1011307_QA -->
+## V10.11.30.7 verification
+
+- No invalid GUID or malformed `.meta` warning for the lesson-screen runtime
+  partial or its QA scanner.
+- Unity Console has no C# compiler errors.
+- TEST EVERYTHING reports `0 blockers, 0 warnings, 0 info`.
+- Each mechanic lesson starts on a separate screen except
+  Jump → Mount Horse → Ride Horse.
+- The current tutorial disappears at objective completion; the next tutorial
+  appears only after entering the next screen.
+- Left mouse is Light/Spin only; Q is Ranged only; E is Interact.
+- The Parry enemy is passable, normally proportioned, and the lesson completes
+  only after a valid projectile deflection.
+
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
+## V10.11.30.6 manual QA
+
+- [ ] Every mechanic lesson starts after a dark transition on a separate screen.
+- [ ] Jump -> mount -> ride is the only lesson sequence allowed to share one screen.
+- [ ] Current lesson instruction disappears immediately when its real objective completes.
+- [ ] The next lesson instruction appears only after entering the next screen.
+- [ ] Enemies, obstacles and other lesson targets are centered by default.
+- [ ] Left click/J Light; hold Spin only after Spin unlock.
+- [ ] Right click/K Heavy; hold Grapple only after Grapple unlock.
+- [ ] Q Ranged, E Interact, F Heal; WASD and arrows both move.
+- [ ] Timed Light or Heavy parries; parry target is passable and visually unsquashed.
+- [ ] Attack lessons require target death; Dodge requires crossing the hazard.
+- [ ] TEST EVERYTHING reports 0/0/0 and a full tutorial run completes.
+<!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:END -->
+
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:BEGIN -->
+## V10.11.30.5 focused acceptance
+
+- [ ] TEST EVERYTHING: 0 blockers / 0 warnings / 0 info.
+- [ ] A/D and Left/Right move; W/S and Up/Down remain registered across supported input backends.
+- [ ] E interact and Q ranged work before, during and after their highlighted lesson.
+- [ ] Tap Primary performs Light; hold Primary performs Spin without first playing Light.
+- [ ] Tap Heavy performs Heavy; hold Heavy performs Grapple without first playing Heavy.
+- [ ] Mouse, controller and physical buttons follow the same action paths.
+- [ ] Performing a mechanic outside its lesson affects the world but does not skip progression.
+- [ ] Mounted Impact reaches the visible target by contact and cannot stop at an invisible wall.
+- [ ] Complete one uninterrupted tutorial run.
+<!-- BND_TUTORIAL_INPUT_MECHANICS_MOUNTED_IMPACT_V1011305:END -->
+
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:BEGIN -->
+## V10.11.30.4 player asset-name verification
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Runtime contains exactly one `B&D Tutorial Player Simple Right Facing Sprite`.
+- [ ] No validator or Runtime file retains `B&D Tutorial Player Simple Right Facing Idle`.
+- [ ] The player remains visible in Idle, Walk A/B and Action A/B after alignment.
+<!-- BND_TUTORIAL_PLAYER_CANONICAL_ASSET_NAME_V1011304:END -->
+
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:BEGIN -->
+## V10.11.30.3 player-visibility verification
+
+- [ ] `TEST EVERYTHING` is `0/0/0`.
+- [ ] Player is visible on the first gameplay frame.
+- [ ] Pixel child remains active while the source Image remains disabled by design.
+- [ ] Idle, two walk frames and two action frames are visible.
+- [ ] Left/right movement flips the complete player through the parent transform.
+- [ ] No articulated-player child model returns.
+<!-- BND_TUTORIAL_PLAYER_VISIBILITY_RUNTIME_V1011303:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:BEGIN -->
+## V10.11.30.2 QA contract acceptance
+
+- [ ] Editor assembly compiles after validator realignment.
+- [ ] TEST EVERYTHING returns `0 blockers / 0 warnings / 0 info`.
+- [ ] No validator requires `new Vector2(82f, 118f)` or superseded exact player palette literals.
+- [ ] No validator requires the retired V10.11.17 player identity/sprite markers.
+- [ ] Current player checks require composite-child disablement, the simple right-facing sprite marker and positive-X facing authorship.
+- [ ] V10.11.30.1 Runtime files remain byte-identical during this QA-only repair.
+<!-- BND_TUTORIAL_QA_CONTRACT_REALIGNMENT_V1011302:END -->
+
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:BEGIN -->
+## V10.11.30.1 focused acceptance matrix
+
+- [ ] No `RightArrowownArrow` compile error and no obsolete world-mouse `CS0414` warning.
+- [ ] Arrow-only movement/entry branches work alongside controller, physical controls, mouse and touch.
+- [ ] First Light miss does not progress; valid visible impact kills the registered actor and advances.
+- [ ] Heavy follows the same impact-owned actor transaction.
+- [ ] Player is one clean side-profile sprite and flips correctly in both directions.
+- [ ] Spin requires both opposite-side enemies in one attack.
+- [ ] Dodge requires landing on the opposite side of the obstacle.
+- [ ] Full tutorial reaches persisted `Completed`; TEST EVERYTHING is `0/0/0`.
+<!-- BND_TUTORIAL_FINAL_INPUT_COMBAT_PLAYER_V1011301:END -->
+
+## V10.11.28 atomic lesson acceptance
+- [ ] First quick-attack enemy dies and disappears at the correct hit frame.
+- [ ] Wrong mechanics cannot damage focused lesson enemies.
+- [ ] Spin touching one enemy kills neither; one spin touching both kills both together.
+- [ ] Dodge input alone does not complete; the player exits beyond the obstacle.
+- [ ] Prompt/detail/progress/feedback/binding text retain distinct colors.
+- [ ] Articulated player model is visible during movement, combat, riding and respawn.
+
+## V10.11.26 focused Play Mode matrix
+
+- [ ] Quick-attack target dies only when the quick attack connects.
+- [ ] Air-attack target dies only when the airborne quick attack connects.
+- [ ] Heavy target dies only when the heavy impact connects.
+- [ ] Spin group dies from the completed spin hit.
+- [ ] Grapple target survives the pull, then dies from a previously unlocked attack.
+- [ ] Hazard target dies only after entering the hazard.
+- [ ] Mounted-shot target dies only on projectile impact.
+- [ ] Charged-shot target dies only on charged projectile impact.
+- [ ] Mounted-impact target dies only from the horse collision.
+- [ ] A confirmed hit from one lesson cannot auto-complete the next lesson.
+- [ ] Mini-boss and combined combat retain multi-hit health.
+
+<!-- BD ALL LESSON TARGETS LETHAL V10.11.26 -->
+
+# BD TUTORIAL LESSON ENTRY + DAMAGE OWNERSHIP V10.11.25
+
+- Confirm the child starts with a clear runway before the first root.
+- Confirm lesson text appears on step/room entry and does not disappear before success.
+- Confirm the mechanic is available immediately.
+- Confirm pressing/using it without hitting the target does not complete the lesson.
+- Confirm other unlocked mechanics animate and consume resources normally but cannot damage the focused lesson target.
+- Confirm MountedImpact target dies only from horse collision and the gate releases afterward.
+- Confirm Grapple pulls the enemy, changes the prompt to finish it, and advances only after that enemy dies.
+- Confirm no missing _MainTex warning and no handheld screen depth load/store warning.
+
+## BD V10.11.24 MOUNTED RANGED SEQUENCE AND NO MOUNTED DODGE
+- [ ] TEST EVERYTHING reports blockers=0 and warnings=0.
+- [ ] RangedAttack -> Reload -> ChargedShot -> MountedImpact completes without a soft lock.
+- [ ] Both impact-before-reload and reload-before-impact orders advance exactly once.
+- [ ] Ordinary and charged misses remain retryable.
+- [ ] No mounted input path triggers dodge animation or invulnerability.
+
+## BD V10.11.23 LESSON PERSISTENCE AND PROGRESSION GATE
+- [ ] TEST EVERYTHING reports blockers=0 and warnings=0.
+- [ ] Every introduced instruction stays visible until its verified success path runs.
+- [ ] Forward traversal cannot pass the current lesson boundary before success.
+- [ ] Backtracking remains possible and no visible divider line is added.
+- [ ] Full tutorial reaches completion without a hard lock.
+
+## BD V10.11.22.2 QA CONTRACT RECONCILIATION
+- [ ] TEST EVERYTHING reports blockers=0, warnings=0, info=0.
+- [ ] Power-on constants are exactly 9.20 and 10.20 seconds.
+- [ ] Keyboard/mouse and physical-handheld cards are both visible with OR divider.
+- [ ] Heavy attack works with K, right mouse and physical Y.
+- [ ] True reveal hides all content below the moving frontier.
+
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:BEGIN -->
+## V10.11.22 complete acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Movement: WASD/arrows, gamepad, physical D-pad and display-side mouse hold work.
+- [ ] Jump/wall jump: Space, gamepad south, physical B and contextual display click work.
+- [ ] Interaction/mount/dismount: E, gamepad east, physical Select and contextual display click work.
+- [ ] Light/jump attack: J, gamepad west, physical X and left/context display click work exactly once.
+- [ ] Heavy attack: K, gamepad north, physical Y, right mouse and contextual display click work.
+- [ ] Dodge: keyboard/gamepad/physical double-tap and double-clicking one display side work.
+- [ ] Parry: light or heavy keyboard/gamepad/physical input and either display mouse attack work.
+- [ ] Heal: hold F, gamepad LB, physical A and contextual display hold complete only at 100%.
+- [ ] Spin: hold J, gamepad west, physical X and contextual left hold complete only at 100%.
+- [ ] Grapple: hold K, gamepad north, physical Y and display right/context hold complete only at 100%.
+- [ ] Ranged/charged: Q/RB/physical A and display middle/context hold preserve auto-fire behavior.
+- [ ] Combined encounter and boss accept light, heavy and ranged input without duplicate same-frame actions.
+- [ ] Binding cards are centered, professional, readable and never overlap screen content.
+- [ ] Screen power begins immediately after settled framing but keeps its original reveal duration.
+- [ ] The power line is a true mask; unrevealed content stays black until the line crosses it.
+<!-- BND_TUTORIAL_INPUT_PARITY_POWER_REVEAL_V101122:END -->
+
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:BEGIN -->
+## V10.11.21 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] The BBH screen before the melt is visually identical to the previous accepted screen.
+- [ ] The room, camera, dialogue, device and tutorial are unchanged by the melt implementation.
+- [ ] Melt motion is downward and continuous, with broad overlapping rounded lobes and no vertical strips, block steps or pixelated edge.
+- [ ] The real scene is visible behind the melting captured BBH frame with no extra black fade or left-side glitch.
+- [ ] During `AttackEnemy`, one left click on the physical display causes exactly one ordinary attack.
+- [ ] A click outside the display or on hardware buttons does not create a world attack.
+- [ ] Damage and progression occur only at the existing visible melee impact.
+- [ ] Mount, riding, ranged, reload, charged shot, grapple, wall jump, boss and relic triggers still complete in order.
+<!-- BND_SMOOTH_DRIP_TUTORIAL_MOUSE_V101121:END -->
+
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:BEGIN -->
+## V10.11.20.3 focused regression matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Left click inside the tutorial world performs exactly one ordinary light attack at the AttackEnemy lesson.
+- [ ] Clicking handheld navigation/face controls does not also emit a world light attack.
+- [ ] Ability locking still prevents light attack before its lesson.
+- [ ] MountHorse guidance stays visible until the mount animation completes successfully.
+- [ ] Successful mount advances exactly once to RideHorse; failed/out-of-range interact does not advance.
+- [ ] Keyboard/mouse keycaps and physical handheld illustration remain inside their cards.
+- [ ] Full tutorial trigger sequence reaches completion with no stuck, skipped or prematurely hidden instruction.
+<!-- BND_TUTORIAL_QA_CONTRACT_RECOVERY_V1011203:END -->
+
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:BEGIN -->
+## V10.11.18 indie binding visual hotfix
+
+- [ ] TEST EVERYTHING no longer reports `TUTORIAL_V101117_INDIE_BINDING_VISUALS_MISSING`.
+- [ ] `PHYSICAL HANDHELD` is visible above the illustrated D-pad/button control.
+- [ ] Desktop/controller and handheld visuals remain inside the instruction panel.
+<!-- BND_TUTORIAL_INDIE_BINDING_VISUALS_HOTFIX_V101118:END -->
+
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
+## V10.11.17 opening and tutorial recovery
+
+- [ ] BBH artwork drips in 32 clipped strips for about 0.62 seconds; the room never owns or repeats the effect.
+- [ ] No left-edge line, black frame, fade re-arm, or camera-start glitch appears.
+- [ ] Mother bubble text is exactly `Sweety, where are you?`; it begins before movement, remains into the first steps, and exits while walking.
+- [ ] Move completes, Jump unlocks, a valid landing advances to MountHorse beside the horse, Select/E mounts, and RideHorse starts.
+- [ ] No ability works before its own lesson; the expected keyboard/mouse and physical control work immediately after unlock.
+- [ ] Tutorial text appears and disappears with the correct step/trigger throughout one complete run.
+- [ ] Player art is visibly blond/red/blue after every renderer and does not erase hit/death feedback.
+- [ ] Keyboard/mouse or controller input is presented as one colored keycap; the physical handheld side is a drawn D-pad/button/Select image, including B+X for airborne attack.
+- [ ] `Pet [Tab]` and other full-game HUD prompts are absent from the handheld tutorial.
+- [ ] Supplied application icon persists after an Editor restart and appears in a Standalone build.
+<!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->
+
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:BEGIN -->
+## V10.11.16 Play Mode checks
+
+- BBH drip occurs on the intro surface, not on the first child/menu frame.
+- No left-side strip, black flash, or delayed drip remains after the BBH overlay releases.
+- Every actionable tutorial instruction shows keyboard/controller and physical handheld cards together.
+- Non-action informational steps hide both cards and the divider cleanly.
+<!-- BND_TUTORIAL_DRIP_CONTRACT_BINDING_HOTFIX_V101116:END -->
+
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:BEGIN -->
+## V10.11.15 compilation check
+
+- No `CS1010`, `CS1003`, or `CS1026` errors remain in `BDTutorialOpeningPolishV1011QA.cs`.
+- `TEST EVERYTHING` runs after compilation instead of stopping at `UNITY_SCRIPT_COMPILATION_FAILED`.
+<!-- BND_TUTORIAL_QA_COMPILATION_HOTFIX_V101115:END -->
+
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:BEGIN -->
+## V10.11.14 Play Mode checks
+
+- BBH transition: the intro artwork itself visibly drips; no black flash, isolated strip, or delayed drip appears at child-camera start.
+- Jump to Mount: land after the first obstacle and see the Mount Horse lesson immediately while within interaction range.
+- Quick Attack: `J`, world-space left click, controller West and physical `X` each execute one equivalent light attack.
+- Binding UI: both input cards remain visible together and fit inside the tutorial panel on every lesson.
+<!-- BND_TUTORIAL_DRIP_MOUNT_INPUT_BINDINGS_V101114:END -->
+
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:BEGIN -->
+## V10.11.13 Play Mode checks
+
+- Opening: no isolated left-edge drip strip; no child reply bubble; mother line is exactly `Sweety, where are you?`.
+- Tutorial HUD: no Mount/Heal/Pet cards outside the physical handheld presentation.
+- Move -> Jump: Move prompt completes before the obstacle; Jump prompt appears at the obstacle; Jump input was blocked before this point.
+- Ability sequence: interact, light, heavy, dodge, parry and ranged actions are blocked until their own lesson and immediately functional afterward.
+- Prompt lifecycle: each prompt appears at the correct trigger and disappears when its lesson is complete or when travel to the next station begins.
+- Collision: the player cannot cross a living visible enemy from either direction; defeated/hidden enemies no longer block.
+<!-- BND_TUTORIAL_TRIGGER_UNLOCK_HUD_COLLISION_HOTFIX_V101113:END -->
+
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:BEGIN -->
+## V10.11.12 opening hotfix checks
+
+- [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
+- [ ] No `CHILD_APPROACH_CINEMATIC_CONTRACT_INVALID` finding remains.
+- [ ] No `V23R19Q_BOOT_POLISH_MISSING` finding remains.
+- [ ] Mother bubble text is exactly `Sweety, where are you?` including comma and question mark.
+- [ ] No opening timing or drip behavior regressed.
+<!-- BND_TUTORIAL_QA_DIALOGUE_HOTFIX_V101112:END -->
+
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:BEGIN -->
+## V10.11.11 acceptance matrix
+
+- [ ] No compiler error/warning and automated QA reports `0 / 0 / 0`.
+- [ ] BBH intro exits through a fast downward drip with the room already behind it.
+- [ ] Mother bubble clearly points left/off-screen; child bubble appears above the child, says `רק שניה`, uses child voice, and exits before walking.
+- [ ] Major lessons are spatially separated by forward travel.
+- [ ] Future wall/platform/enemies are prepared off-screen; nothing pops in or vanishes while visible.
+- [ ] Camera never scrolls backward and player cannot return to an earlier completed screen.
+- [ ] Player is visibly blond/yellow-haired with red shirt and blue trousers.
+- [ ] Every tutorial text owner is larger, colored, outlined, animated and remains inside its panel.
+- [ ] Ground attack is straight horizontal; airborne attack swings from above to below.
+- [ ] Melee/projectile damage occurs only when visual impact reaches a valid target.
+- [ ] Player and every damaged enemy show a short hit flicker/jitter.
+- [ ] Boss fires exactly three vertically fanned projectiles at range.
+- [ ] Close boss slash and jump-slam are telegraphed on the model and show exact map-space ranges.
+- [ ] Ordinary boss shot works; charged shot still auto-fires at full charge/recovery.
+- [ ] Keyboard/mouse actions visibly press the equivalent physical handheld button.
+- [ ] Player lifts relic overhead before magical light starts.
+- [ ] Light originates from relic, fills screen, then fades to the real main menu.
+<!-- BND_TUTORIAL_FINAL_PRODUCTION_COURSE_V101111:END -->
+
 <!-- BND_TUTORIAL_PLAYER_TEXT_BOSS_ENVIRONMENT_V101110:BEGIN -->
 ## V10.11.10 focused acceptance matrix
 
@@ -1112,3 +1469,23 @@ When activated, verify normal Exit preserves Continue, Abandon removes it, New G
 - [ ] Screen begins powering on at `9.20s`, completes at `10.20s`, and never flashes white.
 - [ ] Skip still produces the valid final camera, powered screen, and active tutorial state.
 <!-- BND_CHILD_DIALOGUE_BUBBLE_POWER_TIMING_V10116:END -->
+
+<!-- BD_TUTORIAL_FINAL_INPUT_TARGET_PLAYER_V101130 -->
+- First enemy Image and actor share state, and the quick-attack handler must start ResolveFirstLaunchTutorialProductionMelee before the impact frame. Keyboard letters are not tutorial action bindings.
+- Player uses one readable silhouette with reduced limb swing and contextual facing.
+
+<!-- BND_V1011308_QA -->
+## V10.11.30.8 verification
+
+- Unity Console contains no `AddBlocker` compiler error.
+- `BDTutorialLessonScreensInputParryV1011306QA` adds blocker findings through
+  `result.findings.Add(new BDOneClickQAFinding(...))`.
+- TEST EVERYTHING reports `0 blockers, 0 warnings, 0 info`.
+- Complete the existing lesson-screen, mouse mapping and Parry checks before
+  Commit and Push.
+
+## V10.11.30.16 checks
+<!-- BND_TUTORIAL_CONTRACT_REPAIR_V1011316 -->
+Require the four child-approach dialogue contracts and the Gameplay-owned LESSON COMPLETE — MOVE RIGHT TO THE NEXT SCREEN contract, plus compilation and one uninterrupted Play Mode tutorial run.
+<!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
+- The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.
