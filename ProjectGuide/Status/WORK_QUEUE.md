@@ -1,3 +1,126 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## Immediate gate — V10.11.30.30
+
+1. Compile in Unity `6000.0.76f1` and run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+2. Clear Console and enter Play Mode from a stopped state; confirm neither memoryless depth load nor store message appears.
+3. Inspect the mother's bubble and confirm the far-left diamond has a complete frame with no missing left/top/bottom edge.
+4. Verify the horse shooter remains after the scripted hit and is killed by the following player attack.
+5. Verify the pixel CONTINUE cue appears after completed lessons, remains while walking to the right edge and disappears before the room scroll.
+6. Verify HorseReturn stays invisible during scrolling and begins only after the destination room settles.
+7. Verify the mounted-shooting target dies exactly at the required projectile impact.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## Immediate gate — V10.11.30.29
+
+1. Compile in Unity `6000.0.76f1` and run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+2. In the horse-shot room, confirm the shooter remains after the scripted hit and is killed by the following Jump Attack rather than disappearing during a reset.
+3. After that room completes, confirm the pixel CONTINUE badge appears while the player walks to the physical right edge and disappears before scrolling.
+4. During the scroll into Horse Return, confirm the horse is absent. After the camera settles, confirm the short beat, then the injured horse's return animation begins.
+5. In Fire While Riding, hit the centered target with the required shot and confirm it dies at visible projectile impact.
+6. Repeat several other completed rooms and confirm each shows exactly one restrained CONTINUE effect with no input lock, fade, teleport or early next-room lesson.
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## Immediate gate — V10.11.30.28
+
+1. Compile in Unity `6000.0.76f1` with no new errors or warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. In the first room, cross and land beyond the obstacle, then move both directions and confirm facing follows movement.
+4. In at least three later on-foot rooms, use Jump before and after completing the room objective.
+5. Watch the horse-shot impact and later HorseReturn: the shooter remains until killed, and the horse stays absent during scrolling before its post-settle return begins.
+6. Complete Heal Horse and press Interact immediately; Mount Again must occur in the same room.
+7. Confirm no blue finish gate or wall-jump wall appears in the Heal/Remount room or any unrelated room.
+8. Watch every continuous room scroll: static assets and ordinary actors enter with the viewport; HorseReturn alone appears only after settlement by design.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## Immediate gate — V10.11.30.27
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Reset first launch and verify room 0 contains only the player, Move and Jump; no horse is visible at any time.
+4. Verify room 1 is centered one-hit Quick Attack and the upper-right `PET` card is absent.
+5. Complete Heavy Attack, Dodge and Parry.
+6. Verify the next room contains Mount then Ride with a reachable horse.
+7. Reach the following room and verify EnemyArrival/HorseShot, then continue to Jump Attack without replaying Quick Attack or soft-locking.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## Immediate gate — V10.11.30.26
+
+1. Compile in Unity `6000.0.76f1` with no errors or new warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Verify room 0 remains Move → Jump and room 1 is MountHorse → RideHorse.
+4. Verify room 2 is the authored EnemyArrival → HorseShot story and room 3 begins Quick Attack on foot.
+5. In room 3, confirm one clearly readable enemy is exactly at screen center, one valid Light impact kills it, the card disappears, and right-edge contact advances.
+6. In Parry, try ordinary attacks and confirm the teacher cannot die. Confirm exactly one projectile loop is visible, a valid parry removes it immediately, and the lesson progresses without residual shots or soft-lock.
+7. Clear Console, reload the scene or re-enter Play Mode, and confirm neither memoryless depth load/store message appears.
+8. Continue through the next right-edge handoff before accepting; do not commit or push until all checks pass.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## Immediate gate — V10.11.30.25
+
+1. Compile in Unity `6000.0.76f1` with no errors or new warnings.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Continue from screen two through every remaining room.
+4. In every room, verify the lesson appears only after camera settlement, remains until its real objective succeeds, and then disappears completely.
+5. After each objective, verify the camera stays fixed and the player must visibly touch the right edge before progression.
+6. Verify every handoff scrolls smoothly into the next room with walking motion and no fade-out, fade-in, black/white cover, respawn, checkpoint restore or teleport.
+7. Verify the next room's enemies, scripted events, reload timing and input do not start before it fully enters the frame.
+8. Complete the boss, collect the relic and persist `Completed` before any commit or push.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## Immediate gate — V10.11.30.24
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Enter screen two and use one ordinary Light attack on the centered enemy.
+4. Confirm the enemy disappears exactly at visible impact and the instruction disappears.
+5. Walk to and through the right edge; confirm screen three is revealed through continuous movement/camera motion with no cut, fade, cover, respawn or teleport.
+6. Stop immediately after screen three appears; do not evaluate later lessons in this gate.
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## Immediate gate — V10.11.30.23 screen two only
+
+1. Compile in Unity `6000.0.76f1`.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Complete screen one and enter screen two.
+4. Confirm the ordinary-attack tutorial appears immediately, the player is on foot at the left and one enemy is centered.
+5. Walk into ordinary melee range and use one Light Attack; the enemy must die at visible impact.
+6. Confirm the complete tutorial card disappears after death.
+7. Walk to the visible right edge; only there may the transition to screen three begin.
+8. Stop immediately after entering screen three; do not evaluate or change later lessons in this pass.
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## Immediate gate — V10.11.30.22 opening screen only
+
+1. Compile in Unity `6000.0.76f1` with no new error or warning.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Reset first launch and verify the Move card appears on the first screen.
+4. Confirm left/blocked input cannot complete Move; walk forward until the Move card is replaced by Jump on the same screen.
+5. Jump over the obstacle, land beyond it and confirm Mount appears immediately on the same screen.
+6. Mount the horse and confirm Ride appears only after the mount animation completes.
+7. Ride to the objective, confirm Ride disappears, continue forward and confirm one clean transition to the next screen.
+8. Stop verification there; do not evaluate or modify later lessons in this pass.
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## Immediate gate — V10.11.30.21
+
+1. Install the focused duplicate-render repair and let Unity recompile/reload.
+2. Clear Console, restore/open the authoritative scene and enter Play Mode once.
+3. Confirm neither memoryless depth load/store message appears.
+4. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+5. Verify the device screen, child power-on reveal and first tutorial card still render without a blank or one-frame pop.
+6. Resume the complete V10.11.30.19 tutorial acceptance run.
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
 ## Immediate gate — V10.11.30.20
 
@@ -14,7 +137,7 @@
 1. Install the cumulative patch over the captured V10.11.30 local state without discarding unrelated work.
 2. Compile with Unity `6000.0.76f1`; require no compiler error or warning.
 3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
-4. In Move, verify one brief tap does not complete the lesson; travel at least 118 world units before completion.
+4. In Move, verify one brief tap does not complete the lesson; travel at least 64 world units before completion.
 5. Re-enter Play Mode from a fresh first-launch reset and confirm the Console does not emit either memoryless depth load/store message.
 6. Verify the lower mother bubble has one attached left-facing pointer throughout enter, hold and exit.
 7. Complete Move, walk right, and verify: no empty tutorial shell, no respawn text/cover, one fully dark screen change, then the populated Jump instruction.

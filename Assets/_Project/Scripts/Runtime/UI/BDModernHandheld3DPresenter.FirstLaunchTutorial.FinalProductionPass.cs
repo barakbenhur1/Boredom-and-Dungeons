@@ -535,14 +535,37 @@ namespace BoredomAndDungeons
 
         private void EnsureFirstLaunchTutorialPersistentCourseGeometryVisible()
         {
+            // BD CONTEXTUAL COURSE GEOMETRY V10.11.30.28
+            // Lesson geometry is prepared before its room scrolls into view, but
+            // it must never exist as collision/visual clutter in another room.
+            bool wallJumpRoom =
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.WallJump;
             if (firstLaunchTutorialWallJumpWall != null)
-                firstLaunchTutorialWallJumpWall.gameObject.SetActive(true);
+                firstLaunchTutorialWallJumpWall.gameObject.SetActive(wallJumpRoom);
             if (firstLaunchTutorialWallJumpPlatform != null)
-                firstLaunchTutorialWallJumpPlatform.gameObject.SetActive(true);
+                firstLaunchTutorialWallJumpPlatform.gameObject.SetActive(wallJumpRoom);
             if (firstLaunchTutorialWallJumpUpperGround != null)
-                firstLaunchTutorialWallJumpUpperGround.gameObject.SetActive(true);
+                firstLaunchTutorialWallJumpUpperGround.gameObject.SetActive(wallJumpRoom);
+
+            bool finishGateRoom =
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossIntro ||
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseOne ||
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossPhaseTwo ||
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.MiniBossDefeated ||
+                firstLaunchTutorialStep == FirstLaunchTutorialStep.Collectible;
             if (firstLaunchTutorialFinishGate != null)
-                firstLaunchTutorialFinishGate.gameObject.SetActive(true);
+            {
+                bool gateOpeningAnimationVisible =
+                    firstLaunchTutorialFinishGateOpen &&
+                    (firstLaunchTutorialFinishGateOpenedAt < 0f ||
+                     Time.unscaledTime -
+                         firstLaunchTutorialFinishGateOpenedAt < 0.64f);
+                firstLaunchTutorialFinishGate.gameObject.SetActive(
+                    finishGateRoom &&
+                    (!firstLaunchTutorialFinishGateOpen ||
+                     gateOpeningAnimationVisible)
+                );
+            }
         }
 
         private void RenderFirstLaunchTutorialFinishGateMotion()

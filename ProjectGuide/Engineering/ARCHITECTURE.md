@@ -1,3 +1,51 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## Tutorial room-completion presentation and handheld-screen depth ownership — V10.11.30.30
+
+- `BDModernHandheld3DPresenter.FirstLaunchTutorial.LessonScreens.cs` remains the single owner of room-complete travel state, the fixed-screen `CONTINUE` composition and the continuous right-edge room handoff.
+- Ordinary target-room geometry and actors are prepared before scrolling. `HorseReturn` is an explicit authored exception whose actor remains inactive until destination settlement, after which the existing timed event owns reveal and movement.
+- `BDModernHandheld3DPresenter.BuildScreenRenderer()` owns both the handheld screen color target and its persistent platform-selected depth/stencil attachment. The attachment is explicitly non-memoryless; no parallel temporary depth owner is introduced.
+- The dialogue pointer remains generated inside `ChildApproachDialogue` under one animated visual parent. Exposed pointer diamonds use backing geometry for complete borders rather than independent animation components.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## Tutorial room visual staging — V10.11.30.28
+
+The existing `BDModernHandheld3DPresenter` lesson-screen owner remains authoritative. A room handoff configures and renders the entire target-room visual state before restoring the source edge frame and starting camera/player interpolation. Gameplay timers and lesson UI still begin only after settlement. Contextual geometry visibility is derived from the active lesson step; no global helper may force wall-jump or finish-gate objects active in unrelated rooms.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## V10.11.30.27 tutorial horse visibility and gameplay-HUD ownership
+
+`FirstLaunchTutorial.LessonScreens.cs` is the sole owner of tutorial-room mapping and horse visibility. Opening steps never activate the horse; the deferred Mount/Ride room explicitly positions and activates it. Progression ownership is: Jump -> AttackEnemy, Parry -> MountHorse, RideHorse -> EnemyArrival and HorseShot -> JumpAttack.
+
+`BDModernHandheld3DPresenter.SuppressFirstLaunchGameplayHud` is the durable first-launch reservation signal. `BDGameplayUiVisibility` consumes that signal before ordinary flow visibility, preventing legacy gameplay prompts such as the upper-right PET card from appearing during setup, active tutorial play or room handoffs.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## V10.11.30.26 focused actor, Parry and render ownership
+
+`FirstLaunchTutorial.LessonScreens.cs` remains the room/order owner. It maps opening steps to distinct room centers, owns the exact-centered Quick Attack layout and preserves the continuous handoff state from V10.11.30.25. `LessonContractsV101128.cs` reasserts the focused Quick Attack target while the lesson is active; `V108Repair.cs` remains the sole lesson-damage authorization owner.
+
+The Parry room has one transaction owner: `LessonScreens.cs` resolves input/success and cancellation, while `Gameplay.cs` updates the one focused projectile path. The production actor stays passive and invulnerable for this lesson, and the normal enemy-projectile transaction is explicitly cancelled. No parallel actor, damage, projectile or progression state machine is introduced.
+
+`BDModernHandheld3DPresenter` remains the product and screen-camera owner. The screen RenderTexture remains depthless/non-memoryless. The product/device camera disables MSAA and depth-texture requests to avoid creating a transient Metal depth attachment; no additional camera or render pipeline is added.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## V10.11.30.25 continuous tutorial-room ownership
+
+`BDModernHandheld3DPresenter.FirstLaunchTutorial.LessonScreens.cs` is the sole room-sequence owner. Active mechanic state remains `FirstLaunchTutorialStep`; pending next-room state remains separate until the completed-room player touches the right edge. The room owner fixes the camera on the completed room, stages the next room at its ordered world center, and performs one unscaled eased camera/player translation. It never activates a transition cover or invokes respawn/checkpoint restoration.
+
+Gameplay and ProductionCourse remain the mechanic and objective owners. They report verified step completion through `SetFirstLaunchTutorialStep`; the room owner decides whether that change stays in the current encounter or is queued for the next room. At handoff completion it restarts the new step clock, input gate, reload timing and active enemy delay before exposing the instruction. Legacy station-travel code is disabled whenever the lesson-screen owner is initialized.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## V10.11.30.21 handheld screen render scheduling
+
+`BDModernHandheld3DPresenter` retains sole ownership of the cached screen RenderTexture and its screen camera. Visibility and child-screen-power code enable that camera before content preparation. `ForceScreenRender` therefore owns canvas batching only; it must not invoke `Camera.Render()` on the already-enabled camera. The camera performs one normal scheduled render later in the frame, preventing a parallel Metal pass while preserving screen prewarm and reveal timing.
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
 ## V10.11.30.19 tutorial transition, input and screen-render ownership
 

@@ -784,14 +784,21 @@ namespace BoredomAndDungeons
 
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.AttackEnemy)
             {
-                float targetX = firstLaunchTutorialEnemyWorldPosition.x;
-                if (Mathf.Abs(targetX - firstLaunchTutorialPlayerWorldPosition.x) > 360f)
-                    targetX = firstLaunchTutorialPlayerWorldPosition.x + 160f;
-                EnsureFirstLaunchTutorialFocusedLessonActorV101130(targetX, TutorialEnemyRole.Sword);
+                // BD EXACT-CENTER VISIBLE ONE-HIT TARGET V10.11.30.26
+                EnsureFirstLaunchTutorialFocusedLessonActorV101130(
+                    firstLaunchTutorialLessonScreenCenterX,
+                    TutorialEnemyRole.Small
+                );
+                PrepareFirstLaunchTutorialPrimaryEnemyVisualV1011326(
+                    new Color(0.92f, 0.16f, 0.24f, 1f)
+                );
             }
             else if (firstLaunchTutorialStep == FirstLaunchTutorialStep.HeavyAttack)
             {
-                EnsureFirstLaunchTutorialFocusedLessonActorV101130(TutorialHeavyTargetX, TutorialEnemyRole.Sword);
+                EnsureFirstLaunchTutorialFocusedLessonActorV101130(
+                    firstLaunchTutorialLessonScreenCenterX,
+                    TutorialEnemyRole.Sword
+                );
             }
         }
 
@@ -845,9 +852,14 @@ namespace BoredomAndDungeons
         {
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.Jump)
             {
-                float obstacleDelta = TutorialJumpObstacleX - firstLaunchTutorialPlayerWorldPosition.x;
-                if (Mathf.Abs(obstacleDelta) > 1f)
-                    return Mathf.Sign(obstacleDelta);
+                // BD OPENING FACING RELEASE V10.11.30.28
+                // Face the upcoming obstacle while approaching it, but never
+                // turn back toward an obstacle that the player already cleared.
+                // After landing, ordinary movement owns facing immediately.
+                float obstacleDelta = TutorialJumpObstacleX -
+                    firstLaunchTutorialPlayerWorldPosition.x;
+                if (obstacleDelta > 1f)
+                    return 1f;
             }
 
             if (firstLaunchTutorialStep == FirstLaunchTutorialStep.AttackEnemy ||

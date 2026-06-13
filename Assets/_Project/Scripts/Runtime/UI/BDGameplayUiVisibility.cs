@@ -19,11 +19,15 @@ namespace BoredomAndDungeons
                 if (BDBBHBootIntro.IsPlaying)
                     return false;
 
-                // The modern handheld owns the whole presentation during the
-                // first-launch tutorial and menus. Gameplay HUD prompts, including
-                // the horse Pet card, must never leak outside the device.
-                if (BDModernHandheld3DPresenter.SuppressLegacyMenu)
+                // BD FIRST-LAUNCH PET/HUD HARD GATE V10.11.30.27
+                // The first-launch reservation is authoritative even during
+                // presenter setup/handoffs. Full-game horse prompts, including
+                // the PET card in the upper-right corner, must never render.
+                if (BDModernHandheld3DPresenter.SuppressFirstLaunchGameplayHud ||
+                    BDModernHandheld3DPresenter.SuppressLegacyMenu)
+                {
                     return false;
+                }
 
                 return true;
             }

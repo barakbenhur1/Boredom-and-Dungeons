@@ -217,9 +217,15 @@ namespace BoredomAndDungeons
         private float menuInputUnlockAt;
         private bool menuInputNeedsRelease;
 
+        public static bool SuppressFirstLaunchGameplayHud =>
+            instance != null &&
+            (instance.firstLaunchTutorialActive ||
+             instance.ShouldReserveFirstLaunchTutorialPresentation());
+
         public static bool SuppressLegacyMenu =>
             instance != null &&
             (instance.ShouldReserveLaunchPresentation() ||
+             SuppressFirstLaunchGameplayHud ||
              (instance.presentationReady && instance.visible));
 
         public static bool OwnsMenuInput =>
@@ -894,7 +900,12 @@ namespace BoredomAndDungeons
             deviceCamera.nearClipPlane = IntroMainMenuCameraNearClip;
             deviceCamera.farClipPlane = IntroMainMenuCameraFarClip;
             deviceCamera.allowHDR = false;
-            deviceCamera.allowMSAA = true;
+            // BD NON-MEMORYLESS DEVICE CAMERA DEPTH V10.11.30.26
+            // The high-resolution product camera does not need a transient
+            // multisampled depth attachment. On Metal that attachment caused
+            // memoryless depth load/store warnings during scene restoration.
+            deviceCamera.allowMSAA = false;
+            deviceCamera.depthTextureMode = DepthTextureMode.None;
 
             BuildCinematicProductEnvironment();
         }
@@ -908,8 +919,21 @@ namespace BoredomAndDungeons
                     RenderTextureFormat.ARGB32,
                     0
                 );
-            // BD EXPLICIT NON-MEMORYLESS DEPTHLESS SCREEN RT V10.11.30.19
-            screenDescriptor.depthStencilFormat = GraphicsFormat.None;
+            // BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30
+            // A camera rendering ScreenSpaceCamera uGUI still needs a real
+            // depth/stencil attachment for clipping and masking. A depthless
+            // target made Unity allocate an internal transient memoryless depth
+            // surface on Metal, which produced ignored load/store warnings.
+            // Supply the platform-supported persistent depth/stencil format and
+            // explicitly prohibit memoryless storage on the owned RenderTexture.
+            GraphicsFormat screenDepthStencilFormat =
+                SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil);
+            if (screenDepthStencilFormat == GraphicsFormat.None)
+            {
+                screenDepthStencilFormat =
+                    GraphicsFormat.D32_SFloat_S8_UInt;
+            }
+            screenDescriptor.depthStencilFormat = screenDepthStencilFormat;
             screenDescriptor.memoryless = RenderTextureMemoryless.None;
             screenDescriptor.msaaSamples = 1;
             screenDescriptor.bindMS = false;
@@ -1094,12 +1118,16 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            // BD AUTOMATIC SCREEN CAMERA RENDER SCHEDULING V10.11.30.21
+            // The screen camera is already enabled by the presentation/power
+            // owner before this method is called. Unity renders enabled cameras
+            // later in the same frame, after Update and canvas batching. Calling
+            // Camera.Render here created a second Metal render pass with a
+            // transient depth attachment during scene restore. Keep the canvas
+            // preparation, but let the existing camera own its single scheduled
+            // render so screen power-on remains fully prepared without duplicate
+            // load/store actions.
             Canvas.ForceUpdateCanvases();
-
-            bool wasEnabled = screenCamera.enabled;
-            screenCamera.enabled = true;
-            screenCamera.Render();
-            screenCamera.enabled = wasEnabled || visible;
         }
 
         private void BuildDeviceModel()

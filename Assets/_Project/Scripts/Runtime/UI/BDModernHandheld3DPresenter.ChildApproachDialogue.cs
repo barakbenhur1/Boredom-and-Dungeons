@@ -182,6 +182,32 @@ namespace BoredomAndDungeons
             seam.raycastTarget = false;
 
 
+            // BD COMPLETE FAR-LEFT DIAMOND FRAME V10.11.30.30
+            // The far-left pointer diamond owns a centered dark backing diamond,
+            // not a directional drop shadow. This gives all four edges a complete
+            // frame while preserving the approved left-pointing composition.
+            GameObject farTailShadowObject = new GameObject(
+                "Mother Tail Curve Far Frame",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image)
+            );
+            farTailShadowObject.transform.SetParent(
+                visualObject.transform,
+                false
+            );
+            RectTransform farTailShadowRect =
+                farTailShadowObject.GetComponent<RectTransform>();
+            farTailShadowRect.anchorMin = new Vector2(0f, 1f);
+            farTailShadowRect.anchorMax = new Vector2(0f, 1f);
+            farTailShadowRect.pivot = new Vector2(0.5f, 0.5f);
+            farTailShadowRect.anchoredPosition = new Vector2(-42f, -66f);
+            farTailShadowRect.sizeDelta = new Vector2(26f, 26f);
+            farTailShadowRect.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            Image farTailShadow = farTailShadowObject.GetComponent<Image>();
+            farTailShadow.color = outline.effectColor;
+            farTailShadow.raycastTarget = false;
+
             GameObject farTailObject = new GameObject(
                 "Mother Tail Curve Far",
                 typeof(RectTransform),
@@ -206,10 +232,11 @@ namespace BoredomAndDungeons
             // and outer diamonds stay behind the panel; only the seam cover is
             // allowed above the panel to close the join cleanly.
             tailShadowObject.transform.SetSiblingIndex(0);
-            farTailObject.transform.SetSiblingIndex(1);
-            tailObject.transform.SetSiblingIndex(2);
-            panelObject.transform.SetSiblingIndex(3);
-            seamObject.transform.SetSiblingIndex(4);
+            farTailShadowObject.transform.SetSiblingIndex(1);
+            farTailObject.transform.SetSiblingIndex(2);
+            tailObject.transform.SetSiblingIndex(3);
+            panelObject.transform.SetSiblingIndex(4);
+            seamObject.transform.SetSiblingIndex(5);
 
             GameObject textObject = new GameObject(
                 "Mother Speech Bubble Text",

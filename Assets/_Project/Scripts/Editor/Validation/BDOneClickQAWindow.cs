@@ -500,6 +500,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDTutorialInputMechanicsMountedImpactV1011305QA.Scan(result);
             BDTutorialLessonScreensInputParryV1011306QA.Scan(result);
             BDTutorialRuntimeIntegrityV1011319QA.Scan(result);
+            BDScreenRenderSchedulingV1011321QA.Scan(result);
+            BDTutorialOpeningScreenSequenceV1011322QA.Scan(result);
+            BDTutorialSecondScreenLightAttackV1011323QA.Scan(result);
+            BDTutorialContinuousRoomSequenceV1011325QA.Scan(result);
+            BDTutorialCenteredParryHorseMetalV1011326QA.Scan(result);
+            BDTutorialHorseFreeOpeningPetSuppressionV1011327QA.Scan(result);
+            BDTutorialFlowCoherenceV1011328QA.Scan(result);
+            BDTutorialHorseCombatContinueV1011329QA.Scan(result);
+            BDTutorialBubbleDepthV1011330QA.Scan(result);
             BDChildApproachCinematicQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);

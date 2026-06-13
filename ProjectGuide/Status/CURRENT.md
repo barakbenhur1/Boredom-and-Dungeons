@@ -1,11 +1,136 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## 2026-06-13 — Horse combat persistence, post-scroll return, CONTINUE cue, bubble frame and Metal depth repair V10.11.30.30
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This cumulative focused pass preserves the installed V10.11.30.28 state and completes the pending room-flow corrections: the enemy who shoots the horse remains until the player kills it; the injured horse stays fully hidden during room scrolling and begins its return only after the destination room settles; mounted shooting damage now carries the required ranged/charged semantic source; and every completed room shows one restrained pixel-style `CONTINUE` cue while the player walks to the physical right edge.
+
+The opening mother bubble now gives the far-left diamond a complete centered dark frame. The handheld screen RenderTexture now owns a persistent platform-supported depth/stencil attachment with memoryless storage explicitly disabled, replacing the depthless target that caused Unity/Metal to allocate an internal transient memoryless depth surface.
+
+**QA truth:** package/static verification only. Unity compilation, `TEST EVERYTHING 0/0/0`, a clean-console Play Mode restart, and focused visual/gameplay verification remain mandatory.
+
+**Exact resume point:** install V10.11.30.30, clear Console, enter Play Mode, verify no memoryless messages, inspect the complete far-left diamond frame, then verify HorseShot kill -> CONTINUE -> physical edge -> settled HorseReturn and the mounted-shooting kill.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## 2026-06-13 — Horse combat persistence, post-scroll return and room-complete cue V10.11.30.29
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This focused repair keeps the enemy that wounds the horse in the same room for the subsequent Jump Attack objective; the shooter is removed only by the player's real visible kill. The injured horse is the one intentional target-room preload exception: it remains inactive throughout the continuous scroll, the destination room settles, a short authored beat completes, and only then the horse becomes visible and begins its return run. Mounted ordinary and charged projectile impacts now route through the authoritative lesson-damage source instead of generic `None`, so the mounted shooting target can take the required damage and die at visible impact.
+
+Every room that has completed its final objective now displays one composed pixel-style `CONTINUE` badge after the lesson card disappears. The badge uses stepped entrance frames and a restrained arrow pulse, remains non-interactive while the player walks to the physical right edge, and disappears before the cover-free camera scroll begins.
+
+**QA truth:** static/package verification only. Unity compilation, `TEST EVERYTHING 0/0/0`, and focused Play Mode verification remain mandatory.
+
+**Exact resume point:** install V10.11.30.29, verify HorseShot -> same-room shooter kill -> professional CONTINUE -> physical edge scroll -> settled HorseReturn, then verify the mounted shooting target dies from the correct shot.
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## 2026-06-13 — Tutorial room-flow coherence V10.11.30.28
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This focused repair preserves the accepted room order and fixes five observed regressions: the opening Jump room releases forced obstacle-facing after the player lands beyond the obstacle; Jump remains available in every later on-foot room and during post-lesson travel to the right edge; Heal Horse changes directly to Mount Again in the same room; the returning/injured horse is staged at its authored first animation pose before it becomes visible; and wall-jump/finish-gate geometry exists only in its owning room. Target-room static assets, ordinary actors, hazards and geometry are positioned before the continuous scroll; HorseReturn is the authored exception and remains hidden until settlement.
+
+**QA truth:** static/package verification only. Unity compilation, `TEST EVERYTHING 0/0/0`, and a focused full tutorial Play Mode pass remain mandatory.
+
+**Exact resume point:** install V10.11.30.28, compile, run `TEST EVERYTHING`, then verify opening facing, persistent Jump, horse hit/return first frames, immediate post-heal remount, no stray wall/gate, and no asset pop-in during room scrolling.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## 2026-06-13 — horse-free opening, deferred horse lesson and PET HUD suppression V10.11.30.27
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The opening tutorial room now contains only Move and Jump. The horse is inactive and invisible throughout WhiteBoot, Move and Jump, and a valid landing queues the centered Quick Attack room directly. Quick Attack, Heavy Attack, Dodge and Parry follow before the dedicated Mount/Ride room. Mount/Ride then occupies one room immediately before the separate EnemyArrival/HorseShot story room; the horse-shot story advances to Jump Attack instead of replaying Quick Attack.
+
+The full-game gameplay HUD now has an explicit first-launch reservation gate. The upper-right `PET` card and every other full-game horse prompt are suppressed for the entire first-launch tutorial, including presenter setup and room handoffs.
+
+Unity compilation, `TEST EVERYTHING 0/0/0`, and focused Play Mode verification remain required. Exact resume point: install V10.11.30.27, verify no horse in room 0, Quick Attack in room 1, no upper-right PET prompt, then verify Parry -> Mount/Ride -> HorseShot without a soft lock.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## 2026-06-13 — centered Quick Attack target, single-owner Parry, horse-room order and Metal depth repair V10.11.30.26
+
+**Classification:** `CURRENT / BLOCKING TUTORIAL REPAIR IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The latest Play Mode screenshot and report reopened four blocking tutorial defects. The Quick Attack room now owns exactly one passive one-health Small enemy at the exact room center and reasserts its 64×92 pixel visual every frame until the first valid Light impact kills it. The Parry room now owns one persistent passive ranged teacher and one tutorial projectile transaction; ordinary damage cannot kill that teacher, any production projectile is cancelled, and a successful parry atomically cancels every projectile before queuing the next room so progression cannot soft-lock.
+
+Tutorial ordering is corrected to four explicit opening rooms: room 0 teaches Move then Jump; room 1 teaches MountHorse then RideHorse; room 2 contains the authored EnemyArrival/HorseShot story; room 3 teaches Quick Attack. This places the complete horse tutorial immediately before the enemy-who-shoots-the-horse room without merging either room into the Quick Attack lesson. The expanded world bounds and room map preserve all later V10.11.30.25 continuous right-edge handoffs.
+
+The remaining Metal warning investigation now targets the product/device camera rather than the already-depthless screen RenderTexture. The device camera disables MSAA and requests no depth texture, while the screen descriptor remains depthless, single-sampled and explicitly non-memoryless. No warning-removal claim is made until a fresh Unity/Metal run.
+
+**Exact resume point:** install V10.11.30.26 over V10.11.30.25, compile in Unity `6000.0.76f1`, run `Boredom And Dungeons -> TEST EVERYTHING` at `0/0/0`, then verify room 1 horse teaching, room 2 horse-shot story, room 3 centered one-hit Quick Attack target, the complete Parry transaction and absence of the two memoryless warnings.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## 2026-06-12 — remaining tutorial rooms and continuous edge handoffs V10.11.30.25
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+The active tutorial repair now extends the accepted first and second screens through every remaining lesson room. Each mechanic room is spatially ordered on one continuous course. Its instruction appears only after the room fully owns the frame; completing the real objective hides the complete instruction card and suspends the completed room. The camera then remains locked to that room while the player physically walks to the visible right edge. Contact with that edge starts one smooth camera/player handoff into the next room. No room handoff uses fade-out, fade-in, a black/white cover, respawn, checkpoint restore, teleport or an immediate step swap.
+
+The handoff keeps walking animation active, reveals the next room during the camera move, and starts the next lesson's timers, enemy reactions, reload timing and input unlock only after camera settlement. The expanded room map covers Heavy, Dodge, Parry, Jump Attack, horse return/heal/remount, mounted ranged/reload/charged shot/impact/dismount, Spin, Grapple, hazard knockback, side path, combined encounter, Wall Jump, boss and collectible. Existing objective rules remain authoritative.
+
+No Unity result is claimed. **Exact resume point:** install V10.11.30.25, compile in Unity `6000.0.76f1`, run `TEST EVERYTHING` at `0/0/0`, then play from screen two through completion and verify every room requires physical right-edge contact and every inter-room move is continuous and cover-free.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## 2026-06-12 — Screen-two Light impact and continuous screen-three handoff V10.11.30.24
+
+**Classification:** `CURRENT / IMPLEMENTED LOCALLY / UNITY VERIFICATION REQUIRED`
+
+This focused repair changes only the second tutorial screen and its handoff into the third. The centered ordinary-attack target now dies at the visible Light impact through the authoritative lesson-damage source instead of being rejected as source `None`. After the kill, the instruction disappears and the player walks to the right edge. Crossing that edge performs a continuous world/camera handoff into screen three with no fade, black cover, respawn, player relocation or visible cut. Screen-three gameplay content is otherwise unchanged.
+
+Unity compilation, `TEST EVERYTHING`, and focused Play Mode verification remain required.
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## 2026-06-12 — second-screen ordinary-attack repair V10.11.30.23
+
+**Classification:** `CURRENT / USER-SCOPED SCREEN-TWO REPAIR IMPLEMENTED IN PATCH / UNITY VERIFICATION REQUIRED`
+
+This pass is limited to tutorial screen two. The first-screen Ride objective now queues `AttackEnemy` directly, so no `EnemyArrival` or `HorseShot` beat appears first. During the opaque screen transition the player is placed on foot at the left, the horse is hidden, one passive one-health enemy is placed at the exact screen center, the ordinary-attack instruction appears immediately and Light Attack is unlocked.
+
+A valid ordinary melee impact kills that enemy, hides the entire lesson card and queues screen three. The camera remains fixed on screen two while the player walks to its visible right edge; only reaching that edge starts the transition to screen three. No screen-three mechanic or later tutorial behavior is changed.
+
+No Unity result is claimed yet. **Exact resume point:** install V10.11.30.23 over V10.11.30.22, compile, run `TEST EVERYTHING` at `0/0/0`, verify only entry to screen two → walk to centered enemy → one ordinary attack kill → hidden tutorial → right-edge transition, then stop after entering screen three.
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## 2026-06-12 — first-screen Move → Jump → Mount → Ride repair V10.11.30.22
+
+**Classification:** `CURRENT / USER-SCOPED OPENING-TUTORIAL REPAIR IMPLEMENTED IN PATCH / UNITY VERIFICATION REQUIRED`
+
+The user explicitly limited this pass to the first tutorial screen and the handoff immediately after mounted movement. The required sequence is now authoritative: the Move instruction appears; 64 units of real forward displacement complete it; the same screen replaces it with Jump; landing beyond the obstacle replaces Jump with Mount; completion of the mount animation replaces Mount with Ride; reaching the mounted-travel objective hides Ride; the player then travels a short reachable distance and crosses into the next screen.
+
+This patch changes no lesson after the first screen, no combat, no later enemy behavior, no dialogue, no camera, no rendering and no menu behavior. It fixes two opening deadlocks: Move no longer queues Jump onto a new screen, and the post-Ride screen exit is clamped inside the RideHorse movement boundary. Attempted movement against the world edge or obstacle no longer counts as walking progress.
+
+No Unity result is claimed yet. **Exact resume point:** install V10.11.30.22, compile, run `TEST EVERYTHING` at `0/0/0`, then verify only Move → Jump → Mount → Ride → next-screen handoff before requesting the next tutorial repair.
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## 2026-06-12 — duplicate screen-camera render removal V10.11.30.21
+
+**Classification:** `CURRENT / BLOCKING METAL-DIAGNOSTIC REPAIR IMPLEMENTED IN PATCH / UNITY VERIFICATION REQUIRED`
+
+The post-V10.11.30.19 run still printed exactly one `Ignoring depth surface load action as it is memoryless` and one matching store-action message. The captured Editor log places the pair immediately after restoring `Temp/__Backupscenes/0.backup`. Repository inspection found one direct render invocation in the entire project: `screenCamera.Render()` inside `ForceScreenRender`, while the same screen camera is already enabled by the presentation and child-screen-power owners.
+
+V10.11.30.21 removes only that duplicate explicit render. `ForceScreenRender` continues to force canvas batching, while Unity's already-enabled screen camera performs its normal scheduled render later in the same frame. The explicit depthless/non-memoryless screen RenderTexture descriptor, child power-on timing, content prewarm, tutorial flow, input, dialogue and gameplay are preserved. Focused QA forbids the direct `Camera.Render` regression and confirms both the screen descriptor and project framebuffer-memoryless setting remain non-memoryless.
+
+No warning-removal or `0/0/0` result is claimed until Unity reruns. **Exact resume point:** install V10.11.30.21, allow the Editor to recompile/reload the scene, confirm the two memoryless messages no longer appear, rerun `TEST EVERYTHING`, then continue the full tutorial Play Mode matrix.
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
 ## 2026-06-12 — Move-threshold QA contract realignment V10.11.30.20
 
 **Classification:** `CURRENT / QA-ONLY BLOCKER REPAIR IMPLEMENTED IN PATCH / UNITY RERUN REQUIRED`
 
-The post-V10.11.30.19 Unity report generated at `2026-06-12T18:27:10.9805520Z` reached compilation and `TEST EVERYTHING`, then blocked on two mutually contradictory legacy tokens in `BDTutorialOpeningPolishV1011QA`: the scanner still required the retired `12f` Move threshold and simultaneously forbade the active `118f` threshold. Runtime already contains the intended `118f` world-travel requirement from V10.11.30.19.
+The post-V10.11.30.19 Unity report generated at `2026-06-12T18:27:10.9805520Z` reached compilation and `TEST EVERYTHING`, then blocked on two mutually contradictory legacy tokens in `BDTutorialOpeningPolishV1011QA`: the scanner still required the retired `12f` Move threshold and simultaneously forbade the active `64f` threshold. Runtime already contains the intended `64f` world-travel requirement from V10.11.30.19.
 
-V10.11.30.20 changes no Runtime, input, presentation, camera, dialogue, lesson ordering or progression behavior. It realigns the older scanner to require `firstLaunchTutorialTravelDistance >= 118f` and forbid `firstLaunchTutorialTravelDistance >= 12f`, matching the authoritative runtime-integrity QA owner.
+V10.11.30.20 changes no Runtime, input, presentation, camera, dialogue, lesson ordering or progression behavior. It realigns the older scanner to require `firstLaunchTutorialTravelDistance >= 64f` and forbid `firstLaunchTutorialTravelDistance >= 12f`, matching the authoritative runtime-integrity QA owner.
 
 No `0/0/0` result is claimed yet. **Exact resume point:** install V10.11.30.20, let Unity recompile the Editor assembly, rerun `Boredom And Dungeons -> TEST EVERYTHING`, require `0 blockers / 0 warnings / 0 info`, then continue the complete V10.11.30.19 Play Mode matrix without reinstalling or changing Runtime.
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
@@ -17,7 +142,7 @@ No `0/0/0` result is claimed yet. **Exact resume point:** install V10.11.30.20, 
 
 The exact local V10.11.30 state bundle exposed seven connected regressions and this cumulative repair addresses them in the existing owners:
 
-- the opening Move lesson requires 118 world units of real travel, so a single tap cannot instantly finish it and trigger a screen change;
+- the opening Move lesson requires 64 world units of real travel, so a single tap cannot instantly finish it and trigger a screen change;
 - verified lesson completion explicitly releases the persistent-instruction latch before disabling the complete composed card, so an empty panel cannot be reactivated;
 - lesson-to-lesson changes use fade-in, a real fully opaque hold, then fade-out, and the next step/layout is applied only inside that hold, so screen changes cannot read as a checkpoint respawn;
 - the superseded station-travel presenter is disabled whenever the authoritative lesson-screen owner is active, preventing duplicate “NEW LESSON AREA” feedback or a second instruction gate;
@@ -86,7 +211,7 @@ The supplied pre-repair Unity report was green at `0 blockers / 0 warnings / 0 i
 <!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
 ## Tutorial lesson-screen repair V10.11.30.6
 
-- Every mechanic lesson now owns a separate screen. The only lesson exception is jump -> mount -> ride, which may continue on the jump screen.
+- The first screen owns Move -> Jump -> Mount -> Ride. Every later mechanic lesson owns a separate screen.
 - Completing an objective hides that lesson instruction immediately and queues the next lesson without displaying it.
 - The next lesson is applied only after the player moves through the right-side screen exit and the dark screen transition completes.
 - Lesson targets default to the camera center unless the mechanic requires a paired or offset arrangement.

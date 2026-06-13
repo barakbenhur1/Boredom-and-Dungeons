@@ -1,7 +1,86 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## Dialogue pointer, persistent screen depth and completed-room cue — V10.11.30.30
+
+The opening mother bubble's left-facing pointer is a layered diamond composition. Every exposed diamond owns a complete dark frame; the far-left diamond uses a centered larger backing diamond rather than a one-direction drop shadow. All layers remain under the same animated visual parent.
+
+The handheld screen camera renders into an owned RenderTexture with one platform-supported persistent depth/stencil attachment. Memoryless storage, MSAA and depth-texture requests remain disabled. A depthless target is prohibited because Unity may internally substitute a transient memoryless depth surface for ScreenSpaceCamera UI clipping/masking.
+
+After a room objective is proven complete, the instruction composition disappears and one fixed-screen pixel `CONTINUE` cue appears while the player walks to the physical right edge. It disappears before continuous scrolling. HorseReturn remains the single authored preloading exception: it is revealed only after the destination room settles.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## Horse-shot, HorseReturn and post-lesson CONTINUE contract — V10.11.30.29
+
+`EnemyArrival -> HorseShot -> JumpAttack` is one room-owned sequence. The shooter that visibly wounds the horse remains the same living actor for JumpAttack and is removed only by the player's verified visible kill. The room is not complete merely because the scripted horse hit finished.
+
+Target-room static assets, ordinary actors, hazards and geometry still preload before scrolling. HorseReturn is the explicit authored exception: the injured horse remains inactive throughout the scroll and is revealed only after the destination camera has settled; its return animation then begins from the left after a short beat.
+
+When a room's final objective is complete and edge travel becomes available, the instruction composition disappears and one fixed-screen pixel-style `CONTINUE` badge appears. It is informational, never a button. It uses a short stepped entrance and restrained directional pulse, remains visible while the player walks to the physical right edge, and is removed before the continuous handoff starts.
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## Room-flow coherence addendum — V10.11.30.28
+
+- Learned mechanics are persistent. In particular, Jump remains usable in every later on-foot room and while walking to the right edge after objective completion.
+- A room may contain several tightly coupled beats when no new spatial context is needed. Horse Return, Heal Horse and Mount Again share one room; healing completion immediately exposes Mount Again.
+- Continuous room transitions preload target-room static props, ordinary actors, hazards and obstacle geometry before camera motion. The authored HorseReturn actor is the explicit exception: it stays hidden during the scroll and begins returning only after settlement.
+- Contextual geometry is owned by its lesson room. Wall-jump structures and the finish gate must be inactive in all unrelated rooms and cannot become invisible or visible blockers.
+- Scripted horse animation starts from the authored first pose in the same frame as activation. An idle or target-position horse may not flash before hit/return motion begins.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## Current opening and horse-order contract — V10.11.30.27
+
+Room 0 contains only `Move -> Jump`; the horse is neither active nor visible there. Landing beyond the root completes Jump and queues room 1 `AttackEnemy`. The early mechanic order is `AttackEnemy -> HeavyAttack -> Dodge -> Parry`. A successful Parry then queues the dedicated `MountHorse -> RideHorse` room. The next separate room owns `EnemyArrival -> HorseShot`, and the horse-shot story advances to `JumpAttack`.
+
+The full-game horse HUD is prohibited during the first-launch presentation. In particular, no upper-right `PET` card may render while the tutorial is reserved, active or moving between rooms.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## Current opening-room and focused-combat contract — V10.11.30.26
+
+The opening sequence uses four separate rooms with continuous physical right-edge handoffs: room 0 teaches `Move → Jump`; room 1 teaches `MountHorse → RideHorse`; room 2 contains `EnemyArrival → HorseShot`; room 3 teaches `AttackEnemy`. Only steps listed together share a room. A later room's instruction, actors and timers do not begin before its camera handoff has settled.
+
+The Quick Attack room contains one passive one-health Small enemy at the exact room center. Its full pixel character remains readable and active until the visible Light impact kills it. Completion hides the entire instruction card; the player then reaches the visible right edge to advance.
+
+The Parry room uses a persistent passive ranged teacher and one focused tutorial projectile transaction. The teacher is not a kill target and cannot take player damage during Parry. Production enemy projectiles are cancelled while the focused transaction owns the room. A successful parry cancels all projectile state before the animation advances the lesson, preventing residual shots and progression soft-locks.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## Continuous room progression contract — V10.11.30.25
+
+After the authored opening chain, every new mechanic lesson owns a separate spatial room. A room becomes active only when its camera settlement is complete. The instruction remains visible until the mechanic's real objective succeeds. Success hides the complete instruction UI and leaves normal horizontal movement available. The room camera remains fixed, making the right boundary visually meaningful. Progression occurs only when the player physically reaches that boundary.
+
+Room changes are diegetic course movement, not scene cuts. The next room is prepared beyond the current edge and revealed by one smooth camera/player translation while the player retains a locomotion pose. Transition overlays, fade-out/fade-in, black or white frames, respawn, checkpoint restoration and teleporting are prohibited. New-room instructions, timers, enemy actions and input unlocks begin only after the new room owns the frame.
+
+The only approved opening exception remains Move → Jump → Mount → Ride on the first screen. Boss phase changes remain inside the same boss room because they are phases of one encounter rather than new traversal rooms.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## Screen-two ordinary attack and room exit contract
+
+Screen two contains one passive enemy centered in the room. Its tutorial appears on entry. One valid ordinary Light attack kills it at visible impact; the tutorial then disappears. The player walks to the room's right edge and enters screen three through continuous world and camera movement. Room changes do not use fades, black covers, respawns, teleports or hidden player-position rewrites.
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## Screen two contract — ordinary attack
+
+Screen two begins directly after the first screen's mounted-travel exit. Its entry state is `AttackEnemy`: player on foot at the left, horse hidden, one passive one-health enemy at the exact center, and the ordinary Light Attack instruction visible immediately. The enemy dies only from the visible ordinary melee impact. That death removes the instruction but does not open the next screen. The player must walk to the fixed screen's right edge before screen three transitions in.
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## V10.11.30.22 authoritative opening-screen sequence
+
+The opening tutorial is split into authored rooms: room 0 contains `Move → Jump`; room 1 contains `MountHorse → RideHorse`; room 2 contains `EnemyArrival → HorseShot`; room 3 contains `AttackEnemy`. Prompts replace one another only within their listed room. Every completed room then requires physical contact with its visible right edge before the continuous handoff begins.
+
+This opening-screen exception is intentionally scoped. No later lesson ordering or completion contract is changed by V10.11.30.22.
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
 <!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
 ## V10.11.30.19 authoritative lesson-screen and input contract
 
-Every mechanic lesson begins on a new screen and displays its populated instruction only after that screen becomes active. Jump -> Mount -> Ride is the sole mechanic exception. Objective completion hides the complete current instruction composition, freezes the completed lesson's transient hazards/actors/projectiles, and leaves only the external move-right message. The next step and layout are applied during a fully opaque screen-transition hold; this handoff is not a death, checkpoint restore or respawn.
+The opening first screen contains the authored sequence Move -> Jump -> Mount -> Ride. After that opening chain, each later mechanic lesson begins on a new screen and displays its populated instruction only after that screen becomes active. Objective completion hides the complete current instruction composition, freezes the completed lesson's transient hazards/actors/projectiles, and leaves only the external move-right message. The next step and layout are applied during a fully opaque screen-transition hold; this handoff is not a death, checkpoint restore or respawn.
 
 Canonical desktop controls are: WASD/arrows Move; Space Jump; E Interact; J/left mouse Light; K/right mouse Heavy; Q/hold Q Ranged/Charged; hold F Heal; double-tap A/D or left/right Dodge; hold J/left mouse Spin; hold K/right mouse Grapple. Controller and physical handheld cards present their matching semantic controls at the same time. A lesson completes only from its authored world result, never merely from button input.
 
@@ -20,7 +99,7 @@ The mother bubble stays at the approved lower position and points left. The proj
 <!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:BEGIN -->
 ## V10.11.17 early-course and binding contract
 
-The opening course begins with the player in front of the obstacle. Abilities remain locked until their own lesson. Clearing the root during `Jump` normalizes the player to `TutorialHorseStartX - 64f`, enters `MountHorse`, and keeps that instruction visible until the interaction succeeds; mounting enters `RideHorse` immediately.
+The opening course begins with the player in front of the obstacle. Abilities remain locked until their own lesson. Clearing and landing beyond the obstacle completes room 0; physical right-edge contact carries the player continuously into room 1, where MountHorse remains visible until mounting succeeds and then changes immediately to RideHorse.
 
 Every actionable instruction simultaneously presents the active keyboard/mouse or controller route and an illustrated physical handheld control. `JumpAttack` shows B + X, movement/dodge show the D-pad, and hold actions include a HOLD label. The final visible player art is blond hair, red shirt, and blue trousers rather than the generic entity tint.
 <!-- BND_OPENING_TUTORIAL_RECOVERY_V101117:END -->

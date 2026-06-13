@@ -550,6 +550,10 @@ namespace BoredomAndDungeons
                 firstLaunchTutorialHorseWorldPosition,
                 firstLaunchTutorialHorseWorldPosition
             );
+            // BD HORSE HIT FIRST-FRAME POSE V10.11.30.28
+            // Apply the authored impact pose in the same frame as the hit. The
+            // injured horse cannot flash once in its ordinary idle pose first.
+            UpdateFirstLaunchTutorialHorseHitPresentation(0f);
         }
 
         private Vector2 ResolveFirstLaunchTutorialActionDirection()

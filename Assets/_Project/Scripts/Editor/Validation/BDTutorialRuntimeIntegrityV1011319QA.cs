@@ -29,23 +29,24 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root, LessonPath,
                 "TUTORIAL_V1011319_SCREEN_FLOW_INTEGRITY_MISSING",
-                "TutorialLessonScreenTransitionSeconds = 0.62f",
-                "TutorialLessonScreenFadeInEnd = 0.32f",
-                "TutorialLessonScreenFadeOutStart = 0.68f",
-                "alpha = 1f;",
+                "TutorialLessonScreenHandoffSeconds = 0.72f",
+                "BeginFirstLaunchTutorialContinuousRoomHandoff",
+                "UpdateFirstLaunchTutorialContinuousRoomHandoff",
                 "SuspendFirstLaunchTutorialCompletedLessonWorld",
                 "ResetFirstLaunchTutorialTransientWorldForNewScreen",
                 "firstLaunchTutorialRespawnOverlay.gameObject.SetActive(false)");
             Forbid(result, root, LessonPath,
                 "TUTORIAL_V1011319_OLD_SCREEN_TRANSITION_REMAINS",
-                "TutorialLessonScreenTransitionSeconds = 0.34f");
+                "TutorialLessonScreenTransitionSeconds = 0.34f",
+                "TutorialLessonScreenFadeInEnd",
+                "TutorialLessonScreenFadeOutStart");
 
             Require(result, root, GameplayPath,
                 "TUTORIAL_V1011319_INSTRUCTION_RELEASE_MISSING",
                 "ReleaseFirstLaunchTutorialInstructionForScreenTransition",
-                "firstLaunchTutorialTravelDistance >= 118f",
+                "firstLaunchTutorialTravelDistance >= 64f",
                 "firstLaunchTutorialInstructionLatchedV101123 = false",
-                "firstLaunchTutorialLessonScreenTransitionActive = false",
+                "firstLaunchTutorialContinuousHandoffActive = false",
                 "IsFirstLaunchTutorialWorldHeavyPress");
 
             Require(result, root, FinalPassPath,
@@ -83,18 +84,21 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BD LEFT-POINTING MOTHER BUBBLE TAIL V10.11.30.19",
                 "new Vector2(-16f, -68f)",
                 "new Vector2(-42f, -66f)",
-                "panelObject.transform.SetSiblingIndex(3)",
-                "seamObject.transform.SetSiblingIndex(4)");
+                "Mother Tail Curve Far Frame",
+                "new Vector2(26f, 26f)",
+                "panelObject.transform.SetSiblingIndex(4)",
+                "seamObject.transform.SetSiblingIndex(5)");
             Forbid(result, root, DialoguePath,
                 "TUTORIAL_V1011319_DOWN_DIALOGUE_POINTER_REMAINS",
                 "new Vector2(62f, -136f)",
                 "new Vector2(38f, -154f)");
 
             Require(result, root, PresenterPath,
-                "TUTORIAL_V1011319_DEPTHLESS_SCREEN_RT_MISSING",
-                "BD EXPLICIT NON-MEMORYLESS DEPTHLESS SCREEN RT V10.11.30.19",
+                "TUTORIAL_V1011330_PERSISTENT_SCREEN_DEPTH_MISSING",
+                "BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30",
                 "RenderTextureDescriptor screenDescriptor",
-                "screenDescriptor.depthStencilFormat = GraphicsFormat.None",
+                "SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil)",
+                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat",
                 "screenDescriptor.memoryless = RenderTextureMemoryless.None",
                 "screenCamera.depthTextureMode = DepthTextureMode.None");
         }

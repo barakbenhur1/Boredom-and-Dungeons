@@ -667,11 +667,11 @@ namespace BoredomAndDungeons
                 TutorialWallJumpUpperGroundStandingY
             );
             bool platformSupported =
-                x >= TutorialWallJumpPlatformMinX &&
-                x <= TutorialWallJumpPlatformMaxX;
+                x >= ResolveFirstLaunchTutorialWallJumpPlatformMinX() &&
+                x <= ResolveFirstLaunchTutorialWallJumpPlatformMaxX();
             bool upperGroundSupported =
-                x >= TutorialWallJumpUpperGroundMinX &&
-                x <= TutorialWallJumpUpperGroundMaxX;
+                x >= ResolveFirstLaunchTutorialWallJumpUpperGroundMinX() &&
+                x <= ResolveFirstLaunchTutorialWallJumpUpperGroundMaxX();
 
             if ((!onPlatform || platformSupported) &&
                 (!onUpperGround || upperGroundSupported))

@@ -554,6 +554,14 @@ namespace BoredomAndDungeons
                 FontStyle.Bold
             );
 
+            // BD PIXEL CONTINUE EFFECT V10.11.30.29
+            // One composed non-interactive badge owns the post-lesson travel cue.
+            // It appears only after the room objective is proven complete and
+            // disappears before the continuous room scroll begins.
+            BuildFirstLaunchTutorialContinueEffect(
+                rootPanel.rectTransform
+            );
+
             BuildFirstLaunchTutorialExitConfirmation(rootPanel.rectTransform);
 
             firstLaunchTutorialRespawnOverlay = CreatePanel(

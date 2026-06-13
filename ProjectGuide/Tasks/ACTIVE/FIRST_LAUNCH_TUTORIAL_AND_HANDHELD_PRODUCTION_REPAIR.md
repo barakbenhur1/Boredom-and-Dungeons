@@ -1,3 +1,123 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## V10.11.30.30 cumulative focused repair
+
+**Requested corrections:** keep the horse shooter alive until killed; reveal the returning horse only after room settlement; make the mounted-shooting target vulnerable; add a professional CONTINUE effect after each completed room; restore the missing far-left mother-bubble diamond frame; remove the two Metal memoryless depth messages.
+
+**Implementation:** preserve the horse shooter into the same-room kill lesson; defer HorseReturn activation until post-scroll settlement; route projectile damage through the authoritative ranged/charged source; add one composed pixel CONTINUE owner; add a centered backing frame behind the far-left dialogue diamond; replace the depthless screen RT with an explicit persistent platform depth/stencil attachment while keeping memoryless, MSAA and depth-texture requests disabled.
+
+**Protected behavior:** no fade/cut/respawn/teleport between rooms, physical right-edge progression, all other room assets entering with the scroll, existing input mappings, Parry ownership, healing/remount, boss and relic flow remain unchanged.
+
+**Verification required:** Unity compile, `TEST EVERYTHING 0/0/0`, clean Console, bubble visual review, horse-shot kill, CONTINUE lifecycle, post-scroll HorseReturn and mounted-shot death at impact.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## V10.11.30.29 focused repair packet
+
+**Originating corrections:** the horse shooter disappeared instead of being killed; HorseReturn became visible before/while the room scrolled; the mounted shooting target ignored the correct shot; completed rooms lacked a professional CONTINUE presentation.
+
+**Implementation:** keep HorseShot -> JumpAttack in one room and rebind the same shooter as the one-health kill target; explicitly defer HorseReturn visibility until handoff settlement and a short post-settle delay; route ranged impact through the authoritative `Ranged`/`Charged` damage owner; add one composed non-interactive pixel CONTINUE badge owned by the existing lesson-screen flow.
+
+**Protected behavior:** continuous physical right-edge progression, no fade/cut/respawn/teleport, all other room assets preloaded with the scroll, current input mappings, Parry ownership, horse healing/remount, boss and relic flow remain unchanged.
+
+**Verification required:** Unity compile, `TEST EVERYTHING 0/0/0`, HorseShot same-room kill, post-scroll HorseReturn first frame, mounted-shot death at impact, and room-by-room CONTINUE presentation.
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## V10.11.30.28 continuation
+
+**Originating findings:** opening player faces backward after landing; Jump is unavailable after being taught; Heal Horse does not permit immediate remount; horse hit/return shows a one-frame visual pop; a blue gate/wall blocks the Heal/Remount room; target-room assets pop in after scrolling.
+
+**Implementation:** release obstacle-facing after clearance, remove post-lesson Jump suppression, keep Heal→Remount on one screen and one room index, record the horse-return origin while keeping that actor hidden until settlement, apply the horse-hit first pose immediately, make wall/gate geometry contextual, and explicitly prepare/render all other target-room assets before restoring the source edge frame and beginning continuous scroll.
+
+**Unverified:** Unity compile, `TEST EVERYTHING`, full Play Mode room sequence, low/high frame-rate first-frame presentation, and rendered asset-preload review.
+
+**Exact next action:** install V10.11.30.28 and execute the focused matrix in `ProjectGuide/QA/QA_CHECKLIST.md`.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## V10.11.30.27 focused repair packet
+
+**Originating correction:** the horse still appeared in the first room while its lesson opened in the following room, causing a soft lock; the full-game `PET` prompt also remained visible in the upper-right corner.
+
+**Implementation:** remove horse visibility from WhiteBoot/Move/Jump; route Jump to Quick Attack; keep Quick/Heavy/Dodge/Parry before the horse; route successful Parry to a dedicated Mount/Ride room; place the horse explicitly in that room; keep EnemyArrival/HorseShot in the next room; route HorseShot to JumpAttack; hard-gate the full gameplay HUD for the complete first-launch reservation lifecycle.
+
+**Non-goals:** no changes to combat damage, Parry projectile ownership, later mounted shooting, boss flow, room handoff animation, device art or input mappings.
+
+**Verification required:** Unity compile, `TEST EVERYTHING 0/0/0`, horse-free room 0, Quick Attack room 1, absent upper-right PET prompt, reachable Mount/Ride room and clean HorseShot -> JumpAttack continuation.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## V10.11.30.26 focused repair packet
+
+**Originating correction:** the Quick Attack screenshot showed no readable enemy at the promised screen center; the Parry teacher could die while its projectiles continued and soft-locked progression; horse teaching had to move to the room immediately before the enemy shoots the horse; the Metal memoryless load/store pair remained.
+
+**Implementation:** preserve the V10.11.30.25 continuous-room owner; remap room 0 to Move/Jump, room 1 to Mount/Ride, room 2 to EnemyArrival/HorseShot and room 3 to Quick Attack; maintain one exact-centered one-health Quick Attack actor and full pixel visual; make Parry one passive invulnerable teacher plus one focused projectile owner with atomic cancellation; disable product-camera MSAA/depth texture while retaining the existing depthless screen RT.
+
+**Protected behavior:** right-edge progression, cover-free eased handoffs, impact-owned Quick Attack death, all later lesson objectives, input mappings, horse-hit story timing, boss/relic flow and accepted product presentation remain unchanged outside these corrections.
+
+**Verification required:** Unity compile, `TEST EVERYTHING 0/0/0`, visual center/readability check, one-hit Quick Attack check, adversarial Parry attacks, successful Parry progression, continued right-edge travel and a fresh Metal Console check. No runtime acceptance is claimed by package validation.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## V10.11.30.25 complete remaining-room continuation
+
+**Originating request:** continue all remaining tutorial rooms in the same step-by-step structure, require the player to hit the screen edge to advance, remove the still-visible fade-out/fade-in, and make room changes professional and elegant.
+
+**Implementation:** replace lesson-specific transition exceptions with one room-sequence owner. Expand the course into ordered room centers; position each remaining room's actors and geometry from its center; hold the completed room camera fixed; hide the instruction only after real completion; require physical right-edge contact; then move camera and player through one eased continuous handoff. Delay new-room clocks and instruction presentation until settlement. Preserve the opening-screen exception and boss-phase continuity.
+
+**Protected behavior:** mechanic-specific completion evidence, input mappings, impact-owned damage, horse state, boss combat and relic persistence remain owned by their existing systems. No parallel state machine, camera owner, input owner or damage owner is added.
+
+**Verification required:** Unity compile, `TEST EVERYTHING 0/0/0`, and a complete room-by-room Play Mode run through persisted `Completed`. No runtime acceptance is claimed by static/package validation.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## V10.11.30.24 focused continuation
+
+- Scope: screen-two ordinary Light kill and the continuous handoff to screen three only.
+- Root cause: melee impact called generic actor damage while the focused lesson damage source remained `None`; the lesson contract correctly rejected it.
+- Repair: route visible melee impact through the authoritative lesson-damage helper with `Light`/`Heavy` source derived from the transaction.
+- Handoff: preserve player and camera positions, prepare screen three ahead, pan continuously, reveal its instruction after camera settlement, and keep the overlay disabled.
+- Non-goal: no modification to screen-three mechanics or any later lesson.
+- Resume point: Unity compile, `TEST EVERYTHING 0/0/0`, then verify one Light kill and continuous edge crossing into screen three.
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## V10.11.30.23 scoped screen-two repair
+
+**Originating request:** change only screen two: centered enemy, immediate ordinary-attack lesson, one-hit Light Attack kill, hide the tutorial, then walk to the screen edge and transition to screen three.
+
+**Implementation:** route Ride directly to `AttackEnemy`; initialize screen two on foot with the horse hidden; center one passive one-health Small actor; retain impact-owned melee death; fix the camera during post-kill travel and place the next-screen trigger at the right edge.
+
+**Non-goals:** no changes to screen one, screen three, later mechanics, combat balance, bosses, dialogue, cinematic, menu or rendering.
+
+**Exact next action:** install V10.11.30.23, run automated QA, manually verify only screen two through the transition to screen three, then stop.
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## V10.11.30.22 scoped opening-screen repair
+
+**Originating request:** repair only the sequence Move → Jump → Mount → Ride → next-screen transition, and change nothing after it.
+
+**Superseded implementation note:** V10.11.30.26 separates the earlier combined opening into room 0 Move/Jump and room 1 Mount/Ride, followed by room 2 EnemyArrival/HorseShot and room 3 Quick Attack. Real displacement, world-proof landing, mount completion and physical right-edge handoffs remain required.
+
+**Non-goals:** no later lesson, combat, enemy, boss, dialogue, cinematic, menu, camera or rendering changes.
+
+**Exact next action:** install V10.11.30.22, run automated QA, manually verify only the scoped opening sequence, then stop and report the first failing point or acceptance.
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## V10.11.30.21 focused render continuation
+
+**Observed evidence:** the memoryless load/store pair persisted after the screen RT was made explicitly depthless. The captured Editor log places the pair at backup-scene restoration, and project search finds only one direct camera render call: `screenCamera.Render()` in a method invoked during initial visibility/page preparation and child display power-on.
+
+**Implementation:** preserve the existing enabled screen-camera owner and all power/content timings; remove only the redundant explicit render and retain `Canvas.ForceUpdateCanvases()`. Add one focused QA scanner and synchronize status, bug, queue and acceptance truth.
+
+**Unverified:** real Unity/Metal warning removal, automated `0/0/0`, and visual no-pop behavior.
+
+**Exact next action:** install V10.11.30.21, clear Console, reload/enter Play Mode, verify the pair is absent, rerun `TEST EVERYTHING`, then continue the complete tutorial run.
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
 ## V10.11.30.20 QA-only continuation
 
@@ -17,7 +137,7 @@
 
 **Implementation:** release the instruction latch only from verified screen completion; suspend prior-screen transient actors/transactions; transition through a full-black hold; align displayed bindings and press/hold readers; restore a left-facing bubble pointer; make the project screen RT explicitly depthless/non-memoryless; wire focused QA.
 
-**Protected behavior:** every mechanic lesson uses a new screen except Jump -> Mount -> Ride; objectives remain world-proof; next instructions never appear on the completed screen; the child POV height and lower bubble placement remain unchanged.
+**Protected behavior:** opening rooms use Move/Jump, then Mount/Ride, then the horse-shot story, then Quick Attack; later mechanic lessons keep separate-screen ownership; objectives remain world-proof; the child POV height and lower bubble placement remain unchanged.
 
 **Unverified:** Unity compilation, TEST EVERYTHING, Metal warning removal, visual bubble direction, full keyboard/controller/physical input matrix and uninterrupted completion.
 

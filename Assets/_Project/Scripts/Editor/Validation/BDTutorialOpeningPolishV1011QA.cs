@@ -113,13 +113,13 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root, GameplayPath,
                 "TUTORIAL_V101111_FORWARD_COURSE_MISSING",
-                "TutorialWorldMaxX = 6480f",
+                "TutorialWorldMaxX = 17200f",
                 "firstLaunchTutorialProgressFloorX",
                 "targetCamera = Mathf.Max",
                 "BeginFirstLaunchTutorialRelicCompletion",
                 "ShouldBlockFirstLaunchTutorialActionForTravel",
                 "new Vector2(-820f, -108f)",
-                "firstLaunchTutorialTravelDistance >= 118f",
+                "firstLaunchTutorialTravelDistance >= 64f",
                 "UnlockFirstLaunchTutorialAbilitiesForStep",
                 "RequireFirstLaunchTutorialAbility",
                 "firstLaunchTutorialJumpUnlocked",
@@ -128,14 +128,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "TUTORIAL_V101111_PERSISTENT_COURSE_MISSING",
                 "TutorialWallJumpWallX = 4380f",
                 "TutorialMiniBossStationX = 5280f",
-                "firstLaunchTutorialWallJumpWall.gameObject.SetActive(true)",
                 "preserveVisibleActor",
                 "spawnX = visibleRightEdge + 96f",
-                "firstLaunchTutorialFinishGate.gameObject.SetActive(true)",
                 "EnsureFirstLaunchTutorialPersistentCourseGeometryVisible");
-            Forbid(result, root, CoursePath,
-                "TUTORIAL_V101111_VISIBLE_FINISH_GATE_DESPAWN",
-                "firstLaunchTutorialFinishGate.gameObject.SetActive(false)");
+            Require(result, root, FinalPath,
+                "TUTORIAL_V1011328_CONTEXTUAL_GEOMETRY_MISSING",
+                "BD CONTEXTUAL COURSE GEOMETRY V10.11.30.28",
+                "bool wallJumpRoom =",
+                "bool finishGateRoom =",
+                "gateOpeningAnimationVisible",
+                "finishGateRoom &&");
             Require(result, root, FinalPath,
                 "TUTORIAL_V101111_BOSS_AND_HIT_REACTION_MISSING",
                 "LaunchFirstLaunchTutorialBossFan",
@@ -241,16 +243,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "firstLaunchTutorialBindingDivider.gameObject.SetActive(true)");
 
             Require(result, root, GameplayPath,
-                "TUTORIAL_V101117_MOUNT_HANDOFF_MISSING",
+                "TUTORIAL_V1011327_DEFERRED_MOUNT_HANDOFF_MISSING",
                 "BD MOUNT LESSON PERSISTENCE V10.11.17",
-                "BD IMMEDIATE POST-JUMP MOUNT TEACHING V10.11.17",
+                "BD DEFERRED HORSE ROOM TEACHING V10.11.30.27",
                 "BD PLAYER ART FINAL OWNER V10.11.17");
             Require(result, root, CoursePath,
-                "TUTORIAL_V101117_JUMP_MOUNT_STATE_MISSING",
-                "BD JUMP TO MOUNT HANDOFF V10.11.17",
+                "TUTORIAL_V1011327_HORSE_FREE_OPENING_STATE_MISSING",
+                "BD HORSE-FREE OPENING HANDOFF V10.11.30.27",
                 "TutorialJumpObstacleX + 24f",
-                "TutorialHorseStartX - 64f",
-                "JUMP CLEARED — MOUNT THE HORSE");
+                "SetFirstLaunchTutorialStep(FirstLaunchTutorialStep.AttackEnemy)",
+                "JUMP CLEARED");
             Require(
                 result,
                 root,

@@ -1,9 +1,121 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## V10.11.30.30 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-CIN-MOTHER-FAR-DIAMOND-NO-FRAME` | Opening dialogue | `FIXED IN CODE / VISUAL VERIFY` | The far-left pointer diamond has a complete centered dark frame on all four edges. |
+| `FL-RENDER-METAL-MEMORYLESS-LOAD-STORE` | Handheld screen rendering | `FIXED IN CODE / CLEAN-CONSOLE VERIFY` | The screen camera uses an owned persistent non-memoryless depth/stencil attachment; neither ignored load nor ignored store message appears after a fresh Play Mode entry. |
+| `FL-TUT-HORSE-SHOOTER-DESPAWNS` | Horse-shot room | `FIXED IN CODE / PLAY MODE VERIFY` | The shooter remains after wounding the horse and disappears only when killed by the player. |
+| `FL-TUT-HORSE-RETURN-DURING-SCROLL` | Horse return | `FIXED IN CODE / VISUAL VERIFY` | The horse is absent during scrolling and starts returning only after destination settlement. |
+| `FL-TUT-MOUNTED-SHOT-TARGET-INVULNERABLE` | Mounted shot lesson | `FIXED IN CODE / PLAY MODE VERIFY` | The target dies from the required visible ordinary/charged projectile impact. |
+| `FL-TUT-NO-CONTINUE-CUE` | Room completion | `FIXED IN CODE / FULL-RUN VERIFY` | A single professional pixel CONTINUE cue appears after each completed lesson and disappears before scrolling. |
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## V10.11.30.29 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-HORSE-SHOOTER-DESPAWNS` | Horse-shot room | `FIXED IN CODE / PLAY MODE VERIFY` | The shooter remains visible after wounding the horse and disappears only when the player kills it during Jump Attack. |
+| `FL-TUT-HORSE-RETURN-DURING-SCROLL` | Horse return staging | `FIXED IN CODE / VISUAL VERIFY` | The injured horse remains inactive during the room scroll and begins returning only after camera settlement plus the authored short beat. |
+| `FL-TUT-MOUNTED-SHOT-TARGET-INVULNERABLE` | Mounted ranged lesson | `FIXED IN CODE / PLAY MODE VERIFY` | Visible ordinary/charged projectile impact supplies the required semantic damage source and can kill its lesson target. |
+| `FL-TUT-NO-CONTINUE-CUE` | Room completion presentation | `FIXED IN CODE / FULL-RUN VERIFY` | Every edge-travel room displays one pixel-style CONTINUE badge after objective completion and removes it before scrolling. |
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## V10.11.30.28 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-OPENING-FACING-STUCK` | Opening room | `FIXED IN CODE / PLAY MODE VERIFY` | After landing beyond the first obstacle, the player follows actual movement direction and does not keep facing back toward the obstacle. |
+| `FL-TUT-JUMP-LOST-AFTER-LESSON` | Persistent mechanics | `FIXED IN CODE / PLAY MODE VERIFY` | Jump remains available in every later on-foot room, including travel to the right edge after completing a lesson. |
+| `FL-TUT-HEAL-REMOUNT-DELAY` | Horse flow | `FIXED IN CODE / PLAY MODE VERIFY` | Completing Heal Horse immediately presents Mount Again in the same room and Interact starts mounting without an edge transition. |
+| `FL-TUT-HORSE-FIRST-FRAME-POP` | Horse presentation | `FIXED IN CODE / VISUAL VERIFY` | Horse hit and return sequences begin from their authored first pose; no idle horse flashes before the animation. |
+| `FL-TUT-STRAY-GATE-WALL` | Room geometry | `FIXED IN CODE / FULL-RUN VERIFY` | Wall-jump geometry and the finish gate are active only in their owning rooms and never block Heal/Remount or unrelated rooms. |
+| `FL-TUT-ROOM-ASSET-POP-IN` | Room transitions | `FIXED IN CODE / FULL-RUN VERIFY` | Static props, ordinary actors, hazards and geometry enter naturally with the scroll; HorseReturn is intentionally revealed only after settlement. |
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## V10.11.30.27 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-HORSE-IN-OPENING` | Opening room | `FIXED IN CODE / PLAY MODE VERIFY` | Horse GameObject and pixel visual remain inactive throughout WhiteBoot, Move and Jump. |
+| `FL-TUT-HORSE-LESSON-TOO-EARLY` | Room order | `FIXED IN CODE / FULL-RUN VERIFY` | Room 1 is Quick Attack; Mount/Ride occurs only after Parry and immediately before EnemyArrival/HorseShot. |
+| `FL-TUT-MOUNT-ROOM-SOFTLOCK` | Mount/Ride room | `FIXED IN CODE / PLAY MODE VERIFY` | Horse is positioned inside the deferred Mount room and the player can reach, mount and ride it. |
+| `FL-TUT-PET-HUD-UPPER-RIGHT` | Legacy gameplay HUD | `FIXED IN CODE / VISUAL VERIFY` | The full-game upper-right PET card never appears during any first-launch tutorial phase or handoff. |
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## V10.11.30.26 reopened blocking defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-QUICK-TARGET-NOT-CENTERED` | Quick Attack room | `FIXED IN CODE / VISUAL + PLAY MODE VERIFY` | Exactly one readable 64×92 passive one-health enemy remains at the exact visible room center until a valid Light impact kills it. |
+| `FL-TUT-PARRY-TEACHER-DIES` | Parry lesson | `FIXED IN CODE / PLAY MODE VERIFY` | Player attacks cannot damage or kill the Parry teacher; the lesson completes only from a valid projectile parry. |
+| `FL-TUT-PARRY-PROJECTILES-PERSIST` | Parry projectile lifecycle | `FIXED IN CODE / PLAY MODE VERIFY` | One tutorial projectile owner is active; production projectiles are cancelled, and success/exit cancels all projectile state before progression. |
+| `FL-TUT-PARRY-SOFTLOCK` | Parry progression | `FIXED IN CODE / FULL-RUN VERIFY` | A successful parry reaches JumpAttack and right-edge travel; no dead teacher or residual projectile can block the transition. |
+| `FL-TUT-HORSE-LESSON-WRONG-ROOM` | Opening room order | `FIXED IN CODE / FULL-RUN VERIFY` | MountHorse + RideHorse occupy the room immediately before EnemyArrival + HorseShot; Quick Attack follows in its own room. |
+| `FL-RENDER-MEMORYLESS-DEVICE-MSAA` | Metal device-camera depth | `MITIGATION IMPLEMENTED / UNITY-METAL VERIFY` | Product/device camera uses no MSAA and no depth texture; screen RT remains depthless/non-memoryless; the load/store warning pair is absent after a fresh scene reload. |
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## V10.11.30.25 remaining-room defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-ROOM-FADE-RECURRING` | Inter-room presentation | `FIXED IN CODE / FULL RUN VERIFY` | Every remaining room is revealed through one continuous camera/player move; no fade, black/white cover or opaque transition becomes active. |
+| `FL-TUT-ROOM-EDGE-NOT-VISIBLE` | Completion travel | `FIXED IN CODE / FULL RUN VERIFY` | After objective completion the camera stays locked to the completed room, the card is hidden, and only physical contact with the visible right edge starts the next room. |
+| `FL-TUT-WALLJUMP-EXIT-UNREACHABLE` | Wall Jump handoff | `FIXED IN CODE / PLAY MODE VERIFY` | Clearing the upper ground releases the mechanic clamp and permits travel to the same visible edge used by every other room. |
+| `FL-TUT-NEXT-LESSON-EARLY-CLOCK` | Room entry timing | `FIXED IN CODE / FULL RUN VERIFY` | The next lesson card, timed sequence, enemy action clock, reload and input unlock begin after camera settlement, not while the room is still sliding into view. |
+| `FL-TUT-ROOM-LAYOUT-LEGACY-COORDS` | Remaining room layout | `FIXED IN CODE / FULL RUN VERIFY` | Every remaining objective, actor, obstacle, hazard, secret, wall-jump route, boss and relic is positioned from its room center and remains reachable. |
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## V10.11.30.24 focused defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-S2-LIGHT-SOURCE-NONE` | Screen-two combat | FIXED IN CODE / PLAY MODE VERIFY | The visible ordinary Light impact is routed as `Light`, kills the one-health centered target, and hides its image in the same impact frame. |
+| `FL-TUT-S2-S3-CUT` | Room handoff | FIXED IN CODE / PLAY MODE VERIFY | After the kill, walking through the right edge reveals screen three continuously; no fade, black overlay, respawn, teleport or player-position rewrite occurs. |
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## V10.11.30.23 second-screen defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-SCREEN2-OLD-STORY-BEATS` | Screen-two entry | `FIXED IN CODE / PLAY MODE VERIFY` | Superseded by V10.11.30.26: completing Mount/Ride enters the separate EnemyArrival/HorseShot story room, then Quick Attack opens in the following room. |
+| `FL-TUT-SCREEN2-NOT-ON-FOOT` | Screen-two player state | `FIXED IN CODE / PLAY MODE VERIFY` | Player begins screen two on foot at the left; the horse is not visible on this screen. |
+| `FL-TUT-SCREEN2-TARGET-PLACEMENT` | Ordinary-attack target | `FIXED IN CODE / PLAY MODE VERIFY` | Exactly one passive one-health enemy is visible at screen center when the screen opens. |
+| `FL-TUT-SCREEN2-EARLY-TRANSITION` | Screen-two completion | `FIXED IN CODE / PLAY MODE VERIFY` | Enemy death hides the lesson immediately, but screen three opens only after the player reaches the visible right edge. |
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## V10.11.30.22 first-screen defects
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-TUT-OPENING-MOVE-JUMP-WRONG-SCREEN` | First tutorial screen | `FIXED IN CODE / PLAY MODE VERIFY` | Move completion hides/replaces the Move card with Jump on the same screen; no screen transition or respawn occurs between them. |
+| `FL-TUT-MOVE-ATTEMPTED-DISTANCE` | Move proof | `FIXED IN CODE / PLAY MODE VERIFY` | Only real forward displacement counts toward the 64-unit objective; pushing left at the world edge or into the obstacle cannot finish Move. |
+| `FL-TUT-RIDE-EXIT-UNREACHABLE` | First-screen exit | `FIXED IN CODE / PLAY MODE VERIFY` | Ride hides at its mounted-travel objective and the subsequent screen-exit point remains reachable inside the RideHorse movement boundary. |
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## V10.11.30.21 focused defect
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `RENDER-V1011321-DUPLICATE-SCREEN-CAMERA` | Metal/editor scene restore | `FIX IMPLEMENTED / UNITY VERIFY` | Scene restore and tutorial entry emit no memoryless depth load/store pair; the handheld screen remains correct because the enabled screen camera renders once through Unity's normal schedule. |
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
 ## V10.11.30.20 QA blocker
 
 | ID | Area | Status | Acceptance condition |
 |---|---|---|---|
-| `FL-TUT-QA-MOVE-THRESHOLD-CONFLICT` | Automated QA | `FIXED IN QA / UNITY RERUN REQUIRED` | The legacy opening-polish scanner requires the active `118f` Move threshold, forbids retired `12f`, and produces neither `TUTORIAL_V101111_FORWARD_COURSE_MISSING` nor `TUTORIAL_V101113_START_OR_TRIGGER_REGRESSION`. |
+| `FL-TUT-QA-MOVE-THRESHOLD-CONFLICT` | Automated QA | `FIXED IN QA / UNITY RERUN REQUIRED` | The legacy opening-polish scanner requires the active `64f` Move threshold, forbids retired `12f`, and produces neither `TUTORIAL_V101111_FORWARD_COURSE_MISSING` nor `TUTORIAL_V101113_START_OR_TRIGGER_REGRESSION`. |
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:END -->
 
 <!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
@@ -11,7 +123,7 @@
 
 | ID | Area | Status | Acceptance condition |
 |---|---|---|---|
-| `FL-TUT-MOVE-INSTANT-COMPLETE` | Move lesson | `FIXED IN CODE / PLAY MODE VERIFY` | Move requires 118 world units of actual horizontal travel; one small tap cannot complete the lesson or start the next-screen transition. |
+| `FL-TUT-MOVE-INSTANT-COMPLETE` | Move lesson | `FIXED IN CODE / PLAY MODE VERIFY` | Move requires 64 world units of actual horizontal travel; one small tap cannot complete the lesson or start the next-screen transition. |
 | `FL-TUT-EMPTY-INSTRUCTION-CARD` | Lesson UI | `FIXED IN CODE / PLAY MODE VERIFY` | Completion releases the instruction latch, disables the whole composition, and no empty panel/shadow/card returns while travelling. |
 | `FL-TUT-SCREEN-CHANGE-READS-AS-RESPAWN` | Lesson transition | `FIXED IN CODE / PLAY MODE VERIFY` | The next scene/layout changes only under a fully opaque dark hold; no respawn overlay/label or visible player teleport appears between Move and Jump or any later lessons. |
 | `FL-TUT-STALE-LESSON-ACTORS` | Progression safety | `FIXED IN CODE / FULL-RUN VERIFY` | Completed-screen enemies, projectiles, hazards and transactions cannot attack, collide, kill or block the player while travelling to the next screen. |

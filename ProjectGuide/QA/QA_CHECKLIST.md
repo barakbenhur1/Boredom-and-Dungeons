@@ -1,7 +1,155 @@
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
+## V10.11.30.30 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] The far-left mother-bubble diamond has one larger dark backing diamond, producing a complete border on every edge.
+- [ ] The bubble body, all pointer diamonds, shadows and seam remain one visual group through enter, hold and exit.
+- [ ] The handheld screen RT uses `SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil)` and `RenderTextureMemoryless.None`.
+- [ ] The old explicit `GraphicsFormat.None` depthless screen contract is absent.
+- [ ] A clean Play Mode entry emits neither ignored memoryless depth load nor ignored memoryless depth store message.
+- [ ] HorseShot and JumpAttack retain one living shooter until the player kills it.
+- [ ] HorseReturn is absent throughout scrolling and begins after settlement.
+- [ ] Mounted ranged/charged impact can kill its intended target.
+- [ ] Every completed edge-travel room shows exactly one non-interactive CONTINUE cue and removes it before movement.
+<!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:END -->
+
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:BEGIN -->
+## V10.11.30.29 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] HorseShot and JumpAttack share the same room; the shooter never disappears between them.
+- [ ] The shooter is one visible living target and is removed only at the player's real melee impact.
+- [ ] The HorseReturn destination room scrolls fully into place with the horse inactive.
+- [ ] HorseReturn reveals the injured horse only after settlement and a short authored delay, then begins the return motion from the left.
+- [ ] Mounted ordinary projectile impact uses `Ranged`; charged projectile impact uses `Charged`; the focused target dies at visible impact.
+- [ ] Every room that queues edge travel hides the lesson card and shows one non-interactive pixel CONTINUE badge.
+- [ ] CONTINUE uses a stepped entrance and restrained arrow pulse, does not overlap the lesson card, and remains readable without obscuring the player.
+- [ ] CONTINUE disappears before continuous camera movement; no fade, respawn, teleport or early lesson appears.
+<!-- BND_TUTORIAL_HORSE_COMBAT_CONTINUE_V1011329:END -->
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:BEGIN -->
+## V10.11.30.28 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] After clearing the opening obstacle, the player no longer faces backward toward it and responds immediately to left/right movement.
+- [ ] Jump remains available in every subsequent on-foot lesson and during right-edge travel after lesson completion.
+- [ ] Heal Horse transitions directly to Mount Again in the same room; no extra room, edge walk or soft-lock occurs.
+- [ ] The horse hit pose is applied in the impact frame; no idle injured-horse flash appears.
+- [ ] The returning horse begins from its off-screen authored start and runs in without first appearing at room center.
+- [ ] Wall-jump wall/platforms are visible only in Wall Jump.
+- [ ] Finish gate is visible only in the boss/finish context and never blocks Heal/Remount or ordinary room travel.
+- [ ] Before every room scroll starts, target-room static props, ordinary actors, hazards and geometry are configured; HorseReturn alone remains hidden until post-settlement reveal.
+- [ ] No static room asset pops in after the camera has settled.
+
+<!-- BND_TUTORIAL_FLOW_COHERENCE_V1011328:END -->
+
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:BEGIN -->
+## V10.11.30.27 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] WhiteBoot, Move and Jump never activate the tutorial horse or horse pixel visual.
+- [ ] Jump landing queues Quick Attack, not MountHorse.
+- [ ] Room order is Move/Jump -> Quick Attack -> Heavy Attack -> Dodge -> Parry -> Mount/Ride -> EnemyArrival/HorseShot -> Jump Attack.
+- [ ] The deferred Mount room positions the player left of a reachable horse and Mount guidance remains until the real mount completes.
+- [ ] The horse-shot story advances to Jump Attack and never reopens Quick Attack.
+- [ ] The upper-right `PET` card and all other full-game horse prompts remain absent during the tutorial and every continuous handoff.
+<!-- BND_TUTORIAL_HORSE_FREE_OPENING_PET_SUPPRESSION_V1011327:END -->
+
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:BEGIN -->
+## V10.11.30.26 focused acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Opening room order is: room 0 Move/Jump, room 1 Mount/Ride, room 2 EnemyArrival/HorseShot, room 3 Quick Attack.
+- [ ] The horse tutorial is fully completed before entering the horse-shot story room.
+- [ ] Quick Attack room starts on foot with the horse hidden and exactly one passive enemy at the exact visible center.
+- [ ] The centered enemy reads as a full 64×92 pixel character rather than a tiny prop, projectile or background mark.
+- [ ] One correct Light impact kills the target at visible contact; wrong mechanics do not complete the lesson.
+- [ ] The Quick Attack card disappears after death and physical right-edge contact owns the next continuous handoff.
+- [ ] Parry teacher remains active and alive when struck by Light, Heavy, ranged or other unlocked attacks.
+- [ ] Parry room never has both production and focused tutorial projectiles active.
+- [ ] Successful Parry atomically hides/cancels all projectiles, completes the animation, queues Jump Attack and never soft-locks.
+- [ ] Device camera has MSAA disabled and requests no depth texture; screen RenderTexture remains depthless, single-sampled and non-memoryless.
+- [ ] Fresh Unity/Metal scene reload emits neither `Ignoring depth surface load action as it is memoryless` nor the matching store-action message.
+<!-- BND_TUTORIAL_CENTERED_PARRY_HORSE_METAL_V1011326:END -->
+
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:BEGIN -->
+## V10.11.30.25 continuous remaining-room acceptance matrix
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Room centers are ordered monotonically across the complete tutorial course and all room-local objectives are reachable.
+- [ ] Completing a lesson hides the entire instruction card but does not advance immediately.
+- [ ] The completed room camera remains fixed while the player walks to its visible right edge.
+- [ ] The next room begins only after physical edge contact.
+- [ ] Every handoff uses continuous camera/player movement; no transition overlay, fade, black/white frame, respawn or teleport is visible.
+- [ ] The next lesson instruction appears only after the camera finishes settling in the new room.
+- [ ] The next room's step timer, enemy action delay, reload timer and input unlock begin after settlement.
+- [ ] Heavy → Dodge → Parry → Jump Attack rooms each require their own real mechanic result and edge handoff.
+- [ ] Horse return/heal → Remount → Ranged → Reload → Charged Shot → Mounted Impact → Dismount rooms retain correct mounted state and edge handoffs.
+- [ ] Spin → Grapple → Hazard Knockback → Side Path → Combined Encounter → Wall Jump rooms retain visible, reachable objective geometry and edge handoffs.
+- [ ] Wall Jump completion can reach the visible room edge after landing on upper ground.
+- [ ] Boss phases stay in one boss room; after real boss death the collectible room is revealed continuously.
+- [ ] Relic contact persists `Completed` and no post-completion room handoff is introduced.
+<!-- BND_TUTORIAL_CONTINUOUS_ROOM_SEQUENCE_V1011325:END -->
+
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:BEGIN -->
+## V10.11.30.24 screen-two focused acceptance
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] The centered screen-two target has one health and remains passive.
+- [ ] A valid ordinary Light attack reaches visible impact and kills the target in that same frame.
+- [ ] The Light impact is accepted as damage source `Light`; source `None` cannot reject it.
+- [ ] The instruction disappears after the kill.
+- [ ] The player remains at the same world position when crossing from screen two into screen three.
+- [ ] No white/black overlay, fade, respawn, teleport or hard camera cut occurs during that handoff.
+- [ ] Screen three is revealed by continuous camera/world motion and its instruction becomes visible only after the camera settles.
+<!-- BND_TUTORIAL_SCREEN_TWO_IMPACT_CONTINUOUS_HANDOFF_V1011324:END -->
+
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:BEGIN -->
+## V10.11.30.23 focused screen-two acceptance
+
+- [ ] `TEST EVERYTHING` returns `0 blockers / 0 warnings / 0 info`.
+- [ ] Ride completion queues `AttackEnemy` directly for screen two; EnemyArrival and HorseShot do not appear first.
+- [ ] Screen two starts with the player on foot at the left and the horse hidden.
+- [ ] Exactly one passive one-health Small enemy is centered on screen two.
+- [ ] The ordinary-attack tutorial is fully populated and visible immediately on entry.
+- [ ] Walking into range and performing one ordinary Light Attack kills the enemy at the visible melee impact.
+- [ ] Enemy death hides the entire current lesson card immediately.
+- [ ] The camera remains fixed on screen two while the player walks after the kill.
+- [ ] Screen three transition begins only at the visible right edge.
+- [ ] No screen-three or later mechanic is evaluated as part of this patch.
+<!-- BND_TUTORIAL_SECOND_SCREEN_LIGHT_ATTACK_V1011323:END -->
+
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:BEGIN -->
+## V10.11.30.22 opening-screen acceptance matrix
+
+- [ ] Move instruction is populated and visible when the first screen begins.
+- [ ] Move completes only after 64 units of real forward displacement.
+- [ ] Holding left at the world minimum or pushing against the obstacle does not accumulate Move completion.
+- [ ] Move → Jump remains on the same screen; the Move card disappears and the populated Jump card enters without a respawn or black screen transition.
+- [ ] Jump completes only after the player clears the obstacle and lands beyond `TutorialJumpObstacleX + 24f`.
+- [ ] Jump → Mount remains on the same screen and positions the player within real mount range of the horse.
+- [ ] Mount → Ride occurs only when the mount animation completes.
+- [ ] Ride remains visible while mounted movement is being learned.
+- [ ] At the Ride objective, Ride disappears and the player can still reach the next-screen transition point.
+- [ ] Exactly one screen transition occurs after Ride; no later lesson behavior is changed by this patch.
+<!-- BND_TUTORIAL_OPENING_SCREEN_SEQUENCE_V1011322:END -->
+
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:BEGIN -->
+## V10.11.30.21 screen-render scheduling gate
+
+- [ ] Runtime contains no direct `screenCamera.Render()` call.
+- [ ] `ForceScreenRender` still calls `Canvas.ForceUpdateCanvases()` and relies on the already-enabled screen camera's normal render schedule.
+- [ ] The screen RT remains depthless with `GraphicsFormat.None`, `RenderTextureMemoryless.None`, MSAA 1 and `DepthTextureMode.None`.
+- [ ] Project framebuffer memoryless mode remains `Unused` (`framebufferDepthMemorylessMode: 0`).
+- [ ] Scene restore/open and first Play Mode entry emit no memoryless depth load/store pair.
+- [ ] Child screen power-on, content feed-in, menu refresh and tutorial entry show no blank frame or pop.
+- [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
+<!-- BND_SCREEN_RENDER_SCHEDULING_V1011321:END -->
+
 <!-- BND_TUTORIAL_QA_THRESHOLD_REALIGNMENT_V1011320:BEGIN -->
 ## V10.11.30.20 focused QA-contract gate
 
-- [ ] `BDTutorialOpeningPolishV1011QA` requires `firstLaunchTutorialTravelDistance >= 118f`.
+- [ ] `BDTutorialOpeningPolishV1011QA` requires `firstLaunchTutorialTravelDistance >= 64f`.
 - [ ] The same scanner forbids retired `firstLaunchTutorialTravelDistance >= 12f`.
 - [ ] Runtime `Gameplay.cs` remains byte-identical to installed V10.11.30.19.
 - [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`.
@@ -12,7 +160,7 @@
 <!-- BND_TUTORIAL_RUNTIME_INTEGRITY_V1011319:BEGIN -->
 ## V10.11.30.19 tutorial runtime-integrity acceptance matrix
 
-- [ ] Move remains active through a small tap and completes only after at least 118 world units of actual travel.
+- [ ] Move remains active through a small tap and completes only after at least 64 world units of actual travel.
 - [ ] Unity `6000.0.76f1` compiles with no error or warning.
 - [ ] `TEST EVERYTHING` reports `0 blockers / 0 warnings / 0 info`, including `BDTutorialRuntimeIntegrityV1011319QA`.
 - [ ] A fresh Editor/Play Mode entry emits neither `Ignoring depth surface load action as it is memoryless` nor `Ignoring depth surface store action as it is memoryless`.
@@ -21,7 +169,7 @@
 - [ ] Reaching the exit fades to full dark, holds full dark while Jump is configured, then reveals a populated Jump card; no respawn overlay, label or visible teleport occurs.
 - [ ] The same hide/travel/dark-hold/new-card sequence works for every non-exempt lesson transition.
 - [ ] The retired station-travel gate never emits `NEW LESSON AREA` or hides a card after lesson-screen initialization.
-- [ ] Jump -> Mount -> Ride remains the sole mechanic-lesson same-screen exception.
+- [ ] Move -> Jump -> Mount -> Ride remains the scoped first-screen chain; later mechanic lessons retain separate-screen ownership.
 - [ ] Completed-screen actors, projectiles and hazards are inactive during exit travel and cannot damage, collide with or target the player.
 - [ ] WASD and arrows both move; double-tap A/D and double-tap arrows both submit Dodge.
 - [ ] E/Controller East/physical SELECT all perform Interact where taught.
@@ -89,7 +237,7 @@
 <!-- BND_TUTORIAL_LESSON_SCREENS_INPUT_PARRY_V1011306:BEGIN -->
 ## V10.11.30.6 manual QA
 
-- [ ] Every mechanic lesson starts after a dark transition on a separate screen.
+- [ ] After the opening Move -> Jump -> Mount -> Ride chain, every later mechanic lesson starts after a dark transition on a separate screen.
 - [ ] Jump -> mount -> ride is the only lesson sequence allowed to share one screen.
 - [ ] Current lesson instruction disappears immediately when its real objective completes.
 - [ ] The next lesson instruction appears only after entering the next screen.

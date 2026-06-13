@@ -46,6 +46,10 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.HeavyAttack:
                     return source ==
                         FirstLaunchTutorialDamageSourceV101125.Heavy;
+                case FirstLaunchTutorialStep.Parry:
+                    // The shooter is a persistent teaching actor. The focused
+                    // lesson completes only by deflecting its projectile.
+                    return false;
                 case FirstLaunchTutorialStep.SpinAttack:
                     return source ==
                         FirstLaunchTutorialDamageSourceV101125.Spin;
@@ -266,6 +270,9 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.HeavyAttack:
                     message = "HIT THE TARGET WITH THE HEAVY ATTACK";
                     break;
+                case FirstLaunchTutorialStep.Parry:
+                    message = "PARRY THE PROJECTILE — DO NOT ATTACK THE SHOOTER";
+                    break;
                 case FirstLaunchTutorialStep.SpinAttack:
                     message = "HIT THE TARGET WITH THE SPIN ATTACK";
                     break;
@@ -441,7 +448,7 @@ namespace BoredomAndDungeons
                     SpawnTutorialActor(
                         firstLaunchTutorialEnemy,
                         TutorialEnemyRole.Small,
-                        TutorialMountedStationX + 130f,
+                        firstLaunchTutorialLessonScreenCenterX + 130f,
                         1f
                     );
                     ShowFirstLaunchTutorialSuccess(
@@ -511,7 +518,7 @@ namespace BoredomAndDungeons
             SpawnTutorialActor(
                 firstLaunchTutorialEnemy,
                 TutorialEnemyRole.Small,
-                TutorialMountedStationX + 260f,
+                firstLaunchTutorialLessonScreenCenterX + 260f,
                 4f
             );
             ShowFirstLaunchTutorialSuccess(
@@ -579,9 +586,18 @@ namespace BoredomAndDungeons
             firstLaunchTutorialPendingMeleeHitResolved = hit;
             if (hit)
             {
-                ApplyFirstLaunchTutorialActorDamage(
+                // BD SCREEN TWO IMPACT DAMAGE SOURCE V10.11.30.24
+                // The focused lesson contract rejects source None. Route the
+                // visible melee impact through the authoritative damage owner
+                // so the ordinary AttackEnemy strike is atomically lethal.
+                FirstLaunchTutorialDamageSourceV101125 meleeSource =
+                    firstLaunchTutorialPendingMeleeHeavy
+                        ? FirstLaunchTutorialDamageSourceV101125.Heavy
+                        : FirstLaunchTutorialDamageSourceV101125.Light;
+                TryApplyFirstLaunchTutorialLessonDamageV101125(
                     target,
-                    firstLaunchTutorialPendingMeleeDamage
+                    firstLaunchTutorialPendingMeleeDamage,
+                    meleeSource
                 );
                 if (firstLaunchTutorialPendingMeleeHeavy &&
                     !target.Dead &&
@@ -623,15 +639,28 @@ namespace BoredomAndDungeons
                 !target.Dead &&
                 Vector2.Distance(target.Position, impactWorld) <=
                     TutorialProjectileHitRadius;
+            bool damageApplied = false;
             if (hitLivingTarget)
             {
-                ApplyFirstLaunchTutorialActorDamage(
-                    target,
-                    firstLaunchTutorialPendingShotDamage
-                );
+                // BD MOUNTED SHOT DAMAGE SOURCE V10.11.30.29
+                // The visible projectile impact must carry the same semantic
+                // source required by the focused lesson contract. Calling the
+                // generic damage owner with source None made the target appear
+                // invulnerable even though the projectile visibly connected.
+                FirstLaunchTutorialDamageSourceV101125 source =
+                    firstLaunchTutorialPendingShotCharged
+                        ? FirstLaunchTutorialDamageSourceV101125.Charged
+                        : FirstLaunchTutorialDamageSourceV101125.Ranged;
+                damageApplied =
+                    TryApplyFirstLaunchTutorialLessonDamageV101125(
+                        target,
+                        firstLaunchTutorialPendingShotDamage,
+                        source
+                    );
             }
 
-            bool objectiveKill = hitLivingTarget && target.Dead;
+            bool objectiveKill =
+                hitLivingTarget && damageApplied && target.Dead;
             firstLaunchTutorialPendingShotHitResolved = objectiveKill;
 
             if (objectiveKill &&
@@ -911,7 +940,7 @@ namespace BoredomAndDungeons
                 return requestedX;
 
             if (firstLaunchTutorialLessonCompleteAwaitingTravel ||
-                firstLaunchTutorialLessonScreenTransitionActive)
+                firstLaunchTutorialContinuousHandoffActive)
             {
                 return requestedX;
             }
