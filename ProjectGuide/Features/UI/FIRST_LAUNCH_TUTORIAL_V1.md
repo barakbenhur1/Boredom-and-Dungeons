@@ -1,3 +1,9 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 mounted shooting sequence invariant
+
+The ordinary mounted Ranged lesson and its automatic Reload feedback are one room transaction. Reload may not create a standalone empty screen. After the readable Reload beat, the player travels to a new populated Charged Shot screen. Completing Charged Shot opens a separate Mounted Impact screen whose one target has a fixed authored world position; movement direction cannot recreate, offset or drag it. Progression requires actual horse contact and canonical MountedImpact damage/death confirmation.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## Dialogue pointer, persistent screen depth and completed-room cue — V10.11.30.30
 

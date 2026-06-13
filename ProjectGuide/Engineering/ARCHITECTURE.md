@@ -1,3 +1,13 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 render, environmental damage and mounted-lesson ownership
+
+`BDModernHandheld3DPresenter.BuildScreenRenderer` remains the single screen-render owner. It owns one persistent color target and one persistent depth/stencil target and binds their buffers explicitly to the existing screen camera; no second camera or UI owner is introduced.
+
+`BDQuicksandStatus` remains the quicksand cadence/sink owner and `BDHealth` remains health/damage/feedback authority. The environmental caller may suppress a repetitive diagnostic line without bypassing damage numbers, shake, health events or death.
+
+Lesson screens own room sequencing. Automatic Reload is a same-room continuation of the ordinary mounted shot; Charged Shot owns the next populated screen. The production-course actor created by the Mounted Impact room is the sole target and is never repositioned from player movement.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## Tutorial room-completion presentation and handheld-screen depth ownership — V10.11.30.30
 

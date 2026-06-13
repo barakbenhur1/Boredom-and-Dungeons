@@ -165,7 +165,16 @@ namespace BoredomAndDungeons
             {
                 nextPlayerDamageAt += Mathf.Max(0.10f, playerDamageInterval);
                 if (health != null && !health.IsDead)
-                    health.ApplyUnavoidableDamage(Mathf.Max(0f, playerDamagePerSecond));
+                {
+                    // BD QUIET PERIODIC QUICKSAND DAMAGE V10.11.30.31
+                    // Keep the authored unavoidable damage, number feedback,
+                    // shake and health event, but do not print a full stack trace
+                    // every periodic environmental tick.
+                    health.ApplyUnavoidableDamage(
+                        Mathf.Max(0f, playerDamagePerSecond),
+                        logResolvedDamage: false
+                    );
+                }
             }
 
             if (sink01 >= halfBodyFailureThreshold && !failureTriggered)

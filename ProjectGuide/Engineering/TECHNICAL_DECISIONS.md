@@ -1,3 +1,9 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## Decision — explicit persistent screen color and depth buffers
+
+The live handheld screen keeps its existing camera/uGUI architecture, but color and depth/stencil are separate persistent RenderTextures bound through `Camera.SetTargetBuffers`. This prevents a platform render path from silently substituting a transient memoryless depth surface while preserving stencil-based UI masks. Both targets have one lifecycle owner and are released together.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_QA_LATEST_COMMIT_ALIGNMENT_V1094:BEGIN -->
 ## V10.9.4 decision — preserve latest commit and validate authoritative partials
 

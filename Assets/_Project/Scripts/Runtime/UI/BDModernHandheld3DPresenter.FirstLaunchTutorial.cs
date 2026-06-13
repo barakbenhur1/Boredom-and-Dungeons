@@ -27,6 +27,7 @@ namespace BoredomAndDungeons
             Parry,
             HorseReturn,
             HealHorse,
+            PetHorse, // BD PET LESSON V10.11.30.38
             RemountHorse,
             SpinAttack,
             Grapple,
@@ -1435,6 +1436,22 @@ namespace BoredomAndDungeons
                 return true;
             }
 
+            // BD PHYSICAL SELECT PET ROUTING V10.11.30.38
+            // Keyboard E remains mount/dismount. The physical SELECT control is
+            // the context-equivalent of the dedicated Tab pet action.
+            if (firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.PetHorse &&
+                target.Action ==
+                    BDModernHandheldControlTarget.ControlAction.Confirm)
+            {
+                target.Pulse();
+                SetFirstLaunchTutorialInputSource(
+                    FirstLaunchTutorialInputSource.Handheld
+                );
+                TryStartFirstLaunchTutorialPetHorseV1011338();
+                return true;
+            }
+
             target.Pulse();
             FirstLaunchTutorialInputSource source =
                 FirstLaunchTutorialInputSource.Handheld;
@@ -1740,6 +1757,7 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.Parry: return "PARRY BEFORE IMPACT";
                 case FirstLaunchTutorialStep.HorseReturn: return "THE HORSE RETURNS";
                 case FirstLaunchTutorialStep.HealHorse: return "HEAL THE HORSE";
+                case FirstLaunchTutorialStep.PetHorse: return "PET THE HORSE";
                 case FirstLaunchTutorialStep.RemountHorse: return "MOUNT AGAIN";
                 case FirstLaunchTutorialStep.SpinAttack: return "HIT BOTH WITH ONE SPIN";
                 case FirstLaunchTutorialStep.Grapple: return "GRAPPLING HOOK";
@@ -1787,6 +1805,7 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.Parry: return "Press light or heavy as the projectile reaches you. The lesson completes only after a correctly timed parry.";
                 case FirstLaunchTutorialStep.HorseReturn: return "The injured horse returns when the danger clears.";
                 case FirstLaunchTutorialStep.HealHorse: return "Stay close and hold until the healing action completes.";
+                case FirstLaunchTutorialStep.PetHorse: return "The horse is healed. Stand beside it and press the dedicated Pet binding once.";
                 case FirstLaunchTutorialStep.RemountHorse: return "Return to the saddle and continue east.";
                 case FirstLaunchTutorialStep.SpinAttack: return "One enemy is ahead and one appears behind you. The same spin must hit both; otherwise neither enemy takes damage.";
                 case FirstLaunchTutorialStep.Grapple: return "Hold heavy to pull a small enemy into sword range.";
@@ -1833,6 +1852,7 @@ namespace BoredomAndDungeons
                 case FirstLaunchTutorialStep.Dodge: return "DODGE";
                 case FirstLaunchTutorialStep.Parry: return "PARRY";
                 case FirstLaunchTutorialStep.HealHorse: return "HEAL";
+                case FirstLaunchTutorialStep.PetHorse: return "PET";
                 case FirstLaunchTutorialStep.SpinAttack: return "SPIN";
                 case FirstLaunchTutorialStep.Grapple: return "GRAPPLE";
                 case FirstLaunchTutorialStep.HazardKnockback: return "KNOCKBACK";
@@ -1857,13 +1877,14 @@ namespace BoredomAndDungeons
                 case "ATTACK": return "J / LEFT CLICK";
                 case "JUMP_ATTACK": return "SPACE + J / SPACE + LEFT CLICK";
                 case "HEAL": return "HOLD F";
+                case "PET": return "TAB";
                 case "RANGED": return "Q / HOLD Q";
                 case "DODGE": return "DOUBLE-TAP A/D OR LEFT/RIGHT";
                 case "HEAVY": return "K / RIGHT CLICK";
                 case "SPIN": return "HOLD J / LEFT CLICK";
                 case "PARRY": return "J / K OR LEFT / RIGHT CLICK";
                 case "GRAPPLE": return "HOLD K / RIGHT CLICK";
-                case "FINISH": return "J / K / Q OR MOUSE";
+                case "FINISH": return "J / K OR LEFT / RIGHT MOUSE";
                 case "KNOCKBACK": return "K / RIGHT CLICK";
                 case "COMBAT": return "J / K / Q + MOVE";
                 default: return string.Empty;
@@ -1889,6 +1910,8 @@ namespace BoredomAndDungeons
                     return "A / SOUTH + X / WEST";
                 case "HEAL":
                     return "HOLD LB";
+                case "PET":
+                    return "VIEW / SELECT";
                 case "RANGED":
                     return "RB";
                 case "DODGE":
@@ -1902,7 +1925,7 @@ namespace BoredomAndDungeons
                 case "GRAPPLE":
                     return "HOLD Y / NORTH";
                 case "FINISH":
-                    return "X / Y / RB";
+                    return "X / Y";
                 case "KNOCKBACK":
                     return "Y / NORTH";
                 case "COMBAT":
@@ -1929,6 +1952,8 @@ namespace BoredomAndDungeons
                     return "B + X";
                 case "HEAL":
                     return "HOLD A";
+                case "PET":
+                    return "SELECT";
                 case "RANGED":
                     return "A";
                 case "DODGE":
@@ -1942,7 +1967,7 @@ namespace BoredomAndDungeons
                 case "GRAPPLE":
                     return "HOLD Y";
                 case "FINISH":
-                    return "X / Y / A";
+                    return "X / Y"; // BD PHYSICAL GRAPPLE FINISH V10.11.30.38
                 case "KNOCKBACK":
                     return "Y";
                 case "COMBAT":
@@ -2201,6 +2226,7 @@ namespace BoredomAndDungeons
             switch (firstLaunchTutorialStep)
             {
                 case FirstLaunchTutorialStep.MountHorse:
+                case FirstLaunchTutorialStep.PetHorse:
                 case FirstLaunchTutorialStep.RemountHorse:
                 case FirstLaunchTutorialStep.DismountHorse:
                 case FirstLaunchTutorialStep.Collectible:

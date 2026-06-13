@@ -1,3 +1,117 @@
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
+## V10.11.30.45 focused verification
+
+1. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+2. Clear the Unity Console completely.
+3. Enter Play Mode and complete the same launch/tutorial path that previously emitted the warnings.
+4. Confirm neither message appears:
+   - `Ignoring depth surface load action as it is memoryless`
+   - `Ignoring depth surface store action as it is memoryless`
+5. Exit the handheld presentation and confirm the normal gameplay camera is restored.
+6. Confirm the handheld keeps its authored contact/furniture shadows and no gameplay or tutorial behavior changed.
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:END -->
+
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:BEGIN -->
+## V10.11.30.42 focused verification
+
+1. `TEST EVERYTHING`: `0 blockers / 0 warnings / 0 info`.
+2. Enter MiniBossIntro and do not confirm. Player and boss must remain completely fixed; all combat inputs and damage must do nothing.
+3. Confirm with the existing Interact binding. The boss begins from full health and the fight starts normally.
+4. Complete Heal. Pet must appear immediately in the same room, with no CONTINUE or camera movement.
+5. Complete Pet. Mount Again must appear immediately beside the same horse, again without travel or respawn.
+6. SELECT and EXIT must keep the same text size and location but read as engraved/recessed into the shell.
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:END -->
+
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:BEGIN -->
+## V10.11.30.41 verification
+
+- Unity must compile without the line-54 C# syntax errors.
+- Run `Boredom And Dungeons -> TEST EVERYTHING`.
+- Require `0 blockers / 0 warnings / 0 info`.
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:END -->
+
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:BEGIN -->
+## V10.11.30.40 verification
+
+- Unity must compile without C# errors.
+- Run `Boredom And Dungeons -> TEST EVERYTHING`.
+- Require `0 blockers / 0 warnings / 0 info`.
+- Continue the V10.11.30.39 Play Mode checks for Jump Attack, Grapple, Heal -> Pet -> Remount and SELECT/EXIT readability.
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:END -->
+
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:BEGIN -->
+## V10.11.30.39 focused verification
+
+1. `TEST EVERYTHING`: `0 blockers / 0 warnings / 0 info`.
+2. Jump Attack: grounded Light, Heavy and Ranged must not hurt the target; jump + airborne Light must kill it.
+3. Grapple: hook contacts, enemy is visibly pulled, prompt changes to attack, enemy stays alive, and one real Light or Heavy hit completes the lesson.
+4. Heal: completion moves to a separate Pet room. `E` must not pet. `Tab`, controller View/Select and physical SELECT must pet. Pet animation completes, then Mount Again works immediately.
+5. SELECT/EXIT labels remain the same size and position but are clearly readable.
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:END -->
+
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:BEGIN -->
+## V10.11.30.37 focused verification
+
+- Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+- Enter Spin with both targets visible on opposite sides.
+- Hold the instructed Light input until the Spin animation begins.
+- Both enemies must disappear on the same visible AOE impact frame.
+- The lesson must advance to Grapple without requiring movement, facing changes or a second attack.
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:END -->
+
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:BEGIN -->
+## V10.11.30.36 verification
+
+- Unity must compile without `CS0103`.
+- Run `Boredom And Dungeons -> TEST EVERYTHING`.
+- Require `0 blockers / 0 warnings / 0 info`.
+- Then continue the V10.11.30.35 Play Mode checks for horse throw/escape, delayed Dismount prompt and closer Spin enemies.
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:END -->
+
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:BEGIN -->
+## V10.11.30.35 focused verification
+
+- `TEST EVERYTHING`: require `0 blockers / 0 warnings / 0 info`.
+- Dismount room: no card at entry; card appears at the mid-room action threshold; Interact works immediately.
+- Spin room: both targets are close and one centered held-spin kills both.
+- Horse shot: no teleport. Horse impact/rear comes first, rider is visibly thrown and lands, then the injured horse visibly runs away.
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:END -->
+
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:BEGIN -->
+## V10.11.30.34 — final depth token alignment
+
+- Input report: `2026-06-13T08:27:55.7181570Z`, Unity `6000.0.76f1`, `2 blockers / 0 warnings / 0 info`.
+- Both blockers required the exact contiguous runtime token `screenDepthDescriptor.memoryless = RenderTextureMemoryless.None`.
+- Runtime semantics are unchanged; only the line formatting of the existing non-memoryless depth assignment changed.
+- Required verification: compile, run `TEST EVERYTHING`, require `0 blockers / 0 warnings / 0 info`, then perform a fresh Metal run and confirm the memoryless load/store messages do not return.
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:END -->
+
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:BEGIN -->
+## V10.11.30.33 — remaining depth-validator occurrence
+
+- Input report: `2026-06-13T08:22:51.2060800Z`, Unity `6000.0.76f1`, `2 blockers / 0 warnings / 0 info`.
+- Both findings required the obsolete V10.11.30.30 combined depth-owner tokens from `BDModernHandheld3DPresenter.cs`.
+- V10.11.30.33 updates every matching depth Require/Forbid call across the validation folder, rather than stopping after the first matching contract.
+- Unity evidence still required: TEST EVERYTHING `0/0/0`, then fresh Metal and tutorial runtime checks.
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:BEGIN -->
+## V10.11.30.32 — legacy TEST EVERYTHING contracts
+
+- Input report: `2026-06-13T08:15:36.7243040Z`, Unity `6000.0.76f1`, `11 blockers / 0 warnings / 0 info`.
+- Classification: all 11 findings were stale source-token assertions against implementations intentionally superseded by V10.11.30.31.
+- Package evidence: checksum, backup-aware install, focused contract validation, C# delimiter validation, rollback and `git diff --check`.
+- Unity evidence still required: TEST EVERYTHING `0/0/0`, fresh Metal run without memoryless depth load/store warnings, and full Ranged -> Reload -> Charged Shot -> Mounted Impact progression.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:END -->
+
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 verification contract
+
+Static/package validation requires explicit persistent screen color/depth buffers, same-room Ranged-to-Reload flow, compacted later room indices, a fixed world-owned Mounted Impact target, canonical MountedImpact damage routing, quiet periodic quicksand damage, focused QA registration, C# delimiter balance, rollback and `git diff --check`.
+
+Unity compilation, TEST EVERYTHING, Metal warning removal, quicksand runtime feedback and an uninterrupted tutorial completion remain mandatory and are not inferred from package checks.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_CHAIR_BACKREST_AND_SCREEN_DELAY_V10933:BEGIN -->
 ## V10.9.33 verification contract
 

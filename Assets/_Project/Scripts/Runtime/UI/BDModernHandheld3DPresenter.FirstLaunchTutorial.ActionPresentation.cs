@@ -18,6 +18,7 @@ namespace BoredomAndDungeons
             Parry,
             Grapple,
             Heal,
+            PetHorse, // BD PET PRESENTATION V10.11.30.38
             HorseHit
         }
 
@@ -30,8 +31,15 @@ namespace BoredomAndDungeons
         private Vector2 firstLaunchTutorialActionTargetWorld;
         private bool firstLaunchTutorialActionRangedCharged;
         private bool firstLaunchTutorialRangedImpactResolved;
+        // BD SPIN IMPACT FRAME RESOLUTION V10.11.30.37
+        private bool firstLaunchTutorialSpinImpactAttemptedV1011337;
+        private bool firstLaunchTutorialSpinImpactResolvedV1011337;
         private Vector2 firstLaunchTutorialActionDirection =
             Vector2.right;
+        private Vector2 firstLaunchTutorialHorseHitOriginV1011335;
+        private Vector2 firstLaunchTutorialHorseHitPlayerLandingV1011335;
+        private Vector2 firstLaunchTutorialHorseHitEscapeTargetV1011335;
+        private bool firstLaunchTutorialHorseHitRiderReleasedV1011335;
 
         private RectTransform firstLaunchTutorialSlashEffect;
         private Image firstLaunchTutorialSlashEffectImage;
@@ -486,6 +494,8 @@ namespace BoredomAndDungeons
         private void PlayFirstLaunchTutorialSpinAttackAnimation(
             bool advancesLesson)
         {
+            firstLaunchTutorialSpinImpactAttemptedV1011337 = false;
+            firstLaunchTutorialSpinImpactResolvedV1011337 = false;
             BeginFirstLaunchTutorialActionPresentation(
                 FirstLaunchTutorialActionPresentationType.SpinAttack,
                 0.52f,
@@ -513,6 +523,8 @@ namespace BoredomAndDungeons
             bool advancesLesson)
         {
             TutorialEnemyActor actor =
+                firstLaunchTutorialProfessionalGrappleTargetV1011338 ??
+                firstLaunchTutorialPendingHookTarget ??
                 FindClosestLivingTutorialActor(560f);
             Vector2 target = actor != null
                 ? actor.Position
@@ -520,7 +532,7 @@ namespace BoredomAndDungeons
                     ResolveFirstLaunchTutorialActionDirection() * 360f;
             BeginFirstLaunchTutorialActionPresentation(
                 FirstLaunchTutorialActionPresentationType.Grapple,
-                0.72f,
+                0.96f,
                 advancesLesson,
                 firstLaunchTutorialPlayerWorldPosition,
                 target
@@ -543,16 +555,27 @@ namespace BoredomAndDungeons
 
         private void PlayFirstLaunchTutorialHorseHitAnimation()
         {
+            firstLaunchTutorialHorseHitOriginV1011335 =
+                firstLaunchTutorialHorseWorldPosition;
+            firstLaunchTutorialHorseHitPlayerLandingV1011335 =
+                firstLaunchTutorialHorseHitOriginV1011335 +
+                new Vector2(92f, 0f);
+            firstLaunchTutorialHorseHitEscapeTargetV1011335 =
+                firstLaunchTutorialHorseHitOriginV1011335 +
+                new Vector2(-310f, -8f);
+            firstLaunchTutorialHorseHitRiderReleasedV1011335 = false;
+
             BeginFirstLaunchTutorialActionPresentation(
                 FirstLaunchTutorialActionPresentationType.HorseHit,
-                0.42f,
+                1.20f,
                 advancesLesson: false,
-                firstLaunchTutorialHorseWorldPosition,
-                firstLaunchTutorialHorseWorldPosition
+                firstLaunchTutorialHorseHitOriginV1011335,
+                firstLaunchTutorialHorseHitEscapeTargetV1011335
             );
             // BD HORSE HIT FIRST-FRAME POSE V10.11.30.28
-            // Apply the authored impact pose in the same frame as the hit. The
-            // injured horse cannot flash once in its ordinary idle pose first.
+            // BD HORSE THROWS RIDER THEN FLEES V10.11.30.35
+            // Impact, rider launch, landing and horse escape are one readable
+            // authored sequence with no first-frame idle flash or teleport.
             UpdateFirstLaunchTutorialHorseHitPresentation(0f);
         }
 
@@ -695,13 +718,20 @@ namespace BoredomAndDungeons
                     UpdateFirstLaunchTutorialParryPresentation(stepped);
                     break;
                 case FirstLaunchTutorialActionPresentationType.Grapple:
-                    UpdateFirstLaunchTutorialGrapplePresentation(stepped);
+                    // Hook flight, contact and pull stay continuous.
+                    UpdateFirstLaunchTutorialGrapplePresentation(progress);
                     break;
                 case FirstLaunchTutorialActionPresentationType.Heal:
                     UpdateFirstLaunchTutorialHealPresentation(stepped);
                     break;
+                case FirstLaunchTutorialActionPresentationType.PetHorse:
+                    UpdateFirstLaunchTutorialPetHorsePresentationV1011338(
+                        progress
+                    );
+                    break;
                 case FirstLaunchTutorialActionPresentationType.HorseHit:
-                    UpdateFirstLaunchTutorialHorseHitPresentation(stepped);
+                    // The rider arc and horse escape must remain continuous.
+                    UpdateFirstLaunchTutorialHorseHitPresentation(progress);
                     break;
             }
 
@@ -727,9 +757,16 @@ namespace BoredomAndDungeons
                     CompleteFirstLaunchTutorialDismountAnimation(advances);
                     break;
                 case FirstLaunchTutorialActionPresentationType.LightAttack:
-                    CompleteFirstLaunchTutorialLightAttackAnimation(
-                        advances
-                    );
+                    if (firstLaunchTutorialGrappleFinisherInFlightV1011338)
+                    {
+                        CompleteFirstLaunchTutorialProfessionalGrappleFinisherV1011338();
+                    }
+                    else
+                    {
+                        CompleteFirstLaunchTutorialLightAttackAnimation(
+                            advances
+                        );
+                    }
                     break;
                 case FirstLaunchTutorialActionPresentationType.RangedAttack:
                     CompleteFirstLaunchTutorialRangedAttackAnimation(
@@ -740,23 +777,43 @@ namespace BoredomAndDungeons
                     CompleteFirstLaunchTutorialDodgeAnimation(advances);
                     break;
                 case FirstLaunchTutorialActionPresentationType.HeavyAttack:
-                    CompleteFirstLaunchTutorialHeavyAttackAnimation(
-                        advances
-                    );
+                    if (firstLaunchTutorialGrappleFinisherInFlightV1011338)
+                    {
+                        CompleteFirstLaunchTutorialProfessionalGrappleFinisherV1011338(); // heavy
+                    }
+                    else
+                    {
+                        CompleteFirstLaunchTutorialHeavyAttackAnimation(
+                            advances
+                        );
+                    }
                     break;
                 case FirstLaunchTutorialActionPresentationType.SpinAttack:
-                    CompleteFirstLaunchTutorialSpinAttackAnimation(
-                        advances
-                    );
+                    if (!firstLaunchTutorialSpinImpactResolvedV1011337)
+                    {
+                        CompleteFirstLaunchTutorialSpinAttackAnimation(
+                            advances
+                        );
+                    }
+                    firstLaunchTutorialSpinImpactAttemptedV1011337 = false;
+                    firstLaunchTutorialSpinImpactResolvedV1011337 = false;
                     break;
                 case FirstLaunchTutorialActionPresentationType.Parry:
                     CompleteFirstLaunchTutorialParryAnimation(advances);
                     break;
                 case FirstLaunchTutorialActionPresentationType.Grapple:
-                    CompleteFirstLaunchTutorialGrappleAnimation(advances);
+                    CompleteFirstLaunchTutorialProfessionalGrapplePullV1011338(
+                        advances
+                    );
                     break;
                 case FirstLaunchTutorialActionPresentationType.Heal:
-                    CompleteFirstLaunchTutorialHealAnimation(advances);
+                    CompleteFirstLaunchTutorialHealThenPetV1011338(advances);
+                    break;
+                case FirstLaunchTutorialActionPresentationType.PetHorse:
+                    CompleteFirstLaunchTutorialPetHorseAnimationV1011338();
+                    break;
+                case FirstLaunchTutorialActionPresentationType.HorseHit:
+                    CompleteFirstLaunchTutorialHorseHitAnimationV1011335();
                     break;
             }
 
@@ -1168,6 +1225,20 @@ namespace BoredomAndDungeons
                     );
             }
 
+            // BD ATOMIC SPIN IMPACT FRAME V10.11.30.37
+            // The visible AOE frame owns the lesson result. Both
+            // registered targets are resolved together, independent
+            // of facing and without routing through single-target
+            // light-attack damage.
+            if (firstLaunchTutorialActionAdvancesLesson &&
+                !firstLaunchTutorialSpinImpactAttemptedV1011337 &&
+                progress >= 0.58f)
+            {
+                firstLaunchTutorialSpinImpactAttemptedV1011337 = true;
+                firstLaunchTutorialSpinImpactResolvedV1011337 =
+                    TryCompleteFirstLaunchTutorialAtomicSpinV101128();
+            }
+
             if (firstLaunchTutorialActionAdvancesLesson)
             {
                 float targetPulse =
@@ -1226,6 +1297,7 @@ namespace BoredomAndDungeons
         private void UpdateFirstLaunchTutorialGrapplePresentation(
             float progress)
         {
+            // BD PROFESSIONAL HOOK CONTACT + PULL V10.11.30.38
             SetEffectVisible(firstLaunchTutorialGrappleEffect, true);
             if (firstLaunchTutorialGrappleEffect == null ||
                 firstLaunchTutorialGrappleEffectImage == null)
@@ -1233,13 +1305,53 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            Vector2 anchor = firstLaunchTutorialActionTargetWorld;
+            TutorialEnemyActor actor =
+                firstLaunchTutorialProfessionalGrappleTargetV1011338 ??
+                firstLaunchTutorialPendingHookTarget;
+            Vector2 anchor = actor != null
+                ? actor.Position
+                : firstLaunchTutorialActionTargetWorld;
             Vector2 start = firstLaunchTutorialActionStartWorld;
-            float extension = Mathf.Clamp01(progress / 0.45f);
+
+            float extension = Mathf.Clamp01(progress / 0.38f);
+            float contact = Mathf.Clamp01((progress - 0.34f) / 0.16f);
+            float pull = Mathf.Clamp01((progress - 0.48f) / 0.46f);
+            float pullEase = 1f - Mathf.Pow(1f - pull, 3f);
+
             Vector2 lineEnd = Vector2.Lerp(start, anchor, extension);
+            if (actor != null && pull > 0f &&
+                actor.Role != TutorialEnemyRole.MiniBoss)
+            {
+                float side = Mathf.Sign(
+                    firstLaunchTutorialActionTargetWorld.x -
+                    firstLaunchTutorialPlayerWorldPosition.x
+                );
+                if (Mathf.Abs(side) < 0.5f)
+                    side = 1f;
+                Vector2 safeTarget =
+                    firstLaunchTutorialPlayerWorldPosition +
+                    new Vector2(side * 104f, 0f);
+                actor.Position = Vector2.Lerp(
+                    firstLaunchTutorialActionTargetWorld,
+                    safeTarget,
+                    pullEase
+                );
+                anchor = actor.Position;
+                lineEnd = anchor;
+                if (actor.Image == firstLaunchTutorialEnemy)
+                    firstLaunchTutorialEnemyWorldPosition = actor.Position;
+
+                float enemySquash =
+                    Mathf.Sin(pull * Mathf.PI * 4f) * (1f - pull) * 0.12f;
+                ApplyFirstLaunchTutorialEnemyActionPose(
+                    actor.Position,
+                    1f + enemySquash,
+                    1f - enemySquash
+                );
+            }
+
             Vector2 delta = lineEnd - start;
             float length = Mathf.Max(1f, delta.magnitude);
-
             firstLaunchTutorialGrappleEffect.anchoredPosition =
                 SnapFirstLaunchTutorialWorldPosition(
                     start + delta * 0.5f + new Vector2(0f, 18f)
@@ -1253,24 +1365,18 @@ namespace BoredomAndDungeons
                     Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg
                 );
 
-            if (progress > 0.45f)
+            bool impactVisible = contact > 0f && contact < 1f;
+            SetEffectVisible(firstLaunchTutorialImpactEffect, impactVisible);
+            if (impactVisible && firstLaunchTutorialImpactEffect != null)
             {
-                float pull = (progress - 0.45f) / 0.55f;
-                TutorialEnemyActor actor =
-                    firstLaunchTutorialPendingHookTarget ??
-                    FindClosestLivingTutorialActor(620f);
-                if (actor != null && actor.Role != TutorialEnemyRole.MiniBoss)
-                {
-                    float side = Mathf.Sign(
-                        anchor.x - firstLaunchTutorialPlayerWorldPosition.x
+                firstLaunchTutorialImpactEffect.anchoredPosition =
+                    SnapFirstLaunchTutorialWorldPosition(
+                        anchor + new Vector2(0f, 18f)
                     );
-                    Vector2 safeTarget =
-                        firstLaunchTutorialPlayerWorldPosition +
-                        new Vector2(side * 132f, 0f);
-                    actor.Position = Vector2.Lerp(anchor, safeTarget, pull);
-                    if (actor.Image == firstLaunchTutorialEnemy)
-                        firstLaunchTutorialEnemyWorldPosition = actor.Position;
-                }
+                firstLaunchTutorialImpactEffect.localScale =
+                    Vector3.one * Mathf.Lerp(0.45f, 1.05f, contact);
+                firstLaunchTutorialImpactEffect.localRotation =
+                    Quaternion.Euler(0f, 0f, contact * 90f);
             }
         }
         private void UpdateFirstLaunchTutorialHealPresentation(
@@ -1315,37 +1421,155 @@ namespace BoredomAndDungeons
         private void UpdateFirstLaunchTutorialHorseHitPresentation(
             float progress)
         {
-            SetEffectVisible(firstLaunchTutorialHorseHitEffect, true);
+            // BD PROFESSIONAL RIDER THROW + HORSE ESCAPE V10.11.30.35
+            float impact = Mathf.Clamp01(progress / 0.18f);
+            float riderThrow = Mathf.Clamp01((progress - 0.12f) / 0.46f);
+            float horseEscape = Mathf.Clamp01((progress - 0.50f) / 0.50f);
+            float riderEase =
+                riderThrow * riderThrow * (3f - 2f * riderThrow);
+            float escapeEase = 1f -
+                Mathf.Pow(1f - horseEscape, 3f);
 
-            float shake =
-                Mathf.Floor(progress * 10f) % 2f == 0f
-                    ? -10f
-                    : 10f;
-            float collapse = Mathf.Clamp01(progress / 0.70f);
-            ApplyFirstLaunchTutorialHorseActionPose(
-                firstLaunchTutorialHorseWorldPosition,
-                1f + collapse * 0.18f,
-                1f - collapse * 0.26f,
-                shake * (1f - progress),
-                -collapse * 5f
+            if (!firstLaunchTutorialHorseHitRiderReleasedV1011335 &&
+                progress >= 0.16f)
+            {
+                firstLaunchTutorialHorseHitRiderReleasedV1011335 = true;
+                firstLaunchTutorialMounted = false;
+            }
+
+            Vector2 riderWorld = Vector2.Lerp(
+                firstLaunchTutorialHorseHitOriginV1011335,
+                firstLaunchTutorialHorseHitPlayerLandingV1011335,
+                riderEase
             );
+            firstLaunchTutorialPlayerWorldPosition = riderWorld;
+            float riderArc = Mathf.Sin(riderThrow * Mathf.PI) * 78f;
+            ApplyFirstLaunchTutorialPlayerActionPose(
+                riderWorld,
+                1f + Mathf.Sin(riderThrow * Mathf.PI) * 0.12f,
+                1f - Mathf.Sin(riderThrow * Mathf.PI) * 0.10f,
+                riderArc
+            );
+            if (firstLaunchTutorialPlayer != null)
+            {
+                float riderRotation = riderThrow < 0.72f
+                    ? Mathf.Lerp(-10f, 102f, riderThrow / 0.72f)
+                    : Mathf.Lerp(
+                        102f,
+                        0f,
+                        (riderThrow - 0.72f) / 0.28f
+                    );
+                firstLaunchTutorialPlayer.rectTransform.localRotation =
+                    Quaternion.Euler(0f, 0f, riderRotation);
+            }
 
-            if (firstLaunchTutorialHorseHitEffect == null)
-                return;
+            Vector2 horseWorld = Vector2.Lerp(
+                firstLaunchTutorialHorseHitOriginV1011335,
+                firstLaunchTutorialHorseHitEscapeTargetV1011335,
+                escapeEase
+            );
+            firstLaunchTutorialHorseWorldPosition = horseWorld;
+            float rear = Mathf.Sin(impact * Mathf.PI) * 24f;
+            float stride = Mathf.Sin(horseEscape * Mathf.PI * 8f);
+            float strideAmount = Mathf.Abs(stride);
+            ApplyFirstLaunchTutorialHorseActionPose(
+                horseWorld,
+                1f + strideAmount * 0.12f + impact * 0.08f,
+                1f - strideAmount * 0.10f - impact * 0.08f,
+                0f,
+                rear + stride * 5f
+            );
+            if (firstLaunchTutorialHorse != null)
+            {
+                Vector3 scale =
+                    firstLaunchTutorialHorse.rectTransform.localScale;
+                scale.x = -Mathf.Abs(scale.x);
+                firstLaunchTutorialHorse.rectTransform.localScale = scale;
+                float horseRotation = Mathf.Lerp(-13f, 0f, horseEscape);
+                firstLaunchTutorialHorse.rectTransform.localRotation =
+                    Quaternion.Euler(0f, 0f, horseRotation);
+            }
 
-            firstLaunchTutorialHorseHitEffect.anchoredPosition =
-                SnapFirstLaunchTutorialWorldPosition(
-                    firstLaunchTutorialHorseWorldPosition +
-                    new Vector2(0f, 24f)
+            bool impactVisible = progress <= 0.42f;
+            SetEffectVisible(
+                firstLaunchTutorialHorseHitEffect,
+                impactVisible
+            );
+            if (impactVisible &&
+                firstLaunchTutorialHorseHitEffect != null)
+            {
+                firstLaunchTutorialHorseHitEffect.anchoredPosition =
+                    SnapFirstLaunchTutorialWorldPosition(
+                        firstLaunchTutorialHorseHitOriginV1011335 +
+                        new Vector2(0f, 24f)
+                    );
+                firstLaunchTutorialHorseHitEffect.localRotation =
+                    Quaternion.Euler(
+                        0f,
+                        0f,
+                        Mathf.Floor(progress * 8f) * 45f
+                    );
+                firstLaunchTutorialHorseHitEffect.localScale =
+                    Vector3.one * (0.75f + impact * 1.10f);
+            }
+
+            bool escapeTrailVisible =
+                horseEscape > 0f && horseEscape < 1f;
+            SetEffectVisible(
+                firstLaunchTutorialDodgeTrailEffect,
+                escapeTrailVisible
+            );
+            if (escapeTrailVisible &&
+                firstLaunchTutorialDodgeTrailEffect != null)
+            {
+                firstLaunchTutorialDodgeTrailEffect.anchoredPosition =
+                    SnapFirstLaunchTutorialWorldPosition(
+                        horseWorld + new Vector2(58f, 0f)
+                    );
+                firstLaunchTutorialDodgeTrailEffect.localRotation =
+                    Quaternion.identity;
+                firstLaunchTutorialDodgeTrailEffect.localScale =
+                    new Vector3(
+                        0.65f + horseEscape * 0.55f,
+                        0.48f,
+                        1f
+                    );
+                SetImageAlpha(
+                    firstLaunchTutorialDodgeTrailEffectImage,
+                    0.62f * (1f - horseEscape)
                 );
-            firstLaunchTutorialHorseHitEffect.localRotation =
-                Quaternion.Euler(
-                    0f,
-                    0f,
-                    Mathf.Floor(progress * 4f) * 45f
-                );
-            firstLaunchTutorialHorseHitEffect.localScale =
-                Vector3.one * (0.75f + progress * 0.85f);
+            }
+        }
+
+        private void CompleteFirstLaunchTutorialHorseHitAnimationV1011335()
+        {
+            firstLaunchTutorialMounted = false;
+            firstLaunchTutorialMountedCurrentSpeed = 0f;
+            firstLaunchTutorialMovementActive = false;
+            firstLaunchTutorialPlayerWorldPosition =
+                firstLaunchTutorialHorseHitPlayerLandingV1011335;
+            firstLaunchTutorialHorseWorldPosition =
+                firstLaunchTutorialHorseHitEscapeTargetV1011335;
+            firstLaunchTutorialHorseInjured = true;
+
+            if (firstLaunchTutorialPlayer != null)
+            {
+                firstLaunchTutorialPlayer.rectTransform.localRotation =
+                    Quaternion.identity;
+            }
+            if (firstLaunchTutorialHorse != null)
+            {
+                firstLaunchTutorialHorse.rectTransform.localRotation =
+                    Quaternion.identity;
+            }
+
+            firstLaunchTutorialLastMoveDirection = Vector2.right;
+            SetEffectVisible(firstLaunchTutorialDodgeTrailEffect, false);
+            SetEffectVisible(firstLaunchTutorialHorseHitEffect, false);
+
+            SetFirstLaunchTutorialStep(
+                FirstLaunchTutorialStep.JumpAttack
+            );
         }
 
         private void SetFirstLaunchTutorialHealingPreview(

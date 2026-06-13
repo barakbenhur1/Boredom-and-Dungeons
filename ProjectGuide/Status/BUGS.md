@@ -1,3 +1,14 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 blocking regressions
+
+| ID | Area | Status | Acceptance condition |
+|---|---|---|---|
+| `FL-RENDER-MEMORYLESS-DEPTH-V1011331` | Handheld screen rendering | `IMPLEMENTED / UNITY-METAL VERIFY` | Fresh Play Mode emits neither memoryless depth load nor store warning. |
+| `QUICKSAND-PERIODIC-LOG-SPAM-V1011331` | Runtime diagnostics | `IMPLEMENTED / PLAY MODE VERIFY` | Quicksand keeps damage/feedback but does not log a stack trace for each periodic tick. |
+| `FL-TUT-EMPTY-RELOAD-ROOM-V1011331` | Mounted tutorial sequence | `IMPLEMENTED / FULL-RUN VERIFY` | Ordinary mounted shot enters Reload in the same room; Charged Shot begins in the next populated room. |
+| `FL-TUT-MOUNTED-IMPACT-TETHER-V1011331` | Mounted Impact | `IMPLEMENTED / FULL-RUN VERIFY` | The target stays at its authored world position, dies from actual horse contact and advances exactly once. |
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## V10.11.30.30 focused defects
 

@@ -7,7 +7,8 @@ namespace BoredomAndDungeons
     {
         // BD ATOMIC SPIN + ENVIRONMENTAL COMPLETION + PLAYER MODEL V10.11.28
         private const float TutorialSpinPairRadiusV101128 = 210f;
-        private const float TutorialSpinPairOffsetV101128 = 104f;
+        // BD ATOMIC SPIN IMPACT ALIGNMENT V10.11.30.37
+        private const float TutorialSpinPairOffsetV101128 = 82f;
         private const float TutorialDodgeObstacleHalfWidthV101128 = 48f;
         private const float TutorialDodgeExitClearanceV101128 = 58f;
 

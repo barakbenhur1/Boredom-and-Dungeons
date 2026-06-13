@@ -5,6 +5,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
 {
     internal static class BDTutorialContinuousRoomSequenceV1011325QA
     {
+        // BD SAME-ROOM PET MAP QA V10.11.30.42
+        // BD PET ROOM MAP QA REALIGNMENT V10.11.30.40
         private const string GameplayPath =
             "Assets/_Project/Scripts/Runtime/UI/" +
             "BDModernHandheld3DPresenter.FirstLaunchTutorial.Gameplay.cs";
@@ -49,13 +51,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root, LessonScreensPath,
                 "TUTORIAL_V1011325_ORDERED_ROOM_MAP_MISSING",
+                "BD MOUNTED RELOAD SAME-ROOM BRIDGE V10.11.30.31",
                 "roomIndex = 1;",
                 "roomIndex = 5;",
-                "roomIndex = 9;",
-                "roomIndex = 14;",
+                "case FirstLaunchTutorialStep.RangedAttack:\n                case FirstLaunchTutorialStep.Reload:\n                    roomIndex = 9;",
+                "case FirstLaunchTutorialStep.ChargedShot:\n                    roomIndex = 10;",
+                "case FirstLaunchTutorialStep.MountedImpact:\n                    roomIndex = 11;",
+                "roomIndex = 13;",
+                "roomIndex = 18;",
                 "roomIndex = 19;",
                 "roomIndex = 20;",
-                "roomIndex = 21;",
                 "PositionFirstLaunchTutorialWallJumpGeometry(center)",
                 "ResolveFirstLaunchTutorialWallJumpWallX()",
                 "firstLaunchTutorialGapWorldPosition =",

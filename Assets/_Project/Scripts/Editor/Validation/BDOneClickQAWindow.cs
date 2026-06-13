@@ -509,6 +509,11 @@ namespace BoredomAndDungeons.EditorTools.Validation
             BDTutorialFlowCoherenceV1011328QA.Scan(result);
             BDTutorialHorseCombatContinueV1011329QA.Scan(result);
             BDTutorialBubbleDepthV1011330QA.Scan(result);
+            BDTutorialChargedSequenceMetalQuicksandV1011331QA.Scan(result);
+            BDTutorialSpinDismountHorseThrowV1011335QA.Scan(result);
+            BDTutorialGrappleJumpPetLabelsV1011338QA.Scan(result);
+            BDTutorialBossFreezeHorseFlowEngravedV1011342QA.Scan(result);
+            BDMetalMemorylessWarningV1011343QA.Scan(result);
             BDChildApproachCinematicQA.Scan(result);
             ScanDreamyMainMenuContracts(result);
             ScanNaturalMovementAwarenessFacingContracts(result);

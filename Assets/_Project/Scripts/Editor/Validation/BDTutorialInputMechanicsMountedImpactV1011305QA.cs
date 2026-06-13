@@ -48,9 +48,16 @@ namespace BoredomAndDungeons.EditorTools.Validation
             Require(result, root, ProductionPath,
                 "TUTORIAL_V1011305_GLOBAL_MECHANICS_AND_RAM_MISSING",
                 "Held light/spin and heavy/grapple arbitration is global",
-                "FindClosestLivingTutorialActor(180f, requireForward: false)",
-                "EnsureFirstLaunchTutorialMountedImpactTarget()",
+                "BD STABLE WORLD-OWNED MOUNTED IMPACT TARGET V10.11.30.31",
+                "TutorialEnemyActor actor = null;",
+                "candidate.Image != firstLaunchTutorialEnemy",
+                "TutorialMountedCollisionRadius + TutorialEnemyCollisionRadius",
+                "FirstLaunchTutorialDamageSourceV101125.MountedImpact",
+                "if (!impactApplied || !actor.Dead)",
                 "ResolveFirstLaunchTutorialFreeSpinAtImpact()");
+            Forbid(result, root, ProductionPath,
+                "TUTORIAL_V1011305_PLAYER_RELATIVE_RAM_TARGET_REGRESSION",
+                "EnsureFirstLaunchTutorialMountedImpactTarget(");
             Require(result, root, RepairPath,
                 "TUTORIAL_V1011305_MOUNTED_IMPACT_COLLISION_BYPASS_MISSING",
                 "firstLaunchTutorialMounted &&",

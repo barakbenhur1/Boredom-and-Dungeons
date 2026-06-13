@@ -1058,16 +1058,46 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            TutorialEnemyActor actor =
-                FindClosestLivingTutorialActor(180f, requireForward: false);
-            if (actor == null)
-                actor = EnsureFirstLaunchTutorialMountedImpactTarget();
-            if (actor == null || actor.Role == TutorialEnemyRole.MiniBoss)
+            // BD STABLE WORLD-OWNED MOUNTED IMPACT TARGET V10.11.30.31
+            // The room layout owns one fixed target. Never manufacture or move a
+            // replacement relative to the player: that created the visible
+            // tether where turning dragged the enemy at a constant distance.
+            TutorialEnemyActor actor = null;
+            for (int index = 0;
+                 index < firstLaunchTutorialActors.Count;
+                 index++)
+            {
+                TutorialEnemyActor candidate = firstLaunchTutorialActors[index];
+                if (candidate.Image != firstLaunchTutorialEnemy)
+                    continue;
+                actor = candidate;
+                break;
+            }
+
+            if (actor == null || !actor.Active || actor.Dead ||
+                actor.Role == TutorialEnemyRole.MiniBoss)
+            {
+                return;
+            }
+
+            float requiredContact =
+                TutorialMountedCollisionRadius + TutorialEnemyCollisionRadius;
+            if (Vector2.Distance(
+                    firstLaunchTutorialPlayerWorldPosition,
+                    actor.Position) > requiredContact)
+            {
+                return;
+            }
+
+            bool impactApplied =
+                TryApplyFirstLaunchTutorialLessonDamageV101125(
+                    actor,
+                    actor.Health,
+                    FirstLaunchTutorialDamageSourceV101125.MountedImpact
+                );
+            if (!impactApplied || !actor.Dead)
                 return;
 
-            ApplyFirstLaunchTutorialActorDamage(actor, actor.Health);
-            actor.Position.x +=
-                Mathf.Sign(firstLaunchTutorialLastMoveDirection.x) * 110f;
             SetFirstLaunchTutorialLearningState(
                 "MountedImpact",
                 TutorialLearningState.Demonstrated
@@ -1107,35 +1137,10 @@ namespace BoredomAndDungeons
             return hit;
         }
 
-        private TutorialEnemyActor EnsureFirstLaunchTutorialMountedImpactTarget()
-        {
-            for (int index = 0;
-                 index < firstLaunchTutorialActors.Count;
-                 index++)
-            {
-                TutorialEnemyActor actor = firstLaunchTutorialActors[index];
-                if (actor.Image != firstLaunchTutorialEnemy)
-                    continue;
-
-                Vector2 direction = ResolveFirstLaunchTutorialActionDirection();
-                actor.Role = TutorialEnemyRole.Small;
-                actor.Position = firstLaunchTutorialPlayerWorldPosition +
-                    direction * 150f;
-                actor.SpawnPosition = actor.Position;
-                actor.MaximumHealth = 1f;
-                actor.Health = 1f;
-                actor.Active = true;
-                actor.Dead = false;
-                actor.AttackCommitted = false;
-                actor.DamageApplied = false;
-                actor.NextActionAt = float.PositiveInfinity;
-                if (actor.Image != null)
-                    actor.Image.gameObject.SetActive(true);
-                firstLaunchTutorialEnemyWorldPosition = actor.Position;
-                return actor;
-            }
-            return null;
-        }
+        // BD MOUNTED IMPACT PLAYER-RELATIVE TARGET RETIRED V10.11.30.31
+        // The Mounted Impact room layout is the only target owner. A helper that
+        // fabricated a replacement at player position + 150 was removed because
+        // it coupled enemy world position to rider movement and caused the tether.
 
         private void ResolveFirstLaunchTutorialProductionMelee(float damage, bool heavy)
         {

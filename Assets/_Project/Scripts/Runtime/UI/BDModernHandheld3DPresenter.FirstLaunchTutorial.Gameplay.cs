@@ -299,7 +299,7 @@ namespace BoredomAndDungeons
             Color marker =
                 new Color(1f, 0.58f, 0.18f, 1f);
 
-            const int tutorialRoomCount = 21;
+            const int tutorialRoomCount = 21; // BD HEAL PET MOUNT SAME ROOM V10.11.30.42
             for (int index = 0; index < tutorialRoomCount; index++)
             {
                 float x = TutorialOpeningScreenCenterX +
@@ -478,6 +478,16 @@ namespace BoredomAndDungeons
 
             firstLaunchTutorialMovementActive = false;
 
+            // BD BOSS INTRO WORLD FREEZE V10.11.30.42
+            // The explanation remains live, but both combatants and every
+            // combat transaction are held until the player confirms it.
+            if (MaintainFirstLaunchTutorialBossIntroFreezeV1011342())
+            {
+                RenderFirstLaunchTutorialFreePlayCourse(force: false);
+                ApplyFirstLaunchTutorialBossIntroFrozenVisualsV1011342();
+                return;
+            }
+
             // BD COMPLETED STORY ROOM TRAVEL V10.11.30.26
             // Scripted beats own movement only while their objective is active.
             // Once HorseShot has queued the next room, ordinary movement must
@@ -498,6 +508,7 @@ namespace BoredomAndDungeons
             }
 
             UpdateFirstLaunchTutorialHeldActions();
+            UpdateFirstLaunchTutorialPetInputV1011338();
             UpdateFirstLaunchTutorialProductionCourse(elapsed);
             UpdateFirstLaunchTutorialCompletionContact(elapsed);
 
@@ -1201,6 +1212,24 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            // BD BOSS INTRO KEYBOARD INPUT FREEZE V10.11.30.42
+            // Only the existing Interact confirmation is accepted. Movement,
+            // jump, melee, ranged, dodge and held actions are ignored.
+            if (firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.MiniBossIntro)
+            {
+                if (ReadFirstLaunchTutorialInteractPressed())
+                {
+                    HandleFirstLaunchTutorialAction(
+                        BDModernHandheldControlTarget.ControlAction.Confirm,
+                        ResolveFirstLaunchTutorialSource(
+                            FirstLaunchTutorialInputSource.Keyboard
+                        )
+                    );
+                }
+                return;
+            }
+
             // BD PERMANENT LEARNED JUMP V10.11.30.28
             // Once learned, Jump remains available in every later on-foot room,
             // including the player-owned walk to the right edge after a lesson.
@@ -1347,6 +1376,17 @@ namespace BoredomAndDungeons
             BDModernHandheldControlTarget.ControlAction action,
             FirstLaunchTutorialInputSource source)
         {
+            // BD BOSS INTRO PHYSICAL INPUT FREEZE V10.11.30.42
+            // The physical SELECT/Interact control may approve the explanation;
+            // all other gameplay controls remain frozen.
+            if (firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.MiniBossIntro &&
+                action !=
+                    BDModernHandheldControlTarget.ControlAction.Confirm)
+            {
+                return;
+            }
+
             Vector2 movement = ResolveFirstLaunchTutorialMovementAction(action);
             if (movement.sqrMagnitude > 0.0001f)
             {
@@ -1460,11 +1500,24 @@ namespace BoredomAndDungeons
 
         private void HandleFirstLaunchTutorialInteractAction()
         {
+            // BD PET DOES NOT REUSE E INTERACT V10.11.30.38
+            // E / button-East remains mount and dismount only. Petting owns Tab,
+            // controller View/Select and the physical SELECT button.
+            if (firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.PetHorse)
+            {
+                ShowFirstLaunchTutorialSuccess(
+                    "USE TAB / SELECT TO PET"
+                );
+                return;
+            }
+
             if (firstLaunchTutorialStep ==
                     FirstLaunchTutorialStep.MiniBossIntro)
             {
                 if (Time.unscaledTime - firstLaunchTutorialStepStartedAt < 1.20f)
                     return;
+                ReleaseFirstLaunchTutorialBossIntroFreezeV1011342();
                 ShowFirstLaunchTutorialSuccess("FINAL TEST STARTED");
                 SetFirstLaunchTutorialStep(
                     FirstLaunchTutorialStep.MiniBossPhaseOne
@@ -1600,6 +1653,15 @@ namespace BoredomAndDungeons
             if (RejectFirstLaunchTutorialMountedMelee())
                 return;
 
+            if (TryHandleFirstLaunchTutorialProfessionalGrappleFinisherV1011338(
+                    heavy: false))
+            {
+                return;
+            }
+
+            if (RejectFirstLaunchTutorialGroundedJumpAttackV1011338())
+                return;
+
             bool attackLesson =
                 firstLaunchTutorialStep == FirstLaunchTutorialStep.AttackEnemy &&
                 firstLaunchTutorialGrounded;
@@ -1654,6 +1716,13 @@ namespace BoredomAndDungeons
 
         private void HandleFirstLaunchTutorialRangedAttack()
         {
+            // BD JUMP ATTACK REJECTS RANGED V10.11.30.38
+            if (RejectFirstLaunchTutorialNonJumpAttackV1011338(
+                    "JUMP, THEN USE LIGHT ATTACK IN THE AIR"))
+            {
+                return;
+            }
+
             if (Time.unscaledTime < firstLaunchTutorialReloadCompletesAt)
                 return;
             if (firstLaunchTutorialAmmo <= 0)
@@ -1746,6 +1815,18 @@ namespace BoredomAndDungeons
         {
             if (RejectFirstLaunchTutorialMountedMelee())
                 return;
+
+            if (TryHandleFirstLaunchTutorialProfessionalGrappleFinisherV1011338(
+                    heavy: true))
+            {
+                return;
+            }
+
+            if (RejectFirstLaunchTutorialNonJumpAttackV1011338(
+                    "ONLY AN AIRBORNE LIGHT ATTACK WORKS HERE"))
+            {
+                return;
+            }
 
             bool heavyLesson =
                 firstLaunchTutorialStep == FirstLaunchTutorialStep.HeavyAttack;
@@ -1879,17 +1960,27 @@ namespace BoredomAndDungeons
             float held = Time.unscaledTime -
                 firstLaunchTutorialPrimaryHoldStartedAt;
             bool isHeld = IsFirstLaunchTutorialPrimaryHeld();
-            bool spinUnlocked = IsFirstLaunchTutorialMechanicUnlocked(15);
+            // BD SPIN LESSON ALWAYS UNLOCKED V10.11.30.37
+            // The active lesson must never fall back to a light attack
+            // because a historical mechanic-index flag is late.
+            bool spinUnlocked =
+                firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.SpinAttack ||
+                IsFirstLaunchTutorialMechanicUnlocked(15);
             if (spinUnlocked && isHeld &&
                 held >= TutorialSpinHoldSeconds)
             {
                 firstLaunchTutorialPrimaryHoldStartedAt = -1f;
                 bool lesson = firstLaunchTutorialStep ==
                     FirstLaunchTutorialStep.SpinAttack;
-                bool advances = lesson &&
+                if (lesson)
+                    UpdateFirstLaunchTutorialSpinPairV101128();
+                bool advancesV1011337 = lesson &&
                     HasFirstLaunchTutorialAtomicSpinPairInRange();
-                PlayFirstLaunchTutorialSpinAttackAnimation(advances);
-                if (lesson && !advances)
+                PlayFirstLaunchTutorialSpinAttackAnimation(
+                    advancesV1011337
+                );
+                if (lesson && !advancesV1011337)
                 {
                     ShowFirstLaunchTutorialSuccess(
                         "CENTER BETWEEN BOTH ENEMIES — HIT BOTH"
@@ -1945,10 +2036,20 @@ namespace BoredomAndDungeons
                     target != null;
                 if (target != null)
                 {
-                    BeginFirstLaunchTutorialProductionHookTransaction(
-                        target,
-                        0.5f
-                    );
+                    if (firstLaunchTutorialStep ==
+                            FirstLaunchTutorialStep.Grapple)
+                    {
+                        PrepareFirstLaunchTutorialProfessionalGrappleTargetV1011338(
+                            target
+                        );
+                    }
+                    else
+                    {
+                        BeginFirstLaunchTutorialProductionHookTransaction(
+                            target,
+                            0.5f
+                        );
+                    }
                 }
                 PlayFirstLaunchTutorialGrappleAnimation(advances);
                 if (target == null)
@@ -2015,6 +2116,12 @@ namespace BoredomAndDungeons
                 return;
             }
 
+            if (firstLaunchTutorialActionPresentationType ==
+                    FirstLaunchTutorialActionPresentationType.HorseHit)
+            {
+                return;
+            }
+
             SetFirstLaunchTutorialInstructionRequested(true);
             float progress = Mathf.Clamp01(elapsed / 0.60f);
             firstLaunchTutorialProjectileWorldPosition =
@@ -2029,18 +2136,13 @@ namespace BoredomAndDungeons
             if (elapsed < 0.62f)
                 return;
 
-            if (firstLaunchTutorialMounted)
-            {
-                firstLaunchTutorialMounted = false;
-                firstLaunchTutorialPlayerWorldPosition =
-                    firstLaunchTutorialHorseWorldPosition +
-                    new Vector2(78f, 2f);
-            }
-
+            // BD HORSE THROWS RIDER THEN FLEES V10.11.30.35
+            // The impact presentation owns the full sequence. Do not teleport
+            // the rider or horse, and do not start JumpAttack until the rider
+            // has landed and the injured horse has visibly escaped.
             firstLaunchTutorialHorseInjured = true;
-            firstLaunchTutorialHorseWorldPosition =
-                firstLaunchTutorialPlayerWorldPosition +
-                new Vector2(-230f, -8f);
+            firstLaunchTutorialMountedCurrentSpeed = 0f;
+            firstLaunchTutorialMovementActive = false;
             PlayFirstLaunchTutorialHorseHitAnimation();
             SetTutorialEntityActive(firstLaunchTutorialProjectile, false);
             PositionFirstLaunchTutorialActorForScreen(
@@ -2052,10 +2154,6 @@ namespace BoredomAndDungeons
             );
             SetFirstLaunchTutorialActorPassiveForScreen(
                 firstLaunchTutorialEnemy
-            );
-
-            SetFirstLaunchTutorialStep(
-                FirstLaunchTutorialStep.JumpAttack
             );
         }
 
@@ -2177,9 +2275,24 @@ namespace BoredomAndDungeons
                 return;
             }
 
-            // BD IMMEDIATE PERSISTENT LESSON UI V10.11.25
-            // Step assignment owns room entry. Once the step is active, its
-            // instruction is visible immediately and remains until completion.
+            // BD MID-SCREEN DISMOUNT INSTRUCTION GATE V10.11.30.35
+            // The card appears at the exact world threshold that enables the
+            // dismount action, never earlier at the room entrance.
+            if (firstLaunchTutorialStep ==
+                    FirstLaunchTutorialStep.DismountHorse &&
+                !firstLaunchTutorialDismountInstructionRevealedV1011335)
+            {
+                if (firstLaunchTutorialPlayerWorldPosition.x <
+                        ResolveFirstLaunchTutorialDismountInstructionRevealX())
+                {
+                    HideFirstLaunchTutorialDismountInstructionUntilMarkerV1011335();
+                    return;
+                }
+
+                firstLaunchTutorialDismountInstructionRevealedV1011335 = true;
+                SetFirstLaunchTutorialLessonInstructionVisible(true);
+            }
+
             SetFirstLaunchTutorialInstructionRequested(true);
         }
 
@@ -2328,6 +2441,14 @@ namespace BoredomAndDungeons
                         firstLaunchTutorialHorseWorldPosition.x - 110f
                     );
                     firstLaunchTutorialHorseInjured = true;
+                    break;
+                case FirstLaunchTutorialStep.PetHorse:
+                    firstLaunchTutorialInstructionRequested = true;
+                    SetFirstLaunchTutorialCheckpoint(
+                        firstLaunchTutorialHorseWorldPosition.x - 110f
+                    );
+                    firstLaunchTutorialMounted = false;
+                    firstLaunchTutorialHorseInjured = false;
                     break;
                 case FirstLaunchTutorialStep.RangedAttack:
                     firstLaunchTutorialInstructionRequested = false;
@@ -2602,6 +2723,7 @@ namespace BoredomAndDungeons
                     break;
                 case FirstLaunchTutorialStep.HorseReturn:
                 case FirstLaunchTutorialStep.HealHorse:
+                case FirstLaunchTutorialStep.PetHorse:
                 case FirstLaunchTutorialStep.RemountHorse:
                     section = 4;
                     break;

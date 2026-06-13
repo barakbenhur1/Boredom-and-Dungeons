@@ -214,3 +214,6 @@ releases/
 /.package_payload/
 /.bnd_backups/
 /.repository_size_audit_tmp/
+
+# Local rollback snapshots created by B&D installers
+.bnd_package_backups/

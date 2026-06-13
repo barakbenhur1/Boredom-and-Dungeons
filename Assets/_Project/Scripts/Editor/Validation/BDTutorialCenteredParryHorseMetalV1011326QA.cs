@@ -90,13 +90,18 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BD NON-MEMORYLESS DEVICE CAMERA DEPTH V10.11.30.26",
                 "deviceCamera.allowMSAA = false;",
                 "deviceCamera.depthTextureMode = DepthTextureMode.None;",
-                "BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30",
-                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat;",
-                "screenDescriptor.memoryless = RenderTextureMemoryless.None;");
+                "BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31",
+                "private RenderTexture screenDepthRenderTexture;",
+                "screenDescriptor.depthStencilFormat = GraphicsFormat.None",
+                "screenDepthDescriptor.memoryless =",
+                "screenDepthDescriptor.depthStencilFormat =",
+                "screenCamera.SetTargetBuffers(",
+                "screenDepthRenderTexture.depthBuffer");
             Forbid(result, root, PresenterPath,
                 "SCREEN_V1011326_MSAA_DEPTH_REGRESSION",
                 "deviceCamera.allowMSAA = true;",
-                "screenDescriptor.depthStencilFormat = GraphicsFormat.None;");
+                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat;",
+                "screenDepthDescriptor.memoryless = RenderTextureMemoryless.Depth;");
             Require(result, root, SettingsPath,
                 "SCREEN_V1011326_PROJECT_MEMORYLESS_UNUSED_MISSING",
                 "framebufferDepthMemorylessMode: 0");

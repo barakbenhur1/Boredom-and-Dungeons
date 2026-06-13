@@ -1,3 +1,17 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## Immediate blocking gate — V10.11.30.31
+
+1. Install the cumulative local patch over the current V10.11.30.30 state without discarding unrelated work.
+2. Compile in Unity `6000.0.76f1`; require no project error or warning.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Clear Console and enter Play Mode fresh; require both memoryless depth messages to be absent.
+5. Verify quicksand still damages at the existing cadence but no longer emits one full damage stack trace per tick.
+6. Complete mounted Ranged Attack; Reload must remain in the same room and no empty room may appear.
+7. Enter Charged Shot in the next screen with its target present.
+8. Complete Charged Shot, then verify the Mounted Impact target remains fixed while the rider changes direction and dies only on actual contact.
+9. Complete the remaining tutorial before commit.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## Immediate gate — V10.11.30.30
 

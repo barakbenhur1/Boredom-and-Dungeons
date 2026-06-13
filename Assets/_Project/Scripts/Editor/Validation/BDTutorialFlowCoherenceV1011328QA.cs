@@ -5,6 +5,9 @@ namespace BoredomAndDungeons.EditorTools.Validation
 {
     internal static class BDTutorialFlowCoherenceV1011328QA
     {
+        // BD HEAL PET MOUNT SAME ROOM QA V10.11.30.42
+        // BD PET ROOM QA COMPILE REPAIR V10.11.30.41
+        // BD HEAL PET REMOUNT QA REALIGNMENT V10.11.30.40
         private const string GameplayPath =
             "Assets/_Project/Scripts/Runtime/UI/" +
             "BDModernHandheld3DPresenter.FirstLaunchTutorial.Gameplay.cs";
@@ -48,9 +51,10 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root, ScreensPath,
                 "TUTORIAL_V1011328_IMMEDIATE_REMOUNT_MISSING",
-                "BD IMMEDIATE POST-HEAL REMOUNT V10.11.30.28",
-                "current == FirstLaunchTutorialStep.HealHorse &&\n                next == FirstLaunchTutorialStep.RemountHorse",
-                "case FirstLaunchTutorialStep.HorseReturn:\n                case FirstLaunchTutorialStep.HealHorse:\n                case FirstLaunchTutorialStep.RemountHorse:\n                    roomIndex = 8;");
+                "BD HEAL PET MOUNT SAME ROOM V10.11.30.42",
+                "current == FirstLaunchTutorialStep.HealHorse &&\n                next == FirstLaunchTutorialStep.PetHorse",
+                "current == FirstLaunchTutorialStep.PetHorse &&\n                next == FirstLaunchTutorialStep.RemountHorse",
+                "case FirstLaunchTutorialStep.HorseReturn:\n                case FirstLaunchTutorialStep.HealHorse:\n                case FirstLaunchTutorialStep.PetHorse:\n                case FirstLaunchTutorialStep.RemountHorse:\n                    roomIndex = 8;");
 
             Require(result, root, ScreensPath,
                 "TUTORIAL_V1011329_POST_SCROLL_HORSE_RETURN_MISSING",

@@ -1,3 +1,135 @@
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
+## 2026-06-13 — Metal memoryless depth warning repair V10.11.30.45
+
+**Classification:** `LOCAL-STATE-AGNOSTIC INSTALLER / METAL CONSOLE VERIFICATION REQUIRED`
+
+The tutorial and automated QA are otherwise complete. This delivery removes all dependency on the previous RenderTexture implementation. It changes only camera/backbuffer ownership and the redundant Metal key-light shadow pass. V10.11.30.45 narrows the remaining native Metal depth ownership:
+
+- while the full-screen handheld is visible, other enabled Game cameras targeting the same backbuffer are suspended and restored exactly on exit;
+- offscreen, SceneView, Preview and Reflection cameras are untouched;
+- on Metal only, the redundant real-time shadow map of the handheld key light is disabled while the existing authored device/furniture contact shadows remain;
+- the existing screen RenderTexture implementation is not inspected or modified.
+
+No gameplay, tutorial flow, input, UI layout or screen RenderTexture behavior changed.
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:END -->
+
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:BEGIN -->
+## 2026-06-13 — Boss-intro freeze, same-room horse care and engraved labels V10.11.30.42
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+- The MiniBossIntro explanation now freezes both player and boss. Movement, jump, attacks, dodge, ranged input, queued damage, boss attacks and death are suppressed until the existing Interact confirmation. The boss is restored alive at full health every frozen frame, preventing the pre-confirmation kill/despawn soft-lock.
+- Horse care now remains entirely in one room: Heal -> Pet -> Mount Again. Neither transition creates CONTINUE, travel, camera scroll, room reset or a second horse appearance.
+- SELECT and EXIT keep the exact authored center and character size. Their finish now uses a dark recessed face with opposing light/shadow cut edges, producing an engraved/inset appearance instead of raised bright print.
+
+**Resume point:** compile, run `TEST EVERYTHING`, then verify boss freeze/release, Heal -> Pet -> Mount without camera movement, and engraved shortcut-label depth.
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:END -->
+
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:BEGIN -->
+## 2026-06-13 — Pet-room QA compile repair V10.11.30.41
+
+**Classification:** `QA COMPILATION REPAIRED / UNITY RERUN REQUIRED`
+
+V10.11.30.40 inserted a literal `\\n` outside a C# string while splitting the Heal/Pet/Remount assertions. V10.11.30.41 replaces the complete owning `Require(...)` block with canonical C#.
+
+No runtime, gameplay, input, animation, UI or room behavior changed.
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:END -->
+
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:BEGIN -->
+## 2026-06-13 — Pet-room QA realignment V10.11.30.40
+
+**Classification:** `QA CONTRACTS REALIGNED / UNITY RERUN REQUIRED`
+
+`TEST EVERYTHING` reported six stale assertions after V10.11.30.39: three room numbers still assumed no Pet room, and three flow assertions still required direct Heal -> Remount. V10.11.30.40 changes only the two owning validators. They now require Heal -> Pet -> Remount and the shifted room map (`Ranged/Reload 10`, `Charged Shot 11`, `Mounted Impact 12`).
+
+No runtime, gameplay, input, animation, UI geometry or tutorial behavior changed.
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:END -->
+
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:BEGIN -->
+## 2026-06-13 — Grapple follow-up, exclusive Jump Attack, Pet lesson and shortcut-label finish V10.11.30.39
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+- Grapple now presents hook flight, visible contact and a continuous enemy pull. Pulling does not complete the lesson: the enemy remains alive and passive at sword range, the card changes to ATTACK NOW, and only a real Light or Heavy hit advances.
+- The Jump Attack target is protected from grounded Light, Heavy and Ranged attempts. Only an airborne Light attack can damage and complete that lesson.
+- Healing now queues a dedicated Pet room. Pet uses the established mapping: `Tab` on keyboard, `VIEW / SELECT` on controller and physical `SELECT`; `E` remains mount/dismount only. Petting completes with a clear player/horse animation, then Mount Again appears immediately beside the same horse.
+- SELECT and EXIT label geometry, positions and character size are unchanged. Only printed-face/shadow contrast was improved.
+
+**Resume point:** compile, run `TEST EVERYTHING`, then verify Heal -> Pet -> Remount, Spin -> Grapple pull -> real finisher, exclusive Jump Attack damage and physical label readability.
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:END -->
+
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:BEGIN -->
+## 2026-06-13 — atomic Spin impact V10.11.30.37
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The Spin lesson now unlocks its hold action directly while the lesson is active, re-arms the registered two-target pair before animation, and resolves both targets atomically on the visible AOE impact frame. The legacy pair owner now uses the same 82-unit offset as the authored room layout.
+
+This fixes the case where the two enemies were visibly close but the held input fell back to Light or the animation completed without invoking the atomic pair resolver.
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:END -->
+
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:BEGIN -->
+## 2026-06-13 — V10.11.30.35 QA compile repair V10.11.30.36
+
+**Classification:** `QA COMPILATION REPAIRED / UNITY RERUN REQUIRED`
+
+The V10.11.30.35 focused validator retained a `Forbid(...)` call after its helper was removed, causing `CS0103`. V10.11.30.36 restores the helper whenever a focused forbidden-regression check still uses it, removes the invalid file-wide Spin-distance check, and narrows the horse-shot teleport check to the exact obsolete assignment sequences.
+
+No runtime, gameplay, tutorial, animation, input or render code is changed.
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:END -->
+
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:BEGIN -->
+## 2026-06-13 — Spin, Dismount and horse-hit presentation V10.11.30.35
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The Spin lesson now places both targets close enough for one centered held-spin. The Dismount card stays hidden during the approach and appears only at the same mid-room threshold that enables the action. The horse-shot story beat is now a staged impact: the horse rears and throws the rider, the rider follows a visible landing arc, and only then does the injured horse flee left with readable stride and trail motion.
+
+No lesson order, bindings, damage, camera handoff, shooting behavior or unrelated room layout changed.
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:END -->
+
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:BEGIN -->
+## 2026-06-13 — depth-token runtime alignment V10.11.30.34
+
+**Classification:** `RUNTIME FORMAT CONTRACT REPAIRED / UNITY RERUN REQUIRED`
+
+`TEST EVERYTHING` reached `2 blockers / 0 warnings / 0 info`. Both findings referenced the same runtime contract and required the exact contiguous token `screenDepthDescriptor.memoryless = RenderTextureMemoryless.None`. The V10.11.30.31 runtime already configured the persistent depth buffer with `RenderTextureMemoryless.None`, but the assignment was formatted across two source lines. V10.11.30.34 changes only that source formatting to one line so the runtime and static QA contract express the same implementation.
+
+No gameplay, tutorial sequence, damage value, input, camera behavior, RenderTexture format or buffer binding changes. **Resume point:** compile and rerun `TEST EVERYTHING`, requiring `0 blockers / 0 warnings / 0 info`, then continue the fresh Metal and tutorial Play Mode checks.
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:END -->
+
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:BEGIN -->
+## 2026-06-13 — final stale depth QA contract repair V10.11.30.33
+
+**Classification:** `QA CONTRACT REPAIR APPLIED / UNITY RERUN REQUIRED`
+
+After V10.11.30.32, TEST EVERYTHING improved from 11 blockers to 2 blockers. Both remaining findings came from an additional V10.11.30.30 depth validator occurrence that still required the superseded combined color/depth RenderTexture tokens. V10.11.30.33 scans every validation source for all supported V10.11.30.30 depth contract identifiers and realigns every occurrence to the V10.11.30.31 explicit persistent color/depth-buffer owner.
+
+No runtime, tutorial, input, damage, room-flow or rendering implementation is modified. **Exact resume point:** compile and rerun TEST EVERYTHING, requiring `0 blockers / 0 warnings / 0 info`; then continue the fresh Metal and mounted tutorial Play Mode verification.
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:BEGIN -->
+## 2026-06-13 — TEST EVERYTHING legacy-contract realignment V10.11.30.32
+
+**Classification:** `QA CONTRACT REPAIR APPLIED / UNITY RERUN REQUIRED`
+
+The V10.11.30.31 runtime repair remained present, but TEST EVERYTHING reported 11 blockers because four older validation suites still required superseded implementation details: the combined color/depth RenderTexture owner, a standalone Reload room, room index 21, and the removed player-relative Mounted Impact target factory. V10.11.30.32 updates only those stale QA contracts to validate the current explicit persistent color/depth buffers, same-room Ranged -> Reload bridge, compacted room map ending at index 20, and fixed world-owned Mounted Impact target with canonical MountedImpact damage routing.
+
+No gameplay owner, input mapping, damage cadence, tutorial progression rule or render implementation is changed by this package. **Exact resume point:** compile, rerun TEST EVERYTHING and require `0 blockers / 0 warnings / 0 info`; then perform the fresh Metal and mounted tutorial Play Mode checks from V10.11.30.31.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:END -->
+
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## 2026-06-13 — mounted shooting sequence, Metal depth and quicksand console repair V10.11.30.31
+
+**Classification:** `CURRENT / BLOCKING TUTORIAL REPAIR IMPLEMENTED IN LOCAL PATCH / UNITY VERIFICATION REQUIRED`
+
+The latest Play Mode report reopened four connected issues: Metal still emitted memoryless depth load/store warnings; periodic quicksand damage printed a full Debug.Log stack trace every tick; Reload occupied an empty standalone room before Charged Shot; and the Mounted Impact target was recreated relative to the rider, visually tethering it and blocking completion.
+
+V10.11.30.31 keeps gameplay ownership intact. The handheld screen camera binds separately created persistent color and depth/stencil buffers. Quicksand retains the same unavoidable damage and feedback but suppresses only the repetitive per-tick debug line. Ranged Attack flows into its automatic Reload beat in the same room, then Charged Shot begins in the next populated room. Mounted Impact resolves only from contact with the fixed room-owned target and routes through the canonical MountedImpact damage source.
+
+No Unity result is claimed. **Exact resume point:** install V10.11.30.31, compile, require TEST EVERYTHING `0/0/0`, verify a fresh Metal run has neither warning, then complete Ranged -> Reload -> Charged Shot -> Mounted Impact and the remaining tutorial without a soft lock.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## 2026-06-13 — Horse combat persistence, post-scroll return, CONTINUE cue, bubble frame and Metal depth repair V10.11.30.30
 

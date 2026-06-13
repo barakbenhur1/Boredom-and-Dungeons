@@ -1,3 +1,18 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 focused acceptance
+
+- [ ] Unity compiles without project errors or warnings.
+- [ ] TEST EVERYTHING reports `0 blockers / 0 warnings / 0 info` and runs `BDTutorialChargedSequenceMetalQuicksandV1011331QA`.
+- [ ] Fresh Metal Play Mode emits neither memoryless depth load nor store warning.
+- [ ] Quicksand health loss, damage number, shake and health event remain; per-tick `BD_Player took ... unavoidable damage` Debug.Log spam is absent.
+- [ ] Mounted Ranged Attack enters Reload in the same room.
+- [ ] No empty Reload-only room is traversed.
+- [ ] Charged Shot starts on the next screen with one visible target.
+- [ ] Mounted Impact target remains fixed when riding left/right and turning.
+- [ ] Real horse contact kills the target exactly once and advances to Dismount.
+- [ ] The tutorial completes without a soft lock.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## V10.11.30.30 focused acceptance matrix
 

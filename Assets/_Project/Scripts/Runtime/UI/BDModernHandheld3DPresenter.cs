@@ -125,7 +125,9 @@ namespace BoredomAndDungeons
         private Image transitionFlash;
         private CanvasGroup pageCanvasGroup;
         private Transform screenHitTargetRoot;
+        // BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31
         private RenderTexture screenRenderTexture;
+        private RenderTexture screenDepthRenderTexture;
         private AudioSource audioSource;
         private AudioClip clickClip;
 
@@ -288,6 +290,7 @@ namespace BoredomAndDungeons
 
             DisposeFirstLaunchTutorial();
             DisposeIntroToMainMenuTransition();
+            RestoreCompetingGameCamerasV1011343(); // destroy
             ReleaseGeneratedResources();
         }
 
@@ -319,6 +322,7 @@ namespace BoredomAndDungeons
         {
             if (!presentationReady)
                 return;
+            MaintainHandheldRenderOwnershipV1011343();
 
             if (flow == null &&
                 Time.unscaledTime >= nextFlowLookupAt)
@@ -390,6 +394,7 @@ namespace BoredomAndDungeons
 
             if (screenCamera != null)
                 screenCamera.enabled = value;
+            SetHandheldRenderOwnershipV1011343(value);
 
             if (!value)
             {
@@ -908,10 +913,16 @@ namespace BoredomAndDungeons
             deviceCamera.depthTextureMode = DepthTextureMode.None;
 
             BuildCinematicProductEnvironment();
+            ConfigureMetalDepthSurfaceOwnersV1011343();
         }
 
         private void BuildScreenRenderer()
         {
+            // BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31
+            // Keep color and depth/stencil as two explicitly created persistent
+            // render targets. Binding the depth buffer directly prevents Unity's
+            // Metal path from substituting a transient memoryless attachment for
+            // the ScreenSpaceCamera canvas mask/stencil pass.
             RenderTextureDescriptor screenDescriptor =
                 new RenderTextureDescriptor(
                     960,
@@ -919,21 +930,7 @@ namespace BoredomAndDungeons
                     RenderTextureFormat.ARGB32,
                     0
                 );
-            // BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30
-            // A camera rendering ScreenSpaceCamera uGUI still needs a real
-            // depth/stencil attachment for clipping and masking. A depthless
-            // target made Unity allocate an internal transient memoryless depth
-            // surface on Metal, which produced ignored load/store warnings.
-            // Supply the platform-supported persistent depth/stencil format and
-            // explicitly prohibit memoryless storage on the owned RenderTexture.
-            GraphicsFormat screenDepthStencilFormat =
-                SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil);
-            if (screenDepthStencilFormat == GraphicsFormat.None)
-            {
-                screenDepthStencilFormat =
-                    GraphicsFormat.D32_SFloat_S8_UInt;
-            }
-            screenDescriptor.depthStencilFormat = screenDepthStencilFormat;
+            screenDescriptor.depthStencilFormat = GraphicsFormat.None;
             screenDescriptor.memoryless = RenderTextureMemoryless.None;
             screenDescriptor.msaaSamples = 1;
             screenDescriptor.bindMS = false;
@@ -945,13 +942,41 @@ namespace BoredomAndDungeons
 
             screenRenderTexture = new RenderTexture(screenDescriptor);
             screenRenderTexture.name =
-                "BD Modern Handheld Screen RT";
+                "BD Modern Handheld Screen Color RT";
             screenRenderTexture.useMipMap = false;
             screenRenderTexture.autoGenerateMips = false;
             screenRenderTexture.antiAliasing = 1;
             screenRenderTexture.filterMode = FilterMode.Bilinear;
             screenRenderTexture.wrapMode = TextureWrapMode.Clamp;
             screenRenderTexture.Create();
+
+            GraphicsFormat screenDepthStencilFormat =
+                SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil);
+            if (screenDepthStencilFormat == GraphicsFormat.None)
+            {
+                screenDepthStencilFormat =
+                    GraphicsFormat.D32_SFloat_S8_UInt;
+            }
+            RenderTextureDescriptor screenDepthDescriptor =
+                new RenderTextureDescriptor(960, 1080);
+            screenDepthDescriptor.graphicsFormat = GraphicsFormat.None;
+            screenDepthDescriptor.depthStencilFormat =
+                screenDepthStencilFormat;
+            screenDepthDescriptor.memoryless = RenderTextureMemoryless.None;
+            screenDepthDescriptor.msaaSamples = 1;
+            screenDepthDescriptor.bindMS = false;
+            screenDepthDescriptor.useMipMap = false;
+            screenDepthDescriptor.autoGenerateMips = false;
+            screenDepthDescriptor.enableRandomWrite = false;
+
+            screenDepthRenderTexture =
+                new RenderTexture(screenDepthDescriptor);
+            screenDepthRenderTexture.name =
+                "BD Modern Handheld Screen Persistent Depth";
+            screenDepthRenderTexture.antiAliasing = 1;
+            screenDepthRenderTexture.filterMode = FilterMode.Point;
+            screenDepthRenderTexture.wrapMode = TextureWrapMode.Clamp;
+            screenDepthRenderTexture.Create();
 
             GameObject screenCameraObject = new GameObject(
                 "Modern Handheld Screen Camera"
@@ -971,6 +996,10 @@ namespace BoredomAndDungeons
                 new Color(0.002f, 0.006f, 0.018f, 1f);
             screenCamera.cullingMask = 1 << ScreenLayer;
             screenCamera.targetTexture = screenRenderTexture;
+            screenCamera.SetTargetBuffers(
+                screenRenderTexture.colorBuffer,
+                screenDepthRenderTexture.depthBuffer
+            );
             screenCamera.nearClipPlane = 0.01f;
             screenCamera.farClipPlane = 30f;
             screenCamera.allowHDR = false;
@@ -1724,19 +1753,30 @@ namespace BoredomAndDungeons
             Vector3 localPosition,
             float characterSize)
         {
+            // BD ENGRAVED SHORTCUT LABEL V10.11.30.42
+            // The authored center and characterSize are unchanged. The dark face
+            // sits deeper in the shell, while opposing near-surface rims create
+            // an engraved/inset read instead of a bright raised print.
             CreateHardwareLabel(
                 text,
                 parent,
-                localPosition + new Vector3(0f, -0.018f, 0.006f),
+                localPosition + new Vector3(0.006f, -0.010f, -0.003f),
                 characterSize,
-                new Color(0.005f, 0.008f, 0.015f, 0.96f)
+                new Color(0.70f, 0.78f, 0.86f, 0.72f)
             );
             CreateHardwareLabel(
                 text,
                 parent,
-                localPosition + new Vector3(0f, 0.010f, -0.004f),
+                localPosition + new Vector3(-0.006f, 0.010f, -0.002f),
                 characterSize,
-                new Color(0.34f, 0.20f, 0.16f, 0.44f)
+                new Color(0.002f, 0.004f, 0.010f, 0.94f)
+            );
+            CreateHardwareLabel(
+                text,
+                parent,
+                localPosition + new Vector3(0f, 0f, 0.010f),
+                characterSize,
+                new Color(0.055f, 0.075f, 0.095f, 1f)
             );
         }
 
@@ -4630,6 +4670,16 @@ namespace BoredomAndDungeons
 
         private void ReleaseGeneratedResources()
         {
+            if (screenCamera != null)
+                screenCamera.targetTexture = null;
+
+            if (screenDepthRenderTexture != null)
+            {
+                screenDepthRenderTexture.Release();
+                Destroy(screenDepthRenderTexture);
+                screenDepthRenderTexture = null;
+            }
+
             if (screenRenderTexture != null)
             {
                 screenRenderTexture.Release();

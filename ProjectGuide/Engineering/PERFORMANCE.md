@@ -1,3 +1,9 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 fixed screen-depth cost
+
+The handheld screen owns one additional fixed `960x1080` persistent depth/stencil RenderTexture. It is allocated once with the existing screen renderer, reused for every page/tutorial frame and released with the color target. No per-frame RenderTexture creation, rebinding, logging allocation or actor search beyond the bounded tutorial actor list is introduced.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_POST_INTRO_CINEMATIC_DIRECTOR_PASS_V109:BEGIN -->
 ## V10.9 post-intro cinematic performance contract
 

@@ -95,12 +95,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
 
             Require(result, root, PresenterPath,
                 "TUTORIAL_V1011330_PERSISTENT_SCREEN_DEPTH_MISSING",
-                "BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30",
-                "RenderTextureDescriptor screenDescriptor",
-                "SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil)",
-                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat",
+                "BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31",
+                "private RenderTexture screenDepthRenderTexture;",
+                "screenDescriptor.depthStencilFormat = GraphicsFormat.None",
                 "screenDescriptor.memoryless = RenderTextureMemoryless.None",
-                "screenCamera.depthTextureMode = DepthTextureMode.None");
+                "screenDepthDescriptor.memoryless = RenderTextureMemoryless.None",
+                "screenDepthDescriptor.depthStencilFormat =",
+                "screenCamera.SetTargetBuffers(",
+                "screenRenderTexture.colorBuffer",
+                "screenDepthRenderTexture.depthBuffer");
         }
 
         private static void Require(

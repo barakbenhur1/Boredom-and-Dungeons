@@ -28,19 +28,24 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "farTailShadowObject.transform.SetSiblingIndex(1)",
                 "farTailObject.transform.SetSiblingIndex(2)");
 
+            // V10.11.30.31 supersedes the combined color+depth target.
+            // The bubble contract remains here; rendering now requires explicit
+            // persistent color and depth buffers bound to the screen camera.
             Require(result, root, PresenterPath,
-                "SCREEN_V1011330_PERSISTENT_DEPTH_ATTACHMENT_MISSING",
-                "BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30",
-                "SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil)",
-                "GraphicsFormat.D32_SFloat_S8_UInt",
-                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat",
+                "SCREEN_V1011330_DEPTH_OWNER_SUPERSEDED_BY_V1011331",
+                "BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31",
+                "private RenderTexture screenDepthRenderTexture;",
+                "screenDescriptor.depthStencilFormat = GraphicsFormat.None",
                 "screenDescriptor.memoryless = RenderTextureMemoryless.None",
-                "screenDescriptor.msaaSamples = 1",
-                "screenCamera.allowMSAA = false",
-                "screenCamera.depthTextureMode = DepthTextureMode.None");
+                "screenDepthDescriptor.memoryless = RenderTextureMemoryless.None",
+                "screenDepthDescriptor.depthStencilFormat =",
+                "screenCamera.SetTargetBuffers(",
+                "screenRenderTexture.colorBuffer",
+                "screenDepthRenderTexture.depthBuffer");
             Forbid(result, root, PresenterPath,
-                "SCREEN_V1011330_DEPTHLESS_TRANSIENT_REGRESSION",
-                "screenDescriptor.depthStencilFormat = GraphicsFormat.None;");
+                "SCREEN_V1011330_COMBINED_DEPTH_OWNER_RETURNED",
+                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat;",
+                "screenDepthDescriptor.memoryless = RenderTextureMemoryless.Depth;");
             Require(result, root, SettingsPath,
                 "SCREEN_V1011330_FRAMEBUFFER_MEMORYLESS_UNUSED_MISSING",
                 "framebufferDepthMemorylessMode: 0");

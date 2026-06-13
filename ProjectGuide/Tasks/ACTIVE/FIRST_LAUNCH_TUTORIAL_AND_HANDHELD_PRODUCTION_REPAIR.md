@@ -1,3 +1,17 @@
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## V10.11.30.31 active blocker repair
+
+**Originating report:** memoryless depth warnings remain; quicksand damage floods Console; the room immediately before Charged Shot is empty; and the next Mounted Impact enemy follows the rider at a fixed distance and prevents completion.
+
+**Protected behavior:** quicksand damage values/cadence and feedback remain unchanged; Charged Shot remains auto-fire-on-full-hold; one mechanic lesson per room remains except automatic Reload continuing the mounted shot transaction; Mounted Impact remains contact-owned; no parallel input, damage, camera or tutorial state owner is added.
+
+**Implementation:** bind an explicit persistent depth/stencil RenderTexture beside the screen color RenderTexture; add an opt-in quiet unavoidable-damage route used only by periodic quicksand; keep Ranged -> Reload on one screen and compact later room indices; remove relative target fabrication from Mounted Impact and require contact with the authored primary actor through the MountedImpact source.
+
+**Unverified:** Unity compilation, TEST EVERYTHING, Metal Console, quicksand Play Mode feedback, the complete mounted sequence and uninterrupted completion.
+
+**Exact next action:** install V10.11.30.31 and run the focused gate in `Status/WORK_QUEUE.md`.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- BND_TUTORIAL_BUBBLE_DEPTH_HORSE_CONTINUE_V1011330:BEGIN -->
 ## V10.11.30.30 cumulative focused repair
 

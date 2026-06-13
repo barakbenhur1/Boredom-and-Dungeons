@@ -246,6 +246,11 @@ namespace BoredomAndDungeons
 
         public void ApplyUnavoidableDamage(float amount)
         {
+            ApplyUnavoidableDamage(amount, logResolvedDamage: true);
+        }
+
+        public void ApplyUnavoidableDamage(float amount, bool logResolvedDamage)
+        {
             BDHorseHealth bridgedHorseHealth =
                 GetComponent<BDHorseHealth>();
             if (bridgedHorseHealth != null)
@@ -260,7 +265,8 @@ namespace BoredomAndDungeons
             ApplyResolvedDamage(
                 amount,
                 unavoidable: true,
-                critical: false
+                critical: false,
+                logResolvedDamage: logResolvedDamage
             );
         }
 
@@ -268,6 +274,20 @@ namespace BoredomAndDungeons
             float amount,
             bool unavoidable,
             bool critical)
+        {
+            ApplyResolvedDamage(
+                amount,
+                unavoidable,
+                critical,
+                logResolvedDamage: true
+            );
+        }
+
+        private void ApplyResolvedDamage(
+            float amount,
+            bool unavoidable,
+            bool critical,
+            bool logResolvedDamage)
         {
             float damage = Mathf.Abs(amount);
             if (damage <= 0f)
@@ -279,7 +299,7 @@ namespace BoredomAndDungeons
             if (appliedDamage <= 0f)
                 return;
 
-            if (logDamage)
+            if (logDamage && logResolvedDamage)
             {
                 string kind = unavoidable
                     ? " unavoidable"

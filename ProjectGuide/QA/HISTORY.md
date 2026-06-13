@@ -1,3 +1,75 @@
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
+### 2026-06-13 — V10.11.30.45 Metal memoryless-depth ownership repair
+
+Removed competing visible-backbuffer camera passes during the full-screen handheld presentation and disabled its redundant Metal key-light shadow-map pass. Existing persistent screen depth and authored product shadows remain.
+<!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:END -->
+
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:BEGIN -->
+### 2026-06-13 — V10.11.30.42 boss freeze, horse-flow and label-depth repair
+
+Froze player/boss combat until MiniBossIntro confirmation, collapsed Heal/Pet/Remount back into one room, realigned legacy room validators, and replaced the raised shortcut-label print with a three-layer engraved finish.
+<!-- BND_BOSS_FREEZE_SAME_ROOM_PET_ENGRAVED_V1011342:END -->
+
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:BEGIN -->
+### 2026-06-13 — V10.11.30.41 validator syntax repair
+
+Replaced the malformed V10.11.30.40 Pet-room `Require(...)` block with canonical C# and added lexical validation for stray backslashes.
+<!-- BND_PET_ROOM_QA_COMPILE_REPAIR_V1011341:END -->
+
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:BEGIN -->
+### 2026-06-13 — V10.11.30.40 Pet-room QA realignment
+
+Updated the legacy ordered-room and immediate-remount validators to recognize the dedicated Pet room added by V10.11.30.39. Runtime code was not changed.
+<!-- BND_PET_ROOM_QA_REALIGNMENT_V1011340:END -->
+
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:BEGIN -->
+### 2026-06-13 — V10.11.30.39 focused tutorial interaction, label repair and installer-anchor correction
+
+Added a dedicated post-heal Pet lesson using the established Tab/Select mapping, made Jump Attack damage exclusive to airborne Light, converted Grapple into pull-then-finish gameplay, and improved SELECT/EXIT label contrast without geometry changes.
+<!-- BND_GRAPPLE_JUMP_PET_LABELS_V1011339:END -->
+
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:BEGIN -->
+### 2026-06-13 — V10.11.30.37 atomic Spin impact repair
+
+Connected the held Spin lesson directly to its atomic two-target resolver at the animation impact frame, made Spin unconditionally available during its own lesson, and aligned the runtime pair offset with the authored 82-unit room placement.
+<!-- BND_ATOMIC_SPIN_IMPACT_V1011337:END -->
+
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:BEGIN -->
+### 2026-06-13 — V10.11.30.36 focused validator compile repair
+
+Repaired `BDTutorialSpinDismountHorseThrowV1011335QA.cs` after a `Forbid(...)` call was left without its helper. The broad Spin-distance forbid was removed; the horse-shot teleport guard now checks only the exact obsolete code sequences.
+<!-- BND_V1011335_QA_COMPILE_REPAIR_V1011336:END -->
+
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:BEGIN -->
+### 2026-06-13 — V10.11.30.35 focused tutorial presentation repair
+
+Reduced the Spin pair offset, aligned the Dismount card with its enable threshold, and replaced the horse-shot teleport/collapse with a staged rider throw and horse escape sequence.
+<!-- BND_SPIN_DISMOUNT_HORSE_THROW_V1011335:END -->
+
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:BEGIN -->
+### 2026-06-13 — V10.11.30.34 depth-token runtime alignment
+
+After V10.11.30.33, two static blockers remained because validators searched for a one-line assignment while the correct V10.11.30.31 runtime assignment was split over two lines. V10.11.30.34 aligns the source representation without changing runtime behavior.
+<!-- BND_DEPTH_TOKEN_RUNTIME_ALIGNMENT_V1011334:END -->
+
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:BEGIN -->
+## 2026-06-13 — V10.11.30.33
+
+Fixed the remaining two stale depth QA assertions left after V10.11.30.32. The installer now realigns every supported V10.11.30.30 depth contract occurrence across all validation sources instead of replacing only the first matching owner.
+<!-- BND_REMAINING_DEPTH_QA_REALIGNMENT_V1011333:END -->
+
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:BEGIN -->
+## 2026-06-13 — V10.11.30.32
+
+Realigned legacy validators with the V10.11.30.31 runtime architecture. Removed obsolete QA requirements for combined depth ownership, player-relative Mounted Impact target fabrication, a standalone Reload room and room index 21. Added equivalent assertions for explicit persistent color/depth buffers, same-room automatic Reload, compacted room index 20 and fixed contact-owned Mounted Impact damage.
+<!-- BND_QA_CONTRACT_REALIGNMENT_V1011332:END -->
+
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
+## 2026-06-13 — V10.11.30.31 local package prepared
+
+Prepared a focused cumulative repair for explicit non-memoryless screen depth ownership, quiet periodic quicksand diagnostics, the empty Reload room and the Mounted Impact target tether/soft lock. Package-side preflight, first application, idempotent application, unknown-change blocking, focused token validation, C# delimiter checks, rollback and ZIP integrity are delivery evidence only. Unity and Play Mode verification remain open.
+<!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:END -->
+
 <!-- B&D 2026-06-09 PACKAGE IMPLEMENTATION RECORD START -->
 ## 2026-06-09 — Local package implementation record
 

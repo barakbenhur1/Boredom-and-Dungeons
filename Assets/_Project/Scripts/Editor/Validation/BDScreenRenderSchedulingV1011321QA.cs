@@ -22,10 +22,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "SCREEN_RENDER_V1011321_AUTOMATIC_SCHEDULING_MISSING",
                 "BD AUTOMATIC SCREEN CAMERA RENDER SCHEDULING V10.11.30.21",
                 "Canvas.ForceUpdateCanvases();",
-                "BD PERSISTENT NON-MEMORYLESS SCREEN DEPTH V10.11.30.30",
-                "SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil);",
-                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat;",
+                "BD EXPLICIT PERSISTENT SCREEN COLOR DEPTH V10.11.30.31",
+                "private RenderTexture screenDepthRenderTexture;",
+                "screenDescriptor.depthStencilFormat = GraphicsFormat.None",
                 "screenDescriptor.memoryless = RenderTextureMemoryless.None;",
+                "screenDepthDescriptor.memoryless =",
+                "screenDepthDescriptor.depthStencilFormat =",
+                "screenCamera.SetTargetBuffers(",
+                "screenRenderTexture.colorBuffer",
+                "screenDepthRenderTexture.depthBuffer",
                 "screenCamera.depthTextureMode = DepthTextureMode.None;",
                 "BD NON-MEMORYLESS DEVICE CAMERA DEPTH V10.11.30.26",
                 "deviceCamera.allowMSAA = false;",
@@ -35,7 +40,8 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "SCREEN_RENDER_V1011321_DUPLICATE_CAMERA_RENDER_REGRESSION",
                 "screenCamera.Render();",
                 "deviceCamera.allowMSAA = true;",
-                "screenDescriptor.depthStencilFormat = GraphicsFormat.None;");
+                "screenDescriptor.depthStencilFormat = screenDepthStencilFormat;",
+                "screenDepthDescriptor.memoryless = RenderTextureMemoryless.Depth;");
 
             Require(result, settings, ProjectSettingsPath,
                 "SCREEN_RENDER_V1011321_FRAMEBUFFER_MEMORYLESS_SETTING_REGRESSION",
