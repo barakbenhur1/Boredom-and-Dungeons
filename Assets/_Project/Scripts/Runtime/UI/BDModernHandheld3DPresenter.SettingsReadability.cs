@@ -344,7 +344,11 @@ namespace BoredomAndDungeons
                 if (Mouse.current != null)
                     return Mouse.current.scroll.ReadValue().y / 120f;
 #endif
+#if ENABLE_LEGACY_INPUT_MANAGER
                 return Input.mouseScrollDelta.y;
+#else
+                return 0f;
+#endif
             }
         }
     }
