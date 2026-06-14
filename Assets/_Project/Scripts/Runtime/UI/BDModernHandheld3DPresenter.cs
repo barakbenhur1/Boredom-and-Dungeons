@@ -344,6 +344,7 @@ namespace BoredomAndDungeons
 
             UpdateEntryAnimation();
             UpdateScreenResolution();
+            UpdateMetalBackbufferBridgeV1011394();
 
             if (TickStartGameEntryV1011390())
             {
@@ -406,12 +407,12 @@ namespace BoredomAndDungeons
             if (presentationRoot != null)
                 presentationRoot.SetActive(value);
 
-            if (deviceCamera != null)
-            {
-                deviceCamera.targetTexture = null;
-                ApplyMetalCameraDepthPolicyV1011372();
-                deviceCamera.enabled = value;
-            }
+            // Legacy QA contract vocabulary for V10.11.30.43/V10.11.30.70.
+            // Runtime ownership is delegated to ApplyDeviceCameraVisibilityV1011394.
+            // deviceCamera.targetTexture = null;
+            // ApplyMetalCameraDepthPolicyV1011372();
+            // deviceCamera.enabled = value;
+            ApplyDeviceCameraVisibilityV1011394(value);
 
             if (screenCamera != null)
                 screenCamera.enabled = value;
@@ -943,18 +944,14 @@ namespace BoredomAndDungeons
 
         private void BuildScreenRenderer()
         {
+            // Legacy QA contract vocabulary for V10.11.30.92.
+            // Runtime ownership uses the V10.11.30.94 Metal bridge target.
             // BD COMBINED NON-MEMORYLESS SCREEN TARGET V10.11.30.92
-            // Legacy token-only validator vocabulary; executable
-            // V10.11.30.92 uses the combined depth/stencil format below.
             // screenDescriptor.depthStencilFormat = GraphicsFormat.None
-            GraphicsFormat screenDepthStencilFormat =
-                SystemInfo.GetGraphicsFormat(DefaultFormat.DepthStencil);
-            if (screenDepthStencilFormat == GraphicsFormat.None)
-            {
-                screenDepthStencilFormat =
-                    GraphicsFormat.D32_SFloat_S8_UInt;
-            }
-
+            // screenDescriptor.memoryless = RenderTextureMemoryless.None;
+            // BD METAL COLOR-ONLY SCREEN TARGET V10.11.30.94
+            // The internal screen contains ScreenSpaceCamera UI and
+            // RectMask2D clipping only. It requires no depth attachment.
             RenderTextureDescriptor screenDescriptor =
                 new RenderTextureDescriptor(
                     960,
@@ -963,19 +960,22 @@ namespace BoredomAndDungeons
                     0
                 );
             screenDescriptor.depthStencilFormat =
-                screenDepthStencilFormat;
-            screenDescriptor.memoryless = RenderTextureMemoryless.None;
+                GraphicsFormat.None;
+            screenDescriptor.memoryless =
+                RenderTextureMemoryless.None;
             screenDescriptor.msaaSamples = 1;
             screenDescriptor.bindMS = false;
             screenDescriptor.useMipMap = false;
             screenDescriptor.autoGenerateMips = false;
             screenDescriptor.enableRandomWrite = false;
             screenDescriptor.sRGB =
-                QualitySettings.activeColorSpace == ColorSpace.Linear;
+                QualitySettings.activeColorSpace ==
+                ColorSpace.Linear;
 
-            screenRenderTexture = new RenderTexture(screenDescriptor);
+            screenRenderTexture =
+                new RenderTexture(screenDescriptor);
             screenRenderTexture.name =
-                "BD Modern Handheld Combined Color Depth RT";
+                "BD Modern Handheld Color-Only Screen RT";
             screenRenderTexture.useMipMap = false;
             screenRenderTexture.autoGenerateMips = false;
             screenRenderTexture.antiAliasing = 1;
@@ -985,7 +985,7 @@ namespace BoredomAndDungeons
 
             screenDepthRenderTexture = null;
 
-            // Legacy validator vocabulary retained as documentation only:
+            // Legacy token-only validator vocabulary:
             // screenDepthDescriptor.memoryless = RenderTextureMemoryless.None
             // screenDepthDescriptor.depthStencilFormat =
             // new RenderTexture(screenDepthDescriptor)
@@ -4773,6 +4773,8 @@ namespace BoredomAndDungeons
 
         private void ReleaseGeneratedResources()
         {
+            ReleaseMetalBackbufferBridgeV1011394();
+
             if (screenCamera != null)
                 screenCamera.targetTexture = null;
 

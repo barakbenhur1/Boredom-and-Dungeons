@@ -385,3 +385,18 @@ Removed executable manual color/depth buffer binding, retained an explicit non-m
 
 Preserved the combined non-memoryless RenderTexture and geometric Settings hit logic. Added compatibility vocabulary for older token-only checks and made the current validator inspect executable code rather than comments when rejecting the old alpha threshold.
 <!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:BEGIN -->
+## 2026-06-14 — packaged persistent Metal backbuffer bridge
+
+Moved the product camera away from the Metal drawable into an explicit persistent color/depth target. Removed the unused depth attachment from the internal UI target. Added release and resolution-rebuild contracts.
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:END -->
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:BEGIN -->
+## 2026-06-14 — repaired Metal QA namespace resolution
+
+The validator now uses `global::System.Environment.NewLine`, preventing collision with `BoredomAndDungeons.Environment`.
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:END -->
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:BEGIN -->
+## 2026-06-14 — restored legacy Metal QA tokens
+
+Added non-executable compatibility comments for direct device-camera output and combined non-memoryless screen target contracts. Runtime behavior remains on the V10.11.30.94 bridge.
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:END -->

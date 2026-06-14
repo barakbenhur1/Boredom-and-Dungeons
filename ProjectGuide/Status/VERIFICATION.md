@@ -1022,3 +1022,18 @@ Pending: TEST EVERYTHING 0/0/0, mouse adjustment in both directions, wheel/keybo
 
 The eight reported blockers were static contract mismatches. Pending evidence remains TEST EVERYTHING 0/0/0 plus the V10.11.30.92 Play Mode Settings and Metal-warning checks.
 <!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:BEGIN -->
+## V10.11.30.94 pending Unity Metal evidence
+
+Pending: TEST EVERYTHING 0/0/0, clean product-shot presentation and zero native memoryless depth load/store messages across repeated menu lifecycle transitions.
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:END -->
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:BEGIN -->
+## V10.11.30.95 pending Unity evidence
+
+Pending clean compilation and TEST EVERYTHING after fully qualifying `System.Environment.NewLine`.
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:END -->
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:BEGIN -->
+## V10.11.30.96 pending Unity evidence
+
+Pending TEST EVERYTHING after restoring the legacy contract tokens required by existing validators.
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:END -->

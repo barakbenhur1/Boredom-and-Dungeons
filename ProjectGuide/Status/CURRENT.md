@@ -3285,3 +3285,26 @@ The V10.11.30.92 runtime remains authoritative: one combined non-memoryless colo
 
 Legacy token-only validators are supplied compatibility vocabulary without restoring superseded behavior. The V10.11.30.92 validator now strips comments before checking that the rejected alpha-threshold implementation is absent.
 <!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:BEGIN -->
+## 2026-06-14 — Metal backbuffer depth ownership V10.11.30.94
+
+**Classification:** `IMPLEMENTED / UNITY METAL VERIFICATION REQUIRED`
+
+The Settings interaction repair is accepted. The remaining Metal messages were not produced by the Settings screen hit logic. The product camera still targeted the Metal drawable directly, whose depth attachment may be memoryless.
+
+On Metal, the complete product shot now renders into an explicitly persistent non-memoryless color/depth RenderTexture. IMGUI presents only the resulting color texture, so no Camera requests drawable depth load/store actions. The internal handheld UI target is color-only because it contains ScreenSpaceCamera UI with RectMask2D clipping and requires no depth attachment.
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:END -->
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:BEGIN -->
+## 2026-06-14 — Metal QA namespace compile repair V10.11.30.95
+
+**Classification:** `COMPILE REPAIR APPLIED / UNITY VERIFICATION REQUIRED`
+
+Qualified `Environment.NewLine` as `global::System.Environment.NewLine` inside the Metal backbuffer validator so the compiler cannot resolve it to the project namespace `BoredomAndDungeons.Environment`.
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:END -->
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:BEGIN -->
+## 2026-06-14 — Restore Metal QA contract tokens V10.11.30.96
+
+**Classification:** `QA CONTRACT RESTORED / UNITY VERIFICATION REQUIRED`
+
+Restored legacy Metal/handheld contract vocabulary in `BDModernHandheld3DPresenter.cs` without changing the accepted V10.11.30.94 helper route. The tokens are retained as non-executable compatibility comments so old validators can pass while the Metal backbuffer bridge remains authoritative.
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:END -->

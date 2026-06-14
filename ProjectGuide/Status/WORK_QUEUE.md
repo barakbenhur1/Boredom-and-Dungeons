@@ -1595,3 +1595,28 @@ Run Unity compilation, TEST EVERYTHING 0/0/0, then verify the mother dialogue an
 4. Verify RESET DEFAULTS and BACK remain available at every scroll position.
 5. Verify the Metal memoryless load/store messages do not return.
 <!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:BEGIN -->
+## Immediate verification — Metal depth V10.11.30.94
+
+1. Compile and run TEST EVERYTHING; require 0 blockers / 0 warnings / 0 info.
+2. Enter Main Menu, Settings and Back repeatedly.
+3. Start a New Game and return to menu when available.
+4. Confirm both native Metal messages remain absent across every cycle.
+5. Confirm the product shot fills the Game view with no stretching, black frame or legacy menu exposure.
+6. Preserve the accepted Settings mouse and scrolling behavior.
+<!-- BND_METAL_BACKBUFFER_DEPTH_FINAL_V1011394:END -->
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:BEGIN -->
+## Immediate verification — V10.11.30.95
+
+1. Allow Unity to recompile.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Continue the V10.11.30.94 Metal runtime verification.
+<!-- BND_METAL_COMPILE_NAMESPACE_FIX_V1011395:END -->
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:BEGIN -->
+## Immediate verification — V10.11.30.96
+
+1. Recompile Unity.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Verify Settings still works with mouse and scrolling.
+4. Verify the two Metal memoryless messages do not return.
+<!-- BND_RESTORE_METAL_QA_CONTRACT_TOKENS_V1011396:END -->
