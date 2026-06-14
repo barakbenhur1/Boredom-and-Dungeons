@@ -31,13 +31,15 @@ namespace BoredomAndDungeons.EditorTools.Validation
                 "BDRunPresentationCoordinator.EnsureMountedIntroRiderVisible"
             );
 
+            // BD BODY-ONLY TARGET OUTLINE QA ALIGNMENT V10.11.30.84
             Require(result, root,
                 "Assets/_Project/Scripts/Runtime/Combat/BDTargetOutlineVisual.cs",
                 "V23R19O_DAMAGEABLE_MODEL_OUTLINE_MISSING",
                 "BD DAMAGEABLE MODEL ONLY TARGET OUTLINE V23R19O",
                 "ResolveDamageableColliders",
                 "RendererIntersectsDamageableEnvelope",
-                "IsAuxiliaryRingRenderer"
+                "IsAuxiliaryPresentationRenderer",
+                "IsAuxiliarySubMesh"
             );
 
             Require(result, root,

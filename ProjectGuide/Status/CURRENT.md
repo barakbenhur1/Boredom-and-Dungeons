@@ -1,3 +1,68 @@
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:BEGIN -->
+## Immediate blocking correction — Settings visual layout V10.11.30.81
+
+Status: `IMPLEMENTED IN LOCAL PACKAGE / UNITY VERIFICATION REQUIRED`
+
+User correction preserved exactly:
+
+- the Settings screen must retain large readable fonts;
+- only the eight actual settings rows scroll;
+- `RESET DEFAULTS` and `BACK / EXIT` remain outside the scroll viewport and are always visible, enabled and clickable;
+- no floating category headings may overlap setting text;
+- the title subtitle must not collide with the first row;
+- partially clipped rows at the viewport edges are not an accepted final presentation;
+- no NaN/Infinity transform assignment is allowed.
+
+Implementation direction:
+
+- six full-size rows are visible at once;
+- scroll movement snaps to exact row steps and edge rows fade cleanly during motion;
+- the list uses a narrower aligned column beside the artwork;
+- fixed actions sit in a separate lower dock;
+- the current value remains large and high contrast.
+
+QA truth: static package validation only. Unity compilation, `TEST EVERYTHING`, Play Mode visual review, mouse, keyboard and controller verification remain required.
+
+Exact resume point: verify V10.11.30.81 in Unity. Do not continue to later feature work until the Settings screen is visually accepted and the fixed actions remain available in every scroll state.
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:END -->
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:BEGIN -->
+## Immediate Settings correction V10.11.30.80 — scrollable values with permanent actions
+
+- Classification: `EARLIER/BLOCKING` regression repair.
+- The V10.11.30.79 compact fixed layout was rejected because it removed the requested scrolling and reduced the Settings presentation.
+- Exactly eight setting rows form the masked scrollable list.
+- `RESET DEFAULTS` and `BACK / EXIT` are outside the scroll viewport, anchored at the bottom, always visible, always enabled, and always available to mouse, keyboard and controller navigation.
+- Large setting labels and current-value text are retained.
+- Floating `AUDIO / CONTROL / DISPLAY / SYSTEM` labels remain disabled.
+- Screen hit targets are resolved by semantic row index and guarded against `NaN`/Infinity.
+- Implementation status: `IMPLEMENTED / UNITY COMPILATION, TEST EVERYTHING, AND PLAY MODE VERIFICATION REQUIRED`.
+- Exact resume point: verify Settings scrolling, permanent Reset/Back actions, clean Console, and then return to Start Game transition acceptance.
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:END -->
+
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:BEGIN -->
+## 2026-06-14 — Settings/outline runtime repair V10.11.30.79
+
+**Classification:** `EARLIER/BLOCKING REGRESSION REPAIR / UNITY VERIFY REQUIRED`
+
+The temporary Settings `LateUpdate` companion introduced invalid `NaN` positions for `Screen Item Target 7/8`, moved Reset Defaults and Back out of the stable page layout, and exposed overlapping floating AUDIO/CONTROL/DISPLAY/SYSTEM labels. V10.11.30.79 removes that companion and restores direct ownership to `BDModernHandheld3DPresenter`.
+
+Current required behavior:
+
+- Settings names and current values remain larger and clearly readable.
+- The ten Settings rows use the stable fixed 960×1080 handheld layout; no scrolling is needed at this resolution.
+- `RESET DEFAULTS` and `BACK` remain visible and usable at all times.
+- floating category labels are removed rather than allowed to overlap row text.
+- screen-item targets are resolved semantically by active row index and receive only finite positions/scales.
+- the stable V23R19O outline compatibility token is restored while retaining the strict body-only implementation.
+- Continue remains documented-only until a real save/continue owner exists.
+
+**Actual QA truth:** the incoming report is `BLOCKED | blockers=1` because `BD DAMAGEABLE MODEL ONLY TARGET OUTLINE V23R19O` is missing. Unity compilation, rerun QA and focused Play Mode are required after installation.
+
+**Exact resume point:** install V10.11.30.79 locally, compile, run `Boredom And Dungeons -> TEST EVERYTHING`, then verify Settings visual/readability/click targets and target outline before evaluating Start Game transition quality.
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:END -->
+
 <!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
 ## 2026-06-14 — full-game airborne QA final alignment V10.11.30.77
 
@@ -3139,3 +3204,21 @@ A narrowly scoped first-launch cinematic polish pass is implemented locally and 
 The active mother dialogue, curved far-tail element, audio method, and lesson-complete travel message are restored in their real Runtime owners. Unity validation is required.
 <!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
 - The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.
+
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:BEGIN -->
+## 2026-06-14 — target outline body-only sphere exclusion V10.11.30.83
+
+**Classification:** `FOCUSED COMBAT PRESENTATION REPAIR / UNITY VERIFICATION REQUIRED`
+
+The active task remains target highlighting only. The red silhouette must be generated from the enemy's authoritative damageable body geometry. A surrounding sphere, orb, aura, shield, bubble, halo, field, dome, ring or other presentation shell is excluded at whole-renderer and submesh level. Entry, exit, Settings, input, damage, target choice and run flow are unchanged.
+
+**Exact resume point:** compile, run `TEST EVERYTHING`, then aim at the affected enemy and confirm only its body receives the red outline while the surrounding sphere keeps its authored appearance.
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:END -->
+
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:BEGIN -->
+## 2026-06-14 — body-only target outline QA alignment V10.11.30.84
+
+**Classification:** `VALIDATOR-ONLY ALIGNMENT / UNITY RERUN REQUIRED`
+
+`TEST EVERYTHING` reported one blocker because the historical V23R19O validator still required the superseded helper name `IsAuxiliaryRingRenderer`. The active V10.11.30.83 runtime excludes surrounding spheres and other presentation shells through `IsAuxiliaryPresentationRenderer` and `IsAuxiliarySubMesh`. V10.11.30.84 changes only that stale validator contract. Target selection, rendering, damage, range, input, Settings and transition behavior are unchanged.
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->

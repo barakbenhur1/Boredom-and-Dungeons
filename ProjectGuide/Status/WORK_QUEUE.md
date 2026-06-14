@@ -1,3 +1,100 @@
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:BEGIN -->
+## Immediate blocking gate — V10.11.30.81
+
+Before returning to Start Game transition verification, complete the Settings visual acceptance gate:
+
+- professional aligned list beside the artwork;
+- large readable names and current values;
+- row-snapped scrolling for the eight settings;
+- fixed always-available `RESET DEFAULTS` and `BACK / EXIT` actions;
+- clean header spacing and no clipped edge rows;
+- Unity compile and `TEST EVERYTHING` pass;
+- focused mouse, keyboard and controller Play Mode review.
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:END -->
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:BEGIN -->
+## Immediate blocking gate — V10.11.30.80
+
+1. Compile Unity with no errors.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`.
+3. Verify all eight settings scroll with mouse wheel and selection following.
+4. Verify `RESET DEFAULTS` and `BACK / EXIT` never move, disappear, fade, clip, or lose input.
+5. Verify no floating category title overlaps and no `NaN` transform errors occur.
+6. Return to Start Game transition acceptance only after this gate passes.
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:END -->
+
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:BEGIN -->
+## Immediate blocking gate — V10.11.30.79
+
+1. Install the local patch over the current V10.11.30.78 accidental-main state without resetting or discarding unrelated local work.
+2. Compile in Unity `6000.0.76f1`; require no compiler error.
+3. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Open Settings and confirm no floating category label overlaps any row.
+5. Confirm all names and current values are readable.
+6. Confirm Reset Defaults and Back are simultaneously visible and usable at all times.
+7. Click every Settings row and repeat with keyboard/controller; the visible row under focus/pointer must be the row activated.
+8. Confirm Console contains no invalid/NaN transform assignment.
+9. Verify only the damageable enemy body receives the red outline and the auxiliary ring keeps its authored presentation.
+10. Only after this gate passes, continue focused review of the Start Game transition. Continue remains deferred.
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:BEGIN -->
+## Full-game gate — V10.11.30.73
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Start or continue a normal full-game run, not the first-launch tutorial.
+4. Jump and commit Light: verify the dedicated fast airborne body chop and one vertical cyan slash.
+5. Jump and commit Heavy: verify the deeper airborne wind-up, heavier downward body strike and one vertical orange slash.
+6. Verify no grounded body attack or horizontal slash appears during either airborne transaction.
+7. Verify grounded Light/Heavy, Spin and Grapple are unchanged.
+8. Do not reopen or modify the accepted tutorial.
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:END -->
+
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:BEGIN -->
+## Immediate gate — V10.11.30.70
+
+1. Compile and require `TEST EVERYTHING = 0 blockers / 0 warnings / 0 info`.
+2. Fresh Play Mode: no `No cameras rendering`.
+3. Handheld screen: no recursive nested copies.
+4. Mother dialogue: complete bubble and pointer visible.
+5. Metal Console: verify both memoryless messages are absent; keep the issue open if either returns.
+6. Repair the still-open Jump Attack animation separately.
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:END -->
+
+<!-- BND_REOPENED_JUMP_ATTACK_BUBBLE_METAL_V1011366:BEGIN -->
+## Immediate gate — V10.11.30.66
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Clear Console and enter Play Mode from a stopped state; require neither memoryless depth message.
+4. Verify `Sweety, where are you?` appears completely above the scene and Metal output, including its pointer.
+5. Reach Jump Attack. If it still uses the ordinary grounded animation, keep `FULL-GAME-PLAYER-AIRBORNE-ATTACK-ANIMATION-REGRESSION-V1011373` open and do not accept the tutorial.
+6. The Jump Attack animation requires its own runtime repair after the bubble and Metal gates pass.
+<!-- BND_REOPENED_JUMP_ATTACK_BUBBLE_METAL_V1011366:END -->
+
+<!-- BND_HANDHELD_MENU_SCREENS_PRODUCTION_V1011349:BEGIN -->
+## Immediate gate — V10.11.30.49 handheld menu and screen production
+
+1. Compile in Unity `6000.0.76f1`; require no project error or warning.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Capture Main, Pause, Settings, Progression, Credits, Quit, Abandon and active-run New Run confirmation.
+4. With no run active, press X and verify New Game begins immediately with no confirmation.
+5. With a live run, open the New Run confirmation and verify `CANCEL` is selected first; Cancel preserves the run and Confirm reloads once.
+6. Verify New Game-only Boy/Girl art and text card; all other pages and Continue remain neutral.
+7. Verify B, SELECT, EXIT, X/A/B/Y, mouse and D-pad semantics once each with no double activation.
+8. Only after acceptance move to the separate handheld-to-gameplay cinematic transition task.
+<!-- BND_HANDHELD_MENU_SCREENS_PRODUCTION_V1011349:END -->
+
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:BEGIN -->
+## Immediate queue after V10.11.30.46
+
+1. Verify normal completion and Skip both land on Main Menu and remain terminal after restart.
+2. After verification, connect and validate the existing Main Menu `New Game` action as the next isolated production task.
+3. Do not reopen tutorial gameplay unless a reproducible regression is reported.
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:END -->
+
 <!-- BND_TUTORIAL_CHARGED_SEQUENCE_METAL_QUICKSAND_V1011331:BEGIN -->
 ## Immediate blocking gate — V10.11.30.31
 
@@ -1407,3 +1504,24 @@ Run `Boredom And Dungeons -> TEST EVERYTHING`, then replay the first-launch cine
 Run Unity compilation, TEST EVERYTHING 0/0/0, then verify the mother dialogue and the post-lesson travel message in Play Mode.
 <!-- BND V10.11.30.17 LESSON COMPLETE CONTRACT -->
 - The canonical lesson-complete travel message is owned by `Gameplay.cs`, consumed by `LessonScreens.cs`, and QA reports missing contracts against the actual source path.
+
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:BEGIN -->
+## Immediate gate — V10.11.30.83 target outline only
+
+1. Compile with no error.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require zero blockers and warnings.
+3. Aim at the affected enemy in legal range.
+4. Confirm only the damageable body has the red outline.
+5. Confirm the surrounding sphere/orb/aura keeps its normal appearance and has no red edge.
+6. Confirm walls, range loss, death and aim loss still remove the outline.
+7. Do not begin entry or exit cinematic work before this visual repair is accepted.
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:END -->
+
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:BEGIN -->
+## Immediate gate — V10.11.30.84
+
+1. Compile with no error.
+2. Run `Boredom And Dungeons -> TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. In Play Mode verify only the enemy body receives the red outline and the surrounding sphere does not.
+4. Do not begin entry or exit cinematic work before this visual check is accepted.
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->

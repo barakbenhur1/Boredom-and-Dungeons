@@ -1,3 +1,54 @@
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:BEGIN -->
+## V10.11.30.81 verification truth
+
+Current truth: package syntax, idempotency, validator and `git diff --check` were tested in an isolated fixture. Unity was not available in the package environment.
+
+Focused Play Mode checklist:
+
+1. Open Settings and confirm the subtitle has clear space above the first row.
+2. Confirm six complete rows are visible with no half-cut seventh row.
+3. Scroll to `FULLSCREEN` and `V-SYNC / TARGET FPS`; scrolling must stop on row-aligned positions.
+4. Navigate all ten actions with keyboard and controller.
+5. At every scroll position, confirm `RESET DEFAULTS` and `BACK / EXIT` remain fully visible and selectable.
+6. Click every visible row with the mouse; the exact row under the pointer must activate.
+7. Leave and reopen Settings twice; no duplicate panels, masks or targets may accumulate.
+8. Confirm Console contains no `NaN`, Infinity or invalid `localPosition` assignment warnings.
+9. Run `Boredom And Dungeons -> TEST EVERYTHING` and return the real output.
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:END -->
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:BEGIN -->
+## V10.11.30.80 verification truth
+
+- Package syntax/static checks: performed before handoff.
+- First install, second install idempotency, validator, and `git diff --check`: performed in a fixture before handoff.
+- Unity compilation: not run by the assistant.
+- `TEST EVERYTHING`: not run by the assistant.
+- Play Mode/rendered review: not run by the assistant.
+- User acceptance: pending.
+
+Focused Play Mode checks:
+- large setting names and current values remain readable;
+- only the first eight rows scroll;
+- Reset Defaults and Back/Exit are continuously visible and clickable;
+- navigation from row 7 to Reset and Back works without moving the fixed actions;
+- mouse targets match visible rows before and after scrolling;
+- Console contains no invalid `localPosition`, `NaN`, or Infinity messages.
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:END -->
+
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:BEGIN -->
+## V10.11.30.79 verification truth
+
+- Incoming automated result: `BLOCKED`, one blocker, zero warnings.
+- Blocker: `V23R19O_DAMAGEABLE_MODEL_OUTLINE_MISSING` because the stable token `BD DAMAGEABLE MODEL ONLY TARGET OUTLINE V23R19O` was removed.
+- Runtime evidence: `Screen Item Target 7` and `Screen Item Target 8` received `{ ..., NaN, ... }` local positions from `SettingsReadabilityDriver.ApplyReadableLayout`.
+- Visual evidence: floating category labels overlap Settings rows; Reset Defaults and Back are displaced by the scrolling companion.
+- Static package validation: required before delivery.
+- Unity compilation: pending user run.
+- TEST EVERYTHING rerun: pending user run.
+- Focused Play Mode acceptance: pending user run.
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:END -->
+
 <!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
 ## V10.11.30.77 verification
 
@@ -917,3 +968,22 @@ Pending:
 - both post-BBH landing destinations work exactly once;
 - TEST EVERYTHING returns blockers=0, warnings=0, info=0.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:BEGIN -->
+## V10.11.30.83 verification
+
+- Static package validation: required.
+- Unity compilation: pending.
+- TEST EVERYTHING: pending.
+- Play Mode body-only outline check: pending.
+- No claim is made for entry or exit cinematics.
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:END -->
+
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:BEGIN -->
+## V10.11.30.84 verification
+
+- Uploaded QA evidence: one stale-validator blocker only.
+- Runtime body-only implementation: unchanged from V10.11.30.83.
+- Unity compilation and TEST EVERYTHING rerun: pending.
+- Play Mode body-only outline acceptance: pending.
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->

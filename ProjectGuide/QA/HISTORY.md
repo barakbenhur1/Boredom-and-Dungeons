@@ -1,3 +1,26 @@
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:BEGIN -->
+## 2026-06-14 — V10.11.30.81 Settings professional-layout correction
+
+Replaced the visually rejected V10.11.30.80 layout with a narrower six-row viewport, exact row-step scrolling, clean edge fading, corrected title-subtitle spacing and a deliberate fixed action dock. `RESET DEFAULTS` and `BACK / EXIT` remain outside scrolling and permanently interactive. No Git operation is part of this package.
+<!-- BND_SETTINGS_PROFESSIONAL_LAYOUT_V1011381:END -->
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:BEGIN -->
+## 2026-06-14 — V10.11.30.80 Settings scroll/fixed-actions correction
+
+- Reopened Settings readability after the compact V10.11.30.79 layout removed scrolling.
+- Replaced the compact fixed list with a masked eight-row scroll viewport.
+- Kept Reset Defaults and Back/Exit outside the scroll container as permanent actions.
+- Preserved large labels/current values and removed floating category overlaps.
+- Added semantic hit-target synchronization and finite-coordinate guards.
+
+<!-- BND_SETTINGS_SCROLL_FIXED_ACTIONS_V1011380:END -->
+
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:BEGIN -->
+### 2026-06-14 — V10.11.30.79 Settings/outline runtime repair
+
+Removed the runtime-installed Settings LateUpdate driver after real Play Mode evidence showed NaN screen-target writes. Restored a fixed direct-owner Settings layout with larger text, permanently visible Reset Defaults/Back, semantic finite target alignment and no floating category headers. Restored the historical V23R19O outline token while preserving the strict body-only implementation. Delivery is local ZIP only; no GitHub write is performed.
+<!-- BND_SETTINGS_OUTLINE_RUNTIME_REPAIR_V1011379:END -->
+
 <!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
 ### 2026-06-14 — V10.11.30.77 stale V1011373 expression removed
 
@@ -315,3 +338,15 @@ The V10.5 Unity run exposed one blocker: legacy global time-scale ownership in `
 
 V10.7.1 accepted the correct predecessor, wrote the intended files, then self-rejected because the runtime token scan included the editor validator. The repository was restored. V10.7.2 corrects validator scope and changes cleanup from success-only to unconditional.
 <!-- BND_POST_INTRO_TRANSITION_COLORED_OUTPUT_CLEAN_EXIT_V1072:END -->
+
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:BEGIN -->
+## 2026-06-14 — V10.11.30.83 packaged
+
+Focused repair packaged for the target outline including a surrounding non-damageable sphere. No Unity result claimed.
+<!-- BND_TARGET_OUTLINE_BODY_ONLY_V1011383:END -->
+
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:BEGIN -->
+## 2026-06-14 — V10.11.30.84 packaged
+
+Aligned the historical V23R19O target-outline validator with the active body-only presentation-shell classifier. No Runtime behavior changed.
+<!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->
