@@ -3267,3 +3267,21 @@ Exact local-state inspection found the reason the Start animation never changed 
 
 V10.11.30.91 routes the production `StartNewRun` row through the existing V10.11.30.90 screen-plane cinematic. No camera curve, depth owner, Settings, exit flow, Continue flow or gameplay camera code is changed by this repair.
 <!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:BEGIN -->
+## 2026-06-14 — Metal depth and Settings interaction V10.11.30.92
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The handheld screen now uses one explicitly persistent non-memoryless color plus depth/stencil RenderTexture. The manual separate-depth SetTargetBuffers path was removed because it was the remaining native Metal load/store warning source.
+
+Settings mouse activation now changes adjustable values: clicking the left half decrements and the right half increments. Fullscreen and V-Sync still toggle. Mouse-wheel scrolling no longer gets cancelled by the previous selected row, and the final fully visible row remains selectable/clickable.
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:END -->
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:BEGIN -->
+## 2026-06-14 — Metal/Settings QA compatibility V10.11.30.93
+
+**Classification:** `QA CONTRACT ALIGNED / UNITY VERIFICATION REQUIRED`
+
+The V10.11.30.92 runtime remains authoritative: one combined non-memoryless color/depth target, no executable manual SetTargetBuffers binding, geometric Settings hit availability, mouse value adjustment and independent wheel scrolling.
+
+Legacy token-only validators are supplied compatibility vocabulary without restoring superseded behavior. The V10.11.30.92 validator now strips comments before checking that the rejected alpha-threshold implementation is absent.
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->

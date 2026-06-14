@@ -375,3 +375,13 @@ Replaced the visually ineffective entry with a frame-calculated camera route tha
 
 The exact local repository snapshot showed that `RowAction.StartNewRun` bypassed the Start cinematic even though physical X was routed correctly. V10.11.30.91 closes that route and adds a blocker contract preventing the bypass from returning.
 <!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:BEGIN -->
+## 2026-06-14 — packaged Metal and Settings usability repair
+
+Removed executable manual color/depth buffer binding, retained an explicit non-memoryless combined target, replaced alpha-threshold hit testing with geometric visibility and separated mouse-wheel movement from selection-follow scrolling.
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:END -->
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:BEGIN -->
+## 2026-06-14 — aligned legacy token QA with V10.11.30.92
+
+Preserved the combined non-memoryless RenderTexture and geometric Settings hit logic. Added compatibility vocabulary for older token-only checks and made the current validator inspect executable code rather than comments when rejecting the old alpha threshold.
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->

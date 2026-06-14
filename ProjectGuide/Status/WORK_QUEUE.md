@@ -1576,3 +1576,22 @@ Run Unity compilation, TEST EVERYTHING 0/0/0, then verify the mother dialogue an
 4. Verify both routes now play the same screen-plane cinematic as physical X before one New Run begins.
 5. Do not start exit-animation work until this visual gate is accepted.
 <!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:BEGIN -->
+## Immediate verification — V10.11.30.92
+
+1. Compile and run TEST EVERYTHING; require 0 blockers / 0 warnings / 0 info.
+2. Open Settings and change every adjustable row with mouse clicks on both halves.
+3. Scroll to the bottom and select/click the final visible setting row.
+4. Verify RESET DEFAULTS and BACK remain available at every scroll position.
+5. Enter/leave Main Menu repeatedly and confirm no Metal memoryless depth load/store messages.
+6. The Unity AI Account API warning is separate and requires deciding whether the unused Unity AI Assistant package should be removed.
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:END -->
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:BEGIN -->
+## Immediate verification — V10.11.30.93
+
+1. Compile in Unity.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Verify mouse adjustment, wheel scrolling and access to the final visible Settings row.
+4. Verify RESET DEFAULTS and BACK remain available at every scroll position.
+5. Verify the Metal memoryless load/store messages do not return.
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->

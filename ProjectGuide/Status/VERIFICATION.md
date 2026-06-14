@@ -1012,3 +1012,13 @@ Pending compilation, TEST EVERYTHING 0/0/0 and visible Play Mode confirmation th
 
 Static validation proves the production `StartNewRun` row no longer bypasses `TryBeginStartGameEntryV1011390`. Required evidence remains TEST EVERYTHING `0/0/0` and visible Play Mode confirmation through Select/Confirm and pointer activation.
 <!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:BEGIN -->
+## V10.11.30.92 pending Unity evidence
+
+Pending: TEST EVERYTHING 0/0/0, mouse adjustment in both directions, wheel/keyboard access to all eight settings, fixed RESET/BACK availability and zero Metal memoryless depth warnings across repeated menu cycles.
+<!-- BND_METAL_WARNINGS_AND_SETTINGS_INPUT_V1011392:END -->
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:BEGIN -->
+## V10.11.30.93 pending Unity evidence
+
+The eight reported blockers were static contract mismatches. Pending evidence remains TEST EVERYTHING 0/0/0 plus the V10.11.30.92 Play Mode Settings and Metal-warning checks.
+<!-- BND_QA_ALIGNMENT_FOR_METAL_SETTINGS_V1011393:END -->
