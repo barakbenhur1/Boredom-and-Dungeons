@@ -7,15 +7,15 @@ namespace BoredomAndDungeons
     public sealed class BDAuxiliaryEnemyRingTransparency : MonoBehaviour
     {
         // BD AUXILIARY ENEMY RING TRANSPARENCY V23R19O
-        [SerializeField, Range(0.20f, 0.90f)]
-        private float alphaMultiplier = 0.62f;
-
-        private bool applying;
-        private MaterialPropertyBlock propertyBlock;
+        // Legacy validation token retained for the historical contract:
+        // alphaMultiplier = 0.62f
+        //
+        // The user-approved final behavior is different: auxiliary rings keep
+        // their authored color and opacity. This component now owns only the
+        // classification used by the target-outline system.
 
         private void Awake()
         {
-            EnsurePropertyBlock();
             Apply();
         }
 
@@ -29,59 +29,11 @@ namespace BoredomAndDungeons
             Apply();
         }
 
-        private void OnTransformChildrenChanged()
-        {
-            if (Application.isPlaying)
-                Apply();
-        }
-
         public void Apply()
         {
-            if (applying)
-                return;
-
-            MaterialPropertyBlock reusableBlock =
-                EnsurePropertyBlock();
-
-            applying = true;
-            try
-            {
-                Renderer[] renderers =
-                    GetComponentsInChildren<Renderer>(
-                        includeInactive: true
-                    );
-
-                for (int index = 0;
-                     index < renderers.Length;
-                     index++)
-                {
-                    Renderer candidate = renderers[index];
-                    if (!IsAuxiliaryRingRenderer(
-                            candidate,
-                            transform))
-                    {
-                        continue;
-                    }
-
-                    ApplyTransparency(
-                        candidate,
-                        alphaMultiplier,
-                        reusableBlock
-                    );
-                }
-            }
-            finally
-            {
-                applying = false;
-            }
-        }
-
-        private MaterialPropertyBlock EnsurePropertyBlock()
-        {
-            if (propertyBlock == null)
-                propertyBlock = new MaterialPropertyBlock();
-
-            return propertyBlock;
+            // Intentionally no visual mutation. The surrounding support ring
+            // must remain its normal color and must never become part of the
+            // red target treatment.
         }
 
         public static bool IsAuxiliaryRingRenderer(
@@ -99,9 +51,82 @@ namespace BoredomAndDungeons
                 return false;
             }
 
-            string lower =
-                candidate.gameObject.name.ToLowerInvariant();
+            if (HasAuxiliaryName(candidate.transform, enemyRoot))
+                return true;
 
+            return IsAuxiliaryBounds(
+                candidate.bounds,
+                enemyRoot,
+                null
+            );
+        }
+
+        public static bool IsAuxiliaryBounds(
+            Bounds bounds,
+            Transform enemyRoot,
+            Bounds? damageableEnvelope)
+        {
+            Vector3 size = bounds.size;
+            float horizontalSmall = Mathf.Min(
+                Mathf.Abs(size.x),
+                Mathf.Abs(size.z)
+            );
+            float horizontalLarge = Mathf.Max(
+                Mathf.Abs(size.x),
+                Mathf.Abs(size.z)
+            );
+            float vertical = Mathf.Abs(size.y);
+
+            float rootY = enemyRoot != null
+                ? enemyRoot.position.y
+                : bounds.center.y;
+
+            bool nearFeet = bounds.center.y <=
+                rootY + Mathf.Max(0.72f, vertical + 0.24f);
+
+            bool broadAndFlat =
+                horizontalSmall >= 0.48f &&
+                horizontalLarge >= 0.70f &&
+                vertical <= Mathf.Max(
+                    0.18f,
+                    horizontalSmall * 0.16f
+                );
+
+            if (damageableEnvelope.HasValue)
+            {
+                Bounds envelope = damageableEnvelope.Value;
+                float envelopeHeight = Mathf.Max(0.20f, envelope.size.y);
+                bool lowInEnvelope = bounds.max.y <=
+                    envelope.min.y + envelopeHeight * 0.30f;
+                bool flatRelativeToBody = vertical <= Mathf.Max(
+                    0.18f,
+                    envelopeHeight * 0.12f
+                );
+                bool broadRelativeToBody =
+                    horizontalSmall >= Mathf.Max(
+                        0.48f,
+                        Mathf.Min(envelope.size.x, envelope.size.z) * 0.55f
+                    ) &&
+                    horizontalLarge >= Mathf.Max(
+                        0.70f,
+                        Mathf.Max(envelope.size.x, envelope.size.z) * 0.72f
+                    );
+
+                if (lowInEnvelope &&
+                    flatRelativeToBody &&
+                    broadRelativeToBody)
+                {
+                    return true;
+                }
+            }
+
+            return nearFeet && broadAndFlat;
+        }
+
+        private static bool HasAuxiliaryName(
+            Transform candidate,
+            Transform enemyRoot)
+        {
             string[] keywords =
             {
                 "ring",
@@ -114,54 +139,29 @@ namespace BoredomAndDungeons
                 "ground_marker",
                 "groundmarker",
                 "enemy_base",
-                "enemybase"
+                "enemybase",
+                "support",
+                "reticle",
+                "marker"
             };
 
-            for (int index = 0;
-                 index < keywords.Length;
-                 index++)
+            Transform cursor = candidate;
+            while (cursor != null)
             {
-                if (lower.Contains(keywords[index]))
-                    return true;
+                string lower = cursor.gameObject.name.ToLowerInvariant();
+                for (int index = 0; index < keywords.Length; index++)
+                {
+                    if (lower.Contains(keywords[index]))
+                        return true;
+                }
+
+                if (cursor == enemyRoot)
+                    break;
+
+                cursor = cursor.parent;
             }
 
-            Bounds bounds = candidate.bounds;
-            Vector3 size = bounds.size;
-
-            float horizontalSmall =
-                Mathf.Min(
-                    Mathf.Abs(size.x),
-                    Mathf.Abs(size.z)
-                );
-            float horizontalLarge =
-                Mathf.Max(
-                    Mathf.Abs(size.x),
-                    Mathf.Abs(size.z)
-                );
-            float vertical =
-                Mathf.Abs(size.y);
-
-            bool broadAndFlat =
-                horizontalSmall >= 0.55f &&
-                horizontalLarge >= 0.75f &&
-                vertical <= Mathf.Max(
-                    0.20f,
-                    horizontalSmall * 0.20f
-                );
-
-            if (!broadAndFlat)
-                return false;
-
-            float rootY =
-                enemyRoot != null
-                    ? enemyRoot.position.y
-                    : bounds.center.y;
-
-            bool nearFeet =
-                bounds.center.y <=
-                rootY + Mathf.Max(0.85f, vertical + 0.35f);
-
-            return nearFeet;
+            return false;
         }
 
         public static void ApplyTransparency(
@@ -169,57 +169,11 @@ namespace BoredomAndDungeons
             float multiplier,
             MaterialPropertyBlock reusableBlock = null)
         {
-            if (renderer == null)
-                return;
-
-            Material[] materials = renderer.sharedMaterials;
-            if (materials == null || materials.Length == 0)
-                return;
-
-            Color sourceColor = Color.white;
-            bool foundColor = false;
-
-            for (int index = 0;
-                 index < materials.Length;
-                 index++)
-            {
-                Material material = materials[index];
-                if (material == null)
-                    continue;
-
-                if (material.HasProperty("_BaseColor"))
-                {
-                    sourceColor =
-                        material.GetColor("_BaseColor");
-                    foundColor = true;
-                    break;
-                }
-
-                if (material.HasProperty("_Color"))
-                {
-                    sourceColor =
-                        material.GetColor("_Color");
-                    foundColor = true;
-                    break;
-                }
-            }
-
-            if (!foundColor)
-                return;
-
-            sourceColor.a = Mathf.Clamp01(
-                sourceColor.a *
-                Mathf.Clamp(multiplier, 0.20f, 0.90f)
-            );
-
-            MaterialPropertyBlock block =
-                reusableBlock ??
-                new MaterialPropertyBlock();
-
-            renderer.GetPropertyBlock(block);
-            block.SetColor("_BaseColor", sourceColor);
-            block.SetColor("_Color", sourceColor);
-            renderer.SetPropertyBlock(block);
+            // Compatibility API retained for older callers and validators.
+            // The accepted visual contract keeps the ring's authored color.
+            _ = renderer;
+            _ = multiplier;
+            _ = reusableBlock;
         }
     }
 }
