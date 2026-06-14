@@ -3222,3 +3222,48 @@ The active task remains target highlighting only. The red silhouette must be gen
 
 `TEST EVERYTHING` reported one blocker because the historical V23R19O validator still required the superseded helper name `IsAuxiliaryRingRenderer`. The active V10.11.30.83 runtime excludes surrounding spheres and other presentation shells through `IsAuxiliaryPresentationRenderer` and `IsAuxiliarySubMesh`. V10.11.30.84 changes only that stale validator contract. Target selection, rendering, damage, range, input, Settings and transition behavior are unchanged.
 <!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:BEGIN -->
+## 2026-06-14 — Start New Game screen-plane entry V10.11.30.85
+
+**Classification:** `ENTRY CINEMATIC IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The accepted body-only target outline closes the previous active repair. Physical X, highlighted Select/Confirm and pointer activation now share one transition authority. Input locks, the button commits visibly, the camera follows a curved route into the physical screen, the menu recedes and the existing BDMainMenuFlow receives ownership once at the peak screen-light frame.
+
+Continue remains documented-only until saved-position restoration exists. Exit/Abandon is not implemented by this package.
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:END -->
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:BEGIN -->
+## 2026-06-14 — canonical Start entry routing V10.11.30.88
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The installer canonicalizes the small physical-primary method and only the Primary switch branch, so it supports direct routing and previous V85/V86/V87 wrappers. All Main Menu Start activation paths now converge on the presenter-owned entry. The unused separate handheld screen depth binding is removed.
+
+Exit, Continue, Pause-menu redesign and gameplay-camera micro-zoom repairs remain outside this gate.
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:END -->
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:BEGIN -->
+## 2026-06-14 — Start-entry and depth-contract restoration V10.11.30.89
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+Restored the explicit persistent color/depth render-target contract required by the handheld and tutorial validators. Start-entry handoff now uses the dedicated New Run API and preserves the exact X-button contract. The Start cinematic remains presenter-owned.
+
+The Metal memoryless warning must be repaired without deleting this depth owner.
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:END -->
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:BEGIN -->
+## 2026-06-14 — visible Start New Game entry V10.11.30.90
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The Start action now owns a clearly visible 2.08-second continuous camera move from the product shot into the physical screen. The device gives a restrained physical response, the menu recedes inside the screen and New Run begins only at the peak screen-light frame.
+
+The explicit persistent screen color/depth contract and the exact X = New Game contract are restored. Exit animation, Pause-menu redesign and gameplay-camera micro-zoom repairs remain later tasks.
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:END -->
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:BEGIN -->
+## 2026-06-14 — production Start row routing V10.11.30.91
+
+**Classification:** `IMPLEMENTED / UNITY VISUAL VERIFICATION REQUIRED`
+
+Exact local-state inspection found the reason the Start animation never changed when the authored on-screen option was selected: the production menu uses `RowAction.StartNewRun`, while only `RowAction.Primary` and physical X were routed through the cinematic. Select/Confirm and pointer activation therefore called `HandleModernStartNewRun()` immediately and hid the handheld before the animation could run.
+
+V10.11.30.91 routes the production `StartNewRun` row through the existing V10.11.30.90 screen-plane cinematic. No camera curve, depth owner, Settings, exit flow, Continue flow or gameplay camera code is changed by this repair.
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->

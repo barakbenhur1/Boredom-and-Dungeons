@@ -987,3 +987,28 @@ Pending:
 - Unity compilation and TEST EVERYTHING rerun: pending.
 - Play Mode body-only outline acceptance: pending.
 <!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:BEGIN -->
+## Start New Game entry V10.11.30.85 — pending Unity evidence
+
+Require clean compilation, TEST EVERYTHING 0/0/0, all three input routes, repeated-input rejection and uninterrupted handoff into the existing New Game opening. Static checks do not prove visual continuity.
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:END -->
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:BEGIN -->
+## V10.11.30.88 pending Unity evidence
+
+Pending compilation, TEST EVERYTHING 0/0/0, all three Start activation paths, duplicate-input rejection and absence of Metal memoryless warnings.
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:END -->
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:BEGIN -->
+## V10.11.30.89 pending Unity evidence
+
+Pending compilation, TEST EVERYTHING 0/0/0 and Start-entry Play Mode verification. Metal warning evidence remains a separate runtime check.
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:END -->
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:BEGIN -->
+## V10.11.30.90 pending Unity evidence
+
+Pending compilation, TEST EVERYTHING 0/0/0 and visible Play Mode confirmation through X, selected Confirm and pointer activation.
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:END -->
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:BEGIN -->
+## V10.11.30.91 — pending Unity evidence
+
+Static validation proves the production `StartNewRun` row no longer bypasses `TryBeginStartGameEntryV1011390`. Required evidence remains TEST EVERYTHING `0/0/0` and visible Play Mode confirmation through Select/Confirm and pointer activation.
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->

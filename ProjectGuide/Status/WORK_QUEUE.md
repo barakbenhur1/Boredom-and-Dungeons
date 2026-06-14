@@ -1525,3 +1525,54 @@ Run Unity compilation, TEST EVERYTHING 0/0/0, then verify the mother dialogue an
 3. In Play Mode verify only the enemy body receives the red outline and the surrounding sphere does not.
 4. Do not begin entry or exit cinematic work before this visual check is accepted.
 <!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:BEGIN -->
+## Immediate gate — Start New Game entry V10.11.30.85
+
+1. Compile in Unity 6000.0.76f1.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Trigger Start New Game with physical X, Select/Confirm and pointer click.
+4. Each route must produce one button response, one curved approach and one handoff.
+5. Reject repeated input; show no black frame, FOV snap or duplicate run start.
+6. Pause Resume must not use this entry.
+7. Continue and exit remain outside this gate.
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:END -->
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:BEGIN -->
+## Immediate verification — Start entry V10.11.30.88
+
+1. Compile in Unity.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Test physical X, selected Confirm and pointer Start.
+4. Confirm every route plays the entry before starting one run.
+5. Confirm repeated input cannot start a second run.
+6. Confirm memoryless depth warnings no longer appear.
+7. After approval, implement the matching exit animation.
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:END -->
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:BEGIN -->
+## Immediate verification — V10.11.30.89
+
+1. Compile in Unity.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Verify X, selected Confirm and pointer Start play the entry before one New Run.
+4. Verify Pause Resume remains unaffected.
+5. Record whether Metal memoryless messages remain; do not remove the persistent depth owner again.
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:END -->
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:BEGIN -->
+## Immediate verification — Start entry V10.11.30.90
+
+1. Compile in Unity.
+2. Run TEST EVERYTHING and require 0 blockers / 0 warnings / 0 info.
+3. Test X, selected Confirm and pointer Start.
+4. Every route must visibly travel from the product shot into the physical screen before one New Run starts.
+5. Repeated input must not start a duplicate run.
+6. Pause Resume must remain immediate.
+7. After approval, implement the matching exit animation.
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:END -->
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:BEGIN -->
+## Immediate gate — production Start row routing V10.11.30.91
+
+1. Compile in Unity and run TEST EVERYTHING; require `0 blockers / 0 warnings / 0 info`.
+2. Select the visible `START NEW GAME` row and activate it with Select/Confirm.
+3. Activate the same row with the pointer.
+4. Verify both routes now play the same screen-plane cinematic as physical X before one New Run begins.
+5. Do not start exit-animation work until this visual gate is accepted.
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->

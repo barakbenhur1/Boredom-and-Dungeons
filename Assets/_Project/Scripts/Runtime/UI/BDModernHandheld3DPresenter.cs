@@ -67,6 +67,7 @@ namespace BoredomAndDungeons
             Progression,
             Credits,
             QuitConfirm,
+            NewRunConfirm, // BD HANDHELD MENU SCREEN V10.11.30.49
             AbandonConfirm,
             Loading
         }
@@ -75,6 +76,10 @@ namespace BoredomAndDungeons
         {
             None,
             Primary,
+            ContinueRun, // BD MENU ACTIONS V10.11.30.49
+            StartNewRun,
+            ConfirmNewRun,
+            CancelNewRun,
             OpenProgression,
             OpenSettings,
             OpenCredits,
@@ -339,6 +344,13 @@ namespace BoredomAndDungeons
 
             UpdateEntryAnimation();
             UpdateScreenResolution();
+
+            if (TickStartGameEntryV1011390())
+            {
+                UpdateScreenTransition();
+                return;
+            }
+
             RefreshPageIfNeeded();
             TickIntroToMainMenuTransition();
 
@@ -352,6 +364,7 @@ namespace BoredomAndDungeons
             }
 
             RefreshCharacterArt(force: false);
+            UpdateSettingsProfessionalLayoutV1011381();
             UpdatePointerInteraction();
             UpdateNavigationInput();
             UpdateLoadingPresentation();
@@ -384,20 +397,30 @@ namespace BoredomAndDungeons
 
         private void SetVisible(bool value)
         {
+            // BD DIRECT DEVICE CAMERA RESTORE V10.11.30.70
             visible = value;
+
+            if (value)
+                SetHandheldRenderOwnershipV1011343(true);
 
             if (presentationRoot != null)
                 presentationRoot.SetActive(value);
 
             if (deviceCamera != null)
+            {
+                deviceCamera.targetTexture = null;
+                ApplyMetalCameraDepthPolicyV1011372();
                 deviceCamera.enabled = value;
+            }
 
             if (screenCamera != null)
                 screenCamera.enabled = value;
-            SetHandheldRenderOwnershipV1011343(value);
 
             if (!value)
             {
+                ResetStartGameEntryForVisibilityV1011390();
+                SetHandheldRenderOwnershipV1011343(false);
+
                 ClearHover();
                 screenTransitionActive = false;
                 menuInputNeedsRelease = false;
@@ -911,6 +934,8 @@ namespace BoredomAndDungeons
             // memoryless depth load/store warnings during scene restoration.
             deviceCamera.allowMSAA = false;
             deviceCamera.depthTextureMode = DepthTextureMode.None;
+            // BD DEVICE CAMERA STARTS DISABLED V10.11.30.66
+            deviceCamera.enabled = false;
 
             BuildCinematicProductEnvironment();
             ConfigureMetalDepthSurfaceOwnersV1011343();
@@ -978,6 +1003,7 @@ namespace BoredomAndDungeons
             screenDepthRenderTexture.wrapMode = TextureWrapMode.Clamp;
             screenDepthRenderTexture.Create();
 
+
             GameObject screenCameraObject = new GameObject(
                 "Modern Handheld Screen Camera"
             );
@@ -1006,6 +1032,8 @@ namespace BoredomAndDungeons
             screenCamera.allowMSAA = false;
             screenCamera.depthTextureMode = DepthTextureMode.None;
             screenCamera.depth = 80f;
+            // BD SCREEN CAMERA STARTS DISABLED V10.11.30.66
+            screenCamera.enabled = false;
 
             screenCanvasRoot = new GameObject(
                 "Modern Handheld Screen Canvas",
@@ -1944,6 +1972,8 @@ namespace BoredomAndDungeons
                     return EffectivePage.Progression;
                 case BDMainMenuFlow.HandheldPage.AbandonConfirm:
                     return EffectivePage.AbandonConfirm;
+                case BDMainMenuFlow.HandheldPage.NewRunConfirm:
+                    return EffectivePage.NewRunConfirm;
                 case BDMainMenuFlow.HandheldPage.Loading:
                     return EffectivePage.Loading;
                 default:
@@ -1993,6 +2023,9 @@ namespace BoredomAndDungeons
                     break;
                 case EffectivePage.QuitConfirm:
                     BuildQuitConfirmPage();
+                    break;
+                case EffectivePage.NewRunConfirm:
+                    BuildProductionNewRunConfirmV1011349();
                     break;
                 case EffectivePage.AbandonConfirm:
                     BuildAbandonConfirmPage();
@@ -2133,6 +2166,8 @@ namespace BoredomAndDungeons
                     return "CREDITS";
                 case EffectivePage.QuitConfirm:
                     return "EXIT CONFIRM";
+                case EffectivePage.NewRunConfirm:
+                    return "NEW RUN CONFIRM";
                 case EffectivePage.AbandonConfirm:
                     return "CONFIRM";
                 case EffectivePage.Loading:
@@ -2144,6 +2179,8 @@ namespace BoredomAndDungeons
 
         private void BuildMainMenuPage()
         {
+            if (TryBuildProductionMainMenuV1011349())
+                return;
             CreateTitleBlock(
                 "BOREDOM\n& DUNGEONS",
                 "AN ADVENTURE REMEMBERED"
@@ -2207,6 +2244,8 @@ namespace BoredomAndDungeons
 
         private void BuildPausePage()
         {
+            if (TryBuildProductionPauseV1011349())
+                return;
             CreateTitleBlock(
                 "PAUSED",
                 "RUN CONTROL"
@@ -2277,6 +2316,8 @@ namespace BoredomAndDungeons
 
         private void BuildSettingsPage()
         {
+            if (TryBuildProductionSettingsV1011349())
+                return;
             CreateTitleBlock(
                 "SETTINGS",
                 "TUNE THE HANDHELD AND THE ADVENTURE"
@@ -2368,10 +2409,13 @@ namespace BoredomAndDungeons
             );
 
             RefreshSettingsRowValues();
+            InitializeSettingsProfessionalLayoutV1011381();
         }
 
         private void BuildProgressionPage()
         {
+            if (TryBuildProductionProgressionV1011349())
+                return;
             CreateTitleBlock(
                 "PROGRESSION",
                 "THE MEMORY THAT SURVIVES BETWEEN RUNS"
@@ -2446,6 +2490,8 @@ namespace BoredomAndDungeons
 
         private void BuildCreditsPage()
         {
+            if (TryBuildProductionCreditsV1011349())
+                return;
             CreateTitleBlock(
                 "CREDITS",
                 "THE PEOPLE BEHIND THE ADVENTURE"
@@ -2492,6 +2538,8 @@ namespace BoredomAndDungeons
 
         private void BuildQuitConfirmPage()
         {
+            if (TryBuildProductionQuitConfirmV1011349())
+                return;
             CreateTitleBlock(
                 "EXIT THE GAME?",
                 "ARE YOU SURE YOU WANT TO LEAVE?"
@@ -2544,6 +2592,8 @@ namespace BoredomAndDungeons
 
         private void BuildAbandonConfirmPage()
         {
+            if (TryBuildProductionAbandonConfirmV1011349())
+                return;
             CreateTitleBlock(
                 "LEAVE THIS RUN?",
                 "CURRENT PROGRESS IN THIS RUN WILL END"
@@ -2818,6 +2868,8 @@ namespace BoredomAndDungeons
 
         private void UpdateNewGameMemoryCardVisibility()
         {
+            if (TryUpdateProductionNewGameMemoryCardV1011349())
+                return;
             if (newGameMemoryCard == null)
                 return;
 
@@ -2978,6 +3030,11 @@ namespace BoredomAndDungeons
                 : isPauseInternalMenu
                     ? 78f
                     : 72f;
+            ResolveProductionMenuRowGeometryV1011349(
+                ref x,
+                ref width,
+                ref height
+            );
 
             Image background = CreatePanel(
                 pageRoot,
@@ -3021,6 +3078,10 @@ namespace BoredomAndDungeons
                 TextAnchor.MiddleCenter,
                 Color.white,
                 FontStyle.Bold
+            );
+            BuildProductionActionIconV1011349(
+                icon.rectTransform,
+                action
             );
 
             Text labelText = CreateText(
@@ -3089,6 +3150,13 @@ namespace BoredomAndDungeons
 
         private Color ResolveActionColor(RowAction action)
         {
+            Color productionColorV1011349;
+            if (TryResolveProductionActionColorV1011349(
+                    action,
+                    out productionColorV1011349))
+            {
+                return productionColorV1011349;
+            }
             switch (action)
             {
                 case RowAction.Primary:
@@ -3113,6 +3181,13 @@ namespace BoredomAndDungeons
 
         private string ResolveActionGlyph(RowAction action)
         {
+            string productionGlyphV1011349;
+            if (TryResolveProductionActionGlyphV1011349(
+                    action,
+                    out productionGlyphV1011349))
+            {
+                return productionGlyphV1011349;
+            }
             switch (action)
             {
                 case RowAction.Primary:
@@ -3336,6 +3411,13 @@ namespace BoredomAndDungeons
         private Texture2D ResolveContextArtwork(
             BDPlayableCharacterKind character)
         {
+            Texture2D productionArtworkV1011349;
+            if (TryResolveProductionContextArtworkV1011349(
+                    character,
+                    out productionArtworkV1011349))
+            {
+                return productionArtworkV1011349;
+            }
             RowAction selectedAction =
                 selectedIndex >= 0 && selectedIndex < rows.Count
                     ? rows[selectedIndex].action
@@ -3477,7 +3559,25 @@ namespace BoredomAndDungeons
             switch (action)
             {
                 case RowAction.Primary:
-                    flow.HandleModernPrimaryAction();
+                    if (!TryBeginStartGameEntryV1011390())
+                        flow.HandleModernPrimaryAction();
+                    break;
+                case RowAction.ContinueRun:
+                    flow.HandleModernContinueRun();
+                    break;
+                case RowAction.StartNewRun:
+                    // BD SCREEN START NEW RUN ROUTES THROUGH ENTRY V10.11.30.91
+                    // Production menu rows use StartNewRun rather than Primary.
+                    // Never let Select/Confirm or pointer activation bypass the
+                    // visible screen-plane cinematic.
+                    if (!TryBeginStartGameEntryV1011390())
+                        flow.HandleModernStartNewRun();
+                    break;
+                case RowAction.ConfirmNewRun:
+                    flow.HandleModernConfirmNewRun();
+                    break;
+                case RowAction.CancelNewRun:
+                    flow.HandleModernCancelNewRun();
                     break;
                 case RowAction.OpenProgression:
                     flow.HandleModernOpenProgression();
@@ -3617,14 +3717,23 @@ namespace BoredomAndDungeons
 
         private void ActivatePrimaryShortcut()
         {
-            if (flow == null || displayedPage != EffectivePage.MainMenu)
+            if (flow == null ||
+                displayedPage != EffectivePage.MainMenu)
+            {
                 return;
+            }
 
             PulsePersistentControl(
                 BDModernHandheldControlTarget.ControlAction.Primary
             );
+
             localPage = LocalPage.None;
-            flow.HandleModernPrimaryAction();
+
+            if (!TryBeginStartGameEntryV1011390())
+            {
+                flow.HandleModernStartNewRun(); // BD X IS NEW GAME V10.11.30.49
+            }
+
             PlayClick();
         }
 
@@ -3708,6 +3817,9 @@ namespace BoredomAndDungeons
 
         private bool IsMenuInputReady()
         {
+            if (IsStartGameEntryActiveV1011390())
+                return false;
+
             if (IsIntroToMainMenuTransitionBlockingInput())
                 return false;
 
@@ -3922,9 +4034,11 @@ namespace BoredomAndDungeons
             if (deviceVisualRoot == null)
                 return;
 
-            // The handheld is physical set dressing, not a UI card. Generic
-            // menu-entry animation must never override its authoritative
-            // tabletop position, rotation or real-world scale.
+            if (IsStartGameEntryActiveV1011390())
+                return;
+
+            // The idle product shot owns the authoritative tabletop pose.
+            // The Start cinematic temporarily overrides it after this method.
             deviceVisualRoot.localPosition = DeviceRestPosition;
             deviceVisualRoot.localRotation = DeviceRestRotation;
             deviceVisualRoot.localScale = DeviceRestScale;
@@ -3959,6 +4073,7 @@ namespace BoredomAndDungeons
                           page == EffectivePage.Settings ||
                           page == EffectivePage.Progression ||
                           page == EffectivePage.QuitConfirm ||
+                          page == EffectivePage.NewRunConfirm ||
                           page == EffectivePage.AbandonConfirm
                 ? 0.30f
                 : 0.18f;

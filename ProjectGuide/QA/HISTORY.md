@@ -350,3 +350,28 @@ Focused repair packaged for the target outline including a surrounding non-damag
 
 Aligned the historical V23R19O target-outline validator with the active body-only presentation-shell classifier. No Runtime behavior changed.
 <!-- BND_TARGET_OUTLINE_QA_ALIGNMENT_V1011384:END -->
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:BEGIN -->
+## 2026-06-14 — packaged Start New Game entry cinematic V10.11.30.85
+
+Replaced the old short linear zoom with an explicit single-owner screen-plane entry. Unity visual evidence remains required.
+<!-- BND_START_NEW_GAME_ENTRY_CINEMATIC_V1011385:END -->
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:BEGIN -->
+## 2026-06-14 — canonical routing installer V10.11.30.88
+
+Replaced state-dependent Primary patching with deterministic method and switch-branch canonicalization. Tested direct, V86-routed and V87-routed fixtures before packaging.
+<!-- BND_START_ENTRY_CANONICAL_ROUTING_V1011388:END -->
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:BEGIN -->
+## 2026-06-14 — restored depth and New Run contracts
+
+Reversed the invalid color-only screen target. Restored the persistent explicit depth descriptor, depth render texture and color/depth buffer binding required by five existing validator families.
+<!-- BND_START_ENTRY_AND_DEPTH_CONTRACT_RESTORE_V1011389:END -->
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:BEGIN -->
+## 2026-06-14 — visible screen-plane Start entry V10.11.30.90
+
+Replaced the visually ineffective entry with a frame-calculated camera route that fills the view with the authored screen before the run begins. Restored all depth and X/New Run contracts broken by the color-only experiment.
+<!-- BND_START_ENTRY_VISIBLE_CINEMATIC_V1011390:END -->
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:BEGIN -->
+## 2026-06-14 — fixed production Start-row cinematic bypass
+
+The exact local repository snapshot showed that `RowAction.StartNewRun` bypassed the Start cinematic even though physical X was routed correctly. V10.11.30.91 closes that route and adds a blocker contract preventing the bypass from returning.
+<!-- BND_START_ENTRY_SCREEN_ROUTE_V1011391:END -->
