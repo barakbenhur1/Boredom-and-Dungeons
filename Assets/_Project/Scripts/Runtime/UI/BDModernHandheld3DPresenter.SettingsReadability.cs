@@ -15,7 +15,7 @@ namespace BoredomAndDungeons
         private const float SettingsReadableFirstRowY = 292f;
         private const float SettingsReadableViewportTop = 326f;
         private const float SettingsReadableViewportBottom = -306f;
-        private const float SettingsCanvasToDeviceY =
+        private static readonly float SettingsCanvasToDeviceY =
             ScreenHeight / CanvasSize.y;
 
         [RuntimeInitializeOnLoadMethod(
