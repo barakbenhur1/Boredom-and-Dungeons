@@ -1,3 +1,195 @@
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
+## 2026-06-14 — full-game airborne QA final alignment V10.11.30.77
+
+**Classification:** `VALIDATOR-ONLY ALIGNMENT / UNITY RERUN REQUIRED`
+
+After the V10.11.30.76 compile repair, `TEST EVERYTHING` had one remaining blocker: the V1011373 validator still required the malformed-era expression `Quaternion.Euler(Mathf.Abs(strikePitch), 0f, 0f)`.
+
+The runtime correctly declares `float pitch = Mathf.Abs(strikePitch);` before constructing `strikeRotation` with `Quaternion.Euler(pitch, 0f, 0f)`. V10.11.30.77 aligns the stale validator to that compile-safe implementation. Runtime gameplay, animation timing, damage, input and the accepted tutorial are unchanged.
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:BEGIN -->
+## 2026-06-14 — full-game airborne compile repair V10.11.30.76
+
+V10.11.30.75 inserted `float pitch` between `restRotation *` and `Quaternion.Euler(...)`, producing CS1525/CS1002 in `BDPlayerAirborneAttackAnimation.cs`.
+
+V10.11.30.76 repairs only that malformed expression. The five V23R17/V23R19E compatibility contracts, V73 final-frame ownership, normal full-game scope and tutorial exclusion remain intact.
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:BEGIN -->
+## 2026-06-14 — full-game airborne validator-target repair V10.11.30.75
+
+The same five V23R17/V23R19D blockers remained after V10.11.30.74, proving that a fixed path/indentation patch did not modify the runtime source actually inspected by the active validators.
+
+V10.11.30.75 locates the unique `BDPlayerAirborneAttackAnimation` class inside the repository, preserves the V73 final-frame animation owner, and installs the exact five maintained compatibility contracts in that concrete source file. It also locates and records every active validator that owns `V23R17_AIRBORNE_ANIMATION_MISSING` or `V23R19D_AIR_BODY_DIRECTION_MISSING`.
+
+No first-launch tutorial source or progression rule is modified.
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:BEGIN -->
+## 2026-06-14 — full-game airborne attack animation repair V10.11.30.73
+
+**Classification:** `FULL-GAME COMBAT PRESENTATION REPAIR / UNITY VERIFY REQUIRED`
+
+The reported regression belongs to the full game, not the first-launch tutorial. The tutorial is accepted and receives no Runtime or progression change in this package.
+
+`BDPlayerAirborneAttackAnimation` now owns the final `BD_Player_Visual` pose in `LateUpdate` and immediately before rendering. Air Light and Air Heavy therefore retain their distinct overhead wind-up, downward strike and recovery even if the ordinary grounded presenter observes the same input frame.
+
+Damage, hitboxes, cooldowns, input, critical rolls, vertical slash VFX and tutorial behavior remain unchanged.
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:END -->
+
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:BEGIN -->
+## 2026-06-14 — Metal depth policy installer staging repair V10.11.30.72
+
+**Classification:** `RENDER POLICY + INSTALLER REPAIR / UNITY CLEAN-CONSOLE VERIFY REQUIRED`
+
+V10.11.30.71 was blocked before writing because its `read_staged()` helper evaluated `require(relative)` as an eager `dict.get` default even when the new Metal policy file was already present in memory. V10.11.30.72 uses an explicit staged-key branch, allowing new runtime and QA files to be validated before their first repository write.
+
+The Metal camera policy and colored installer output remain otherwise unchanged from V10.11.30.71.
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:END -->
+
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:BEGIN -->
+## 2026-06-14 — handheld render recovery V10.11.30.70
+
+The V10.11.30.64 full-device RenderTexture and V10.11.30.66 output overlay caused `No cameras rendering` and a visible recursive feedback loop while failing to remove the Metal warnings. V10.11.30.70 removes that architecture and restores direct Display 1 output from the physical device camera.
+
+Competing Game cameras are suspended before the device camera is enabled and restored only after both product cameras are disabled. The independent tutorial screen RenderTexture and the mother-bubble clipped-edge repair remain intact.
+
+The previously reported animation regression belongs to the full game and is repaired in code by V10.11.30.73.
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:END -->
+
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:BEGIN -->
+## 2026-06-14 — Metal ownership QA alignment V10.11.30.69
+
+**Classification:** `VALIDATOR-ONLY REPAIR / UNITY RERUN REQUIRED`
+
+The historical depth-owner validator still required `SetHandheldRenderOwnershipV1011343(value);`. V10.11.30.66 intentionally split that call into explicit `true` and `false` ownership transitions so the persistent Metal target is attached before camera enable and released only after camera disable. The validator now checks the active contract and no runtime code is changed.
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:END -->
+
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:BEGIN -->
+## 2026-06-14 — scoped mother-bubble QA repair V10.11.30.68
+
+**Classification:** `VALIDATOR-ONLY REPAIR / UNITY RERUN REQUIRED`
+
+The stale V1011363 requirement for `delta.magnitude + 5f` is replaced with the active V10.11.30.64 clipped-edge contract. Installer whitespace validation is restricted to package-owned files, so unrelated Unity-generated changes in `ProjectSettings/ProjectSettings.asset` neither block the package nor get modified.
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:END -->
+
+<!-- BND_REOPENED_JUMP_ATTACK_BUBBLE_METAL_V1011366:BEGIN -->
+## 2026-06-14 — reopened Jump Attack animation, hidden mother bubble and Metal warnings
+
+**Classification:** `TWO RUNTIME REPAIRS IMPLEMENTED / ONE GAMEPLAY REGRESSION OPEN`
+
+- `FULL-GAME-PLAYER-AIRBORNE-ATTACK-ANIMATION-REGRESSION-V1011373` is open: Jump Attack damage remains airborne-only, but its visible animation has regressed to the ordinary grounded attack animation. V10.11.30.66 records this defect and does not claim it fixed.
+- The V10.11.30.64 full-screen Metal output canvas used an extreme positive sorting order and covered the mother's dialogue UI.
+- The handheld cameras were enabled before persistent Metal ownership was attached, leaving a startup frame in which the backbuffer could still own memoryless depth.
+
+V10.11.30.66 moves the Metal output behind ordinary dialogue/UI canvases, creates both product cameras disabled, and attaches render ownership before enabling them.
+<!-- BND_REOPENED_JUMP_ATTACK_BUBBLE_METAL_V1011366:END -->
+
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:BEGIN -->
+## 2026-06-14 — mother-bubble QA contract alignment V10.11.30.65
+
+**Classification:** `VALIDATOR REPAIR / UNITY RERUN REQUIRED`
+
+The V10.11.30.64 runtime behavior remains unchanged. The older V1011363 QA contract no longer requires the intentionally removed `delta.magnitude + 5f` edge extension. It now validates the clipped line length, four-pixel body clearance and explicit removal path used by the current runtime.
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:END -->
+
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:BEGIN -->
+## 2026-06-14 — mother-bubble clipping and Metal backbuffer isolation V10.11.30.64
+
+**Classification:** `VISUAL + RENDERING REPAIR / UNITY VERIFICATION REQUIRED`
+
+The repaired upper-right tail edge is now clipped four pixels before the speech-bubble body and no longer extends beyond its calculated endpoints. On Metal, the 3D handheld device camera now renders into an explicitly persistent non-memoryless color/depth target; a depthless ScreenSpaceOverlay image presents that target to the display. This removes the final direct 3D owner of Metal's memoryless backbuffer depth while the handheld is visible.
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:END -->
+
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:BEGIN -->
+## 2026-06-14 — Internal art-card and mother-bubble edge repair V10.11.30.63
+
+**Classification:** `VISUAL REPAIR / UNITY VERIFICATION REQUIRED`
+
+The shared internal artwork column now gives the artwork and caption panel independent vertical regions with a 33-pixel gap. The mother dialogue repair now searches the full scene for the nearest tail diamond and draws its exact upper-right edge as a topmost sibling, preventing the bubble body from covering the repaired line.
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:END -->
+
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:BEGIN -->
+## 2026-06-14 — Main Menu note and QA contract repair V10.11.30.62
+
+**Classification:** `VISUAL + VALIDATOR REPAIR / UNITY VERIFICATION REQUIRED`
+
+The clipped lower Main Menu note is constrained to the left content column. Four historical QA Require contracts are rebuilt deterministically by their contract codes, eliminating dependency on stale token blocks, file-path formatting or previous partial alignment attempts.
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:END -->
+
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:BEGIN -->
+## 2026-06-14 — internal-menu QA contract alignment V10.11.30.60
+
+**Classification:** `VALIDATOR REPAIR / UNITY RERUN REQUIRED`
+
+The V10.11.30.58 visual implementation remains unchanged. Historical validators are aligned by inspecting the `INTERNAL_MENU_V1011358_BUILDERS_MISSING` and `INTERNAL_MENU_V1011358_VISUAL_SYSTEM_MISSING` Require contracts directly. Validation no longer depends on whether a C# file path is written as one string or concatenated strings.
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:END -->
+
+<!-- BND_INTERNAL_MENU_MOTHER_BUBBLE_VISUAL_REPAIR_V1011358:BEGIN -->
+## 2026-06-14 — deterministic internal-menu visual replacement V10.11.30.58
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+Every rebuilt internal page now owns a unique implementation marker. Existing copy from an older page can no longer make the installer skip a replacement. Pause, Settings, Progression, Credits, Quit confirmation, Abandon confirmation, New Run confirmation, the compact Settings icon and the exact mother-bubble diamond edge are all verified independently after writing.
+<!-- BND_INTERNAL_MENU_MOTHER_BUBBLE_VISUAL_REPAIR_V1011358:END -->
+
+<!-- BND_COMPACT_MENU_NOTE_COMPILE_REPAIR_V1011355:BEGIN -->
+## 2026-06-14 — compact Main Menu note compile repair V10.11.30.55
+
+**Classification:** `COMPILATION BLOCKER REPAIRED / UNITY RERUN REQUIRED`
+
+The V10.11.30.54 call to `BuildCompactMainMenuNoteV1011354()` now has its actual method definition. The focused QA contract now requires the full method declaration rather than accepting a call-site token.
+<!-- BND_COMPACT_MENU_NOTE_COMPILE_REPAIR_V1011355:END -->
+
+<!-- BND_MENU_BUBBLE_METAL_PRODUCTION_REPAIR_V1011354:BEGIN -->
+## 2026-06-14 — menu, mother bubble and Metal repair V10.11.30.54
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The installer now replaces the Settings icon method by method boundaries rather than requiring an exact historical body. It applies the compact menu note, Settings icon family match, mother-bubble continuous frame and Metal memoryless hardening cumulatively.
+<!-- BND_MENU_BUBBLE_METAL_PRODUCTION_REPAIR_V1011354:END -->
+
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:BEGIN -->
+## 2026-06-13 — legacy result-text compatibility V10.11.30.50
+
+**Classification:** `BLOCKER REPAIRED / UNITY RERUN REQUIRED`
+
+The production 3D Main Menu continues to display `START NEW GAME`. The semantic flow's legacy `PrimaryRunActionLabel` now retains its canonical `START GAME` wording so the longstanding `MAIN_MENU_RESULT_TEXT_FORBIDDEN` contract does not misclassify the modern presenter text. No layout, card, icon, input, run-state or confirmation behavior changed.
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:END -->
+
+<!-- BND_HANDHELD_MENU_SCREENS_PRODUCTION_V1011349:BEGIN -->
+## 2026-06-13 — handheld Main/Pause and menu-screen production pass V10.11.30.49
+
+**Classification:** `CURRENT / IMPLEMENTED / UNITY VISUAL VERIFICATION REQUIRED`
+
+The verified first-launch tutorial remains closed. Work returns to the authoritative active handheld task before any gameplay-transition implementation.
+
+- Main Menu shows `START NEW GAME` when no live run exists and starts it immediately without a confirmation.
+- When a live run is available, Main Menu may show `CONTINUE` plus `START NEW GAME`; choosing New Game opens an in-handheld confirmation whose safe default is `CANCEL`.
+- X always means New Game. SELECT activates the highlighted row. A/B/Y retain Progression/Settings/Credits on Main; B returns elsewhere; EXIT opens the legal quit/abandon confirmation.
+- Main, Pause, Settings, Progression, Credits, Quit and Abandon use one aligned safe-area composition.
+- Settings has a dedicated geometric gear icon that does not depend on font glyph support. Pause now includes its required neutral artwork.
+- The small text card remains visible for every Main Menu option and updates its heading and status for Continue, New Game, Progression, Settings, Credits and Quit. The installer and focused QA now enforce this restored behavior.
+- Only Start New Game resolves Boy/Girl protagonist art. Continue, Pause and every information/confirmation page use neutral art.
+- Desktop Quit is omitted on unsupported mobile/WebGL targets.
+- `BDMainMenuFlow` remains the semantic owner; the presenter partial owns presentation only.
+
+**Exact resume point:** install V10.11.30.49, compile, run `TEST EVERYTHING`, capture Main/Pause/Settings/Progression/Credits/Quit/Abandon, verify no-active-run New Game starts directly, then verify the active-run confirmation safe default.
+<!-- BND_HANDHELD_MENU_SCREENS_PRODUCTION_V1011349:END -->
+
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:BEGIN -->
+## 2026-06-13 — durable tutorial completion and deterministic main-menu landing V10.11.30.46
+
+**Classification:** `IMPLEMENTED / UNITY VERIFICATION REQUIRED`
+
+The verified first-launch tutorial now commits its terminal state before the visual exit begins. A normal completion promotes only `NotStarted` or `InProgress` to `Completed`; an explicit `Skipped` state is never overwritten. When the exit transition reaches full cover, the existing `BDMainMenuFlow` authority is asked to return to its real MainMenu page. No run starts automatically.
+
+On the next process launch, `BDFirstLaunchTutorialStateStore.ShouldPresent` remains false for both `Completed` and `Skipped`, so the first-launch choice/tutorial cannot reappear accidentally. The existing menu, New Game action, intro camera scene and gameplay systems are otherwise unchanged.
+
+**Resume point:** install V10.11.30.46, compile, run `TEST EVERYTHING`, complete a fresh tutorial and confirm the real main menu appears; restart Play Mode and confirm the tutorial does not return.
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:END -->
+
 <!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
 ## 2026-06-13 — Metal memoryless depth warning repair V10.11.30.45
 

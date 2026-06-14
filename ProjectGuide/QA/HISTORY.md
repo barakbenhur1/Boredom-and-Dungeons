@@ -1,3 +1,93 @@
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
+### 2026-06-14 — V10.11.30.77 stale V1011373 expression removed
+
+Replaced the final stale V1011373 requirement for `Quaternion.Euler(Mathf.Abs(strikePitch), 0f, 0f)` with the compile-safe V76 sequence: declare `pitch`, declare `strikeRotation`, and construct it using `Quaternion.Euler(pitch, 0f, 0f)`.
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:BEGIN -->
+### 2026-06-14 — V10.11.30.76 malformed strike-rotation repair
+
+Moved the local `pitch` declaration before `Quaternion strikeRotation` and restored the valid expression `restRotation * Quaternion.Euler(pitch, 0f, 0f)`.
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:BEGIN -->
+### 2026-06-14 — V10.11.30.75 dynamic airborne source targeting
+
+Replaced fixed-path/fixed-indentation compatibility patching with repository discovery of the unique `BDPlayerAirborneAttackAnimation` source and the active V23R17/V23R19D validator owners.
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:BEGIN -->
+### 2026-06-14 — V10.11.30.73 full-game airborne pose ownership
+
+Replaced the coroutine-only airborne body pose with final-frame ownership in `LateUpdate` plus `Application.onBeforeRender`. This prevents the ordinary grounded attack presenter from overwriting Air Light or Air Heavy. The first-launch tutorial is explicitly outside scope.
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:END -->
+
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:BEGIN -->
+### 2026-06-14 — V10.11.30.72 staged-file validation repair
+
+Replaced the eager `dict.get(..., require(...))` fallback with an explicit staged-key branch and renamed every delivered V1011372 payload consistently, so new runtime and QA files validate before first write.
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:END -->
+
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:BEGIN -->
+### 2026-06-14 — V10.11.30.70 recursive-render rollback
+
+Removed the V10.11.30.64 full-device target and V10.11.30.66 overlay after they caused camera starvation and recursive feedback without eliminating the Metal warnings. Restored direct product-camera output with safe ownership ordering.
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:END -->
+
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:BEGIN -->
+### 2026-06-14 — V10.11.30.69 stale depth-owner hook contract removed
+
+Updated the historical `HANDHELD_V1011343_DEPTH_OWNER_HOOKS_MISSING` contract from the retired boolean-parameter call to the explicit V10.11.30.66 `true`/`false` ownership transitions.
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:END -->
+
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:BEGIN -->
+### 2026-06-14 — V10.11.30.68 package-owned diff validation
+
+Reissued the stale mother-bubble QA alignment with `git diff --check` scoped only to files owned by the package. Existing Unity `ProjectSettings.asset` whitespace is explicitly out of scope and remains untouched.
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:END -->
+
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:BEGIN -->
+### 2026-06-14 — V10.11.30.65 stale V1011363 contract removed
+
+Updated the historical mother-bubble validator to require the V10.11.30.64 clipped-edge implementation instead of the retired five-pixel edge extension.
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:END -->
+
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:BEGIN -->
+### 2026-06-14 — V10.11.30.64 clipped tail edge and persistent Metal device target
+
+Removed the five-pixel tail-edge overextension, clipped the edge before the bubble body, and isolated the handheld product camera from Metal's memoryless backbuffer depth through a persistent offscreen color/depth target and depthless overlay presentation.
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:END -->
+
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:BEGIN -->
+### 2026-06-14 — V10.11.30.63 shared art-card spacing and exact tail-edge overlay
+
+Separated the right-hand artwork from its caption across all internal screens. Replaced the child-level mother-tail patch with a scene-level exact edge overlay rendered after the body and tail.
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:END -->
+
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:BEGIN -->
+### 2026-06-14 — V10.11.30.62 deterministic QA contract rebuild
+
+Rebuilt the V1011349 runtime-owner, V1011354 visual-polish and both V1011358 page/helper Require contracts by contract code. Repaired the clipped lower Main Menu note.
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:END -->
+
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:BEGIN -->
+### 2026-06-14 — V10.11.30.60 Require-contract validator repair
+
+Removed the false file-path ordering dependency from the internal-menu validator alignment installer. Builders and visual-helper ownership are now verified by their actual Require contract codes.
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:END -->
+
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:BEGIN -->
+### 2026-06-13 — V10.11.30.50 result-text validator compatibility
+
+Removed the forbidden New Game literal from `BDMainMenuFlow` while preserving the visible wording in the modern 3D presenter. Updated the focused menu QA accordingly.
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:END -->
+
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:BEGIN -->
+### 2026-06-13 — V10.11.30.46 first-launch completion/main-menu handoff
+
+Added a durable pre-transition `Completed` write, defensive terminal-state recovery, deterministic reuse of `BDMainMenuFlow.ReturnToMainMenu()`, focused static QA and restart verification requirements. Skip remains terminal and is never promoted to Completed.
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:END -->
+
 <!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
 ### 2026-06-13 — V10.11.30.45 Metal memoryless-depth ownership repair
 

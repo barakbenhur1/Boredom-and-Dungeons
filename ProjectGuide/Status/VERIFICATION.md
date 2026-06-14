@@ -1,3 +1,188 @@
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:BEGIN -->
+## V10.11.30.77 verification
+
+1. Unity compiles without errors.
+2. Run `TEST EVERYTHING`.
+3. Confirm `FULL_GAME_AIRBORNE_BODY_OVERRIDE_V1011373_MISSING` is gone.
+4. Require `0 blockers / 0 warnings / 0 info`.
+5. Verify Air Light and Air Heavy in a normal full-game run.
+6. No first-launch tutorial file or rule changes.
+<!-- BND_FULL_GAME_AIRBORNE_QA_FINAL_ALIGNMENT_V1011377:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:BEGIN -->
+## V10.11.30.76 verification
+
+1. Unity compiles without CS1525 or CS1002 in `BDPlayerAirborneAttackAnimation.cs`.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm all five airborne compatibility contracts remain present.
+4. Verify Air Light and Air Heavy in a normal full-game run.
+5. The accepted first-launch tutorial remains unchanged.
+<!-- BND_FULL_GAME_AIRBORNE_COMPILE_REPAIR_V1011376:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:BEGIN -->
+## V10.11.30.75 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`.
+3. Require removal of all five previously unchanged airborne blockers.
+4. Require `0 blockers / 0 warnings / 0 info`.
+5. Verify Air Light and Air Heavy in a normal full-game run.
+6. Verify the accepted first-launch tutorial remains unchanged.
+<!-- BND_FULL_GAME_AIRBORNE_VALIDATOR_TARGET_V1011375:END -->
+
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:BEGIN -->
+## V10.11.30.73 verification
+
+- `TEST EVERYTHING`: require `0 blockers / 0 warnings / 0 info`.
+- Scope: normal full-game run only.
+- Air Light: dedicated airborne body animation plus one vertical light slash.
+- Air Heavy: dedicated airborne body animation plus one vertical heavy slash.
+- No grounded body animation and no horizontal duplicate during airborne attacks.
+- Grounded combat, damage, cooldowns, input and the first-launch tutorial remain unchanged.
+<!-- BND_FULL_GAME_AIRBORNE_ATTACK_ANIMATION_V1011373:END -->
+
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:BEGIN -->
+## V10.11.30.72 verification
+
+1. Stop Play Mode and clear Console.
+2. Install; the new Metal policy and QA files must not need to pre-exist.
+3. Wait for Unity compilation.
+4. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+5. Enter Play Mode from a stopped state.
+6. Confirm no recursive handheld image and no `No cameras rendering`.
+7. Confirm neither Metal memoryless depth message appears.
+8. Confirm colored installer output appears when `NO_COLOR` is unset and stdout is a TTY.
+<!-- BND_METAL_DEPTH_WARNING_COLOR_REPAIR_V1011372:END -->
+
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:BEGIN -->
+## V10.11.30.70 verification
+
+- `TEST EVERYTHING`: `0 blockers / 0 warnings / 0 info`.
+- Display 1 renders immediately.
+- No recursive copies appear inside the handheld screen.
+- Mother dialogue and pointer are visible.
+- Neither memoryless depth message appears in a clean run.
+- Unity AI Assistant Account/Relay messages are external editor-service diagnostics.
+<!-- BND_HANDHELD_RENDER_RECOVERY_V1011370:END -->
+
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:BEGIN -->
+## V10.11.30.69 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm the presenter still calls ownership `true` before enabling the cameras and ownership `false` after disabling them.
+4. Treat Unity AI Assistant Relay WebSocket and Account API connectivity messages as external editor-service diagnostics, not B&D QA findings.
+<!-- BND_METAL_OWNERSHIP_QA_ALIGNMENT_V1011369:END -->
+
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:BEGIN -->
+## V10.11.30.68 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm `ProjectSettings/ProjectSettings.asset` is byte-for-byte untouched by this package.
+4. Confirm the mother-bubble line remains clipped before the cream body.
+<!-- BND_STALE_MOTHER_BUBBLE_QA_REPAIR_V1011368:END -->
+
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:BEGIN -->
+## V10.11.30.65 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm the mother-bubble line remains clipped before the cream body.
+4. Confirm the two Metal memoryless warnings remain absent.
+<!-- BND_MOTHER_BUBBLE_QA_CONTRACT_ALIGNMENT_V1011365:END -->
+
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:BEGIN -->
+## V10.11.30.64 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Trigger the mother dialogue and verify the repaired diagonal stops before the rectangular bubble border.
+4. Clear Console, re-enter the handheld/tutorial flow and verify neither memoryless depth message returns.
+5. Verify mouse interaction with the physical handheld controls is unchanged.
+<!-- BND_MOTHER_BUBBLE_CLIP_METAL_BACKBUFFER_REPAIR_V1011364:END -->
+
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:BEGIN -->
+## V10.11.30.63 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Open every internal menu screen and confirm the caption card does not overlap its artwork.
+4. Trigger the mother dialogue and confirm the upper-right edge of the diamond nearest the bubble is continuous and rendered above the bubble body.
+<!-- BND_INTERNAL_CARD_AND_MOTHER_BUBBLE_REPAIR_V1011363:END -->
+
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:BEGIN -->
+## V10.11.30.62 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm the full `THE MAZE AWAITS` heading is visible.
+4. Confirm the note card and body copy remain inside the left content column.
+5. Confirm all V10.11.30.58 internal screens, compact Settings sliders and mother-bubble repair remain present.
+<!-- BND_MAIN_MENU_NOTE_AND_QA_REPAIR_V1011362:END -->
+
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:BEGIN -->
+## V10.11.30.60 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm the V10.11.30.58 internal screen visuals remain unchanged.
+4. Confirm the compact Settings sliders and mother-bubble edge remain present.
+<!-- BND_INTERNAL_MENU_QA_CONTRACT_ALIGNMENT_V1011360:END -->
+
+<!-- BND_INTERNAL_MENU_MOTHER_BUBBLE_VISUAL_REPAIR_V1011358:BEGIN -->
+## V10.11.30.58 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Inspect Pause, Settings, Progression and Credits independently.
+4. Inspect Quit, Abandon and New Run confirmation independently.
+5. Confirm Settings uses the compact slider icon.
+6. Confirm the upper-right missing edge on the diamond nearest the mother bubble is present.
+<!-- BND_INTERNAL_MENU_MOTHER_BUBBLE_VISUAL_REPAIR_V1011358:END -->
+
+<!-- BND_COMPACT_MENU_NOTE_COMPILE_REPAIR_V1011355:BEGIN -->
+## V10.11.30.55 verification
+
+1. Wait for Unity compilation.
+2. Confirm CS0103 for `BuildCompactMainMenuNoteV1011354` is gone.
+3. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+4. Verify the compact lower Main Menu note is visible and aligned.
+<!-- BND_COMPACT_MENU_NOTE_COMPILE_REPAIR_V1011355:END -->
+
+<!-- BND_MENU_BUBBLE_METAL_PRODUCTION_REPAIR_V1011354:BEGIN -->
+## V10.11.30.54 verification
+
+1. Compile without errors.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Verify the Settings icon matches the other flat menu icons.
+4. Verify the compact lower Main Menu note is aligned and readable.
+5. Verify the mother bubble and every tail diamond have a continuous frame.
+6. Clear Console and verify both Metal memoryless messages are absent.
+<!-- BND_MENU_BUBBLE_METAL_PRODUCTION_REPAIR_V1011354:END -->
+
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:BEGIN -->
+## V10.11.30.50 focused verification
+
+1. Compile without errors or warnings.
+2. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+3. Confirm the 3D Main Menu still displays `START NEW GAME`.
+4. Confirm the small contextual card still appears for every Main Menu option.
+5. Confirm Settings still shows its geometric gear icon.
+<!-- BND_MAIN_MENU_RESULT_TEXT_QA_REPAIR_V1011350:END -->
+
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:BEGIN -->
+## V10.11.30.46 focused verification
+
+1. Run `TEST EVERYTHING`; require `0 blockers / 0 warnings / 0 info`.
+2. Reset the first-launch tutorial preference using the existing development reset.
+3. Complete the tutorial normally and collect the final memory.
+4. Confirm the exit transition lands on the real handheld Main Menu and does not start gameplay automatically.
+5. Stop and re-enter Play Mode; confirm the tutorial choice and tutorial do not appear again.
+6. Reset again, choose Skip, confirm the real Main Menu appears, then restart and confirm Skip is also terminal.
+7. Confirm the existing Main Menu buttons and `New Game` behavior are unchanged.
+<!-- BND_FIRST_LAUNCH_COMPLETION_MAIN_MENU_V1011346:END -->
+
 <!-- BND_METAL_MEMORYLESS_WARNING_REPAIR_V1011345:BEGIN -->
 ## V10.11.30.45 focused verification
 
